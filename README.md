@@ -8,6 +8,8 @@
 
 -> Now You Must allow localfile access in your browser using : 
 
+--------------------------------------------------
+
 (Alternative better way at bottom, I used firefox and it works fine)
 
 (if ur on edge well get cucked)
