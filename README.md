@@ -11,7 +11,7 @@ Its a personal project so i did not created a setup page to do all of this autom
 -> Now You Must allow localfile access in your browser using : 
 
 
-(Alternative is better method, the first method is the official way i think, but i use the bottom one.
+(Alternative method at bottom is better, the first method is the official way i think, but i use the bottom one.
 
 Its best for firefox, use the above one if you cant use bottom one)
 
