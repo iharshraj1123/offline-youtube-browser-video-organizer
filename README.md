@@ -4,7 +4,7 @@
 
 -> First add the userdata database then youtube database to your sql (simply copy paste it in sql section of your phpmyadmin)
 
--> Make sure your sql profile is like this : {username = "admin"; password = "pwdpwd";}
+-> Add an account your sql/phpmyadmin with : {username = "admin"; password = "pwdpwd"; Priviledges : All (optional)}
 
 otherwise change username and password on each php file :(
 
