@@ -6,7 +6,7 @@
 
 First of all apologies since the code might be inefficient, left half way somewhere and not upto date cuz i was lazy. Im a civil engineer and this was the project from my high school times so there are many places you can make improvements.
 
-**HOW to Setup**
+***HOW to Setup :***
 
 -> Copy-paste all the folders (eg, youtube, chatbox, comment section) in your htdocs of your localserver.
 
