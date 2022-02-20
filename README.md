@@ -1,10 +1,20 @@
-"# offline-youtube" 
-
 ![play page](https://user-images.githubusercontent.com/33609172/154852861-5c026ea2-8436-447d-aa95-c4d3cfae514d.jpg)
 
 ![home](https://user-images.githubusercontent.com/33609172/154853030-9ae920eb-3286-4526-90c4-b7bebdf3b8b0.jpg)
 
 First of all apologies since the code might be inefficient, left half way somewhere and not upto date cuz i was lazy. Im a civil engineer and this was the project from my high school times so there are many places you can make improvements.
+
+**About the project :**
+
+Its a web app that is like an organiser for your videos on your local disk. Do you hate going to VLC? hate being able to play only one song/media at a time? Offline youtube was made for these.
+
+-very light weight on your disk space: It only stores local address of your videos in databases, it doesnt store your videos to your htdocs just where they are located in your videos. This saves a lot of space.
+
+-Did i said it was light weight? : yes, but on your disk not your CPU or memory, I sacrificed them cuz space is a limited resource for me, i have a good enough specs to dont actually care about others. 
+
+On Ryzen 7 4800H laptop cpu it will peak at 100% usage for few secs when you go on home page, cuz i did not saved thumbnail (MUST SAVE SPACE!)
+
+but its not bothersome you wont notice
 
 ***HOW to Setup :***
 
