@@ -22,17 +22,17 @@ but its not bothersome you wont notice
 
 ***HOW to Setup :***
 
--> Copy-paste all the folders (eg, youtube, chatbox, comment section) in your htdocs of your localserver.
+- Copy-paste all the folders (eg, youtube, chatbox, comment section) in your htdocs of your localserver.
 
--> First add the userdata database then youtube database to your sql (simply copy paste it in sql section of your phpmyadmin)
+- First add the userdata database then youtube database to your sql (simply copy paste it in sql section of your phpmyadmin)
 
--> Add an account your sql/phpmyadmin with : {username = "admin"; password = "pwdpwd"; Priviledges : All (optional)}
+- Add an account your sql/phpmyadmin with : {username = "admin"; password = "pwdpwd"; Priviledges : All (optional)}
 
 Its a personal project so i did not created a setup page to do all of this automatically, if someone requests i will make one 
 
--> Note that if you allow hearing requests (idk what it was called im a civil engineer lol) in your xampp you can access this app from within your LAN as well from any device. But i have written this project such that its easy on my HDD space not cpu or Ram, so its a bit inefficient if you want to use it in a LAN or through tunneling. I have a different personal project for those use.
+- Note that if you allow hearing requests (idk what it was called im a civil engineer lol) in your xampp you can access this app from within your LAN as well from any device. But i have written this project such that its easy on my HDD space not cpu or Ram, so its a bit inefficient if you want to use it in a LAN or through tunneling. I have a different personal project for those use.
 
--> Now You Must allow localfile access in your browser using : 
+- Now You Must allow localfile access in your browser using : 
 
 
 (Alternative method at bottom is better, the first method is the official way i think, but i use the bottom one.
