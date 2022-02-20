@@ -1,0 +1,864 @@
+/*-------debugging tools-------*/
+
+
+:root {
+/*------Dark theme------*/
+    --com-main-color: rgb(238, 234, 234) ; /*for dark theme; change it to black for white theme*/
+   --com-main-bg-color: rgb(44, 43, 43) ; /*for dark theme; change it to white for white theme*/
+ /* --main-bg-color: white ;
+  --main-color: black ;*/
+}
+
+.com-bg-color-for-text{
+    color: var(--com-main-bg-color);
+}
+
+.com-color-for-text{
+    color: var(--com-main-color);
+}
+
+.com-bg-color-for-bg{
+    background-color: var(--com-main-bg-color);
+}
+
+.com-color-for-bg{
+    background-color: var(--com-main-color);
+}
+
+.edit-color{
+    background-color: rgb(116, 133, 182) ;
+}
+  
+
+h1 {
+    font-family: sans-serif;
+}
+
+.blue {
+    background-color: blue;
+    border: 1px solid black;
+}
+
+
+.green{
+  background-color: green;
+  border: 1px solid black;
+}
+
+
+
+.red {
+    background-color: red;
+    border: 1px solid black;
+ 
+}
+
+.grey {
+    background-color: grey;
+    border: 1px solid black;
+}
+
+.pink {
+    background-color: pink;
+    border: 1px solid black;
+}
+
+.yellow {
+    background-color: rgb(201, 255, 5);
+    border: 1px solid black;
+}
+
+
+/*---------------------new-----------------------*/
+
+.hidemepls {
+    display: none !important;
+}
+
+.com-link-copied-div{
+    position: fixed;
+    bottom: -40px;
+    left: 20px;
+    z-index: 100;
+    color: whitesmoke;
+    background-color: rgb(29, 28, 28);
+    padding: 11px 90px 9px 25px;
+    font-size: 15px;
+    font-family: calibiri,'roboto',sans-serif;
+    transition: all .1s ease-in-out;
+}
+
+.minHeight80 {
+    min-height: 80px !important;
+}
+
+.com-loading-img {
+    width: 300px;
+    margin-left : 35%;
+    animation: com-loading-image 0.8s infinite;
+}
+
+@keyframes com-loading-image {
+    0% {
+        transform: rotate(0deg);
+    }
+    25% {
+        transform: rotate(90deg);
+    }
+    50% {
+        transform: rotate(180deg);
+    }
+    75% {
+        transform: rotate(270deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/*----------------Comment divs--------------*/
+
+.comment-navbar2{
+    padding: 10px 0;
+    float: right;
+    margin-right : 5%;
+    margin-top: 10px;
+}
+/*
+.sort-select-div {
+
+}*/
+
+.sort-select{
+    background-color: var(--com-main-bg-color);
+    color: var(--com-main-color);
+    font-family: 'Roboto',sans-serif;
+    padding: 6px 30px;
+    border: 0;
+    cursor: pointer;
+}
+
+.sort-select option {
+    cursor: pointer;
+}
+
+.user-pic-div{
+    display: block;
+    position: relative;
+}
+
+
+.label-text-div {
+    float: left;
+    width: 90%;
+    position: relative;
+}
+
+
+/*--------user image-----------*/
+.com-user-div {
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: 2px;
+  width : 60px;
+  height: 60px;
+ /* box-shadow: -2px 3px 3px rgb(46, 45, 45);*/
+
+  
+}
+
+.com-user-img {
+    width: inherit;
+}
+
+/*--------comment box-----------*/
+
+.commenter-body{
+    position: relative;
+    max-width: 100%;
+}
+
+.comment-flex{
+    box-sizing: border-box;
+    width : 100%;
+    display: flex;
+}
+
+.comment-box {
+    display: inline-block;
+    width: 100%;
+    margin-left : 15px;
+    box-sizing: border-box;
+}
+
+.box-wrapper{
+    position: relative;
+
+}
+
+.com-textarea {
+    resize: none;
+    overflow: hidden;
+    width: 95%;
+    position: relative;
+    overflow-y : auto;
+    max-height : 350px;
+    box-sizing: border-box;
+    background-color: white;
+    padding: 9px 13px;
+    font-family: sans-serif;
+    font-size: 15px;
+    min-height : 60px;
+    height: 20px;
+    transition: 0.3s;
+    /*border: 2px solid #dbdfe4;*/
+    border-radius: 3px; 
+    background-color: var(--com-main-bg-color); ;
+    color: var(--com-main-color) ;
+    border: 0 ;
+}
+
+.com-textarea::placeholder {
+   font-size: 18px;
+}
+
+.texarea-focuso {
+  min-height: 80px;
+}
+
+.edit-div{
+    word-wrap: break-word;
+   overflow-x: hidden;
+   position: absolute;
+   overflow: auto;
+   background-color: pink;
+   padding: 9px 13px;
+   height: 30px;
+   width: 90%;
+   visibility: hidden;
+}
+
+
+.buttonus-container {
+    border: 2px solid rgb(221, 210, 210);
+    position: relative;
+    background-color: #f6f8f9;
+    bottom: 5px;
+    width: 95%;
+
+    display: inherit;
+    box-sizing: border-box;
+}
+
+.buttonus-container-left{
+    color: rgb(196, 174, 174);
+    font-size: 22px;
+    cursor: default;
+    padding-right: 100px;
+}
+
+.buttonus-icon{
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.buttonus-icon:hover {
+    color: rgb(163, 140, 140); 
+}
+
+.vertical-buttonus{
+    display: inline-block;
+    margin-left: 10px;
+    height: 17px;
+    border-right: 2px solid rgb(151, 142, 142) ;
+}
+
+.buttonus-container-left-p2{
+    display: inline-block;
+}
+
+.buttonus-icon2{
+    cursor: pointer;
+    font-size: 16px;
+    position: relative;
+    bottom: 2px;
+}
+
+.buttonus-container-right{
+    float: right;
+    position: relative;
+    left : 2px;
+    bottom: 28px;
+}
+
+
+.buttonus5 {
+    border: none;
+    border-radius: 1px;
+    color: white;  
+    padding: 6px 11px;    
+    text-align: center;   
+    text-decoration: none;   
+    font-size: 15px;   
+    cursor: pointer; 
+    background-color: #555555;
+} 
+
+.maths-container {
+
+    border: 2px solid rgb(221, 210, 210);
+    margin-left: 70px;
+    position: relative;
+    background-color: #f6f8f9;
+    bottom: 10px;
+    font-size: 23px !important;
+    font-weight:800;
+    width: 82%;
+}
+
+.maths-container i {
+    position: relative;
+    top: 1px;
+    color: rgb(196, 174, 174);
+}
+
+
+.upload-form-div {
+  display: none;
+}
+
+.loggin-pls{
+    position: relative;
+    left: 46%;
+    top: 30px;
+    font-family: sans-serif;
+}
+
+.loggin-link{
+    color: rgb(96, 96, 252);
+}
+
+.loggin-link:hover{
+    color: rgb(255, 56, 56);
+}
+
+.loggin-link:active{
+    color: rgb(250, 79, 79);
+
+}
+
+.com-cancel-butn{
+    color: rgb(196, 174, 174);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.com-cancel-butn:hover{
+    color: rgb(163, 140, 140); 
+}
+/*-------------comments-----------*/
+
+.highlight-text-div{
+    margin-left:20px;
+    color: var(--com-main-color);
+    font-size: 12px;
+}
+
+.highlight-text-span{
+   padding: 3px 5px;
+   background: var(--com-main-bg-color);
+   border-radius: 2px;
+}
+
+.com-body{
+    overflow-x: hidden;
+
+    position: relative;
+    margin-top:15px;
+    margin-left: 20px ;
+    
+    background-color: var(--com-main-bg-color);
+    padding: 20px 0 0 20px ;
+    border-radius: 8px;
+    max-height : 650px;
+    width: 90%;
+
+}
+
+.reply-body-wrap{
+    box-sizing: border-box;
+    position: relative;
+}
+
+.reply-body{
+    margin-left: 120px;
+    width: 77%;
+    box-sizing: border-box;
+}
+
+.inside-user-pic-div{
+    cursor: pointer;
+    position: absolute;
+    max-width: 50px;
+    height: 50px;
+    overflow: hidden;
+    border-radius: 4px;
+   /* box-shadow: -2px 2px 3px rgb(27, 27, 27);*/
+}
+
+.inside-user-pic{
+    width: 50px;
+}
+
+.inside-user-name-div{
+    display: ruby;
+    position: absolute;
+    left: 82px;
+
+}
+
+.real-username-div {
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--com-main-color);
+}
+
+.time-div {
+   font-size: 12px;
+   color: var(--com-main-color);
+   opacity: 0.6;
+
+}
+
+.no-post{
+    display: block;
+    position: relative;
+    top: 20px;
+}
+
+.no-post p {
+  color: rgb(187, 172, 172);
+  font-size: 15px;
+  font-family: sans-serif;
+  margin-left: 43.5%;
+  margin-top: 20px;
+}
+
+.com-texto {
+    position: relative;
+    overflow:auto;
+    bottom: 35px;
+    left: 41px;
+    color: var(--com-main-color) ;  /*-------VARIABLE HERE ----------*/
+    font-family: Roboto ,sans-serif;
+    font-size:15px;
+    max-width: 1100px;
+    max-height: 500px;
+    margin-left:20px;
+
+}
+
+.com-texto-p{
+    white-space: pre-line;
+    word-wrap: break-word;
+    margin-top:0;
+}
+
+.com-texto img {
+    max-width: 495px !important;
+    max-height: 460px !important;
+    
+}
+.com-texto a{
+    color: rgb(135, 193, 216);
+}
+
+.com-texto a:hover{
+    color: rgb(105, 165, 189);
+}
+
+.rep-texto{
+    max-width: 900px;
+}
+
+
+
+.com-code {
+    overflow-y: auto;
+    max-height: 350px;
+    color: rgb(208, 208, 243);
+    background-color: rgb(8, 8, 8);
+    line-height: 20px;
+    width: 70%;
+    border-radius: 3px;
+    letter-spacing: 2px;
+    padding: 20px 40px;
+    white-space: pre;
+   overflow-x: scroll;
+   list-style-position: outside;
+  
+}
+
+.com-li {
+  padding-left: 30px;
+  margin-left: 15px;
+
+  font-size: 14px;
+}
+
+.com-texto spoiler {
+    padding: 3px 5px;
+    background-color: rgb(151, 141, 141);
+    color: rgba(160, 141, 141, 0);
+}
+
+.com-texto spoiler:hover {
+    background-color: rgb(224, 217, 217);
+    color: rgb(49, 47, 47);
+}
+
+.com-texto quote{
+  padding: 0px 5px 2px 2px;
+  font-style: italic;
+  color: black;
+  font-weight: 500;
+  border-left: 4px solid rgb(130, 153, 255);
+  background-color: rgb(255, 229, 209);
+}
+
+.com-texto video {
+    width: 50%;
+    min-width: 300px;
+}
+
+.comments-summoner{
+    font-family: sans-serif;
+    font-size: 14px;
+}
+
+.com-hr {
+    border : 0;
+    border-top: 1px solid rgb(160, 141, 141);
+}
+
+.load-more-p {
+    background-color: rgb(112, 106, 106);
+    cursor: pointer;
+    font-family: sans-serif;
+    position: relative;
+    padding: 4px 30px;
+    border-radius: 10px;
+    color: rgb(51, 50, 48);
+    top: 5px;
+    text-align:center;
+}
+
+.load-more-p:hover{
+    background-color: rgb(129, 120, 120);
+
+}
+
+.outro-hr {
+    margin-top : 30px;
+    width: 97%;
+    border: 0;
+    border-top : 0px solid  var(--com-main-color) ;
+    opacity: 0.8;
+}
+
+
+
+
+/*------------tooltips w3school-------------*/
+
+
+.tooltiptextox {
+  transition: 0.4s;
+  width: 260px;
+  color: #fff;
+  text-align: center;
+  background-color:rgb(51, 49, 49) ;
+
+  border-radius: 6px;
+  padding: 5px 0;
+  visibility: hidden;
+  /* Position the tooltip */
+  position: absolute;
+
+  z-index: 10;
+  margin-left: 98px;
+}
+
+.reply-box{
+    position: fixed;
+    bottom: 0;
+    z-index: 1000;
+}
+
+.inside-com-tooltip{
+    top:0%;
+}
+
+.tooltiptextox2{
+  margin-left: 70px;
+
+}
+
+.tooltiptextox3{
+    margin-left: 200px !important;
+}
+
+.tooltiptextox:hover {
+    visibility: visible;
+    background-color: rgb(32, 31, 31);
+}
+
+.show_tooltiptextox {
+  visibility: visible !important ;
+}
+
+
+.tooltip-user-pic{
+    width: 70%;
+    margin: auto;
+    background-color: rgb(213, 193, 233);
+    padding: 15px 10px 5px 10px;
+    border-radius: 4px;
+}
+
+.tooltip-user-pic-inner{
+    cursor: pointer;
+    overflow: hidden;
+    border-radius: 4px;
+    width : 100px;
+    height: 100px;
+    margin: auto;
+}
+
+.tooltip-user-img{
+    height: inherit;
+}
+
+/*
+.user-pic-div:hover *  {
+  visibility: visible !important;
+}*/
+
+.tooltip-username{
+    font-family: sans-serif;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    color: var(--com-main-color);
+}
+
+.tooltip-userfullname{
+    font-weight: 600;
+    font-size: 12px;
+    font-family: sans-serif;
+}
+
+.tooltip-user-desc {
+    max-height: 80px;
+    overflow: hidden;
+    word-wrap: break-word;
+    text-overflow: ellipsis; 
+}
+
+.tooltip-user-desc-inner{
+    font-family: sans-serif;
+    font-size: 12px;
+    width: 90%;
+    margin-left: 5%;
+}
+
+.tooltip-user-footer{
+    margin-top: 7px;
+}
+
+.logout-span{
+    background-color: teal;
+    padding: 2px 4px;
+    font-family: sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.com-options{
+    color: var(--com-main-color);
+}
+
+.com-options i , .com-options span {
+   cursor: pointer;
+   position: relative;
+   bottom: 5px;
+}
+
+.com-options div {
+    position: relative;
+    bottom: 1px;
+    right: 2px;
+}
+
+.com-options b{
+    position: relative;
+    bottom: 5px;
+}
+
+.com-options i:hover , .com-options span:hover {
+    opacity: 0.7;
+}
+
+.reply-textarea{
+    resize: none;
+    overflow: auto;
+    width: 80%;
+    position: relative;
+    min-height: 130px;
+    background-color: white;
+    padding: 9px 13px;
+    font-family: sans-serif;
+    font-size: 15px;
+    box-sizing: border-box;
+    transition: 0.3s;
+    border : 0;
+    border: 2px solid #dbdfe4;
+    border-radius: 3px; 
+}
+
+.reply-buttonus-container{
+    width:80%;
+}
+
+.upvoted{
+    color:rgb(253, 68, 68);
+}
+
+.downvoted {
+    color: rgb(86, 96, 241);
+}
+
+/*-------------------------Mobile CSS--------------------------*/
+/*-------------------------Mobile CSS--------------------------*/
+/*-------------------------Mobile CSS--------------------------*/
+/*-------------------------Mobile CSS--------------------------*/
+/*-------------------------Mobile CSS--------------------------*/
+/*-------------------------Mobile CSS--------------------------*/
+/*-------------------------Mobile CSS--------------------------*/
+/*-------------------------Mobile CSS--------------------------*/
+/*-------------------------Mobile CSS--------------------------*/
+/*-------------------------Mobile CSS--------------------------*/
+/*-------------------------Mobile CSS--------------------------*/
+/*-------------------------Mobile CSS--------------------------*/
+/*-------------------------Mobile CSS--------------------------*/
+
+@media(max-width: 1100px) {
+    .reply-body{
+        margin-left: 70px;
+        width: 82%;
+        box-sizing: content-box;
+    }
+    .tooltiptextox3{
+        margin-left: 150px !important;
+    }
+
+}
+
+@media(max-width: 700px) {
+    .buttonus-icon1 {
+        font-size: 18px;
+    }
+    .buttonus-icon2 , .buttonus-container-left i b {
+        font-size: 14px;
+    }
+    .com-cancel-butn{
+        font-size: 14px;
+    }
+
+    .maths-container{
+        margin-left: 30px;
+    }
+
+    .com-body {
+      font-size: 12px;
+      overflow:hidden;
+    }
+
+    .tooltiptextox2{
+        margin-left: 60px !important;
+    }
+
+    .tooltiptextox{
+        margin-left: 88px;
+    }
+
+    .tooltiptextox3{
+        margin-left: 120px !important;
+    }
+
+    .reply-body{
+        margin-left: 50px;
+        width: 82%;
+        box-sizing: content-box;
+    }
+
+    .com-textarea::placeholder{
+        font-size : 16px;
+    }
+
+    .inside-user-pic{
+        width: 40px;
+    }
+
+    .com-user-div{
+        height: unset;
+    }
+
+    .comment-box{
+        margin-left: 10px;
+    }
+
+    .com-texto{
+        margin-left: 10;
+        left: 33px;
+        bottom: 28px;
+        font-size: 13px;
+        width: 80%;
+        max-height: 220px;
+        overflow-x : hidden;
+
+    }
+
+    .com-code{
+        max-height:130px;
+    }
+
+    .com-texto img {
+        max-width: 200px !important;
+        max-height: 200px !important;
+    }
+
+    .com-options-right{
+        font-size: 11px;
+        bottom:-5px !important;
+    }
+
+    .com-li{
+        font-size: 13px;
+    }
+
+    .inside-user-name-div{
+        left:58px;
+        margin-left: 0px;
+        padding-left: 15px;
+    }
+    .com-loading-img{
+        width: 200px;
+        margin-left : 27%;
+    }
+
+    
+}
+

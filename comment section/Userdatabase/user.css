@@ -1,0 +1,304 @@
+:root {
+    /*------Dark theme------*/
+        --com-main-color: rgb(238, 234, 234) ; /*for dark theme; change it to black for white theme*/
+       --com-main-bg-color: rgb(44, 43, 43) ; /*for dark theme; change it to white for white theme*/
+     /* --main-bg-color: white ;
+      --main-color: black ;*/
+}
+
+*{
+    padding: 0;
+    margin: 0;
+    font-family: sans-serif;
+}
+
+.hidemepls {
+    display: none !important;
+}
+
+.noheighto{
+    height: 0px !important;
+}
+
+.me-header{
+    padding: 20px 40px;
+    background-color: rgb(247, 247, 247) ;
+    border-bottom : 1px solid rgb(255, 224, 247) ;
+}
+
+.logo-span{
+    font-weight: 800;
+    font-size: 30px;
+    color: rgb(197, 189, 189);
+}
+
+.profile-wrapper {
+    width: 100%;
+    padding: 20px 0;
+}
+
+.settings-icon{
+    float: right;
+    position: relative;
+    bottom: 5px;
+    color: whitesmoke;
+    margin-right: 15px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.settings-icon:hover {
+    color: rgb(238, 234, 234);
+}
+
+.settings-icon:active {
+    transform: rotate(90deg);
+}
+
+.profile-outside {
+    position: relative;
+    width: 80%;
+    margin: auto;
+    background-color: rgb(57, 158, 252);
+    border-radius: 10px;
+    padding: 20px 0;
+    box-shadow: 2px 2px 5px rgb(44, 43, 43);
+
+}
+
+
+.profile-inside {
+    border: 2px solid rgb(240, 236, 236);
+    border-radius: 10px;
+    background-color: rgb(65, 48, 48);
+    overflow: hidden;
+    display: inline-block;
+    margin-left: 50%;
+    width: 200px;
+    height: 200px;
+    transform: translate(-50%,20%);
+    box-shadow: 1px 1px 5px rgb(44, 43, 43);
+}
+
+.user-img{
+    width: 200px;
+    height: 200px;
+}
+
+.profile-info-div{
+    text-align: center;
+    padding: 20px 40px;
+}
+
+.profile-info{
+    font-weight: 600;
+    color: rgb(133, 132, 132);
+}
+
+
+.username-span{
+    font-size: 25px;
+    color: rgb(92, 91, 91);
+
+}
+
+.name-span{
+    font-size: 18px;
+    color: rgb(133, 132, 132);
+}
+
+.desc-span{
+    font-size: 16px ;
+
+}
+
+.privil-span{
+    font-size: 15px;
+    padding-top: 10px;
+}
+
+.extra-info-wrapper{
+    display: table;
+    width : 100%;
+}
+
+.extra-info{
+    padding-left: 20px;
+    display: table-cell;
+    width: 30%;
+}
+
+.statistics-table{
+    border-collapse: collapse;
+    color: rgb(105, 102, 102);
+}
+
+.info-stastics{
+    padding: 3px 30px;
+    border: 2px solid rgb(196, 192, 192);
+}
+
+.extra-info2{
+    display: table-cell;
+}
+
+.info-option-div{
+    display: table;
+    width:90%;
+    border-top: 1px solid rgb(167, 162, 162);
+    border-left: 1px solid rgb(167, 162, 162);
+    border-radius: 3px;
+
+}
+
+.info-option {
+    padding: 4px 28px;
+    color: rgb(121, 115, 115);
+    display: table-cell;
+    cursor: pointer;
+    margin-left: 10px;
+    border-right: 1px solid rgb(68, 66, 66);
+    padding: 13px 30px;
+    font-size : 15px;
+
+}
+
+.info-option:hover {
+    background-color: rgb(213, 243, 215);
+
+}
+
+.com_video{
+   width: 50%;
+}
+
+.comments-summon-recent {
+    width:90%;
+    padding: 10px 0;
+    background-color: rgb(134, 206, 230);
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+}
+
+.comments-summon-mostupvoted{
+    width:90%;
+    padding: 10px 0;
+    background-color: rgba(255, 0, 0, 0.75);
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+}
+
+.comments-summon-mostdownvoted{
+    width:90%;
+    padding: 10px 0;
+    background-color: rgba(255, 255, 0, 0.7);
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+}
+
+.com-body{
+    overflow: auto;
+    color: whitesmoke;
+    background-color: rgb(31, 31, 31);
+    width: 80%;
+    max-width: 800px;
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin : auto;
+    margin-top: 10px;
+    border: 1px solid rgb(151, 147, 147);
+}
+
+.vertical-buttonus{
+    border-right: 2px solid whitesmoke;
+    display: inline;
+}
+
+.com-nav a {
+    color : greenyellow;
+    float: right;
+}
+
+.com-holder{
+    padding: 5px;
+    max-height:300px;
+    overflow: auto;
+}
+
+.footer{
+    text-align: right;
+    color: rgb(161, 154, 154);
+    font-size: 14px;
+    font-weight: 600;
+    background-color: rgb(240, 233, 233);
+    padding: 10px 40px;
+}
+
+.dropdown-content{
+    display: inline-block;
+    color: rgb(41, 40, 40);
+    float: right;
+    position: absolute;
+    top: 43px;
+    right: 22px;
+    border-radius: 2px;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.dropdown-content div {
+    background-color: whitesmoke ;
+    cursor: pointer;
+    color: rgb(80, 78, 78);
+    padding : 3px 7px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.dropdown-content div:hover {
+    color: rgb(0, 0, 0);
+    background-color: rgb(216, 212, 212) ;
+
+}
+
+.change-form-div{
+    position: fixed;
+    top : 20%;
+    padding: 50px;
+    left: 20%;
+    width: 50%;
+    background-color: rgb(197, 189, 189);
+}
+
+input {
+    cursor: pointer;
+}
+
+.cancel-form{
+    background-color: rgb(255, 244, 244);
+    cursor: pointer;
+    border: 1px solid black;
+    font-size: 13px;
+    padding: 1px 3px;
+    border-radius: 3px;
+    margin-left: 5px;
+}
+
+.new-desc textarea {
+    width : 90%;
+    height: 100px;
+}
+
+@media(max-width: 700px) {
+    .extra-info-wrapper{
+        display: block;
+    }
+    .extra-info2{
+        display: block;
+        margin: 20px 0 0 20px;
+    }
+    .info-option{
+        padding: 5px 10px;
+    }
+}

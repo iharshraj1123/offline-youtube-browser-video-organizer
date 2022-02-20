@@ -1,0 +1,34 @@
+#Write all in small no capital and dont copy space
+
+username: aditya
+password: adityasaurav
+
+username: amandeep
+password: amandeep
+
+username: mouli
+password: moulipass
+
+username: sidhant
+password: sidhant
+
+username: swati
+password: swatipass
+
+username: arushi
+password: arushi
+
+username: niharika
+password: niharika
+
+username: vinay
+password: vinaypass
+
+username: jaswant
+password: jaswant
+
+username: aatwik
+password: aatwik
+
+username: nitish
+password: nitish
