@@ -2,11 +2,13 @@
 
 -> Copy-paste all the folders (eg, youtube, chatbox, comment section) in your htdocs of your localserver.
 
--> read the readme file inside youtube or read below:
- 
-You Must allow localfile access in your browser using : 
+-> First add the userdata database then youtube database to your sql (simply copy paste it in sql section of your phpmyadmin)
 
-(Alternative better way below, I used firefox and it works fine)
+-> Make sure your sql profile is like this : {username = "admin"; password = "pwdpwd";}
+
+-> Now You Must allow localfile access in your browser using : 
+
+(Alternative better way at bottom, I used firefox and it works fine)
 
 (if ur on edge well get cucked)
 
@@ -23,8 +25,8 @@ user_pref("capability.policy.filelinks.checkloaduri.enabled", "allAccess");
 user_pref("capability.policy.filelinks.sites", "http://localhost/YouTube/play.php http://localhost/YouTube/index.php http://localhost/YouTube/");
 
 
-
-//////alternative (better, works well in firefox)/////
+--------------------------------------------------
+//Alternative (better, works well in firefox)//
 
 use "about:config" in URL to go to advanced config
 
