@@ -16,6 +16,10 @@ On Ryzen 7 4800H laptop cpu it will peak at 100% usage for few secs when you go 
 
 but its not bothersome you wont notice
 
+-Note that "comment section + chatbox" was a different project of mine, I integrated them here cuz I was too laze to build from scratch.
+
+-There are a lot of features and also lot missing features. It can read subtitles as well in vtt format, add your subtitles in the "youtube/files/subtitles/"
+
 ***HOW to Setup :***
 
 -> Copy-paste all the folders (eg, youtube, chatbox, comment section) in your htdocs of your localserver.
