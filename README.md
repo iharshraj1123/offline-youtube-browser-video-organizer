@@ -67,3 +67,17 @@ capability.policy.filelinks.checkloaduri.enabled = "allAccess"
 
 capability.policy.filelinks.sites = "http://localhost/YouTube/play.php http://localhost/YouTube/index.php http://localhost/YouTube/"
 
+
+--------------------------------------------------
+
+**HOT KEYs** (the video must be focussed to use the ones below)
+
+5 (from Numpad) :  focus video  (use this if video isnt focussed and you too lazy to move mouse)
+
+N: next video, P: previous video, L: Loop, R: Random/in-queue
+
+Space: Pause, F: fullscreen, T : theatre mode, C: captions/subtitles
+
+0 (Numpad) = reverse (works in in-queue mode), 
+
+. (decimal,from numpad): deletes history
