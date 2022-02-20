@@ -8,11 +8,12 @@
 
 -> Now You Must allow localfile access in your browser using : 
 
+
+(Alternative is better method, the first method is the official way i think, but i use the bottom one.
+
+Its best for firefox, use the above one if you cant use bottom one)
+
 --------------------------------------------------
-
-(Alternative better way at bottom, I used firefox and it works fine)
-
-(if ur on edge well get cucked)
 
 // == FILE URI LINK POLICY (checkloaduri) ==
 
