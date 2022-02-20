@@ -6,6 +6,10 @@
 
 -> Make sure your sql profile is like this : {username = "admin"; password = "pwdpwd";}
 
+otherwise change username and password on each php file :(
+
+Its a personal project so i did not created a setup page, if someone requests i will make one 
+
 -> Now You Must allow localfile access in your browser using : 
 
 
