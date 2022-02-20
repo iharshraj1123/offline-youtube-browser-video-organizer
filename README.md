@@ -1,4 +1,4 @@
-# Offline Youtube
+# Offline YouTube
 
 ![play page](https://user-images.githubusercontent.com/33609172/154852861-5c026ea2-8436-447d-aa95-c4d3cfae514d.jpg)
 
