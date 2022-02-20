@@ -43,6 +43,8 @@ Its best for firefox, use the above one if you cant use bottom one)
 
 --------------------------------------------------
 
+### Normal method
+
 // == FILE URI LINK POLICY (checkloaduri) ==
 
 // Create policy enabling http: or https: pages to link to file:
@@ -57,7 +59,7 @@ user_pref("capability.policy.filelinks.sites", "http://localhost/YouTube/play.ph
 
 
 --------------------------------------------------
-//Alternative (better, works well in firefox)//
+### Alternative Method (better, works well in firefox)
 
 use "about:config" in URL to go to advanced config
 
