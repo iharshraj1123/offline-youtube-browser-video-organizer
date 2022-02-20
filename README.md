@@ -6,9 +6,7 @@
 
 -> Add an account your sql/phpmyadmin with : {username = "admin"; password = "pwdpwd"; Priviledges : All (optional)}
 
-otherwise change username and password on each php file :(
-
-Its a personal project so i did not created a setup page, if someone requests i will make one 
+Its a personal project so i did not created a setup page to do all of this automatically, if someone requests i will make one 
 
 -> Now You Must allow localfile access in your browser using : 
 
