@@ -180,6 +180,12 @@ ALTER TABLE `comment_store`
 ALTER TABLE `reply_store`
   ADD CONSTRAINT `reply_store_ibfk_1` FOREIGN KEY (`com_id`) REFERENCES `comment_store` (`com_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `reply_store_ibfk_2` FOREIGN KEY (`user_num`) REFERENCES `user_info` (`user_num`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+INSERT INTO `user_info` (`user_num`, `user_name`, `privilege`, `Members`, `user_pass`, `first_name`, `last_name`, `user_desc`, `user_pic`, `comment_votes`, `reply_votes`) VALUES (NULL, 'iharshraj', 'ADMIN', NULL, 'temp_pass', 'Harsh', 'Raj', 'I don\'t even know why I created this place... btw I also like animes', '/comment section/Userdatabase/ProfilePic/1.jpg', 'a:4:{i:190;s:0:\"\";i:193;s:7:\"upvoted\";i:226;s:7:\"upvoted\";i:228;s:0:\"\";}', 'a:1:{i:0;s:7:\"upvoted\";}') ;
+INSERT INTO `user_info` (`user_num`, `user_name`, `privilege`, `Members`, `user_pass`, `first_name`, `last_name`, `user_desc`, `user_pic`, `comment_votes`, `reply_votes`) VALUES (NULL, 'disgusted', 'MOD', NULL, 'temp_pass', 'i dont like', 'you', 'stop looking at me pig', '/comment section/Userdatabase/ProfilePic/disgusted maid 1.jpg', 'a:1:{i:0;s:7:\"upvoted\";}', 'a:1:{i:0;s:7:\"upvoted\";}') ;
+INSERT INTO `user_info` (`user_num`, `user_name`, `privilege`, `Members`, `user_pass`, `first_name`, `last_name`, `user_desc`, `user_pic`, `comment_votes`, `reply_votes`) VALUES (NULL, 'talk bot', 'USER', NULL, 'temp_pass', 'chat', 'bot', 'Hiii There its me !!! yeah you dont know me....', '/comment section/Userdatabase/ProfilePic/default1.jpg', 'a:1:{i:0;s:7:\"upvoted\";}', 'a:1:{i:0;s:7:\"upvoted\";}');
+INSERT INTO `user_info` (`user_num`, `user_name`, `privilege`, `Members`, `user_pass`, `first_name`, `last_name`, `user_desc`, `user_pic`, `comment_votes`, `reply_votes`) VALUES (NULL, 'creeper_sweeper', 'USER', NULL, 'india123', 'Joe', 'Johnson', 'Minecraft all day', '/comment section/Userdatabase/ProfilePic/creeper_sweeper.gif', 'a:1:{i:0;s:7:\"upvoted\";}', 'a:1:{i:0;s:7:\"upvoted\";}') ;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
