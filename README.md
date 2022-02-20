@@ -2,7 +2,7 @@
 
 ![play page](https://user-images.githubusercontent.com/33609172/154852861-5c026ea2-8436-447d-aa95-c4d3cfae514d.jpg)
 
-![home page](https://user-images.githubusercontent.com/33609172/154852963-4eddd584-34c5-4ea6-b2a3-4458e9471b4b.jpg)
+![home](https://user-images.githubusercontent.com/33609172/154853030-9ae920eb-3286-4526-90c4-b7bebdf3b8b0.jpg)
 
 -> Copy-paste all the folders (eg, youtube, chatbox, comment section) in your htdocs of your localserver.
 
