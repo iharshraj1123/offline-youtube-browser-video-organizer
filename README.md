@@ -4,6 +4,8 @@
 
 ![home](https://user-images.githubusercontent.com/33609172/154853030-9ae920eb-3286-4526-90c4-b7bebdf3b8b0.jpg)
 
+First of all apologies since the code might be inefficient, left half way somewhere and not upto date cuz i was lazy. Im a civil engineer and this was the project from my high school times so there are many places you can make improvements.
+
 -> Copy-paste all the folders (eg, youtube, chatbox, comment section) in your htdocs of your localserver.
 
 -> First add the userdata database then youtube database to your sql (simply copy paste it in sql section of your phpmyadmin)
@@ -12,7 +14,7 @@
 
 Its a personal project so i did not created a setup page to do all of this automatically, if someone requests i will make one 
 
--> Note that if you allow hearing requests in your xampp you can access this app from within your LAN as well from any device. But i have written this project such that its easy on my HDD space not cpu or Ram, so its a bit inefficient if you want to use it in a LAN or through tunneling. I have a different personal project for those use.
+-> Note that if you allow hearing requests (idk what it was called im a civil engineer lol) in your xampp you can access this app from within your LAN as well from any device. But i have written this project such that its easy on my HDD space not cpu or Ram, so its a bit inefficient if you want to use it in a LAN or through tunneling. I have a different personal project for those use.
 
 -> Now You Must allow localfile access in your browser using : 
 
