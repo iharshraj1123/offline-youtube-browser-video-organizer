@@ -4,7 +4,7 @@
 
 First of all apologies since the code might be inefficient, left half way somewhere and not upto date cuz i was lazy. Im a civil engineer and this was the project from my high school times so there are many places you can make improvements.
 
-###**About the project :**
+###About the project :
 
 Its a web app that is like an organiser for your videos on your local disk. Do you hate going to VLC? hate leaving your browser? or hate being able to play only one song/media at a time? Offline youtube was made for these.
 
@@ -20,7 +20,7 @@ but its not bothersome you wont notice
 
 -There are a lot of features and also lot missing features. It can read subtitles as well in vtt format, add your subtitles in the "youtube/files/subtitles/"
 
-##***HOW to Setup :***
+##HOW to Setup :
 
 - Copy-paste all the folders (eg, youtube, chatbox, comment section) in your htdocs of your localserver.
 
@@ -70,7 +70,7 @@ capability.policy.filelinks.sites = "http://localhost/YouTube/play.php http://lo
 
 --------------------------------------------------
 
-##**HOT KEYs** (the video must be focussed to use the ones below)
+##HOT KEYs (the video must be focussed to use the ones below)
 
 5 (from Numpad) :  focus video  (use this if video isnt focussed and you too lazy to move mouse)
 
@@ -84,7 +84,7 @@ Space: Pause, F: fullscreen, T : theatre mode, C: captions/subtitles
 
 --------------------------------------------------
 
-##**Important instructions:**
+##Important instructions:
 
 -> upload.php and in redirect.php is used to upload data upload.php gives data to redirect.php on work a to upload to database, Use "other" category on upload.php to test the app is working well.
 
