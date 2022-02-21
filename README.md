@@ -4,7 +4,7 @@
 
 ![home](https://user-images.githubusercontent.com/33609172/154853030-9ae920eb-3286-4526-90c4-b7bebdf3b8b0.jpg)
 
-First of all apologies since the code might be inefficient, left half way somewhere and not upto date cuz i was lazy. Im a civil engineer and this was the project from my high school times so there are many places you can make improvements.
+First of all apologies since the code might be inefficient, left half way somewhere and not upto date cuz i was lazy. Im not a professional coder i code only for fun and this was the project from my high school times so there are many places you can make improvements.
 
 ### About the project :
 
