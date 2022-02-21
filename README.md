@@ -32,9 +32,7 @@ but its not bothersome you wont notice
 
 Its a personal project so i did not created a setup page to do all of this automatically, if someone requests i will make one 
 
-4. Note that if you allow hearing requests (I forgot what it was called tbh) in your xampp you can access this app from within your LAN as well from any device. But i have written this project such that its easy on my HDD space not cpu or Ram, so its a bit inefficient if you want to use it in a LAN or through tunneling. I have a different personal project for those use.
-
-5. Now You Must allow localfile access in your browser using : 
+4. Now You Must allow localfile access in your browser using : 
 
 
 (Alternative method at bottom is better, the first method is the official way i think, but i use the bottom one.
