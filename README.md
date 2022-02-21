@@ -1,10 +1,12 @@
+# Offline YouTube - Video organizer
+
 ![play page](https://user-images.githubusercontent.com/33609172/154852861-5c026ea2-8436-447d-aa95-c4d3cfae514d.jpg)
 
 ![home](https://user-images.githubusercontent.com/33609172/154853030-9ae920eb-3286-4526-90c4-b7bebdf3b8b0.jpg)
 
-First of all apologies since the code might be inefficient, left half way somewhere and not upto date cuz i was lazy. Im a civil engineer and this was the project from my high school times so there are many places you can make improvements.
+First of all apologies since the code might be inefficient, left half way somewhere and not upto date cuz i was lazy. Im not a professional coder i code only for fun and this was the project from my high school times so there are many places you can make improvements.
 
-**About the project :**
+### About the project :
 
 Its a web app that is like an organiser for your videos on your local disk. Do you hate going to VLC? hate leaving your browser? or hate being able to play only one song/media at a time? Offline youtube was made for these.
 
@@ -20,19 +22,17 @@ but its not bothersome you wont notice
 
 -There are a lot of features and also lot missing features. It can read subtitles as well in vtt format, add your subtitles in the "youtube/files/subtitles/"
 
-***HOW to Setup :***
+## HOW to Setup :
 
--> Copy-paste all the folders (eg, youtube, chatbox, comment section) in your htdocs of your localserver.
+1. Copy-paste all the folders (eg, youtube, chatbox, comment section) in your htdocs of your localserver.
 
--> First add the userdata database then youtube database to your sql (simply copy paste it in sql section of your phpmyadmin)
+2. First add the userdata database then youtube database to your sql (simply copy paste it in sql section of your phpmyadmin)
 
--> Add an account your sql/phpmyadmin with : {username = "admin"; password = "pwdpwd"; Priviledges : All (optional)}
+3. Add an account your sql/phpmyadmin with : {username = "admin"; password = "pwdpwd"; Priviledges : All (optional)}
 
 Its a personal project so i did not created a setup page to do all of this automatically, if someone requests i will make one 
 
--> Note that if you allow hearing requests (idk what it was called im a civil engineer lol) in your xampp you can access this app from within your LAN as well from any device. But i have written this project such that its easy on my HDD space not cpu or Ram, so its a bit inefficient if you want to use it in a LAN or through tunneling. I have a different personal project for those use.
-
--> Now You Must allow localfile access in your browser using : 
+4. Now You Must allow localfile access in your browser using : 
 
 
 (Alternative method at bottom is better, the first method is the official way i think, but i use the bottom one.
@@ -40,6 +40,8 @@ Its a personal project so i did not created a setup page to do all of this autom
 Its best for firefox, use the above one if you cant use bottom one)
 
 --------------------------------------------------
+
+### Normal method
 
 // == FILE URI LINK POLICY (checkloaduri) ==
 
@@ -55,7 +57,7 @@ user_pref("capability.policy.filelinks.sites", "http://localhost/YouTube/play.ph
 
 
 --------------------------------------------------
-//Alternative (better, works well in firefox)//
+### Alternative Method (better, works well in firefox)
 
 use "about:config" in URL to go to advanced config
 
@@ -70,7 +72,7 @@ capability.policy.filelinks.sites = "http://localhost/YouTube/play.php http://lo
 
 --------------------------------------------------
 
-**HOT KEYs** (the video must be focussed to use the ones below)
+## HOT KEYs (the video must be focussed to use the ones below)
 
 5 (from Numpad) :  focus video  (use this if video isnt focussed and you too lazy to move mouse)
 
@@ -80,13 +82,13 @@ Space: Pause, F: fullscreen, T : theatre mode, C: captions/subtitles
 
 0 (Numpad) = reverse (works in in-queue mode), 
 
-. (decimal,from numpad): deletes history
+. (decimal,from numpad): deletes play history
 
 --------------------------------------------------
 
-**Important instructions:**
+## Important instructions:
 
--> upload.php and in redirect.php is used to upload data upload.php gives data to redirect.php on work a to upload to database, Use "other" category on upload.php to test the app is working well.
+-> upload.php and in redirect.php is used to upload data upload.php gives data to redirect.php on "work a" to upload to database, Use "other" category on upload.php to test if the app is working well.
 
 Change Video songs category, add your own categories by editing the upload.php acc to where you store your videos/songs.
 
