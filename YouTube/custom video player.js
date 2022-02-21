@@ -33,8 +33,11 @@ function cumstomvideoplayerupdatottt(){
         //delete history 'del'
         if(e.code == "NumpadDecimal"){
             e.preventDefault();
-            prev_id_count=0;
-            curr_vid_id = prev_id;
+            if(prev_id_count>0){
+                prev_id_count=0;
+                curr_vid_id = prev_id;
+            }
+            prev_id_count = 0;
             curr_play_index = new_playlist_all_array[0].indexOf(`${curr_vid_id}`);
             make_icon("delete-history");
         }

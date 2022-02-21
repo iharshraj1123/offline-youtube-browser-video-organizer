@@ -44,23 +44,21 @@ if(!$usr_pic){
         </div>
         <a class="logo-link" href="/YouTube/index.php"> 
            <img class="yt-header-logo" src="./resources/icons/youtube header hd 4.png">
+           <img class="yt-header-logo-two" src="./resources/icons/yt logo hd 2.png">
         </a>
-        <form class="search-bar" autocomplete="off">
+        <div class="search-bar" autocomplete="off">
               <div class="searchbar-div">
-                <input id="search-bar" onkeydown="search_keydown()" class="search-input" type="search" placeholder="Search"/>
+                <input id="search-bar" onkeydown="search_keydown()" class="search-input" type="search" placeholder="Search"/><span onclick="clear_search()" class="clear-search hideme">&times;</span>
                 <div class="search-results hideme">
                     <ul onmouseover="not_over_search_div=false" onmouseout="not_over_search_div=true" class="search-results-ul">
-                        <!--<li class="search-result-li">one</li>
-                        <li class="search-result-li">teo</li>
-                        <li class="search-result-li">one</li>-->
                     </ul>
                 </div>
               </div>
-            <button onmouseover="ismouseoverheadicon = true" onmouseout="ismouseoverheadicon = false" type="submit" class="yt-search tooltip"><span class="tooltiptext">Search</span>
+            <button onmouseover="ismouseoverheadicon = true" onmouseout="ismouseoverheadicon = false" onclick="yt_search()" class="yt-search tooltip"><span class="tooltiptext">Search</span>
                 <img class="search-magni" src="./resources/icons/search_white_24dp.svg">
             </button>
-            <div onmouseover="ismouseoverheadicon = true" onmouseout="ismouseoverheadicon = false" class="tooltip"><span class="tooltiptext">Voice Search</span><img aria-label="voice search" class="search-mic" src="./resources/icons/mic_white_24dp.svg"></div>
-        </form>
+            <div onmouseover="ismouseoverheadicon = true" onmouseout="ismouseoverheadicon = false" class="tooltip voice-search-div"><span class="tooltiptext">Voice Search</span><img aria-label="voice search" class="search-mic" src="./resources/icons/mic_white_24dp.svg"></div>
+        </div>
 
         <div onmouseover="ismouseoverheadicon = true" onmouseout="ismouseoverheadicon = false" class="menu-icons">
             <a class="tooltip" href="upload.php" target="_blank"><span class="create-tip tooltiptext">Create</span>
@@ -69,7 +67,7 @@ if(!$usr_pic){
             <a class="tooltip" href="#"><span class="create-tip tooltiptext">Random</span>
                 <img onclick="rando_songo()" src="./resources/icons/apps_white_24dp.svg"/>
             </a>
-            <a class="tooltip" href="#"><span class="tooltiptext">Notifications</span>
+            <a class="tooltip notification-linkoa" href="#"><span class="tooltiptext">Notifications</span>
                 <img src="./resources/icons/notifications_white_24dp.svg"/>
             </a>
             <a class="tooltip" href="/comment%20section/Userdatabase/me.php" target="_blank"><span class="create-tip tooltiptext"><?php echo $usr_name?></span>

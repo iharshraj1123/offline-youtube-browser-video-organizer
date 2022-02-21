@@ -27,6 +27,8 @@ SET time_zone = "+00:00";
 -- Table structure for table `video_metadatas`
 --
 
+CREATE DATABASE youtube;
+
 CREATE TABLE `video_metadatas` (
   `vid_id` int(11) NOT NULL,
   `vid_name` text NOT NULL,

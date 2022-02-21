@@ -38,6 +38,11 @@ vid.addEventListener('ended', function(){
                 new_vid_data_arr= temp_strng.split('?')
                 let temp_src = new_vid_data_arr[3];
                 temp_src = friendly_link(temp_src)
+                if(!window.location.href.includes("http://localhost")){
+                temp_src = temp_src.replace("file:///C:/Users/ihars/Downloads/", "/downloads/");
+                temp_src = temp_src.replace("file:///D:/0-entertainment/", "/entertainment/");
+                temp_src = temp_src.replace("file:///D:/Video songs/", "/videosongs/");
+                temp_src = temp_src.replace("file:///D:/Video%20songs/", "/videosongs/");}
                 document.getElementsByClassName("video-src")[0].src = temp_src;
                 vid.load();
                 change_all_data();
@@ -152,7 +157,11 @@ function plsplaynextovid(){
                 new_vid_data_arr= temp_strng.split('?')
                 let temp_src = new_vid_data_arr[3];
                 temp_src =  friendly_link(temp_src)
-
+                if(!window.location.href.includes("http://localhost")){
+                temp_src = temp_src.replace("file:///C:/Users/ihars/Downloads/", "/downloads/");
+                temp_src = temp_src.replace("file:///D:/0-entertainment/", "/entertainment/");
+                temp_src = temp_src.replace("file:///D:/Video songs/", "/videosongs/");
+                temp_src = temp_src.replace("file:///D:/Video%20songs/", "/videosongs/");}
                 document.getElementsByClassName("video-src")[0].src = temp_src;
                 vid.load();
                 change_all_data();
@@ -180,6 +189,11 @@ function plsplayprevovid(){
         new_vid_data_arr= temp_strng.split('?')
         let temp_src = new_vid_data_arr[3];
         temp_src = friendly_link(temp_src)
+        if(!window.location.href.includes("http://localhost")){
+        temp_src = temp_src.replace("file:///C:/Users/ihars/Downloads/", "/downloads/");
+        temp_src = temp_src.replace("file:///D:/0-entertainment/", "/entertainment/");
+        temp_src = temp_src.replace("file:///D:/Video songs/", "/videosongs/");
+        temp_src = temp_src.replace("file:///D:/Video%20songs/", "/videosongs/");}
         document.getElementsByClassName("video-src")[0].src = temp_src;
         vid.load();
         change_all_data();

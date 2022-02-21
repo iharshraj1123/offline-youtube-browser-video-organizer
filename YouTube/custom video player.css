@@ -269,3 +269,24 @@ video::cue{
     cursor: none!important;
     pointer-events: all;
 }
+
+
+@media(max-width: 850px) {
+    .prev-skip-icnos{
+        margin-right: 8px;
+    }
+    .next-skip-icnos{
+        margin-left: 8px;
+    }
+    .volumes-videopl-icnos{
+        margin-left: 8px;
+    }
+    .videosos-timemetro{
+        font-size: 13px;
+        padding-top: 8px;
+    }
+    .settingsoovideos{
+        height: 22px;
+        margin-right: 7px;
+    }
+}

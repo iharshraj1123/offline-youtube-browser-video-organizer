@@ -168,7 +168,7 @@ function cut_mp4_name($vid_name) {
                     <article class='video-cointainer'>           
                     <!----thumbnail---->
                         <a href='play.php?play_vid=$randamono' target='_self' class='thumbnail thumbnail$randamono' data-duration='$durationonosn'>
-                       <video data-src='$temp_vid_data_arr[3]#t=6' disablePictureInPicture muted class='video-thumbnail-all video-thumbnail video-thumbnail$randamono' preload='metadata' controlsList='nodownload'>
+                       <video data-src='$temp_vid_data_arr[3]#t=6' disablePictureInPicture muted class='video-thumbnail-all video-thumbnail video-thumbnail$randamono' controlsList='nodownload'>
                         </video>
                     </a>
                     <!----below thumbnail---->
@@ -257,7 +257,7 @@ function cut_mp4_name($vid_name) {
                
                     <!----thumbnail---->
                         <a href='play.php?play_vid=$randamono' target='_self' class='thumbnail' data-duration='$durationonosn'>
-                       <video muted data-src='$temp_vid_data_arr[3]#t=6' disablePictureInPicture class='video-thumbnail-all video-thumbnail video-thumbnail$randamono' preload='metadata' controlsList='nodownload'>
+                       <video muted data-src='$temp_vid_data_arr[3]#t=6' disablePictureInPicture class='video-thumbnail-all video-thumbnail video-thumbnail$randamono' controlsList='nodownload'>
                         </video>
                     </a>
                     <!----below thumbnail---->

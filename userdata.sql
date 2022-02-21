@@ -27,6 +27,8 @@ SET time_zone = "+00:00";
 -- Table structure for table `chat_store`
 --
 
+CREATE DATABASE userdata;
+
 CREATE TABLE `chat_store` (
   `chat_id` int(11) NOT NULL,
   `type` tinytext NOT NULL DEFAULT 'user',

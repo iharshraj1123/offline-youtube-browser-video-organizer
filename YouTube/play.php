@@ -170,7 +170,7 @@ function cut_mp4_name($vid_name) {
             </div>
         </div>
     <!---------VIDEO TAG--------->
-    <video preload="auto" id="playing-video" onfocus="focusin()" class="video-playing custom-videopls" autoplay>
+    <video id="playing-video" onfocus="focusin()" class="video-playing custom-videopls" autoplay>
         <source class="video-src" src="<?php echo"$vid_link"?>">
         <track class="temposos-trackos <?php echo"$ifsutitlososo"?>" src="<?php echo"$vid_subtitles"?>" kind="subtitles" srclang="en" label="English">
     </video>
@@ -246,7 +246,7 @@ function cut_mp4_name($vid_name) {
 
         </div>
         
-
+    <div class="debuger-div-bot"></div>
     </div>
     
     <script src="./my JS library.js"></script>

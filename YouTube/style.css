@@ -206,6 +206,9 @@ div.Menu {
     cursor: pointer;
     margin-top: 5px;
 }
+.yt-header-logo-two{
+    display: none;
+}
 
 .search-bar{
     display: flex;
@@ -259,6 +262,19 @@ div.Menu {
     font-weight: 500;
     font-size: 500;
     color:rgb(224, 224, 219);
+    padding-right: 30px;
+}
+
+.clear-search{
+    position: absolute;
+    top: 0;
+    right: 9px;
+    font-size: 25px;
+    opacity: 0.6;
+    cursor: pointer;
+}
+.clear-search:hover{
+    opacity: 0.9;
 }
 
 .yt-search{
@@ -806,4 +822,72 @@ div.Menu {
 
 .com-textarea{
     
+}
+
+
+@media(max-width: 850px) {
+    .search-bar{
+        margin: 0 6rem 0 0rem;
+        margin-left: 10%;
+    }
+}
+
+@media(max-width: 650px) {
+    .search-bar{
+        margin-right: -2px;
+    }
+    .search-input{
+        display: none;
+    }
+    .voice-search-div{
+        display: none;
+    }
+    .yt-search{
+        background: none;
+        border: 0;
+        padding: 0 8px;
+    }
+    .search-magni{
+        opacity: 0.6;
+        width: 23px;
+    }
+    .notification-linkoa img{
+        display: none;
+    }
+    .menu-icons{
+        display: inline-block;
+        margin-right: 0 ;
+    }
+    .tooltiptext{
+        display:none; 
+    }
+    .showinput{
+        display:revert;
+    }
+    .search-bar-two{
+        margin-right: -120px;
+        margin-left: 5%;
+    }
+    .searchbar-div{
+        width: 57%;
+    }
+    .yt-header-logo{
+        display: none;
+    }
+    .yt-header-logo-two{
+        display: revert;
+        width: 35px;
+    }
+    .logo-link{
+        margin-left: 15px;
+        margin-top: 5px;
+    }
+    .below-play-video{
+        flex-direction: column;
+        width: 100%;
+        overflow: hidden;
+    }
+    .play-video-left{
+        width: 100%;
+    }
 }
