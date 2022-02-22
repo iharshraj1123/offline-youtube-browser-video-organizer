@@ -26,7 +26,7 @@ but its not bothersome you wont notice
 
 1. Copy-paste all the folders (eg, youtube, chatbox, comment section) in your htdocs of your localserver.
 
-2. First add the userdata database then youtube database to your sql (simply copy paste it in sql section of your phpmyadmin)
+2. First add the "userdata" database then "youtube" database from the files provided to your sql (simply copy paste it in sql section of your phpmyadmin)
 
 3. Add an account your sql/phpmyadmin with : {username = "admin"; password = "pwdpwd"; Priviledges : All (optional)}
 
