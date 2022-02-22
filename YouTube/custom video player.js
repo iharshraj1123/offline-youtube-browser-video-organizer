@@ -205,6 +205,11 @@ function fullscreno_clickod(x){
          document.getElementsByClassName("fullscrnvideovid")[x].classList.add("hidemepls")
          document.getElementsByClassName("extfullscrnvideovid")[x].classList.remove("hidemepls")
          document.getElementsByClassName("video-summoner-divttte3")[0].classList.add("video-summoner-divttte3-fullscreen")
+         setTimeout(function(){removothecontroloboxo(x)},200)
+         setTimeout(function(){removothecontroloboxo(x)},250)
+         setTimeout(function(){removothecontroloboxo(x)},300)
+         setTimeout(function(){removothecontroloboxo(x)},500)
+         setTimeout(function(){removothecontroloboxo(x)},600)
         }
     else{ 
         tempos_videososos.classList.remove("customovideo-fullscreen")
