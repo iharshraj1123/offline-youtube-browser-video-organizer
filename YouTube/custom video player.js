@@ -194,9 +194,10 @@ function previoskip_clickod(x){
 
 function volume_clickod(x){
     let tempos_videososos = document.getElementsByClassName("custom-videopls")[x]
-    if(tempos_videososos.muted){
+    if(tempos_videososos.muted || tempos_videososos.volume == 0){
         tempos_videososos.muted = false;
         if(tempos_videososos.volume > 0.4) switchvolicon("highvol",x)
+        if(tempos_videososos.volume == 0){ switchvolicon("lowvol",x);  tempos_videososos.volume = 0.2;}
         else switchvolicon("lowvol",x)
     }
     else{
