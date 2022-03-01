@@ -52,7 +52,7 @@ if($result->num_rows > 0) {
         $vid_uploader_id=$row["uploader_id"];
         $vid_uploader_img=$row["uploader_img"];
         $vid_subtitles = $row["subtitles"];
-        if($vid_subtitles == "null") $ifsutitlososo = "nosubtitloso";
+        if($vid_subtitles == "null"|| $vid_subtitles == ""||$vid_subtitles == " "||$vid_subtitles == "files/subtitles/.vtt") $ifsutitlososo = "nosubtitloso";
     }
 }
 else{}
@@ -163,6 +163,7 @@ function cut_mp4_name($vid_name) {
                         <img src="./resources/custom video player/icons/subtitles_white_24dp.svg" onclick="turnonsubstitleso(0)" class="play-pause-buttonos-video subiitilesooovideos">
                         <div class="subiitilesooovideos-innerdiv"></div>
                     </div>
+                    <img src="./resources/custom video player/icons/fit_screen_white_24dp.svg" onclick="theatremod_clickod()" class="play-pause-buttonos-video theatremodevid">
                     <img src="./resources/custom video player/icons/settings_white_24dp.svg" onclick="settingsoo_clickod(0)" class="play-pause-buttonos-video settingsoovideos">
                     <img src="./resources/custom video player/icons/fullscreen_white_24dp.svg" onclick="fullscreno_clickod(0)" class="play-pause-buttonos-video fullscrnvideovid fullscreenvideos">
                     <img src="./resources/custom video player/icons/fullscreen_exit_white_24dp.svg" onclick="fullscreno_clickod(0)" class="play-pause-buttonos-video extfullscrnvideovid fullscreenvideos hidemepls">

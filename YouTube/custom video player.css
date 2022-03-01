@@ -229,6 +229,11 @@ video::cue{
     color: #eee6e6;
 }
 
+.theatremodevid{
+    height: 35px;
+    margin-right: 20px;
+}
+
 .fullscreenvideos{
     height:34px;
 }
@@ -294,5 +299,8 @@ video::cue{
     }
     .vidoevolumo-meter-outer-div{
         display: none !important;
+    }
+    .theatremodevid{
+        display: none;
     }
 }

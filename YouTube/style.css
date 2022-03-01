@@ -890,4 +890,10 @@ div.Menu {
     .play-video-left{
         width: 100%;
     }
+    .play-video-left {
+        width: 94%;
+    }
+    .like-dislike-div{
+        display: none;
+    }
 }

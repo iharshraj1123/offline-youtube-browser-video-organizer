@@ -36,6 +36,7 @@ function cumstomvideoplayerupdatottt(){
             if(prev_id_count>0){
                 prev_id_count=0;
                 curr_vid_id = prev_id;
+                play_history = [];
             }
             prev_id_count = 0;
             curr_play_index = new_playlist_all_array[0].indexOf(`${curr_vid_id}`);
@@ -133,6 +134,14 @@ function cumstomvideoplayerupdatottt(){
     })
 
     document.getElementsByClassName("previewcarrier-videosos")[0].getElementsByTagName("source")[0].src = tempos_videososos.getElementsByTagName("source")[0].src;
+    let temp_src=document.getElementsByClassName("previewcarrier-videosos")[0].getElementsByTagName("source")[0].src;
+    if(!window.location.href.includes("http://localhost")){
+        temp_src = temp_src.replace("file:///C:/Users/ihars/Downloads/", "/downloads/");
+        temp_src = temp_src.replace("file:///D:/0-entertainment/", "/entertainment/");
+        temp_src = temp_src.replace("file:///D:/Video songs/", "/videosongs/");
+        temp_src = temp_src.replace("file:///D:/Video%20songs/", "/videosongs/");
+    }
+    document.getElementsByClassName("previewcarrier-videosos")[0].getElementsByTagName("source")[0].src = temp_src
     document.getElementsByClassName("previewcarrier-videosos")[0].load();
 }
 
@@ -196,6 +205,10 @@ function volume_clickod(x){
     }
 }
 
+function theatremod_clickod(){
+    transition()
+}
+
 function fullscreno_clickod(x){
     let tempos_videososos = document.getElementsByClassName("custom-videopls")[x]
     if (!document.fullscreenElement){
@@ -205,6 +218,17 @@ function fullscreno_clickod(x){
          document.getElementsByClassName("fullscrnvideovid")[x].classList.add("hidemepls")
          document.getElementsByClassName("extfullscrnvideovid")[x].classList.remove("hidemepls")
          document.getElementsByClassName("video-summoner-divttte3")[0].classList.add("video-summoner-divttte3-fullscreen")
+         setTimeout(function(){
+            window.screen.orientation.lock("landscape")
+            .then( () => {
+               // document.getElementsByClassName("debuger-div-bot")[0].innerHTML = `done`
+              }
+            )
+            .catch ( error => {
+              //  document.getElementsByClassName("debuger-div-bot")[0].innerHTML = `error`
+
+            });
+         },1000)
          setTimeout(function(){removothecontroloboxo(x)},200)
          setTimeout(function(){removothecontroloboxo(x)},250)
          setTimeout(function(){removothecontroloboxo(x)},300)
@@ -213,6 +237,7 @@ function fullscreno_clickod(x){
         }
     else{ 
         tempos_videososos.classList.remove("customovideo-fullscreen")
+        screen.orientation.unlock()
         setTimeout(function(){document.getElementsByClassName("video-summoner-divttt")[0].classList.remove("nocursoronvidododo")},200)
         document.exitFullscreen()
         let diciidodo = document.getElementsByClassName("video-summoner-divttte")[x];
@@ -223,6 +248,19 @@ function fullscreno_clickod(x){
         document.getElementsByClassName("extfullscrnvideovid")[x].classList.add("hidemepls")
         document.getElementsByClassName("video-summoner-divttte3")[0].classList.remove("video-summoner-divttte3-fullscreen")
 
+    }
+}
+
+function transition(){
+    if(!vid.classList.contains("heightcinema")){
+        vid.classList.add("heightcinema");
+        document.getElementsByClassName("html-tag")[0].classList.add("scroll-inv")
+        document.getElementsByClassName("outer-header")[0].classList.add("hideme")
+    }
+    else{
+        vid.classList.remove("heightcinema");
+        document.getElementsByClassName("html-tag")[0].classList.remove("scroll-inv")
+        document.getElementsByClassName("outer-header")[0].classList.remove("hideme")
     }
 }
 

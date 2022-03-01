@@ -117,16 +117,7 @@ if(vid_focussed){
         }
          //for cinemamode 't'
          if(e.keyCode == 84) {
-            if(!vid.classList.contains("heightcinema")){
-                vid.classList.add("heightcinema");
-                document.getElementsByClassName("html-tag")[0].classList.add("scroll-inv")
-                document.getElementsByClassName("outer-header")[0].classList.add("hideme")
-            }
-            else{
-                vid.classList.remove("heightcinema");
-                document.getElementsByClassName("html-tag")[0].classList.remove("scroll-inv")
-                document.getElementsByClassName("outer-header")[0].classList.remove("hideme")
-            }
+            transition()
         }
 
 
@@ -139,6 +130,8 @@ else{
     }
 }
 });
+
+
 
 function plsplaynextovid(){
     prev_id_count =0;
@@ -300,7 +293,7 @@ function change_all_data(){
     add_duration(new_vid_data_arr[1],viddurna);
    
     },1000)}
-    if(new_vid_data_arr[16] != "null"){
+    if(new_vid_data_arr[16] != "null" && new_vid_data_arr[16] != "" && new_vid_data_arr[16] != "files/subtitles/.vtt" && new_vid_data_arr[16] != " "){
         document.getElementsByClassName("temposos-trackos")[0].src = friendly_link(new_vid_data_arr[16]);
         document.getElementsByClassName("temposos-trackos")[0].classList.remove("nosubtitloso")
         changednewvideoso = true;
