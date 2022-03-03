@@ -40,7 +40,7 @@ but its not bothersome you wont notice
 
 2. First add the "userdata" database then "youtube" database from the files provided to your sql (simply copy paste it in sql section of your phpmyadmin)
 
-3. Add an account to Mysql/phpmyadmin with : {username = "admin"; password = "pwdpwd"; Priviledges : All (optional)}
+3. Add an account to Mysql/phpmyadmin : {username = "admin"; password = "pwdpwd"; Priviledges : All (optional)}
 
 Its a personal project so i did not created a setup page to do all of this automatically, if someone requests i will make one 
 
