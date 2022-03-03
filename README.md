@@ -26,6 +26,14 @@ but its not bothersome you wont notice
 
 -There are a lot of features and also lot missing features. It can read subtitles as well in vtt format, add your subtitles in the "youtube/files/subtitles/"
 
+### About the project :
+
+- Xampp with of php 7 or above. You can do it other ways too but this is the simplest way.
+
+- Browser with local file access turned on (discussed later)
+
+- Patience. I was lazy so I didnt make a setup page where a lot of things could have been automated but it will take effort to make that.
+
 ## HOW to Setup :
 
 1. Copy-paste all the folders (eg, youtube, chatbox, comment section) in your htdocs of your localserver.
