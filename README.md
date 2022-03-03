@@ -26,7 +26,7 @@ but its not bothersome you wont notice
 
 -There are a lot of features and also lot missing features. It can read subtitles as well in vtt format, add your subtitles in the "youtube/files/subtitles/"
 
-### About the project :
+## Requirements :
 
 - Xampp with of php 7 or above. You can do it other ways too but this is the simplest way.
 
