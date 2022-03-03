@@ -30,7 +30,7 @@ but its not bothersome you wont notice
 
 - Xampp with of php 7 or above. You can do it other ways too but this is the simplest way.
 
-- Browser with local file access turned on (discussed later)
+- Browser with local file access turned on (discussed below)
 
 - Patience. I was lazy so I didnt make a setup page where a lot of things could have been automated but it will take effort to make that.
 
