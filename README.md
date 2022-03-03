@@ -36,7 +36,7 @@ but its not bothersome you wont notice
 
 ## HOW to Setup :
 
-1. Copy-paste all the folders (eg, youtube, chatbox, comment section) in your htdocs of your localserver.
+1. Copy-paste all the folders (eg, youtube, chatbox, comment section) in your htdocs.
 
 2. First add the "userdata" database then "youtube" database from the files provided to your sql (simply copy paste it in sql section of your phpmyadmin)
 
