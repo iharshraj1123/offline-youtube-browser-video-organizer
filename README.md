@@ -12,7 +12,7 @@ First of all apologies since the code might be inefficient, left half way somewh
 
 ### About the project :
 
-Its a web app it runs on php (apache) its like an organiser for your videos on your local disk. Do you hate going to VLC? hate leaving your browser? or hate being able to play only one song/media at a time? Offline youtube was made for these.
+Its a web app it runs on php & mysql its like an organiser for your videos on your local disk. Do you hate going to VLC? hate leaving your browser? or hate being able to play only one song/media at a time? Offline youtube was made for these.
 
 -very light weight on your disk space: It only stores local address of your videos in databases, it doesnt store your videos to your htdocs just where they are located in your videos. This saves a lot of space.
 
