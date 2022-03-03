@@ -42,8 +42,6 @@ but its not bothersome you wont notice
 
 3. Add an account to Mysql/phpmyadmin : {username = "admin"; password = "pwdpwd"; Priviledges : All (optional)}
 
-Its a personal project so i did not created a setup page to do all of this automatically, if someone requests i will make one 
-
 4. Now You Must allow localfile access in your browser using : 
 
 
