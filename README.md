@@ -100,6 +100,6 @@ Space: Pause, F: fullscreen, T : theatre mode, C: captions/subtitles
 
 - upload.php and redirect.php is used to upload data, upload.php gives data to redirect.php on "work a" to upload to database, Use "other" category on upload.php to test if the app is working well.
 
-- Change Video songs category, add your own categories by editing the upload.php acc to where you store your videos/songs.
+- Change Video songs category, add your own categories by editing the upload.php acc to where you store your videos/songs. eg "video songs" in my case directs to "D:/video songs/"
 
 - You can upload multiple videos at ones. Note only Mp4, webm & mp3 are supported. 
