@@ -1,14 +1,14 @@
 # Offline YouTube - Video organizer
 
-![play page](https://user-images.githubusercontent.com/33609172/154852861-5c026ea2-8436-447d-aa95-c4d3cfae514d.jpg)
-
 ![home](https://user-images.githubusercontent.com/33609172/154853030-9ae920eb-3286-4526-90c4-b7bebdf3b8b0.jpg)
+
+![play page](https://user-images.githubusercontent.com/33609172/154852861-5c026ea2-8436-447d-aa95-c4d3cfae514d.jpg)
 
 ![image](https://user-images.githubusercontent.com/33609172/156556331-19c255af-42c7-4dd2-a9e5-3d681e6b50d2.png)
 
 ![image](https://user-images.githubusercontent.com/33609172/156562151-12132a8c-ee8b-40d4-bf2e-dd391d0803f9.png)
 
-First of all apologies since the code might be inefficient, left half way somewhere and not upto date cuz i was lazy. Im not a professional coder i code only for fun and this was the project from my high school times so there are many places you can make improvements.
+First of all apologies since the code might be inefficient, left half way somewhere and not upto date cuz i was lazy. Im not a professional coder and this was the project from my high school times for my personal use so there are many places you can make improvements.
 
 ### About the project :
 
