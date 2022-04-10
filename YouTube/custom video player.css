@@ -250,7 +250,7 @@ video::cue{
 .subiitilesooovideos{
     margin: auto;
     margin-right: 20px;
-    height: 33px;
+    height: 31px;
     position: relative;
     top: 2px;
 }
@@ -260,7 +260,7 @@ video::cue{
     background-color: red;
     width: 0px;
     bottom: 0;
-    left: 2px;
+    left: 1px;
     transition: width 0.4s;
     margin: auto;
 }

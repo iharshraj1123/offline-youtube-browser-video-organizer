@@ -94,7 +94,6 @@ if(vid_focussed){
     if(e.keyCode == 78) {
         document.getElementsByClassName("prev-skip-icnos")[0].classList.remove("hidemepls")
             plsplaynextovid()
-
     }
     
     //for fullscreen 'f'
@@ -195,7 +194,7 @@ function plsplayprevovid(){
 
 let curr_play_index;
 function next_playlist_song(){
-    if(curr_vid_id == last_vid_id){
+    if(curr_vid_id == last_vid_id && !oppositeday){
         curr_play_index = ConstrainedRan(0,total_vids-1);
         curr_vid_id =  new_playlist_all_array[0][curr_play_index];
     }

@@ -217,6 +217,7 @@ function fullscreno_clickod(x){
          outer_vid.requestFullscreen();
          tempos_videososos.classList.add("customovideo-fullscreen")
          document.getElementsByClassName("fullscrnvideovid")[x].classList.add("hidemepls")
+         document.getElementsByClassName("theatremodevid")[x].classList.add("hidemepls")
          document.getElementsByClassName("extfullscrnvideovid")[x].classList.remove("hidemepls")
          document.getElementsByClassName("video-summoner-divttte3")[0].classList.add("video-summoner-divttte3-fullscreen")
          setTimeout(function(){
@@ -245,6 +246,7 @@ function fullscreno_clickod(x){
         let diciidodotwo = document.getElementsByClassName("video-summoner-controlboxo")[x];
         diciidodo.style.visibility="visible"
         diciidodotwo.style.visibility="visible" 
+        document.getElementsByClassName("theatremodevid")[x].classList.remove("hidemepls")
         document.getElementsByClassName("fullscrnvideovid")[x].classList.remove("hidemepls")
         document.getElementsByClassName("extfullscrnvideovid")[x].classList.add("hidemepls")
         document.getElementsByClassName("video-summoner-divttte3")[0].classList.remove("video-summoner-divttte3-fullscreen")
