@@ -448,7 +448,7 @@ h1 {
 .com-texto {
     position: relative;
     overflow:auto;
-    bottom: 35px;
+    bottom: 30px;
     left: 41px;
     color: var(--com-main-color) ;  /*-------VARIABLE HERE ----------*/
     font-family: Roboto ,sans-serif;
@@ -456,7 +456,7 @@ h1 {
     max-width: 1100px;
     max-height: 500px;
     margin-left:20px;
-
+    width: 90%;
 }
 
 .com-texto-p{
@@ -828,7 +828,6 @@ h1 {
         width: 80%;
         max-height: 220px;
         overflow-x : hidden;
-
     }
 
     .com-code{
