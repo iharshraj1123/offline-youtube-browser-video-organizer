@@ -7,7 +7,7 @@ var mouse_over_thumbnail=0;
 let total_vids_on_page = document.getElementsByClassName('video-thumbnail-all').length;
 let recent_offsets = 0;
 
-window.onload = function(){
+window.addEventListener("load",function(){
     if(current_page !='play'){
      window.scrollTo(0, 380);
      let new_ip = document.getElementById("ip-address").textContent
@@ -46,7 +46,7 @@ window.onload = function(){
         video_desc_pre.innerHTML = new_desc(video_desc_pre.innerHTML)
 
     }
-}
+})
 
 function ready_the_vids(){
     total_vids_on_page = document.getElementsByClassName('video-thumbnail-all').length
