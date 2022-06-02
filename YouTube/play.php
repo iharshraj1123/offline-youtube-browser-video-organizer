@@ -33,6 +33,7 @@ $vid_uploader_id;
 $vid_uploader_name;
 $ifsutitlososo="";
 $vid_subtitles="";
+$vid_subtitles_raw ="";
 
 if($result->num_rows > 0) {
     while($row = $result->fetch_assoc()) {
@@ -48,12 +49,18 @@ if($result->num_rows > 0) {
         $vid_desc = $row["description"];
         $vid_comments = $row["comments"];
         $vid_upld_date = $row["upload_date"];
+        $vid_upld_time = $row["upload_time"];
         $vid_uploader_name= $row["uploader_name"];
         $vid_uploader_id=$row["uploader_id"];
         $vid_uploader_img=$row["uploader_img"];
-        $vid_subtitles = $row["subtitles"];
-        if($vid_subtitles == "null"|| $vid_subtitles == ""||$vid_subtitles == " "||$vid_subtitles == "files/subtitles/.vtt") $ifsutitlososo = "nosubtitloso";
+        $vid_subtitles_raw = $row["subtitles"];
+        $vid_subtitles = json_decode($row["subtitles"]);
+        if($vid_subtitles == "null"|| $vid_subtitles == ""||$vid_subtitles == " "||reset($vid_subtitles->subs->en) == "url1"){$ifsutitlososo = "nosubtitloso";}
     }
+//    1        2       3         4              5             6          7         8         9         10           11            12          13      14          15          16      
+// vid_id, vid_name ,link , uploader_id , uploader_name, uploader_img, likes , dislikes , duration , views  , uploaded_date, uploaded_time ,tags , description, comments, subtitles
+ echo "<script>let first_subs;setTimeout(function(){first_subs = ($vid_subtitles_raw)},100)</script>";
+
 }
 else{}
 
@@ -101,7 +108,6 @@ function cut_mp4_name($vid_name) {
     return $vid_name;
 }
 
-
 ?>
 
 <!DOCTYPE html>
@@ -126,14 +132,20 @@ function cut_mp4_name($vid_name) {
     <div onclick="focusin()" class="video-inner-div" style="z-index:1">
 
     <!---------------Video------------>
-    <div class="video-summoner-divttt" onmousemove="mousemove_move(0)">
+    <style id='subtitle-styleros'></style>
+    <div class="video-summoner-divttt" onmousemove="mousemove_move(0)" onmouseleave="removothecontroloboxo(0)">
+        <!---------VIDEO TAG--------->
+        <video id="playing-video" onfocus="focusin()" class="video-playing custom-videopls" autoplay>
+        <source class="video-src" src="<?php echo"$vid_link"?>">
+        <track class="temposos-trackos <?php echo"$ifsutitlososo"?>" src="<?php echo $vid_subtitles->loc . reset($vid_subtitles->subs)->url ?>" kind="subtitles" srclang="en" label="English">
+    </video>
     <div class="video-summoner-divttte"></div>
     <div class="video-summoner-divttte2" onclick="togglevideoplaypause(0)" ondblclick="fullscreno_clickod(0)"></div>
     <div class="video-summoner-divttte3" onclick="togglevideoplaypause(0)" ondblclick="fullscreno_clickod(0)"></div>
     <div class="show_vid_mode hideme" id="show_vid_mode"></div>
     <div class="show-statistics-videomogoso hidemepls"></div>
         <div class="video-summoner-controlboxo">
-            <div class="video-progressometer-outer-div" onmouseout="previewcarreirehider(0)" onmousemove="previewcarreireshower(0,event)" onclick="setvideoometro(0,event)">
+            <div class="video-progressometer-outer-div" onmouseleave="previewcarreirehider(0)" onmousemove="previewcarreireshower(0,event)" onclick="setvideoometro(0,event)">
                 <div class="video-progressometer-outer">
                 <div class="previewcarrier-divos hidemepls"><video class="previewcarrier-videosos"><source src=""></video><div class="previewcarrier-videosos-currtime"></div></div>
                 <div class="video-progressometer-preview"></div>   
@@ -165,22 +177,49 @@ function cut_mp4_name($vid_name) {
                     </div>
                     <img src="./resources/custom video player/icons/fit_screen_white_24dp.svg" onclick="theatremod_clickod()" class="play-pause-buttonos-video theatremodevid">
                     <img src="./resources/custom video player/icons/settings_white_24dp.svg" onclick="settingsoo_clickod(0)" class="play-pause-buttonos-video settingsoovideos">
-                    <img src="./resources/custom video player/icons/fullscreen_white_24dp.svg" onclick="fullscreno_clickod(0)" class="play-pause-buttonos-video fullscrnvideovid fullscreenvideos">
-                    <img src="./resources/custom video player/icons/fullscreen_exit_white_24dp.svg" onclick="fullscreno_clickod(0)" class="play-pause-buttonos-video extfullscrnvideovid fullscreenvideos hidemepls">
+                    <img src="./resources/custom video player/icons/fullscreen_white_24dp.svg" class="play-pause-buttonos-video fullscrnvideovid fullscreenvideos">
+                    <img src="./resources/custom video player/icons/fullscreen_exit_white_24dp.svg" class="play-pause-buttonos-video extfullscrnvideovid fullscreenvideos hidemepls">
+                    <div onclick="fullscreno_clickod(0)" class="fullscreen-click-divo"></div>
+                </div>
+            </div>
+            <div class="vid-info-div">
+                <div class="settings-menu-title"> <div class="settings-menu-title-one" onclick="document.getElementsByClassName('vid-info-div')[0].classList.remove('show-data-info')"> <img class="settings-icon" src="./resources/custom video player/icons/chevron_left_white_24dp.svg"> &nbsp;&nbsp;&nbsp;&nbsp; Video info </div></div>
+                <div class="vid-info-divers"><div>Length:</div><span class="vid-lengthos"></span></div>
+                <div class="vid-info-divers"><div>Source:</div><span class="vid-sourceos"></span></div>
+                <div class="vid-info-divers"><div>Fromat:</div><span class="vid-farmatos"></span></div>
+                <div class="vid-info-divers"><div>Quality:</div><span class="vid-quality"></span></div>
+                <div class="vid-info-divers"><div>Dimensions (WxH):</div><span class="vid-dimensos"></span></div>
+                <div class="vid-info-divers"><div>Aspect Ratio:</div><span class="vid-asprat"></span></div>
+                <div class="vid-info-divers"><div>Frame Rate:</div><span class="vid-framerateso"></span></div>
+            </div>
+            <div class="settings-div">
+                <div class="settings-maino">
+                    <div class="settings-items" onclick="playback_clickod(0)"><div class="settings-items-divleft"><img src="./resources/custom video player/icons/playback_24dp.svg"> Playback speed</div> <span class="playback-meter">Normal<img class="settings-icon" src="./resources/custom video player/icons/chevron_right_white_24dp.svg"></span></div>
+                    <div class="settings-items" onclick="do_the_vidloop(0)"><div class="settings-items-divleft"><img src="./resources/custom video player/icons/repeat_white_24dp.svg"> Loop</div> <span  class="loopo-meter">OFF</span></div>
+                    <div class="settings-items"><div class="settings-items-divleft"><img src="./resources/custom video player/icons/closed_caption_white_24dp.svg"> Subtitles</div></div>
+                    <div class="settings-items" onclick="download_clickok(0)"><div class="settings-items-divleft"><img src="./resources/custom video player/icons/download_white_24dp.svg"> Download<a class='hidemepls custom-vidoe-downloader' download></a></div></div>
+                    <div class="settings-items" onclick="give_video_infop(0)"><div class="settings-items-divleft"><img src="./resources/custom video player/icons/info_white_24dp.svg"> Video info</div></div>
+                </div>
+                <div class="settings-playback-menu">
+                    <div class="settings-menu-title"> <div class="settings-menu-title-one" onclick="backtomainset(0)"> <img class="settings-icon" src="./resources/custom video player/icons/chevron_left_white_24dp.svg"> &nbsp;&nbsp;&nbsp;&nbsp; Playback Speed </div></div>
+                    <div class="settings-items" onclick="vid_playbacko(0,0.25)">0.25</div>
+                    <div class="settings-items" onclick="vid_playbacko(0,0.5)">0.5</div>
+                    <div class="settings-items" onclick="vid_playbacko(0,0.75)">0.75</div>
+                    <div class="settings-items" onclick="vid_playbacko(0,1)">Normal</div>
+                    <div class="settings-items" onclick="vid_playbacko(0,1.25)">1.25</div>
+                    <div class="settings-items" onclick="vid_playbacko(0,1.5)">1.5</div>
+                    <div class="settings-items" onclick="vid_playbacko(0,1.75)">1.75</div>
+                    <div class="settings-items" onclick="vid_playbacko(0,2)">2</div>
                 </div>
             </div>
         </div>
-    <!---------VIDEO TAG--------->
-    <video id="playing-video" onfocus="focusin()" class="video-playing custom-videopls" autoplay>
-        <source class="video-src" src="<?php echo"$vid_link"?>">
-        <track class="temposos-trackos <?php echo"$ifsutitlososo"?>" src="<?php echo"$vid_subtitles"?>" kind="subtitles" srclang="en" label="English">
-    </video>
+
     </div>
     <?php echo"<script>first_src='$vid_link';</script>"?>
     </div>
     </div>
 
-    <div onmouseover="removothecontroloboxo(0)" class="below-play-video">
+    <div class="below-play-video">
         <div class="play-video-left">
             <section class="video-play-details">
                 <!---------Video Title--------->

@@ -758,6 +758,9 @@ div.Menu {
     width : 100%;
     height: 0;
     background-color:rgb(96, 97, 162);
+    word-wrap: anywhere;
+    white-space: break-spaces;
+    word-break: break-all;
 }
 .change-data-div-active{
     height: auto;

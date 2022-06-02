@@ -1,5 +1,5 @@
 <?php require './files/body parts/starter.php'; ?>
-
+<?php header("Access-Control-Allow-Origin: *");?>
 <?php 
 error_reporting(0);
 $servername = "localhost";
@@ -18,8 +18,8 @@ Next to build after the break :
 3) Playlist
 4) Picture in Picture
 
-// $new_playlist_all_array = all playlist
-//similarly var new_playlist_all_array = all playlist
+// $new_playlist_all_array = all songs
+//similarly var new_playlist_all_array = all songs
 
 //$maxid = max vid_id
 
@@ -116,9 +116,9 @@ function cut_mp4_name($vid_name) {
         <!------------Nav Bar------------>
         <div class="categories">
             <section class="category-section">
-                <button onclick="" class="category-btn active-category">All</button>
+                <button onclick="location.reload()" class="category-btn active-category">All</button>
                 <button onclick="" class="category-btn">Hot</button>
-                <button onclick="recent_sort()" class="category-btn">Recent</button>
+                <button onclick="recent_sort()" class="category-btn recent-btn">Recent</button>
                 <button onclick="" class="category-btn">Video Songs</button>
                 <button onclick="" class="category-btn">Downloads</button>
                 <button onclick="" class="category-btn">Study</button>
@@ -129,8 +129,10 @@ function cut_mp4_name($vid_name) {
 <script>
     window.history.pushState("object or string", "Title", '/YouTube/');
     var ids_for_dur=new Array();
-
 </script>
+
+<!---------SEND IP ADDRESS------------------------->
+    <div class="hideme"><?php $localIP = getHostByName(getHostName());echo 'User local IP Address - <span id="ip-address">'. $localIP . '</span>';?></div>
 <!---------------------------------------------Videoes-------------------------------------------->
 
     <div class="Main-Video-div">
@@ -284,84 +286,6 @@ function cut_mp4_name($vid_name) {
             }
                 
                 ?>
-                
-                <!--
-                <article class="video-cointainer">
-                    <a href="#" class="thumbnail" data-duration="12:30">
-                        <img class="video-thumbnail" src="./resources/icons/default thumbnail.png"/>
-                    </a>
-                    <div class="video-bottom-section">
-                        <a href="#">
-                            <img class="channel-icon" src="./resources/icons/default me.jpg">
-                        </a>
-                        <div class="video-details">
-                            <a href="#" class="video-title">Video Title</a>
-                            <a href="#" class="video-channel-name">Channel Name</a>
-                            <div class="video-metadata">
-                                <span class="video-views">100 views</span>
-                                <span class="video-dot">•</span>
-                                <span class="video-upload-date">1 days ago</span>
-                            </div>
-                        </div>
-                    </div>
-                </article>
-                <article class="video-cointainer">
-                    <a href="#" class="thumbnail" data-duration="12:30">
-                        <img class="video-thumbnail" src="./resources/icons/default thumbnail.png"/>
-                    </a>
-                    <div class="video-bottom-section">
-                        <a href="#">
-                            <img class="channel-icon" src="./resources/icons/default me.jpg">
-                        </a>
-                        <div class="video-details">
-                            <a href="#" class="video-title">Video Title</a>
-                            <a href="#" class="video-channel-name">Channel Name</a>
-                            <div class="video-metadata">
-                                <span class="video-views">100 views</span>
-                                <span class="video-dot">•</span>
-                                <span class="video-upload-date">1 days ago</span>
-                            </div>
-                        </div>
-                    </div>
-                </article>
-                <article class="video-cointainer">
-                    <a href="#" class="thumbnail" data-duration="12:30">
-                        <img class="video-thumbnail" src="./resources/icons/default thumbnail.png"/>
-                    </a>
-                    <div class="video-bottom-section">
-                        <a href="#">
-                            <img class="channel-icon" src="./resources/icons/default me.jpg">
-                        </a>
-                        <div class="video-details">
-                            <a href="#" class="video-title">Video Title</a>
-                            <a href="#" class="video-channel-name">Channel Name</a>
-                            <div class="video-metadata">
-                                <span class="video-views">100 views</span>
-                                <span class="video-dot">•</span>
-                                <span class="video-upload-date">1 days ago</span>
-                            </div>
-                        </div>
-                    </div>
-                </article>
-                <article class="video-cointainer">
-                    <a href="#" class="thumbnail" data-duration="12:30">
-                        <img class="video-thumbnail" src="./resources/icons/default thumbnail.png"/>
-                    </a>
-                    <div class="video-bottom-section">
-                        <a href="#">
-                            <img class="channel-icon" src="./resources/icons/default me.jpg">
-                        </a>
-                        <div class="video-details">
-                            <a href="#" class="video-title">Video Title</a>
-                            <a href="#" class="video-channel-name">Channel Name</a>
-                            <div class="video-metadata">
-                                <span class="video-views">100 views</span>
-                                <span class="video-dot">•</span>
-                                <span class="video-upload-date">1 days ago</span>
-                            </div>
-                        </div>
-                    </div>
-                </article>-->
             </section>
         </div>
         <!------------Videoes END------------>

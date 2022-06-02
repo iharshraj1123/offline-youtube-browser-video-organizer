@@ -127,10 +127,11 @@ document.addEventListener("submit", (e) => {
     xmlhttp.open("POST","redirect.php",true);
     xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xmlhttp.send(`work=a&location1=${location1}&file_no=${file_no}&json_arr=${json_arr}`);
-    setTimeout(function(){
-    if (xmlhttp.readyState==4 && xmlhttp.status==200) {
-    document.getElementById("response-p").innerHTML = xmlhttp.responseText;
-    };},100)
+    xmlhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+            document.getElementById("response-p").innerHTML = xmlhttp.responseText;
+        };
+    }
     
 });
 

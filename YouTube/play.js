@@ -17,6 +17,7 @@ var justHidden = false;
 var vid_desc = document.getElementsByClassName("vid-desc-pre")[0];
 var vid_title = document.getElementsByClassName("vid-title-p")[0];
 let oppositeday = false;
+let customcode = true;
 
 var trackso = document.getElementsByClassName("temposos-trackos")[0];
 
@@ -67,7 +68,55 @@ function play_page(x){
 
     if(!document.getElementsByClassName("temposos-trackos")[0].classList.contains("nosubtitloso")){
         document.getElementsByClassName("temposos-trackos")[0].src = friendly_link(document.getElementsByClassName("temposos-trackos")[0].src)
-        turnonsubstitleso(0);}
+            setTimeout(function(){
+                    if(first_subs.autosubs){ 
+                        turnonsubstitleso2()
+                    }
+                    else{
+                        document.getElementsByClassName("subiitilesooovideos-div")[0].classList.remove("hidemepls")
+                    }
+                },100)
+        ;}
+}
+
+
+function turnonsubstitleso2(){
+    let teracksdivo = document.getElementsByClassName("temposos-trackos")[0]
+    changednewvideoso = false
+    teracksdivo.track.mode="showing";
+    document.getElementsByClassName("subiitilesooovideos")[0].classList.add("opacitiooneo");
+    document.getElementsByClassName("subiitilesooovideos-div")[0].classList.remove("hidemepls")
+    document.getElementsByClassName("subiitilesooovideos-innerdiv")[0].style.width="30px";
+
+    let default_subs = Object.values(first_subs.subs)[0];
+    if(!default_subs.style.noedit){
+        setTimeout(function(){
+            let cueso = document.getElementsByClassName("temposos-trackos")[0].track.cues
+            for(let i=0;i< cueso.length;i++){
+                
+                if(default_subs.style.vdist == "default") cueso[i].line = -2
+                else cueso[i].line = parseInt(default_subs.style.vdist)
+            }
+        }
+        ,300)}
+        let newbg,font_size,text_shadow,font_color,font_family ;
+
+        if(default_subs.style.bg.color == "colorless") newbg = "rgba(0, 0, 0, 0)";
+        else newbg = default_subs.style.bg.color;
+
+        if(default_subs.style.font.color  == null) font_color = "rgb(238, 235, 229)";
+        else font_color = default_subs.style.font.color;
+
+        if(default_subs.style.font.size == "default") font_size = "30px";
+        else font_size = default_subs.style.font.size;
+
+        if(default_subs.style.font.textShadow  == null) text_shadow = "1px 1px 1px #050000";
+        else text_shadow = default_subs.style.font.text_shadow;
+
+        if(default_subs.style.font.family != "default") font_family = default_subs.style.font.family;
+        document.getElementById("subtitle-styleros").innerHTML=`.default-subtitles::cue{background-color:${newbg};color: ${font_color};font-size: ${font_size};text-shadow: ${text_shadow};}`;
+        document.getElementsByClassName("custom-videopls")[0].classList.add("default-subtitles");
+    
 }
 
 function focusin(){
@@ -167,6 +216,7 @@ function plsplayprevovid(){
     xmlhttp.open("POST","redirect.php",true);
     xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     prev_id = play_history[play_history.length-2-prev_id_count];
+    console.log(prev_id)
     if(prev_id == undefined){ 
         if(curr_play_index == undefined) curr_play_index = new_playlist_all_array[0].indexOf(`${curr_vid_id}`);
         if(oppositeday) prev_id = new_playlist_all_array[0][curr_play_index+1+prev_id_count];
@@ -292,12 +342,26 @@ function change_all_data(){
     add_duration(new_vid_data_arr[1],viddurna);
    
     },1000)}
-    if(new_vid_data_arr[16] != "null" && new_vid_data_arr[16] != "" && new_vid_data_arr[16] != "files/subtitles/.vtt" && new_vid_data_arr[16] != " "){
-        document.getElementsByClassName("temposos-trackos")[0].src = friendly_link(new_vid_data_arr[16]);
+
+    if(new_vid_data_arr[16] != "null" && new_vid_data_arr[16] != "" && Object.values(JSON.parse(new_vid_data_arr[16]).subs)[0].url != "url1" && new_vid_data_arr[16] != " "){
+        let temp_subsos = JSON.parse(new_vid_data_arr[16])
+        first_subs = temp_subsos;
+        document.getElementsByClassName("temposos-trackos")[0].src = friendly_link(first_subs.loc + Object.values(first_subs.subs)[0].url);
         document.getElementsByClassName("temposos-trackos")[0].classList.remove("nosubtitloso")
         changednewvideoso = true;
-        turnonsubstitleso(0);
-        console.log(`yes subtitles = ${new_vid_data_arr[16]}`)
+            let sending_id;
+            if(prev_id == 0) sending_id = curr_vid_id
+            else sending_id = prev_id;
+            
+            if(temp_subsos.autosubs) turnonsubstitleso2()
+            else{
+                let teracksdivo = document.getElementsByClassName("temposos-trackos")[0]
+                document.getElementsByClassName("subiitilesooovideos-div")[0].classList.remove("hidemepls")
+                teracksdivo.track.mode="hidden";
+                document.getElementsByClassName("subiitilesooovideos")[0].classList.remove("opacitiooneo");
+                document.getElementsByClassName("subiitilesooovideos-innerdiv")[0].style.width="0px";
+            }
+        console.log(`yes subtitles = ${temp_subsos}`)
     }
     else{
         document.getElementsByClassName("temposos-trackos")[0].classList.add("nosubtitloso")
@@ -310,7 +374,8 @@ function change_all_data(){
 
     document.getElementsByClassName("previewcarrier-videosos")[0].getElementsByTagName("source")[0].src = vid.getElementsByTagName("source")[0].src;
     document.getElementsByClassName("previewcarrier-videosos")[0].load();
-
+    update_vid_infos(0)
+    getframerat(0);
   //  document.getElementsByClassName("pleaserefresh-com")[0].classList.remove("hidemepls")
  //   document.getElementsByClassName("video-play-comments-summoner")[0].innerHTML = "Please Refresh to get new comments" + document.getElementsByClassName("video-play-comments-summoner")[0].innerHTML;
 }
@@ -522,7 +587,30 @@ function edit_captions(){
         if (this.readyState == 4 && this.status == 200) {
             document.getElementsByClassName("change-data-div")[0].innerHTML = xmlhttp.responseText;
             if(document.getElementsByClassName("change-data-div")[0].innerHTML == "" || document.getElementsByClassName("change-data-div")[0].innerHTML == "null" || document.getElementsByClassName("change-data-div")[0].innerHTML == "<br>"){
-                document.getElementsByClassName("change-data-div")[0].innerHTML = "files/subtitles/.vtt"
+                document.getElementsByClassName("change-data-div")[0].innerHTML = `{
+                    "loc": "files/subtitles/",
+                    "subs": {
+                      "en": {
+                        "url": "url1",
+                        "style": {
+                          "noedit": false,
+                          "bg": {
+                            "color": "colorless",
+                            "padding": "default"
+                          },
+                          "font": {
+                            "family": "default",
+                            "style": "default",
+                            "size": "default"
+                          },
+                          "align": "bottom",
+                          "vdist": "default",
+                          "hdist": "default"
+                        }
+                      }
+                    },
+                    "autosubs": true
+                  }`
             }
     };} 
     document.getElementsByClassName("change-data-div")[0].contentEditable = true;
@@ -553,8 +641,7 @@ function save_change_data(){
     }
     else if(curr_viddata_change === "captions"){
         let new_subs = document.getElementsByClassName("change-data-div")[0].textContent;
-        new_subs = readyforparcel(new_subs);
-
+        first_subs = JSON.parse(new_subs)
         let xmlhttp=new XMLHttpRequest();
         xmlhttp.open("POST","./files/body parts/edit captions.php",true);
         xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");

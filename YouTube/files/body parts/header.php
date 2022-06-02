@@ -32,7 +32,7 @@ if(!$usr_pic){
 
 <div id="main"> 
 
-  <header  onmouseover="removothecontroloboxo(0)" class="outer-header">
+  <header class="outer-header">
     <div class="inner-header">
 
        <div class="Menu-holder"  onclick="toggleNav()" >
