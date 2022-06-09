@@ -9,7 +9,7 @@ Dont increase lines in 'Contents' by pressing Enter, simply click to navigate be
 6.To Round up a number                        (line 153) : RoundUp(number , numbers after decimal needed)
 7.Cookies                                     (line 160) : SetCookie('x','value') , getCookie('x') 
 8.Check if element is in view                 (line 195) : isElementInViewport('classname',class-index)
-
+9.Greatest Common divisor                     (line 206) : gcd (a, b)
 
 
 
@@ -162,7 +162,7 @@ function setCookie(cname, cvalue, exdays) {
   var d = new Date();
   d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
   var expires = "expires="+d.toUTCString();
-  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/"+ "; secure;";
 }
 
 function getCookie(cname) {
@@ -201,4 +201,8 @@ function isElementInViewport(x,y) {
       rect.right > 0 &&
       rect.left < (window.innerWidth || document.documentElement.clientWidth) &&
       rect.top < (window.innerHeight || document.documentElement.clientHeight) ;
+}
+
+function gcd (a, b) {
+  return (b == 0) ? a : gcd (b, a%b);
 }
