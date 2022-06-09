@@ -18,7 +18,7 @@ $text = $_POST["text"];
 
 $text = str_ireplace("!-and-!","&amp;" ,$text);
 
-$url = '@(http)?(s)?(://)?(([a-zA-Z])([-\w]+\.)+([^\s\.]+[^\s]*)+[^,.\s])@';
+$url = '@(http)?(s)?(://)?(([a-zA-Z0-9])([-\w]+\.)+([^\s\.]+[^\s]*)+[^,.\s])@';
 $text = preg_replace($url, '<a href="http$2://$4" target="_blank" title="$0">$0</a>', $text);
 
 $text = str_ireplace("'","&#39;" ,$text);

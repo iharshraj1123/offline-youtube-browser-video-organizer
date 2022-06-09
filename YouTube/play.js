@@ -128,29 +128,25 @@ function focusout(){
 }
 
 document.addEventListener("keydown", e => {
+    if(vid_focussed){
+        if(e.code == "Slash"){
+            e.preventDefault();
+            document.getElementsByClassName("searchbar-div")[0].classList.add("yes-visible")
+            document.getElementById("search-bar").focus();
+            document.getElementById("search-bar").click();
+        }
+        //previous 'p'
+        if(e.keyCode == 80){
+            plsplayprevovid()
+        }
 
-if(vid_focussed){
-  //  vid.focus()
+        //for next 'n'
+        if(e.keyCode == 78) {
+            document.getElementsByClassName("prev-skip-icnos")[0].classList.remove("hidemepls")
+                plsplaynextovid()
+        }
 
-  
-
-  //previous 'p'
-  if(e.keyCode == 80){
-    plsplayprevovid()
-  }
-
-    //for next 'n'
-    if(e.keyCode == 78) {
-        document.getElementsByClassName("prev-skip-icnos")[0].classList.remove("hidemepls")
-            plsplaynextovid()
-    }
-    
-    //for fullscreen 'f'
-    if(e.keyCode == 70) {
-        fullscreno_clickod(0)
-    }
-
-      //for shuffle 'r'
+        //for shuffle 'r'
         if(e.keyCode == 82) {
             if(vid_random){
                 vid_random = false;
@@ -163,20 +159,20 @@ if(vid_focussed){
                 make_icon("random");
             }
         }
-         //for cinemamode 't'
-         if(e.keyCode == 84) {
+            //for cinemamode 't'
+            if(e.keyCode == 84) {
             transition()
         }
 
 
-}
-else{
-    //for focus '5' (in num pad)
-    if(e.keyCode == 12) {
-        vid_focussed =true;
-        vid.focus()
     }
-}
+    else{
+        //for focus '5' (in num pad)
+        if(e.keyCode == 12) {
+            vid_focussed =true;
+            vid.focus()
+        }
+    }
 });
 
 
@@ -216,8 +212,8 @@ function plsplayprevovid(){
     xmlhttp.open("POST","redirect.php",true);
     xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     prev_id = play_history[play_history.length-2-prev_id_count];
-    console.log(prev_id)
-    if(prev_id == undefined){ 
+    console.log(`${prev_id} = prev_id; ${play_history} = play history`)
+    if(prev_id == undefined || prev_id == 0){ 
         if(curr_play_index == undefined) curr_play_index = new_playlist_all_array[0].indexOf(`${curr_vid_id}`);
         if(oppositeday) prev_id = new_playlist_all_array[0][curr_play_index+1+prev_id_count];
         else prev_id = new_playlist_all_array[0][curr_play_index-1-prev_id_count];
@@ -370,12 +366,12 @@ function change_all_data(){
         document.getElementsByClassName("subiitilesooovideos-div")[0].classList.add("hidemepls")
         document.getElementsByClassName("subiitilesooovideos-innerdiv")[0].style.width="0px";
         console.log(`no subtitles`)
-    }
 
+    }
+    
     document.getElementsByClassName("previewcarrier-videosos")[0].getElementsByTagName("source")[0].src = vid.getElementsByTagName("source")[0].src;
     document.getElementsByClassName("previewcarrier-videosos")[0].load();
     update_vid_infos(0)
-    getframerat(0);
   //  document.getElementsByClassName("pleaserefresh-com")[0].classList.remove("hidemepls")
  //   document.getElementsByClassName("video-play-comments-summoner")[0].innerHTML = "Please Refresh to get new comments" + document.getElementsByClassName("video-play-comments-summoner")[0].innerHTML;
 }

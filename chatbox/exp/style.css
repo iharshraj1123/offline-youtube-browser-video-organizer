@@ -1,0 +1,48 @@
+.boxes {
+    display: flex;
+}
+
+.box {
+    --box-color: black;
+    width: 200px;
+    height: 200px;
+    margin: 20px;
+    box-sizing: border-box;
+    display: block;
+    border-radius: 2px;
+    cursor: pointer;
+    color: white;
+    background-color: var(--box-color);
+    border: 5px solid var(--box-color);
+    font-size: 30px;
+    font-family: sans-serif;
+    font-weight: bold;
+    text-align: center;
+    line-height: 200px;
+    transition: all 0.2s ease-out;
+}
+
+.box:hover {
+    background-color: transparent;
+    color: black;
+}
+
+.box.selected {
+    transform: scale(1.2);
+}
+
+#box-1 {
+    --box-color: red;
+}
+
+#box-2 {
+    --box-color: green;
+}
+
+#box-3 {
+    --box-color: blue;
+}
+
+#box-4 {
+    --box-color: black;
+}

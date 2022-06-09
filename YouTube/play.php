@@ -190,7 +190,9 @@ function cut_mp4_name($vid_name) {
                 <div class="vid-info-divers"><div>Quality:</div><span class="vid-quality"></span></div>
                 <div class="vid-info-divers"><div>Dimensions (WxH):</div><span class="vid-dimensos"></span></div>
                 <div class="vid-info-divers"><div>Aspect Ratio:</div><span class="vid-asprat"></span></div>
-                <div class="vid-info-divers"><div>Frame Rate:</div><span class="vid-framerateso"></span></div>
+                <div class="vid-info-divers"><div>Frame Rate:</div><span class="vid-framerateso">Calculating...</span></div>
+                <div class="vid-info-divers"><div>Size:</div><span class="vid-filesize"></span></div>
+                <div class="vid-info-divers"><div>Bitrate:</div><span class="vid-bitrate"></span></div>
             </div>
             <div class="settings-div">
                 <div class="settings-maino">

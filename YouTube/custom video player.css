@@ -9,7 +9,18 @@
 .rotate20deg{
     transform: rotate(60deg);
 }
-
+.transition-mode>*{
+    visibility: hidden;
+}
+.no-height{
+    height: 0 !important;
+}
+.no-visible{
+    visibility: hidden !important;
+}
+.yes-visible{
+    visibility: visible !important;
+}
 /*fadeIn effect*/
 .visible-v {
   visibility: visible;
@@ -126,6 +137,10 @@
 
 .video-summoner-controlboxo-fullscreen .previewcarrier-divos{
     min-width: 240px;
+}
+
+.hidemepreviewoe{
+    border:0 !important;
 }
 
 .previewcarrier-divos{

@@ -6,6 +6,7 @@ not_over_search_div = true;
 var mouse_over_thumbnail=0;
 let total_vids_on_page = document.getElementsByClassName('video-thumbnail-all').length;
 let recent_offsets = 0;
+let curr_search_focus = -1;
 
 window.addEventListener("load",function(){
     if(current_page !='play'){
@@ -111,6 +112,13 @@ function vid_play(x){
     else window.open(`./play.php?play_vid=${x}`,"_self");
 }
 
+function search_li_click(x,y,z){
+    if(document.getElementsByClassName("search-result-li")[curr_search_focus])document.getElementsByClassName("search-result-li")[curr_search_focus].classList.remove("search-select");
+    curr_search_focus = z;
+    document.getElementsByClassName("search-result-li")[curr_search_focus].classList.add("search-select");
+    vid_play_search(x,y)
+}
+
 function vid_play_search(x,y){
     if(current_page == "play"){
         let xmlhttp=new XMLHttpRequest();
@@ -135,6 +143,7 @@ function vid_play_search(x,y){
             vid.load();
             change_all_data();
             switchplayicon("showpause",0)
+            vid.click()
         };} 
     }
     else window.open(`./play.php?play_vid=${x}`,"_self");
@@ -182,10 +191,6 @@ function openNav(){
     xmlhttp.open("POST","redirect.php",true);
     xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xmlhttp.send(`work=c&menu_open=true`);
-    /*setTimeout(function(){
-    if (xmlhttp.readyState==4 && xmlhttp.status==200) {
-        document.getElementsByClassName("category-btn")[0].innerText = xmlhttp.responseText;
-    };},100)*/
 }
 
 function closeNav(){
@@ -259,21 +264,64 @@ function rando_songo(){
   }
 }
 
-function search_keydown(){
-    setTimeout(function(){
+function searchmousedown(e,x){
+    if (e.button === 1) {
+        e.preventDefault();
+        window.open(`/YouTube/play.php?play_vid=${x}`, '_blank');
+   }
+}
 
-  
-    let rannsdks = document.getElementById("search-bar").value;
+function search_focusout(){
+    document.getElementsByClassName("searchbar-div")[0].classList.remove("yes-visible")
+}
 
-    let xmlhttp=new XMLHttpRequest();
-    xmlhttp.open("POST","./files/body parts/search.php",true);
-    xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xmlhttp.send(`search=${rannsdks}`);
-    xmlhttp.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
-        document.getElementsByClassName("search-results-ul")[0].innerHTML = xmlhttp.responseText;
-    };}
-},50)
+function search_keydown(e){
+    if(e.code == "ArrowDown"){
+        e.preventDefault();
+        if(curr_search_focus > -1 && curr_search_focus < document.getElementsByClassName("search-result-li").length)document.getElementsByClassName("search-result-li")[curr_search_focus].classList.remove("search-select")
+        else curr_search_focus = -1;
+        curr_search_focus++;
+        if(curr_search_focus >= document.getElementsByClassName("search-result-li").length) curr_search_focus--;
+        document.getElementsByClassName("search-result-li")[curr_search_focus].classList.add("search-select")
+        document.getElementsByClassName("search-result-li")[curr_search_focus].scrollIntoView({block: "end"});
+        document.getElementsByClassName("search-results")[0].scrollBy(0, 5)
+    }
+    else if(e.code == "ArrowUp"){
+        e.preventDefault();
+        if(curr_search_focus > -1) document.getElementsByClassName("search-result-li")[curr_search_focus].classList.remove("search-select")
+        else curr_search_focus = -1;
+        curr_search_focus--;
+        if(curr_search_focus < -1) curr_search_focus = -1
+        document.getElementsByClassName("search-result-li")[curr_search_focus].classList.add("search-select")
+        document.getElementsByClassName("search-result-li")[curr_search_focus].scrollIntoView({block: "end"});
+        document.getElementsByClassName("search-results")[0].scrollBy(0, 5)
+    }
+    else if(e.code == "Enter"){
+        e.preventDefault();
+        document.getElementsByClassName("search-result-li")[curr_search_focus].classList.remove("search-select")
+        document.getElementsByClassName("search-result-li")[curr_search_focus].click();
+        if(current_page == "play")vid.focus();
+    }
+    else if(e.code=="Escape"){
+        e.preventDefault();
+        clear_search()
+    }
+    else{
+        curr_search_focus = -1;
+        setTimeout(function(){
+            let rannsdks = document.getElementById("search-bar").value;
+            rannsdks = rannsdks.replaceAll("+","&#43;")
+            rannsdks = rannsdks.replaceAll("&","[!and!]")
+            let xmlhttp=new XMLHttpRequest();
+            xmlhttp.open("POST","./files/body parts/search.php",true);
+            xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xmlhttp.send(`search=${rannsdks}`);
+            xmlhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                document.getElementsByClassName("search-results-ul")[0].innerHTML = xmlhttp.responseText;
+            };}
+        },50)
+    }
 }
 
 function article_click(x){
@@ -329,6 +377,7 @@ function clear_search(){
     document.getElementsByClassName("clear-search")[0].classList.add("hideme");
     if(current_page == "play") vid.focus()
     else document.getElementsByTagName("body")[0].focus()
+    curr_search_focus = -1;
 }
 
 document.addEventListener("keydown", e => {

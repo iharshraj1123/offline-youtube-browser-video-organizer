@@ -318,11 +318,13 @@ function hide_unreads(x){
     <!--------talk header------->
 
     <div class="container-right mobile-hide">
+        <!-- <div class="header-middle"> -->
         <div class="talk-header">
             <div class="talk-header-inner">
                 <div class="talk-header-left">
                     <div class='talk-header-img-div'><img class='talk-header-arrow nomobile-hide' onclick="gobackarrow()" src='img/arrow.png'><a target="_blank" class="talk-header-link" href="#"><img class='talk-header-img hidemepls' src=''></a></div>
                     <div class="talk-header-username"></div>
+                    <div id="debugger"></div>
                 </div>
                 <div class="talk-header-right">
                     <div onclick="header_dot()" class="three-dots"></div>
@@ -338,9 +340,9 @@ function hide_unreads(x){
                 <div class="summon-chats" ></div>
             </div>
         <div class="go-bottom-talk-div hidemepls"><img class="go-bottom-img" onclick="gobottom()" src="img/down-arrow.png"><div class="go-bottom-exclaim hidemepls">!</div></div>
-
         </div>
 
+        <!-- </div> -->
 
         <!--------footer------->
         <div class="chat-footer-outer">
@@ -376,7 +378,7 @@ function hide_unreads(x){
 			    <img class="attatch" onclick="attach()" src="img/attach file.png">
             </div>
             <div class="footer-middle">
-				<textarea onkeyup="text_keyup()" placeholder="Type a message" class="talk-text"></textarea>
+				<textarea placeholder="Type a message" class="talk-text" onpaste="pasted_text()"></textarea>
 		    </div>
             <div class="footer-right">
                 <img src="img/mic.png" class="mic">
@@ -387,6 +389,8 @@ function hide_unreads(x){
 
 
 </div>  
+<!---------SEND IP ADDRESS------------------------->
+<div class="hideme hidemepls"><?php $localIP = getHostByName(getHostName());echo 'User local IP Address - <span id="ip-address">'. $localIP . '</span>';?></div>
 
     <audio id="notif-audio">
         <source src="./resources/notification.mp3" type="audio/mpeg">
@@ -394,8 +398,9 @@ function hide_unreads(x){
     <audio id="send-audio">
         <source src="./resources/send2.mp3" type="audio/mpeg">
     </audio> 
-    <script src="./script.js"></script>
     <script src="./resources/my JS library.js"></script>
+    <script src="./script.js"></script>
+
 </body>
 </html>
 

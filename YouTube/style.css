@@ -229,12 +229,16 @@ div.Menu {
     max-height: 425px;
     overflow-y: scroll;
 }
-
 .search-results-ul{
     color: black;
     font-size: 17px;
 }
-
+.search-select2{
+    background-color: rgb(247, 179, 43) !important;
+}
+.search-select{
+    background-color: rgb(195, 204, 255) !important;
+}
 .search-results-ul li:hover{
     background-color: rgb(224, 222, 222);
     cursor: pointer;

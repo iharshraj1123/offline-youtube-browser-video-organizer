@@ -17,6 +17,7 @@ $usr_members = $_COOKIE['loggedmembers'];
 $usr_members_arr = unserialize($usr_members);
 $usr_members_arr_sql = implode("','",$usr_members_arr);
 
+
 function give_date_time_diff($date,$time){
 
     $datetime1 = new DateTime( $date . $time);//start time

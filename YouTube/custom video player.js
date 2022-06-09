@@ -1,10 +1,17 @@
+"use strict";
+//Known bugs: escape fullscreen messes everything, use fullscreenchange event listener
+
 let nocursoonfulloscreno;
 let mouseoverocontroloboco = false;
 let just_fullscreened = false;
 let first_time_getframe = true;
+let framratetimeoutarr = [];
+let under10kbitrate = true;
+let escape_full = false;
+
 
 //this functions gets called when page loads
-function cumstomvideoplayerupdatottt(){
+async function cumstomvideoplayerupdatottt(){
     let tempos_videososos= document.getElementsByClassName("custom-videopls")[0];
     if(tempos_videososos.autoplay){
         switchplayicon("showpause",0);
@@ -13,8 +20,10 @@ function cumstomvideoplayerupdatottt(){
     setTimeout(function(){refreshvolvideopl(0)},100)
     tempos_videososos.addEventListener('loadeddata', function(){
         update_vid_infos(0);
+        if(customcode) get_filesize(0,tempos_videososos.getElementsByTagName("source")[0].src);
+        getframerat(0);
+        //get_filesize(0,vid.getElementsByTagName("source")[0].src)
     })
-    
 
     tempos_videososos.addEventListener("volumechange",function(){onvideosVol_change(0)} )
     tempos_videososos.addEventListener("playing" , function(){vidosplayer_playing(0)} )
@@ -36,11 +45,13 @@ function cumstomvideoplayerupdatottt(){
                 if(prev_id_count>0){
                     prev_id_count=0;
                     curr_vid_id = prev_id;
-                    play_history = [];
                 }
+                play_history = [];
                 prev_id_count = 0;
+                prev_id = 0;
                 curr_play_index = new_playlist_all_array[0].indexOf(`${curr_vid_id}`);
                 make_icon("delete-history");
+                //console.log(`${prev_id} = prev_id; ${play_history} = play history`)
             } break;
 
             //opposite day 'Num 0'
@@ -135,6 +146,10 @@ function cumstomvideoplayerupdatottt(){
                 let prompto = prompt("Please enter new source title", "");
                 if (prompto != null) new_src2(0,prompto)
             } break;
+            case "KeyF": {
+                e.preventDefault();
+                fullscreno_clickod(0)
+            } break;
                     
         }
         
@@ -185,6 +200,7 @@ function cumstomvideoplayerupdatottt(){
 
     document.getElementsByClassName("previewcarrier-videosos")[0].getElementsByTagName("source")[0].src = tempos_videososos.getElementsByTagName("source")[0].src;
     let temp_src=document.getElementsByClassName("previewcarrier-videosos")[0].getElementsByTagName("source")[0].src;
+
     if(!window.location.href.includes("http://localhost")){
         temp_src = temp_src.replace("file:///C:/Users/ihars/Downloads/", "/downloads/");
         temp_src = temp_src.replace("file:///D:/0-entertainment/", "/entertainment/");
@@ -193,6 +209,64 @@ function cumstomvideoplayerupdatottt(){
     }
     document.getElementsByClassName("previewcarrier-videosos")[0].getElementsByTagName("source")[0].src = temp_src
     document.getElementsByClassName("previewcarrier-videosos")[0].load();
+}
+
+function reverse_replace_lanlinks(temp_src){
+    temp_src = getUrlParts(temp_src).pathname
+    if(temp_src.includes("/c:/")) temp_src = temp_src.replace("/c:/", "file:///C:/")
+    else if(temp_src.includes("/d:/")) temp_src = temp_src.replace("/d:/", "file:///D:/")
+    else{
+        if(temp_src.includes("/downloads/")) temp_src = temp_src.replace("/downloads/", "file:///C:/Users/ihars/Downloads/")
+        else if(temp_src.includes("/entertainment/")) temp_src = temp_src.replace("/entertainment/", "file:///D:/0-entertainment/")
+        else if(temp_src.includes("/videosongs/"))  temp_src = temp_src.replace("/videosongs/", "file:///D:/Video%20songs/")
+    }
+    temp_src = temp_src.replaceAll('+', '%2B')
+    return temp_src;
+}
+
+function getUrlParts(url) {
+    let a = document.createElement('a');
+    a.href = url;
+
+    return {
+        href: a.href,
+        host: a.host,
+        hostname: a.hostname,
+        port: a.port,
+        pathname: a.pathname,
+        protocol: a.protocol,
+        hash: a.hash,
+        search: a.search
+    };
+}
+
+function get_filesize(y,x){
+    if(!x.includes("http://localhost") &&  !x.includes("file:///")) x = reverse_replace_lanlinks(x);
+    let xmlhttp=new XMLHttpRequest();
+    xmlhttp.open("POST","./files/body parts/get filesize.php",true);
+    xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xmlhttp.send(`url=${x}`);
+    xmlhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+            document.getElementsByClassName("vid-bitrate")[y].textContent = "Calculating..."
+            let file_sizeo = Math.floor(((parseInt(xmlhttp.responseText)/1024)/1024)*100)/100;
+            document.getElementsByClassName("vid-filesize")[y].textContent = file_sizeo + " MB";
+            setTimeout(() => {
+                let vid_duratio = document.getElementsByClassName("custom-videopls")[y].duration;
+                let bitrateo=Math.floor(((file_sizeo*8*1024*1024/vid_duratio)/1024)*100)/100
+                document.getElementsByClassName("vid-bitrate")[y].textContent = bitrateo + " kbps";
+                if(bitrateo > 10000) {under10kbitrate = false;
+                    document.getElementsByClassName("previewcarrier-divos")[y].classList.add("hidemepreviewoe")
+                    document.getElementsByClassName("previewcarrier-videosos")[y].classList.add("hidemepls")
+                    console.log("bitrate too high!! removing preview")
+                }
+                else {
+                    under10kbitrate = true;
+                    document.getElementsByClassName("previewcarrier-divos")[y].classList.remove("hidemepreviewoe")
+                    document.getElementsByClassName("previewcarrier-videosos")[y].classList.remove("hidemepls")
+                }
+            }, 400);
+    };} 
 }
 
 function update_vid_infos(x){
@@ -382,7 +456,8 @@ function fullscreno_clickod(x){
         tempos_videososos.classList.remove("customovideo-fullscreen")
         screen.orientation.unlock()
         setTimeout(function(){document.getElementsByClassName("video-summoner-divttt")[0].classList.remove("nocursoronvidododo")},200)
-        document.exitFullscreen()
+        if(!escape_full)document.exitFullscreen()
+        else{escape_full = false;console.log("yea")}
         let diciidodo = document.getElementsByClassName("video-summoner-divttte")[x];
         let diciidodotwo = document.getElementsByClassName("video-summoner-controlboxo")[x];
         diciidodo.classList.add("visible-v")
@@ -401,12 +476,16 @@ function transition(){
     if(!vid.classList.contains("heightcinema")){
         vid.classList.add("heightcinema");
         document.getElementsByClassName("html-tag")[0].classList.add("scroll-inv")
-        document.getElementsByClassName("outer-header")[0].classList.add("hideme")
+        let pDiv = document.getElementsByClassName("outer-header")[0];
+        pDiv.classList.add("no-height")
+        pDiv.classList.add("transition-mode");
     }
     else{
         vid.classList.remove("heightcinema");
         document.getElementsByClassName("html-tag")[0].classList.remove("scroll-inv")
-        document.getElementsByClassName("outer-header")[0].classList.remove("hideme")
+        let pDiv = document.getElementsByClassName("outer-header")[0];
+        pDiv.classList.remove("transition-mode");
+        pDiv.classList.remove("no-height")
     }
 }
 
@@ -651,8 +730,10 @@ function previewcarreireshower(x,event){
         let tempos_videososos = document.getElementsByClassName("custom-videopls")[x];
         let requorosds = ((vid_mouse_cordino_x-vidoellmeterooffsets.left)/progressometerouter_width);
         if(vid_mouse_cordino_x-vidoellmeterooffsets.left > 0 && vid_mouse_cordino_x-vidoellmeterooffsets.left < progressometerouter_width){
-            if(previeewevideoo.videoWidth < 2000){if((requorosds*tempos_videososos.duration-previeewevideoo.currentTime)>2 || (requorosds*tempos_videososos.duration-previeewevideoo.currentTime)<-2)previeewevideoo.currentTime = requorosds*tempos_videososos.duration;}
-            else{if((requorosds*tempos_videososos.duration-previeewevideoo.currentTime)>10 || (requorosds*tempos_videososos.duration-previeewevideoo.currentTime)<-10)previeewevideoo.currentTime = requorosds*tempos_videososos.duration;}
+            if(under10kbitrate){
+                if(previeewevideoo.videoWidth < 2000){if((requorosds*tempos_videososos.duration-previeewevideoo.currentTime)>2 || (requorosds*tempos_videososos.duration-previeewevideoo.currentTime)<-2)previeewevideoo.currentTime = requorosds*tempos_videososos.duration;}
+                else{if((requorosds*tempos_videososos.duration-previeewevideoo.currentTime)>10 || (requorosds*tempos_videososos.duration-previeewevideoo.currentTime)<-10)previeewevideoo.currentTime = requorosds*tempos_videososos.duration;}
+            }
             previeewevideoo_currtime.innerHTML= secToHourMinSec(requorosds*tempos_videososos.duration);
             previeewevideoo_div.classList.remove("hidemepls");
     
@@ -660,6 +741,8 @@ function previewcarreireshower(x,event){
             let max_leftooso = vidoellmeterooffsets.width - previeewevideoo_div.offsetWidth
             if(new_leftoso < 0) new_leftoso = 0
             else if (new_leftoso > max_leftooso) new_leftoso = max_leftooso
+
+            if(!under10kbitrate) new_leftoso = vid_mouse_cordino_x-vidoellmeterooffsets.left-(previeewevideoo_div.offsetWidth/2);
             previeewevideoo_div.style.left = `${new_leftoso}px`;
             previeewetimeline_div.style.width = `${vid_mouse_cordino_x-vidoellmeterooffsets.left}px`
         }
@@ -678,6 +761,8 @@ function previewcarreirehider(x){
         }
     }
 }
+
+
 
 function secToHourMinSec(input){
     input = Math.floor(parseInt(input))
@@ -728,27 +813,58 @@ function new_src2(x,y){
 }
 function getframerat(x){
     document.getElementsByClassName("vid-framerateso")[x].textContent = "Calculating..."
-    if(first_time_getframe){
-        first_time_getframe = false;
-        setTimeout(function(){
-            let getframeratesosos = document.getElementsByClassName("custom-videopls")[x].getVideoPlaybackQuality().totalVideoFrames
-            setTimeout(function(){
-                getframeratesosos = document.getElementsByClassName("custom-videopls")[x].getVideoPlaybackQuality().totalVideoFrames - getframeratesosos;
-                if(getframeratesosos%2 != 0) getframerat(x)
-                else{document.getElementsByClassName("vid-framerateso")[x].textContent = getframeratesosos}
-            },1000)
-        },1500)
-    }
-    else{
-        let getframeratesosos = document.getElementsByClassName("custom-videopls")[x].getVideoPlaybackQuality().totalVideoFrames
-        setTimeout(function(){
-            getframeratesosos = document.getElementsByClassName("custom-videopls")[x].getVideoPlaybackQuality().totalVideoFrames - getframeratesosos;
-            if(getframeratesosos%2 != 0) getframerat(x)
-            else {document.getElementsByClassName("vid-framerateso")[x].textContent = getframeratesosos;first_time_getframe = true;}
-        },1000)
-    }
+    getframerate2()
+
+    // if(first_time_getframe){
+    //     first_time_getframe = false;
+    //     setTimeout(function(){
+    //         let getframeratesosos = document.getElementsByClassName("custom-videopls")[x].getVideoPlaybackQuality().totalVideoFrames
+    //         setTimeout(function(){
+    //             getframeratesosos = document.getElementsByClassName("custom-videopls")[x].getVideoPlaybackQuality().totalVideoFrames - getframeratesosos;
+    //             if(getframeratesosos%2 != 0) getframerat(x)
+    //             else{document.getElementsByClassName("vid-framerateso")[x].textContent = getframeratesosos}
+    //         },1000)
+    //     },2000)
+    // }
+    // else{
+    //     let getframeratesosos = document.getElementsByClassName("custom-videopls")[x].getVideoPlaybackQuality().totalVideoFrames
+    //     setTimeout(function(){
+    //         getframeratesosos = document.getElementsByClassName("custom-videopls")[x].getVideoPlaybackQuality().totalVideoFrames - getframeratesosos;
+    //         if(getframeratesosos%2 != 0) getframerat(x)
+    //         else {document.getElementsByClassName("vid-framerateso")[x].textContent = getframeratesosos;first_time_getframe = true;}
+    //     },1000)
+    // }
 
 } 
+
+setTimeout(() => {
+    getframerate2()
+}, 1000);
+
+function getframerate2(){
+    for(let i= 0; i< document.getElementsByClassName("vid-framerateso").length; i++){
+        if(!document.getElementsByClassName("custom-videopls")[i].paused){
+            let getframeratesosos = document.getElementsByClassName("custom-videopls")[i].getVideoPlaybackQuality().totalVideoFrames
+            framratetimeoutarr[i] = new Object({
+                src : document.getElementsByClassName("custom-videopls")[i].getElementsByTagName("source")[i],
+                time : (function(i){setTimeout(function(){
+                        if(!document.getElementsByClassName("custom-videopls")[i].paused){
+                            getframeratesosos = document.getElementsByClassName("custom-videopls")[i].getVideoPlaybackQuality().totalVideoFrames - getframeratesosos;
+                            if(getframeratesosos > 28 && getframeratesosos< 35) getframeratesosos = 30;
+                            else if(getframeratesosos > 22 && getframeratesosos< 26) getframeratesosos = 24;
+                            else if(getframeratesosos > 55 && getframeratesosos< 65) getframeratesosos = 60;
+                            if(parseInt(document.getElementsByClassName("vid-framerateso")[i].textContent) < getframeratesosos || !parseInt(document.getElementsByClassName("vid-framerateso")[i].textContent)){
+                                if(framratetimeoutarr[i].src == document.getElementsByClassName("custom-videopls")[i].getElementsByTagName("source")[i])document.getElementsByClassName("vid-framerateso")[i].textContent = getframeratesosos
+                            }
+                        }},1000)})(i)
+            })
+        }
+    }
+}
+
+setInterval(() => {
+    getframerate2()
+}, 5000);
 
 function download_clickok(x){
     let vid_a = document.getElementsByClassName("custom-vidoe-downloader")[x]

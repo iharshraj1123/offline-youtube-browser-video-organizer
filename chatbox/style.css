@@ -177,9 +177,9 @@ body{
     border-bottom: 1px solid rgb(207, 207, 207);
     margin-right: 15px;
     width: 80%;
+    justify-content: space-between;
 }
 .index-msg-sender-middle{
-    width:80%;
 }
 
 .index-msg-chattername{
@@ -207,7 +207,7 @@ body{
 }
 
 .index-msg-sender-right{
-    width: 20%;
+
 }
 
 .index-msg-time{
@@ -260,12 +260,17 @@ body{
 }
 
 .chat-outer{
-    margin-top: 20px;
+    margin-top: 2px;
 }
-
+.extramargin{
+    margin-top: 10px;
+}
+.extramargin2{
+    margin-top: 6px;
+}
 .summon-chats {
-    display: flex;
-    flex-direction: column-reverse;
+    /* display: flex;
+    flex-direction: column-reverse; */
 }
 
 .chat-r {
@@ -280,6 +285,29 @@ body{
     text-align: center !important;
 }
 
+.chat-timediv{
+    text-align: center;
+    z-index: 1;
+    position: sticky;
+    top: 5px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.chat-timediv div{
+    display: inline-block;
+    background: #dcf8c6;
+    font-size: 14px;
+    padding: 2px 5px;
+    border-radius: 7px;
+    border: 1px solid #ded0d0;
+    box-shadow: 1px 1px 1px rgb(116, 115, 115);
+    width: 95px;
+}
+
+.first_date_css{
+    position: absolute;
+}
 
 .chat-inner{
     position: relative;
@@ -294,6 +322,9 @@ body{
     min-width: 60px;
     max-width: 80%;
     box-shadow: 1px 1px 1px rgb(116, 115, 115);
+    border: 1px solid #ded0d0;
+    word-break: break-word;
+    text-align: left;
 }
 
 .chat-m .chat-inner{
@@ -301,6 +332,7 @@ body{
     border-radius: 7px;
     font-size: 14px;
     color: #4e4545;
+    background: #f2f2f2;
 }
 
 .chat-l-white{
@@ -344,8 +376,7 @@ body{
     width:100%;
     background: #dedede;
     position: relative;
-    display: flex;
-    flex-direction: column;
+    display: inline-block;
     height: 100vh;
 }
 
@@ -441,6 +472,7 @@ body{
     padding: 7px 0;
     position: absolute;
     bottom: 0vh;
+    z-index: 2;
 }
 .chat-footer {
 	display: flex;
@@ -551,7 +583,12 @@ body{
 }
 
 @media(max-width: 750px) {
+    .talk-main{
 
+    }
+    .chat-inner{
+        min-width: 65px;
+    }
     .container-left{
         max-width:100%;
     }
@@ -568,7 +605,6 @@ body{
     }
     
     .index-msg-sender-middle {
-        width: 79%;
     }
     .active-left-chat{
         background: #fffdfb;
@@ -577,12 +613,7 @@ body{
     .active-left-chat:hover{
         background: #fffdfb;
     }
-}
-
-@media(max-height: 630px){
-    .talk-main{
-        padding-bottom: 30px;
-    }
-
-
+    .talk-main-inside {
+        padding: 0 5px;
+      }
 }

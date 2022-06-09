@@ -48,7 +48,7 @@ if(!$usr_pic){
         </a>
         <div class="search-bar" autocomplete="off">
               <div class="searchbar-div">
-                <input id="search-bar" onkeydown="search_keydown()" class="search-input" type="search" placeholder="Search"/><span onclick="clear_search()" class="clear-search hideme">&times;</span>
+                <input id="search-bar" onfocusout="search_focusout()" onkeydown="search_keydown(event)" class="search-input" type="search" placeholder="Search"/><span onclick="clear_search()" class="clear-search hideme">&times;</span>
                 <div class="search-results hideme">
                     <ul onmouseover="not_over_search_div=false" onmouseout="not_over_search_div=true" class="search-results-ul">
                     </ul>

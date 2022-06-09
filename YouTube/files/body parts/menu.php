@@ -40,8 +40,8 @@ else{
             <div class="Menu-div-sticky">
             <div class="menu-btns menu-div1">
                 <div class="menu-a-divs <?php echo $menutogglediv?>"><i class="fa fa-home <?php echo $menutogglei?>" aria-hidden="true"></i> <a class="menu-links <?php echo $menutogglea?>" href="index.php">Home</a></div>
-                <div class="menu-a-divs <?php echo $menutogglediv?>"><i class="fa fa-compass <?php echo $menutogglei?>" aria-hidden="true"></i> <a class="menu-links <?php echo $menutogglea?>" href="#">Explorer</a></div>
-                <div class="menu-a-divs <?php echo $menutogglediv?>"><i class="far fa-folder-open <?php echo $menutogglei?>"></i> <a class="menu-links <?php echo $menutogglea?>" href="#">Library</a></div>
+                <div class="menu-a-divs <?php echo $menutogglediv?>"><i class="fa fa-compass <?php echo $menutogglei?>" aria-hidden="true"></i> <a class="menu-links <?php echo $menutogglea?>" href="/Explorer/">Explorer</a></div>
+                <div class="menu-a-divs <?php echo $menutogglediv?>"><i class="far fa-folder-open <?php echo $menutogglei?>"></i> <a class="menu-links <?php echo $menutogglea?>" href="/">Server</a></div>
             </div>
             <div class="menu-btns menu-div2">
                 <div class="menu-a-divs <?php echo $menutogglediv?>"><i class="far fa-newspaper <?php echo $menutogglei?>"></i> <a class="menu-links <?php echo $menutogglea?>" href="#">Journal</a></div>
