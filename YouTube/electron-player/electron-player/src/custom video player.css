@@ -1,0 +1,554 @@
+:root {
+    --subFont: 2vmax;
+    --miniplayerHeight: 315px;
+}
+
+.opacitiooneo{
+    opacity: 1 !important;
+}
+
+.custom-videopls{
+    min-width:100vw;
+}
+
+.rotate20deg{
+    transform: rotate(60deg);
+}
+.transition-mode>*{
+    visibility: hidden;
+}
+.no-height{
+    height: 0 !important;
+}
+.no-visible{
+    visibility: hidden !important;
+}
+.yes-visible{
+    visibility: visible !important;
+}
+/*fadeIn effect*/
+.visible-v {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.1s linear;
+}
+/*fadeOut effect*/
+.hidden-v {
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s 0.1s, opacity 0.1s linear;
+}
+
+.video-summoner-divttt{
+    position: relative;
+    display: flex;
+    justify-content:center;
+    background: black;
+}
+.temposos-trackos{
+    z-index: 10;
+    position: relative;
+}
+.video-summoner-divttte{
+    box-shadow: inset 0 -30px 28px -8px rgba(0,0,0,0.7);
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    bottom: -1px;
+}
+
+/* @supports (-moz-appearance:none) { */
+    .video-summoner-divttte{bottom: 0px;} 
+/* } */
+
+/*hover not for phones*/
+@media (hover: hover) and (pointer: fine) {
+    .video-progressometer-outer-div:hover .video-progressometer-outer{
+        height: 6px;
+    }
+    .video-progressometer-outer-div:hover .video-progressometer-blob{
+        font-size: 13px;
+    }
+    .video-summoner-controlboxo-voldiv:hover .vidoevolumo-meter-outer-div{
+        display:inline-block;
+    }
+    .play-pause-buttonos-video:hover{
+        opacity:1;
+    }
+    .settings-items:hover{
+        background-color: rgb(100, 77, 77);
+    }
+    .vid-info-divers:hover{
+        background-color: rgba(74, 92, 120, 0.796);
+    }
+}
+
+.video-summoner-divttte2{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+.video-summoner-divttte3{
+    margin: auto;
+    height: 100%;
+    width: 30%;
+    position: absolute;
+    left: 35%;
+}
+
+.video-summoner-divttte3-fullscreen{
+    width: 100%;
+    left: 0;
+}
+.show-statistics-videomogoso{
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    min-width: 30px;
+    background-color: rgb(87, 87, 87);
+    padding: 5px 10px;
+    font-size: 19px;
+    transition:0.3s;
+}
+.video-summoner-controlboxo{
+    position: absolute;
+    bottom: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content:flex-end;
+    padding: 10px 0;
+}
+
+.video-progressometer-outer-div{
+    width: 100%;
+    display:flex;
+    justify-content: center;
+    margin-bottom: 1px;
+    height: 28px;
+    padding-top: 16px;
+    cursor:pointer;
+}
+
+.video-progressometer-outer{
+    background-color:rgba(216, 211, 211, 0.5);
+    width: 98%;
+    height: 3px;
+    margin:auto;
+    display: flex;
+    position:relative;
+}
+
+
+.video-summoner-controlboxo-fullscreen .previewcarrier-divos{
+    min-width: 240px;
+}
+
+.hidemepreviewoe{
+    border:0 !important;
+}
+
+.previewcarrier-divos{
+    position: absolute;
+    bottom: 40px;
+    min-width: 192px;
+    background-color: black;
+    border: 2px solid white;
+    border-radius: 3px;
+    display: flex;
+    justify-content: center;
+}
+
+.previewcarrier-videosos-currtime{
+    position: absolute;
+    top: 105%;
+    font-size: 15px;
+    text-shadow: 0.5px 0.5px 1.5px #050000;
+}
+
+.video-summoner-controlboxo-fullscreen .previewcarrier-videosos{
+    height: 135px;
+}
+
+.previewcarrier-videosos{
+    height: 108px;
+}
+
+.video-progressometer-progressed{
+    background-color:red;
+    transition: width 0.2s;
+    height: 100%;
+    width: 0px;
+    display: flex;
+    position:relative;
+    transition-timing-function: linear;
+}
+
+.video-progressometer-preview{
+    background-color:rgba(236, 225, 225,0.6);
+    display: flex;
+    height: 100%;
+    position:absolute;
+}
+
+.video-progressometer-blob{
+    color:red;
+    font-size: 0px;
+    line-height: 16px;
+    position: absolute;
+    right: -8px;
+    bottom: -5px;
+}
+
+.video-summoner-controlboxo-bottom{
+    padding: 0 26px;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+.video-summoner-controlboxo-bottom-left{
+    display: flex;
+    justify-content: center;
+}
+.video-summoner-controlboxo-voldiv{
+    display: flex;
+    padding-right: 10px
+}
+
+.video-summoner-controlboxo-bottom-right{
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+}
+.play-pause-buttonos-video {
+    cursor: pointer;
+    height: 36px;
+    opacity:0.85;
+}
+
+
+.next-skip-icnos{
+    margin-left: 15px;
+}
+
+.prev-skip-icnos{
+    margin-right: 15px;
+}
+
+.volumes-videopl-icnos{
+    margin-left: 15px;
+    height: 27px;
+    position: relative;
+    top: 3px;
+}
+
+.vidoevolumo-meter-outer-div{
+    display:none;
+    padding-left: 5px;
+    cursor: pointer;
+
+}
+
+.vidoevolumo-meter-outer{
+    background-color:rgba(226, 217, 217, 0.205);
+    height: 4px;
+    width: 55px;
+    margin-top: 25%;
+    display: flex;
+}
+
+.vidoevolumo-meter-progressometer{
+    background-color: white;
+    width: 10px;
+    height: 100%;
+    position: relative;
+}
+
+.videovol-progressometer-blob{
+    color: white;
+    position: absolute;
+    font-size: 12px;
+    right:-6px;
+    bottom: -6px;
+    line-height: 16px;
+}
+
+.videosos-timemetro{
+    display: flex;
+    padding-top: 7px;
+    margin-left: 5px;
+    font-size: 15px;
+    color: #eee6e6;
+}
+
+.theatremodevid{
+    height: 35px;
+    margin-right: 20px;
+}
+
+.popoutmodvid{
+    height: 30px;
+    margin-right: 20px;
+}
+
+.fullscreenvideos{
+    height:34px;
+}
+
+.summoner-div-full{
+    align-items: unset !important;
+}
+
+.settingsoovideos{
+    height:26px;
+    margin:auto;
+    margin-right: 20px;
+    transition: transform 0.3s;
+}
+
+.subiitilesooovideos-div{
+    position:relative;
+}
+.subiitilesooovideos{
+    margin: auto;
+    margin-right: 20px;
+    height: 31px;
+    position: relative;
+    top: 2px;
+}
+.subiitilesooovideos-innerdiv{
+    position: absolute;
+    height: 3px;
+    background-color: red;
+    width: 0px;
+    bottom: 0;
+    left: 1px;
+    transition: width 0.4s;
+    margin: auto;
+}
+.customovideo-fullscreen{
+    height: unset !important;
+    object-fit: contain;
+    max-width: 100% !important;
+}
+
+.nocursoronvidododo{
+    cursor: none!important;
+    pointer-events: all;
+}
+
+.fullscreen-click-divo{
+    position: absolute;
+    width: 62px;
+    height: 50px;
+    bottom: 0;
+    right: 0;
+    cursor: pointer;
+}
+
+
+.settings-div{
+    position: absolute;
+    background-color: rgba(24, 18, 18, 0.76);
+    bottom: 68px;
+    right: 24px;
+    transition: width 0.3s, height 0.3s;
+    overflow: hidden;
+    height: 0;
+    box-sizing: content-box;
+}
+.setting-div-show{
+    padding: 5px 0px;
+}
+
+.settings-maino{
+    min-width: 232px;
+}
+
+.setting-menu-show{
+    position: relative !important;
+    left: 0;
+}
+
+.setting-menu-hide{
+    position: absolute;
+    left: -200%;
+}
+
+.settings-playback-menu{
+    position: absolute;
+    bottom: 0;
+    right: -100%;
+}
+
+.settings-items span{
+    font-size: 14px;
+    opacity: 0.8;
+    margin-left: 25px;
+}
+
+.settings-icon{
+    position: absolute;
+    max-height: 19px;
+}
+
+.settings-items{
+    padding: 7px 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.settings-items-divleft{
+    display: flex;
+    align-items:center;
+}
+.settings-items-divleft img {
+    margin-right: 10px;
+}
+
+
+.settings-menu-title{
+    padding: 7px 8px;
+    padding-bottom: 11px;
+    border-bottom: solid white 2px;
+    padding-right: 20px;
+}
+.settings-menu-title-one{
+    position: relative;
+    cursor: pointer;
+}
+
+.vid-info-div{
+    overflow: hidden;
+    max-width: 500px;
+    position: absolute;
+    bottom:70px;
+    background-color: rgba(72, 87, 111, 0.67);
+    right: 20px;
+    padding: 5px 0;
+    transition: width 0.2s;
+    width: 0;
+}
+.show-data-info{
+    width: auto;
+}
+.vid-info-divers{
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 15px;
+    align-items: center;
+}
+.vid-info-divers span{
+    margin-left: 40px;
+    word-wrap: anywhere;
+    text-align: right;
+}
+
+.pop-out-parent .popoutmodvid {
+    display: none;
+}
+
+.pop-out-parent{
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    height: var(--miniplayerHeight);
+    aspect-ratio: 16 / 9;
+    background: black;
+    z-index: 100;
+    align-items: center;
+    max-width: 560px;
+    overflow: hidden;
+}
+.pop-out-parent:hover .pop-out-exit{
+    display: inline-block !important;
+    position: absolute;
+    top: 7px;
+    right: 10px;
+    font-size: 20px;
+    opacity: 0.8;
+    cursor: pointer;
+    color: #d8d8e4;
+    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: rgb(178, 171, 171);
+}
+.pop-out-parent:hover .pop-out-exit:hover{
+    opacity: 1;
+ }
+
+.pop-out{
+    height: var(--miniplayerHeight);
+    min-width: unset;
+    max-width: 560px;
+}
+.pop-out-parent .theatremodevid {
+    display: none !important;
+}
+.pop-out-parent .previewcarrier-divos {
+    border: 0 !important;
+}
+
+.pop-out-parent .previewcarrier-videosos {
+    display: none !important;
+}
+
+.pop-out-parent .video-summoner-divttte3 {
+    width: 100%;
+    left: 0;
+}
+.pop-out .customovideo-fullscreen{
+    /* min-height: 100vh; */
+}
+
+/* .pop-out-parent{
+    height: 79vh;
+} */
+/* .pop-out{
+    position: fixed;
+    height: 270px;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+    min-width: revert;
+} */
+@media(max-height: 700px) {
+    .vid-info-div{
+        font-size: 12px;
+        bottom: 60px;
+        right: 5px;
+    }
+}
+
+@media(max-width: 850px) {
+    :root {
+        --subFont: 21px;
+    }
+    .prev-skip-icnos{
+        margin-right: 8px;
+    }
+    .next-skip-icnos{
+        margin-left: 8px;
+    }
+    .volumes-videopl-icnos{
+        margin-left: 8px;
+    }
+    .videosos-timemetro{
+        font-size: 13px;
+        padding-top: 8px;
+    }
+    .settingsoovideos{
+        height: 22px;
+        margin-right: 7px;
+    }
+    .video-summoner-controlboxo-voldiv{
+        /*display: none !important;*/
+    }
+    .theatremodevid{
+        display: none;
+    }
+
+}

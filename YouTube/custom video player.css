@@ -1,3 +1,8 @@
+:root {
+    --subFont: 2vmax;
+    --miniplayerHeight: 315px;
+}
+
 .opacitiooneo{
     opacity: 1 !important;
 }
@@ -38,6 +43,7 @@
     position: relative;
     display: flex;
     justify-content:center;
+    background: black;
 }
 .temposos-trackos{
     z-index: 10;
@@ -92,6 +98,7 @@
 
 .video-summoner-divttte3-fullscreen{
     width: 100%;
+    left: 0;
 }
 .show-statistics-videomogoso{
     position: absolute;
@@ -210,11 +217,11 @@
     padding-right: 10px
 }
 
-
-
 .video-summoner-controlboxo-bottom-right{
     display: flex;
     justify-content: center;
+    align-content: center;
+    align-items: center;
 }
 .play-pause-buttonos-video {
     cursor: pointer;
@@ -282,8 +289,17 @@
     margin-right: 20px;
 }
 
+.popoutmodvid{
+    height: 30px;
+    margin-right: 20px;
+}
+
 .fullscreenvideos{
     height:34px;
+}
+
+.summoner-div-full{
+    align-items: unset !important;
 }
 
 .settingsoovideos{
@@ -314,9 +330,9 @@
     margin: auto;
 }
 .customovideo-fullscreen{
-    height: unset;
+    height: unset !important;
     object-fit: contain;
-    max-width: 100%;
+    max-width: 100% !important;
 }
 
 .nocursoronvidododo{
@@ -432,7 +448,85 @@
     text-align: right;
 }
 
+.pop-out-parent .popoutmodvid {
+    display: none;
+}
+
+.pop-out-parent{
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    height: var(--miniplayerHeight);
+    aspect-ratio: 16 / 9;
+    background: black;
+    z-index: 100;
+    align-items: center;
+    max-width: 560px;
+    overflow: hidden;
+}
+.pop-out-parent:hover .pop-out-exit{
+    display: inline-block !important;
+    position: absolute;
+    top: 7px;
+    right: 10px;
+    font-size: 20px;
+    opacity: 0.8;
+    cursor: pointer;
+    color: #d8d8e4;
+    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: rgb(178, 171, 171);
+}
+.pop-out-parent:hover .pop-out-exit:hover{
+    opacity: 1;
+ }
+
+.pop-out{
+    height: var(--miniplayerHeight);
+    min-width: unset;
+    max-width: 560px;
+}
+.pop-out-parent .theatremodevid {
+    display: none !important;
+}
+.pop-out-parent .previewcarrier-divos {
+    border: 0 !important;
+}
+
+.pop-out-parent .previewcarrier-videosos {
+    display: none !important;
+}
+
+.pop-out-parent .video-summoner-divttte3 {
+    width: 100%;
+    left: 0;
+}
+.pop-out .customovideo-fullscreen{
+    /* min-height: 100vh; */
+}
+
+/* .pop-out-parent{
+    height: 79vh;
+} */
+/* .pop-out{
+    position: fixed;
+    height: 270px;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+    min-width: revert;
+} */
+@media(max-height: 700px) {
+    .vid-info-div{
+        font-size: 12px;
+        bottom: 60px;
+        right: 5px;
+    }
+}
+
 @media(max-width: 850px) {
+    :root {
+        --subFont: 21px;
+    }
     .prev-skip-icnos{
         margin-right: 8px;
     }
@@ -459,4 +553,5 @@
     .theatremodevid{
         display: none;
     }
+
 }

@@ -132,8 +132,9 @@ function cut_mp4_name($vid_name) {
     <div onclick="focusin()" class="video-inner-div" style="z-index:1">
 
     <!---------------Video------------>
-    <style id='subtitle-styleros'></style>
     <div class="video-summoner-divttt" onmousemove="mousemove_move(0)" onmouseleave="removothecontroloboxo(0)">
+    <style id='subtitle-styleros'></style>
+    <style class='importfont-style'></style>
         <!---------VIDEO TAG--------->
         <video id="playing-video" onfocus="focusin()" class="video-playing custom-videopls" autoplay>
         <source class="video-src" src="<?php echo"$vid_link"?>">
@@ -176,6 +177,7 @@ function cut_mp4_name($vid_name) {
                         <div class="subiitilesooovideos-innerdiv"></div>
                     </div>
                     <img src="./resources/custom video player/icons/fit_screen_white_24dp.svg" onclick="theatremod_clickod()" class="play-pause-buttonos-video theatremodevid">
+                    <img src="./resources/custom video player/icons/picture_in_picture_alt_white_24dp.svg" onclick="pop_outclick(0)" class="play-pause-buttonos-video popoutmodvid">
                     <img src="./resources/custom video player/icons/settings_white_24dp.svg" onclick="settingsoo_clickod(0)" class="play-pause-buttonos-video settingsoovideos">
                     <img src="./resources/custom video player/icons/fullscreen_white_24dp.svg" class="play-pause-buttonos-video fullscrnvideovid fullscreenvideos">
                     <img src="./resources/custom video player/icons/fullscreen_exit_white_24dp.svg" class="play-pause-buttonos-video extfullscrnvideovid fullscreenvideos hidemepls">
@@ -198,7 +200,8 @@ function cut_mp4_name($vid_name) {
                 <div class="settings-maino">
                     <div class="settings-items" onclick="playback_clickod(0)"><div class="settings-items-divleft"><img src="./resources/custom video player/icons/playback_24dp.svg"> Playback speed</div> <span class="playback-meter">Normal<img class="settings-icon" src="./resources/custom video player/icons/chevron_right_white_24dp.svg"></span></div>
                     <div class="settings-items" onclick="do_the_vidloop(0)"><div class="settings-items-divleft"><img src="./resources/custom video player/icons/repeat_white_24dp.svg"> Loop</div> <span  class="loopo-meter">OFF</span></div>
-                    <div class="settings-items"><div class="settings-items-divleft"><img src="./resources/custom video player/icons/closed_caption_white_24dp.svg"> Subtitles</div></div>
+                    <div class="settings-items" onclick="do_the_vidrand(0)"><div class="settings-items-divleft"><img src="./resources/custom video player/icons/shuffle_white_24dp.svg"> Random</div> <span  class="rando-meter">OFF</span></div>
+                    <div class="settings-items hidemepls"><div class="settings-items-divleft"><img src="./resources/custom video player/icons/closed_caption_white_24dp.svg"> Subtitles</div></div>
                     <div class="settings-items" onclick="download_clickok(0)"><div class="settings-items-divleft"><img src="./resources/custom video player/icons/download_white_24dp.svg"> Download<a class='hidemepls custom-vidoe-downloader' download></a></div></div>
                     <div class="settings-items" onclick="give_video_infop(0)"><div class="settings-items-divleft"><img src="./resources/custom video player/icons/info_white_24dp.svg"> Video info</div></div>
                 </div>
@@ -215,7 +218,7 @@ function cut_mp4_name($vid_name) {
                 </div>
             </div>
         </div>
-
+        <div style="display:none;" onclick="popoutexit(0)" class="pop-out-exit">✖</div>
     </div>
     <?php echo"<script>first_src='$vid_link';</script>"?>
     </div>
@@ -270,7 +273,7 @@ function cut_mp4_name($vid_name) {
                             <a href="/comment%20section/Userdatabase/user.php?usr_name=<?php echo $vid_uploader_name?>" target="_blank"  class="video-title upldr-profile-link"><?php echo $vid_uploader_name ?></a>
                             <a href="/comment%20section/Userdatabase/user.php?usr_name=<?php echo $vid_uploader_name?>" target="_blank" class="video-channel-name upldr-profile-link"><?php echo $vid_uploader_name ?></a>
                         </div>
-                    </div>
+                    </div> 
                     <button onclick="expand_desc()" class="section-close-btn2"><i class="fas fa-chevron-down down-arrow-section down-arrow-section2"></i></button>
 
                 <pre class="vid-desc-pre"><?php echo"$vid_desc"?></pre>

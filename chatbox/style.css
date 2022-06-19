@@ -197,6 +197,7 @@ body{
     max-height: 16px;
     white-space: nowrap;
     display:flex;
+    max-width: 250px;
 }
 
 
@@ -351,7 +352,7 @@ body{
 }*/
 
 .chat-user-name-left{
-    font-size: 10px;
+    font-size: 11px;
     position: absolute;
     top: 3px;
     left: 9px;
@@ -583,6 +584,9 @@ body{
 }
 
 @media(max-width: 750px) {
+    .index-msg-chat-text{
+        max-width: 170px;
+    }
     .talk-main{
 
     }

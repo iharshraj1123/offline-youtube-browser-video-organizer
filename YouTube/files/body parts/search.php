@@ -33,7 +33,7 @@ if($result->num_rows > 0) {
         $search_result = $row['vid_name'];
         $vid_id = $row['vid_id'];
         $count++;
-        echo "<li onclick='search_li_click($vid_id,`$search_result`,$count)' class='search-result-li'  onmousedown='searchmousedown(event,$vid_id)'>$search_result</li>";}
+        echo "<li class='search-result-li' data-vid-id='$vid_id' onmousedown='search_li_click(event,$vid_id,`$search_result`,$count)'>$search_result</li>";}
     }
 }}
 

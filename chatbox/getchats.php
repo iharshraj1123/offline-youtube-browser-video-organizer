@@ -12,6 +12,7 @@ $usr_num = $_COOKIE['loggedusernum'];
 $talk_usr_num = $_POST["talk_usr_num"];
 $chattype= $_POST["chat_type"];
 
+date_default_timezone_set('Asia/Kolkata');
 
 function nice_date($d){
     $ms = array('Jan','Feb','Mar','Apr','May','Jun','July','Aug','Sept','Oct','Nov','Dec');

@@ -1,5 +1,5 @@
 "use strict";
-//Known bugs: escape fullscreen messes everything, use fullscreenchange event listener
+let pip_out_intrv;
 
 let nocursoonfulloscreno;
 let mouseoverocontroloboco = false;
@@ -8,7 +8,12 @@ let first_time_getframe = true;
 let framratetimeoutarr = [];
 let under10kbitrate = true;
 let escape_full = false;
-
+let vid_random=true;
+if(getCookie("random_vid")!=""){
+    if(getCookie("random_vid")=="true"){ vid_random = true;document.getElementsByClassName("rando-meter")[0].innerText = "ON";}
+    else vid_random = false;
+}
+let CssSubFont;
 
 //this functions gets called when page loads
 async function cumstomvideoplayerupdatottt(){
@@ -24,7 +29,6 @@ async function cumstomvideoplayerupdatottt(){
         getframerat(0);
         //get_filesize(0,vid.getElementsByTagName("source")[0].src)
     })
-
     tempos_videososos.addEventListener("volumechange",function(){onvideosVol_change(0)} )
     tempos_videososos.addEventListener("playing" , function(){vidosplayer_playing(0)} )
     tempos_videososos.addEventListener("timeupdate" , function(){vidosplayer_playing(0)} )
@@ -123,16 +127,17 @@ async function cumstomvideoplayerupdatottt(){
             } break;
 
             //volume 'up-down'
+            //0.02 = 2%
             case "ArrowDown" : {
                 e.preventDefault();
-                if(tempos_videososos.volume < 0.06) tempos_videososos.volume = 0
-                else tempos_videososos.volume -= 0.05;
+                if(tempos_videososos.volume <= 0.02) tempos_videososos.volume = 0
+                else tempos_videososos.volume -= 0.020;
                 show_stattisticso(0,`Volume = ${Math.round(tempos_videososos.volume*1000)/10}%`)
             } break;
             case "ArrowUp" : {
                 e.preventDefault();
-                if(tempos_videososos.volume > 0.94) tempos_videososos.volume = 1
-                else tempos_videososos.volume += 0.05;
+                if(tempos_videososos.volume >= 0.98) tempos_videososos.volume = 1
+                else tempos_videososos.volume += 0.020;
                 show_stattisticso(0,`Volume = ${Math.round(tempos_videososos.volume*1000)/10}%`)
             } break;
 
@@ -150,22 +155,44 @@ async function cumstomvideoplayerupdatottt(){
                 e.preventDefault();
                 fullscreno_clickod(0)
             } break;
+            case "KeyR": {
+                if(vid_random){
+                    vid_random = false;
+                    setCookie("random_vid","false")
+                    make_icon("not-random");
+                }
+                else{
+                    vid_random = true;
+                    setCookie("random_vid","true")
+                    make_icon("random");
+                }
+            } break;
                     
         }
         
     })
-    
+    // let summ_container = document.getElementsByClassName("video-summoner-divttt")[0]
+    // summ_container.addEventListener("touchstart", function(event){dragStart(event,summ_container)}, false);
+    // summ_container.addEventListener("touchend", dragEnd, false);
+    // summ_container.addEventListener("touchmove", function(event){drag(event,summ_container)}, false);
+    // summ_container.addEventListener("mousedown", function(event){dragStart(event,summ_container)}, false);
+    // summ_container.addEventListener("mouseup", dragEnd, false);
+    // summ_container.addEventListener("mousemove", function(event){drag(event,summ_container)}, false);
+    //dragPopout(0,document.getElementsByClassName("video-summoner-divttt")[0])
+    //document.getElementsByClassName("video-summoner-divttt")[0].addEventListener('dragstart', popooutdrag(0));
+    //document.getElementsByClassName("video-summoner-divttt")[0].addEventListener('dragend', popooutdrag());
     document.getElementsByClassName("video-summoner-divttte3")[0].addEventListener("wheel",function(e){
+        //0.05 = 5%
         e.preventDefault();
         if(e.deltaY <0){
-            if(tempos_videososos.volume > 0.94) tempos_videososos.volume = 1
+            if(tempos_videososos.volume >= 0.95) tempos_videososos.volume = 1
             else tempos_videososos.volume += 0.05;
             onvideosVol_change(0);
             mouseoverocontroloboco = false;
             show_stattisticso(0,`Volume = ${Math.round(tempos_videososos.volume*1000)/10}%`);
         }
         else{
-            if(tempos_videososos.volume < 0.06) tempos_videososos.volume = 0
+            if(tempos_videososos.volume <= 0.05) tempos_videososos.volume = 0
             else tempos_videososos.volume -= 0.05;
             mouseoverocontroloboco = false;
             onvideosVol_change(0);
@@ -174,16 +201,17 @@ async function cumstomvideoplayerupdatottt(){
     });
     
     document.getElementsByClassName("video-summoner-controlboxo-voldiv")[0].addEventListener("wheel",function(e){
+        //0.025 = 2.5%
         e.preventDefault();
         if(e.deltaY <0){
-            if(tempos_videososos.volume > 0.97) tempos_videososos.volume = 1
+            if(tempos_videososos.volume >= 0.975) tempos_videososos.volume = 1
             else tempos_videososos.volume += 0.025;
             onvideosVol_change(0);
             show_stattisticso(0,`Volume = ${Math.round(tempos_videososos.volume*1000)/10}%`);
 
         }
         else{
-            if(tempos_videososos.volume < 0.03) tempos_videososos.volume = 0
+            if(tempos_videososos.volume <= 0.025) tempos_videososos.volume = 0
             else tempos_videososos.volume -= 0.025;
             onvideosVol_change(0);
             show_stattisticso(0,`Volume = ${Math.round(tempos_videososos.volume*1000)/10}%`);
@@ -210,6 +238,56 @@ async function cumstomvideoplayerupdatottt(){
     document.getElementsByClassName("previewcarrier-videosos")[0].getElementsByTagName("source")[0].src = temp_src
     document.getElementsByClassName("previewcarrier-videosos")[0].load();
 }
+
+// function dragStart(e,dragItem) {
+//     console.log("start")
+//     if (e.type === "touchstart") {
+//       console.log("a")
+//       initialX = e.touches[0].clientX - xOffset;
+//       initialY = e.touches[0].clientY - yOffset;
+//       console.log(`initialX=${initialX}, initialY=${initialY}`)
+//     } else {
+//       console.log("b")
+//       initialX = e.clientX - xOffset;
+//       initialY = e.clientY - yOffset;
+//       console.log(`initialX=${initialX}, initialY=${initialY}`)
+//     }
+
+//     if (dragItem.contains(e.target)) {
+//       active = true;
+//       console.log("c")
+//     }
+// }
+
+// function dragEnd(e) {
+//     initialX = currentX;
+//     initialY = currentY;
+
+//     active = false;
+//     console.log("end")
+// }
+
+// function drag(e,dragItem) {
+//     if (active) {
+//       e.preventDefault();
+//       if (e.type === "touchmove") {
+//         currentX = e.touches[0].clientX - initialX;
+//         currentY = e.touches[0].clientY - initialY;
+//       } else {
+//         currentX = e.clientX - initialX;
+//         currentY = e.clientY - initialY;
+//       }
+
+//       xOffset = currentX;
+//       yOffset = currentY;
+
+//       setTranslate(currentX, currentY, dragItem);
+//     }
+// }
+
+// function setTranslate(xPos, yPos, el) {
+//     el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
+// }
 
 function reverse_replace_lanlinks(temp_src){
     temp_src = getUrlParts(temp_src).pathname
@@ -242,6 +320,8 @@ function getUrlParts(url) {
 
 function get_filesize(y,x){
     if(!x.includes("http://localhost") &&  !x.includes("file:///")) x = reverse_replace_lanlinks(x);
+    x=x.replaceAll("+","&#43;")
+    x=x.replaceAll("&","[!and!]")
     let xmlhttp=new XMLHttpRequest();
     xmlhttp.open("POST","./files/body parts/get filesize.php",true);
     xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -255,16 +335,6 @@ function get_filesize(y,x){
                 let vid_duratio = document.getElementsByClassName("custom-videopls")[y].duration;
                 let bitrateo=Math.floor(((file_sizeo*8*1024*1024/vid_duratio)/1024)*100)/100
                 document.getElementsByClassName("vid-bitrate")[y].textContent = bitrateo + " kbps";
-                if(bitrateo > 10000) {under10kbitrate = false;
-                    document.getElementsByClassName("previewcarrier-divos")[y].classList.add("hidemepreviewoe")
-                    document.getElementsByClassName("previewcarrier-videosos")[y].classList.add("hidemepls")
-                    console.log("bitrate too high!! removing preview")
-                }
-                else {
-                    under10kbitrate = true;
-                    document.getElementsByClassName("previewcarrier-divos")[y].classList.remove("hidemepreviewoe")
-                    document.getElementsByClassName("previewcarrier-videosos")[y].classList.remove("hidemepls")
-                }
             }, 400);
     };} 
 }
@@ -284,6 +354,17 @@ function update_vid_infos(x){
         case 1080: quality_vidos = " (FHD)";break;
         case 720: quality_vidos = " (HD)";break;
         default:  quality_vidos = "";
+    }
+
+    if(tempos_videososos.videoHeight > 1400) {under10kbitrate = false;
+        document.getElementsByClassName("previewcarrier-divos")[x].classList.add("hidemepreviewoe")
+        document.getElementsByClassName("previewcarrier-videosos")[x].classList.add("hidemepls")
+        console.log("too hd!! removing preview")
+    }
+    else {
+        under10kbitrate = true;
+        document.getElementsByClassName("previewcarrier-divos")[x].classList.remove("hidemepreviewoe")
+        document.getElementsByClassName("previewcarrier-videosos")[x].classList.remove("hidemepls")
     }
 
     document.getElementsByClassName("vid-lengthos")[x].innerText = `${tempos_videososos.duration} seconds`;
@@ -306,6 +387,25 @@ function do_the_vidloop(x){
     else{vid_loop = true;tempos_videososos.loop = true;make_icon("loop"); document.getElementsByClassName("loopo-meter")[x].innerText = "ON";settingsoo_clickod(x)}
 }
 
+function do_the_vidrand(x){
+    let tempos_videososos= document.getElementsByClassName("custom-videopls")[x];
+
+    if(vid_random){
+        vid_random = false;
+        setCookie("random_vid","false")
+        make_icon("not-random");
+        document.getElementsByClassName("rando-meter")[x].innerText = "OFF";
+        settingsoo_clickod(x);
+    }
+    else{
+        vid_random = true;
+        setCookie("random_vid","true");
+        make_icon("random");
+        document.getElementsByClassName("rando-meter")[x].innerText = "ON";
+        settingsoo_clickod(x);
+    }
+}
+
 //shows change in vol and stuff on right top corner
 let shdjsopdjpsodjs;
 function show_stattisticso(x,y){
@@ -322,7 +422,7 @@ function videosos_endedo(x){
     let tempos_videososos= document.getElementsByClassName("custom-videopls")[x];
     document.getElementsByClassName("videos-curretimeo")[x].innerText = "0:00";
     document.getElementsByClassName("video-progressometer-progressed")[x].style.width = "0px";
-    document.getElementsByClassName("prev-skip-icnos")[0].classList.remove("hidemepls")
+    document.getElementsByClassName("prev-skip-icnos")[x].classList.remove("hidemepls")
 
     setTimeout(function(){
         if(!tempos_videososos.paused) switchplayicon("showpause",x)
@@ -431,12 +531,19 @@ function show_timeline(x){
 function fullscreno_clickod(x){
     just_fullscreened = true;
     let tempos_videososos = document.getElementsByClassName("custom-videopls")[x]
+    let outer_vid= document.getElementsByClassName("video-summoner-divttt")[x]
     if (!document.fullscreenElement){
-        let outer_vid= document.getElementsByClassName("video-summoner-divttt")[0]
+         if(outer_vid.classList.contains("pop-out-parent")) {
+            tempos_videososos.classList.remove("pop-out")
+            outer_vid.classList.remove("pop-out-parent")
+            outer_vid.classList.add("pop-out-parent-temp")
+        }
          outer_vid.requestFullscreen();
+         outer_vid.classList.add("summoner-div-full")
          tempos_videososos.classList.add("customovideo-fullscreen")
          document.getElementsByClassName("fullscrnvideovid")[x].classList.add("hidemepls")
          document.getElementsByClassName("theatremodevid")[x].classList.add("hidemepls")
+         document.getElementsByClassName("popoutmodvid")[x].classList.add("hidemepls")
          document.getElementsByClassName("extfullscrnvideovid")[x].classList.remove("hidemepls")
          document.getElementsByClassName("video-summoner-divttte3")[0].classList.add("video-summoner-divttte3-fullscreen")
          document.getElementsByClassName("video-summoner-controlboxo")[0].classList.add("video-summoner-controlboxo-fullscreen")
@@ -454,9 +561,15 @@ function fullscreno_clickod(x){
         }
     else{ 
         tempos_videososos.classList.remove("customovideo-fullscreen")
-        screen.orientation.unlock()
-        setTimeout(function(){document.getElementsByClassName("video-summoner-divttt")[0].classList.remove("nocursoronvidododo")},200)
+         outer_vid.classList.remove("summoner-div-full")
+         screen.orientation.unlock()
+        setTimeout(function(){outer_vid.classList.remove("nocursoronvidododo")},200)
         if(!escape_full)document.exitFullscreen()
+        if(outer_vid.classList.contains("pop-out-parent-temp")) {
+            tempos_videososos.classList.add("pop-out")
+            outer_vid.classList.add("pop-out-parent")
+            outer_vid.classList.remove("pop-out-parent-temp")
+        }
         else{escape_full = false;console.log("yea")}
         let diciidodo = document.getElementsByClassName("video-summoner-divttte")[x];
         let diciidodotwo = document.getElementsByClassName("video-summoner-controlboxo")[x];
@@ -464,7 +577,8 @@ function fullscreno_clickod(x){
         diciidodotwo.classList.add("visible-v")
         diciidodo.classList.remove("hidden-v")
         diciidodotwo.classList.remove("hidden-v")
-        document.getElementsByClassName("theatremodevid")[x].classList.remove("hidemepls")
+         document.getElementsByClassName("popoutmodvid")[x].classList.remove("hidemepls")
+         document.getElementsByClassName("theatremodevid")[x].classList.remove("hidemepls")
         document.getElementsByClassName("fullscrnvideovid")[x].classList.remove("hidemepls")
         document.getElementsByClassName("extfullscrnvideovid")[x].classList.add("hidemepls")
          document.getElementsByClassName("video-summoner-controlboxo")[0].classList.remove("video-summoner-controlboxo-fullscreen")
@@ -526,7 +640,6 @@ function refreshvolvideopl(x){
 }
 
 function vidosplayer_playing(x){
-    
     let tempos_progreso = document.getElementsByClassName("video-progressometer-progressed")[x]
     let tempos_videososos = document.getElementsByClassName("custom-videopls")[x]
     if(!tempos_videososos.paused)switchplayicon("showpause",x)
@@ -570,6 +683,67 @@ function togglevideoplaypause(x){
         else {pause_clickod(x); show_stattisticso(x,"Pause")}
     }
     else settingsoo_clickod(x)
+}
+
+function popoutexit(x){
+    if(customcode){
+        if(current_page=="play") pop_outclick(x) 
+        else document.getElementsByClassName("pop-out-parent")[x].remove()
+    }
+    else pop_outclick(x) 
+}
+
+function pop_outclick(x){
+    let xmlhttp=new XMLHttpRequest();
+    xmlhttp.open("POST",`/YouTube/files/body parts/pip.php`,true);
+    xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xmlhttp.send("work=a");
+    xmlhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+            document.getElementsByClassName("video-summoner-divttt")[x].classList.add("hidemepls")
+            let the_vidos = document.getElementsByClassName("custom-videopls")[x];
+            let temp_kddkkd = document.getElementsByClassName("temposos-trackos")[x].classList.contains("nosubtitloso");
+            let params_sent = {
+                id:curr_vid_id,
+                last_id: last_vid_id,
+                total_vids: total_vids,
+                random:vid_random,
+                opposite_day:oppositeday,
+                loop:vid_loop,
+                src:`${the_vidos.getElementsByTagName("source")[0].src}?#t=${the_vidos.currentTime}`,
+                subs: first_subs,
+                no_subs: temp_kddkkd,
+                client_url: window.location.origin,
+                playlist_all_arr: new_playlist_all_array,
+                play_history: play_history,
+            }
+            console.log(params_sent)
+            let data_sent_pop = JSON.stringify(params_sent)
+            //console.log(data_sent_pop)
+            window.location = `electron-ytplayer://${data_sent_pop}`;
+            pause_clickod(x);
+            clearInterval(pip_out_intrv)
+            pip_out_intrv = setInterval(function(){
+                let xmlhttp2=new XMLHttpRequest();
+                xmlhttp2.open("POST",`/YouTube/files/body parts/pip.php`,true);
+                xmlhttp2.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xmlhttp2.send("work=c");
+                xmlhttp2.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        let resp = JSON.parse(xmlhttp2.responseText);
+                        if(resp.pip_out == false){
+                            console.log(resp)
+                            clearInterval(pip_out_intrv);
+                            document.getElementsByClassName("video-summoner-divttt")[x].classList.remove("hidemepls");
+                            if(customcode) vid_play_search(resp.vid_id,"default",resp.time)
+                            else the_vidos.currentTime = resp.time;
+                            play_history = resp.play_history;
+                        }
+                    }
+                }
+            },1200)
+        }
+    }
 }
 
 function mousemove_move(x){
@@ -656,33 +830,46 @@ function turnonsubstitleso(x){
             }
 
             let default_subs = Object.values(first_subs.subs)[0];
+
             if(!default_subs.style.noedit){
-                setTimeout(function(){
-                    let cueso = document.getElementsByClassName("temposos-trackos")[0].track.cues
-                    for(let i=0;i< cueso.length;i++){
-                        
-                        if(default_subs.style.vdist == "default") cueso[i].line = -2
-                        else cueso[i].line = parseInt(default_subs.style.vdist)
+                if(default_subs.style.editpos){
+                    setTimeout(function(){
+                        console.log(default_subs.style.vdist)
+                        let cueso = document.getElementsByClassName("temposos-trackos")[0].track.cues
+                        for(let i=0;i< cueso.length;i++){
+                            if(default_subs.style.vdist == "default") cueso[i].line = -2
+                            else cueso[i].line = parseInt(default_subs.style.vdist)
+                        }
                     }
+                    ,300)
                 }
-                ,300)}
                 let newbg,font_size,text_shadow,font_color,font_family ;
-        
+    
                 if(default_subs.style.bg.color == "colorless") newbg = "rgba(0, 0, 0, 0)";
                 else newbg = default_subs.style.bg.color;
         
-                if(default_subs.style.font.color  == null) font_color = "rgb(238, 235, 229)";
-                else font_color = default_subs.style.font.color;
-        
-                if(default_subs.style.font.size == "default") font_size = "30px";
+                if(default_subs.style.font.color == "default") font_color = "rgb(238, 235, 229)";
+                else font_color = default_subs.style.font.color;    
+    
+                if(default_subs.style.font.size == "default") font_size = "var(--subFont)";
                 else font_size = default_subs.style.font.size;
         
                 if(default_subs.style.font.textShadow  == null) text_shadow = "1px 1px 1px #050000";
                 else text_shadow = default_subs.style.font.text_shadow;
-        
-                if(default_subs.style.font.family != "default") font_family = default_subs.style.font.family;
-                document.getElementById("subtitle-styleros").innerHTML=`.default-subtitles::cue{background-color:${newbg};color: ${font_color};font-size: ${font_size};text-shadow: ${text_shadow};}`;
+    
+                if(default_subs.style.font.family != "default") {
+                    let temp_fontos =  default_subs.style.font.family;
+                    font_family = temp_fontos;
+                    if(!isFontAvailable(temp_fontos)){
+                        temp_fontos = temp_fontos.replaceAll(" ", "+")
+                        document.getElementsByClassName("importfont-style")[x].innerHTML = `@import url('https://fonts.googleapis.com/css2?family=${temp_fontos}&display=swap');`
+                    }
+                }
+                else{font_family="inherit"}
+    
+                document.getElementById("subtitle-styleros").innerHTML=`.default-subtitles::cue{background-color:${newbg};color: ${font_color};font-size: ${font_size};text-shadow: ${text_shadow};font-family: ${font_family};}`;
                 document.getElementsByClassName("custom-videopls")[0].classList.add("default-subtitles");
+            }
         }
         else{
             teracksdivo.track.mode="hidden";
@@ -730,7 +917,7 @@ function previewcarreireshower(x,event){
         let tempos_videososos = document.getElementsByClassName("custom-videopls")[x];
         let requorosds = ((vid_mouse_cordino_x-vidoellmeterooffsets.left)/progressometerouter_width);
         if(vid_mouse_cordino_x-vidoellmeterooffsets.left > 0 && vid_mouse_cordino_x-vidoellmeterooffsets.left < progressometerouter_width){
-            if(under10kbitrate){
+            if(under10kbitrate && !tempos_videososos.classList.contains("pop-out")){
                 if(previeewevideoo.videoWidth < 2000){if((requorosds*tempos_videososos.duration-previeewevideoo.currentTime)>2 || (requorosds*tempos_videososos.duration-previeewevideoo.currentTime)<-2)previeewevideoo.currentTime = requorosds*tempos_videososos.duration;}
                 else{if((requorosds*tempos_videososos.duration-previeewevideoo.currentTime)>10 || (requorosds*tempos_videososos.duration-previeewevideoo.currentTime)<-10)previeewevideoo.currentTime = requorosds*tempos_videososos.duration;}
             }
@@ -742,7 +929,7 @@ function previewcarreireshower(x,event){
             if(new_leftoso < 0) new_leftoso = 0
             else if (new_leftoso > max_leftooso) new_leftoso = max_leftooso
 
-            if(!under10kbitrate) new_leftoso = vid_mouse_cordino_x-vidoellmeterooffsets.left-(previeewevideoo_div.offsetWidth/2);
+            if(!under10kbitrate || tempos_videososos.classList.contains("pop-out")) new_leftoso = vid_mouse_cordino_x-vidoellmeterooffsets.left-(previeewevideoo_div.offsetWidth/2);
             previeewevideoo_div.style.left = `${new_leftoso}px`;
             previeewetimeline_div.style.width = `${vid_mouse_cordino_x-vidoellmeterooffsets.left}px`
         }
@@ -762,6 +949,30 @@ function previewcarreirehider(x){
     }
 }
 
+let curr_play_index;
+function next_playlist_song(){
+    if(customcode){
+        if(curr_vid_id == last_vid_id && !oppositeday){
+            curr_play_index = ConstrainedRan(0,total_vids-1);
+            curr_vid_id =  new_playlist_all_array[0][curr_play_index];
+        }
+        else{
+            if(curr_vid_id!=2){
+                if(vid_random){curr_play_index = ConstrainedRan(0,total_vids-1);curr_vid_id =  new_playlist_all_array[0][curr_play_index];}
+                else{
+                    if(curr_play_index == undefined) curr_play_index = new_playlist_all_array[0].indexOf(`${curr_vid_id}`);
+                    if(oppositeday) curr_play_index--;
+                    else curr_play_index++;
+                    curr_vid_id =  new_playlist_all_array[0][curr_play_index]
+                }
+            }
+            else{
+                curr_play_index = ConstrainedRan(0,total_vids-1);
+                curr_vid_id =  new_playlist_all_array[0][curr_play_index];
+            }
+        }
+    }
+}
 
 
 function secToHourMinSec(input){
@@ -815,26 +1026,6 @@ function getframerat(x){
     document.getElementsByClassName("vid-framerateso")[x].textContent = "Calculating..."
     getframerate2()
 
-    // if(first_time_getframe){
-    //     first_time_getframe = false;
-    //     setTimeout(function(){
-    //         let getframeratesosos = document.getElementsByClassName("custom-videopls")[x].getVideoPlaybackQuality().totalVideoFrames
-    //         setTimeout(function(){
-    //             getframeratesosos = document.getElementsByClassName("custom-videopls")[x].getVideoPlaybackQuality().totalVideoFrames - getframeratesosos;
-    //             if(getframeratesosos%2 != 0) getframerat(x)
-    //             else{document.getElementsByClassName("vid-framerateso")[x].textContent = getframeratesosos}
-    //         },1000)
-    //     },2000)
-    // }
-    // else{
-    //     let getframeratesosos = document.getElementsByClassName("custom-videopls")[x].getVideoPlaybackQuality().totalVideoFrames
-    //     setTimeout(function(){
-    //         getframeratesosos = document.getElementsByClassName("custom-videopls")[x].getVideoPlaybackQuality().totalVideoFrames - getframeratesosos;
-    //         if(getframeratesosos%2 != 0) getframerat(x)
-    //         else {document.getElementsByClassName("vid-framerateso")[x].textContent = getframeratesosos;first_time_getframe = true;}
-    //     },1000)
-    // }
-
 } 
 
 setTimeout(() => {
@@ -878,6 +1069,44 @@ window.mobileCheck = function() {
     (function(a){if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0,4))) check = true;})(navigator.userAgent||navigator.vendor||window.opera);
     return check;
 };
+
+(function (document) {
+    let width;
+    let body = document.body;
+
+    let container = document.createElement('span');
+    container.innerHTML = Array(100).join('wi');
+    container.style.cssText = [
+        'position:absolute',
+        'width:auto',
+        'font-size:128px',
+        'left:-99999px'
+    ].join(' !important;');
+
+    let getWidth = function (fontFamily) {
+        container.style.fontFamily = fontFamily;
+
+        body.appendChild(container);
+        width = container.clientWidth;
+        body.removeChild(container);
+
+        return width;
+    };
+
+    // Pre compute the widths of monospace, serif & sans-serif
+    // to improve performance.
+    let monoWidth  = getWidth('monospace');
+    let serifWidth = getWidth('serif');
+    let sansWidth  = getWidth('sans-serif');
+
+    window.isFontAvailable = function (font) {
+        return monoWidth !== getWidth(font + ',monospace') ||
+        sansWidth !== getWidth(font + ',sans-serif') ||
+        serifWidth !== getWidth(font + ',serif');
+    };
+})(document);
+//console.log(isFontAvailable('Arial'))
+// Evaluates true
 
 window.addEventListener("load",function(){
     cumstomvideoplayerupdatottt()

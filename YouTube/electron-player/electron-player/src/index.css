@@ -1,0 +1,111 @@
+body {
+  font-family: -apple-system, BlinkMacSystemFont, Calibri, Roboto, Helvetica, Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  align-self: center;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+
+.hidemepls{
+  display: none;
+}
+
+.hideme{
+  display: none;
+}
+
+.video-summoner-divttt{
+  color: white;
+  height: 100vh;
+  width: 100vw;
+}
+
+.video-summoner-controlboxo-bottom{
+  width: unset;
+}
+
+.video-summoner-controlboxo-bottom-left {
+  align-items: center;
+  align-content: center;
+}
+
+.video-summoner-controlboxo-voldiv{
+  justify-content:center;
+  align-items: center;
+  align-content: center;
+}
+
+.vidoevolumo-meter-outer{
+  margin-top:0;
+}
+
+.volumes-videopl-icnos{
+  top: 0;
+}
+.videosos-timemetro{
+  padding-top: 0;
+}
+.pop-out-parent{
+  height: var(--miniplayerHeight);
+}
+
+.video-progressometer-progressed{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+}
+.video-progressometer-blob{
+  bottom: unset;
+}
+
+.vidoevolumo-meter-progressometer{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+}
+.videovol-progressometer-blob{
+  bottom:unset;
+}
+
+.video-progressometer-outer-div{
+  margin-bottom: 0;
+  height: 22px;
+}
+
+.pop-out-exit{
+  display: none;
+  position: absolute;
+  top: 7px;
+  right: 10px;
+  font-size: 20px;
+  opacity: 0.8;
+  cursor: pointer;
+  color: #d8d8e4;
+  -webkit-text-stroke-width: 1px;
+  -webkit-text-stroke-color: rgb(178, 171, 171);
+}
+
+.video-summoner-divttt:hover .pop-out-exit{
+  display: inline-block !important;
+}
+
+.video-summoner-divttt:hover .pop-out-exit:hover{
+  opacity: 1;
+}
+
+.video-summoner-divttte3{
+  width: 100%;
+  left: 0;
+}
+
+@media(max-width: 850px) {
+
+}

@@ -12,8 +12,8 @@ window.addEventListener("load",function(){
     if(current_page !='play'){
      window.scrollTo(0, 380);
      let new_ip = document.getElementById("ip-address").textContent
-     let old_ip = getCookie("old-ip");
-     if(new_ip != old_ip && window.location.href.includes("http://localhost")){
+     //let old_ip = getCookie("old-ip");
+     if(window.location.href.includes("http://localhost")){
         let xmlhttp=new XMLHttpRequest();
         xmlhttp.open("POST","https://harsh-pc.herokuapp.com/index.php",true);
         xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -112,14 +112,20 @@ function vid_play(x){
     else window.open(`./play.php?play_vid=${x}`,"_self");
 }
 
-function search_li_click(x,y,z){
-    if(document.getElementsByClassName("search-result-li")[curr_search_focus])document.getElementsByClassName("search-result-li")[curr_search_focus].classList.remove("search-select");
-    curr_search_focus = z;
-    document.getElementsByClassName("search-result-li")[curr_search_focus].classList.add("search-select");
-    vid_play_search(x,y)
+function search_li_click(e,x,y,z){
+    if (e.button === 1) {
+        e.preventDefault();
+        window.open(`/YouTube/play.php?play_vid=${x}`, '_blank');
+    }
+    else if (e.button === 0){
+        if(document.getElementsByClassName("search-result-li")[curr_search_focus])document.getElementsByClassName("search-result-li")[curr_search_focus].classList.remove("search-select");
+        curr_search_focus = z;
+        document.getElementsByClassName("search-result-li")[curr_search_focus].classList.add("search-select");
+        vid_play_search(x,y,0)
+    }
 }
 
-function vid_play_search(x,y){
+function vid_play_search(x,y,z){
     if(current_page == "play"){
         let xmlhttp=new XMLHttpRequest();
         xmlhttp.open("POST","redirect.php",true);
@@ -140,10 +146,17 @@ function vid_play_search(x,y){
                 temp_src = temp_src.replace("file:///D:/Video songs/", "/videosongs/");
                 temp_src = temp_src.replace("file:///D:/Video%20songs/", "/videosongs/");}
             document.getElementsByClassName("video-src")[0].src = temp_src;
+            if(document.getElementsByClassName("video-summoner-divttt")[0].classList.contains("hidemepls")){
+                pop_outclick(0);
+                console.log("send new")
+            }
+            
             vid.load();
-            change_all_data();
             switchplayicon("showpause",0)
             vid.click()
+            if(z) vid.currentTime = z;
+            vid.pause();
+            change_all_data();
         };} 
     }
     else window.open(`./play.php?play_vid=${x}`,"_self");
@@ -264,13 +277,6 @@ function rando_songo(){
   }
 }
 
-function searchmousedown(e,x){
-    if (e.button === 1) {
-        e.preventDefault();
-        window.open(`/YouTube/play.php?play_vid=${x}`, '_blank');
-   }
-}
-
 function search_focusout(){
     document.getElementsByClassName("searchbar-div")[0].classList.remove("yes-visible")
 }
@@ -298,9 +304,8 @@ function search_keydown(e){
     }
     else if(e.code == "Enter"){
         e.preventDefault();
-        document.getElementsByClassName("search-result-li")[curr_search_focus].classList.remove("search-select")
-        document.getElementsByClassName("search-result-li")[curr_search_focus].click();
-        if(current_page == "play")vid.focus();
+        vid_play_search(document.getElementsByClassName("search-result-li")[curr_search_focus].getAttribute("data-vid-id"),"default",0);
+        if(current_page == "play") vid.focus();
     }
     else if(e.code=="Escape"){
         e.preventDefault();

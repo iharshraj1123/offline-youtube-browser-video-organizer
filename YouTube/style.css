@@ -649,6 +649,11 @@ div.Menu {
     position:relative;
 }
 
+.video-inner-div{
+    min-height: 79vh;
+    background: url("./resources/custom video player/icons/pop out logo.png") no-repeat center;
+}
+
 .video-playing {
     height: 79vh;
     display: block;
