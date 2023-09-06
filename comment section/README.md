@@ -1,7 +1,11 @@
 ![image](https://github.com/iharshraj1123/offline-youtube-browser-video-organizer/assets/33609172/191a37c6-6f3c-4070-9517-004ade9f9448)
 
+![image](https://github.com/iharshraj1123/offline-youtube-browser-video-organizer/assets/33609172/4c3be46b-cfcc-4893-84a7-23b04d90cbac)
+
+
 ![image](https://github.com/iharshraj1123/offline-youtube-browser-video-organizer/assets/33609172/f1b5f1db-703a-443b-a6ba-eca9b2214dd3)
 
+![image](https://github.com/iharshraj1123/offline-youtube-browser-video-organizer/assets/33609172/ea07b43a-caf0-4fa0-8e2e-8a7932d702a2)
 
 
 summoning code: <?php include '/comment section/comments.php' ?>
