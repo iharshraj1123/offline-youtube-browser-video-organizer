@@ -47,7 +47,7 @@ And add:
 ```
 before "<\/IfModule>"
 
-Add these codes in bottom:
+Add these codes in bottom of httpd.conf:
 ```
 <Directory "D:/">
     Options Indexes FollowSymLinks Includes ExecCGI
