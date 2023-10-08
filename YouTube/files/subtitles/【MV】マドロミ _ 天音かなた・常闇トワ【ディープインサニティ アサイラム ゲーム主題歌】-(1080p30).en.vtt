@@ -1,0 +1,2854 @@
+WEBVTT
+Kind: captions
+Language: en
+Style:
+::cue(c.color16F7E9) { color: rgb(22,247,233);
+ }
+::cue(c.color1AF0E8) { color: rgb(26,240,232);
+ }
+::cue(c.color1BEFE8) { color: rgb(27,239,232);
+ }
+::cue(c.color1CEDE8) { color: rgb(28,237,232);
+ }
+::cue(c.color1DECE8) { color: rgb(29,236,232);
+ }
+::cue(c.color1EEAE8) { color: rgb(30,234,232);
+ }
+::cue(c.color1FE9E7) { color: rgb(31,233,231);
+ }
+::cue(c.color20E7E7) { color: rgb(32,231,231);
+ }
+::cue(c.color20E8E7) { color: rgb(32,232,231);
+ }
+::cue(c.color21E6E7) { color: rgb(33,230,231);
+ }
+::cue(c.color21E7E7) { color: rgb(33,231,231);
+ }
+::cue(c.color22E4E7) { color: rgb(34,228,231);
+ }
+::cue(c.color22E5E7) { color: rgb(34,229,231);
+ }
+::cue(c.color24E2E7) { color: rgb(36,226,231);
+ }
+::cue(c.color25E0E7) { color: rgb(37,224,231);
+ }
+::cue(c.color25E1E7) { color: rgb(37,225,231);
+ }
+::cue(c.color26DFE7) { color: rgb(38,223,231);
+ }
+::cue(c.color27DEE7) { color: rgb(39,222,231);
+ }
+::cue(c.color28DCE6) { color: rgb(40,220,230);
+ }
+::cue(c.color29DBE6) { color: rgb(41,219,230);
+ }
+::cue(c.color2AD9E6) { color: rgb(42,217,230);
+ }
+::cue(c.color2BD8E6) { color: rgb(43,216,230);
+ }
+::cue(c.color2CD7E6) { color: rgb(44,215,230);
+ }
+::cue(c.color2DD5E6) { color: rgb(45,213,230);
+ }
+::cue(c.color2DD6E6) { color: rgb(45,214,230);
+ }
+::cue(c.color2ED3E6) { color: rgb(46,211,230);
+ }
+::cue(c.color2ED4E6) { color: rgb(46,212,230);
+ }
+::cue(c.color2FD1E6) { color: rgb(47,209,230);
+ }
+::cue(c.color2FD2E6) { color: rgb(47,210,230);
+ }
+::cue(c.color30D1E6) { color: rgb(48,209,230);
+ }
+::cue(c.color31CFE5) { color: rgb(49,207,229);
+ }
+::cue(c.color31D0E6) { color: rgb(49,208,230);
+ }
+::cue(c.color32CDE5) { color: rgb(50,205,229);
+ }
+::cue(c.color32CEE5) { color: rgb(50,206,229);
+ }
+::cue(c.color34CBE5) { color: rgb(52,203,229);
+ }
+::cue(c.color35CAE5) { color: rgb(53,202,229);
+ }
+::cue(c.color36C8E5) { color: rgb(54,200,229);
+ }
+::cue(c.color36C9E5) { color: rgb(54,201,229);
+ }
+::cue(c.color37C6E5) { color: rgb(55,198,229);
+ }
+::cue(c.color37C7E5) { color: rgb(55,199,229);
+ }
+::cue(c.color38C5E5) { color: rgb(56,197,229);
+ }
+::cue(c.color39C4E5) { color: rgb(57,196,229);
+ }
+::cue(c.color3AC2E4) { color: rgb(58,194,228);
+ }
+::cue(c.color3AC3E5) { color: rgb(58,195,229);
+ }
+::cue(c.color3BC0E4) { color: rgb(59,192,228);
+ }
+::cue(c.color3BC1E4) { color: rgb(59,193,228);
+ }
+::cue(c.color3BC2E4) { color: rgb(59,194,228);
+ }
+::cue(c.color3CC0E4) { color: rgb(60,192,228);
+ }
+::cue(c.color3DBFE4) { color: rgb(61,191,228);
+ }
+::cue(c.color3EBCE4) { color: rgb(62,188,228);
+ }
+::cue(c.color3FBBE4) { color: rgb(63,187,228);
+ }
+::cue(c.color40BAE4) { color: rgb(64,186,228);
+ }
+::cue(c.color41B9E4) { color: rgb(65,185,228);
+ }
+::cue(c.color42B6E4) { color: rgb(66,182,228);
+ }
+::cue(c.color42B7E4) { color: rgb(66,183,228);
+ }
+::cue(c.color43B5E3) { color: rgb(67,181,227);
+ }
+::cue(c.color44B4E3) { color: rgb(68,180,227);
+ }
+::cue(c.color44B5E3) { color: rgb(68,181,227);
+ }
+::cue(c.color45B3E3) { color: rgb(69,179,227);
+ }
+::cue(c.color46B1E3) { color: rgb(70,177,227);
+ }
+::cue(c.color46B2E3) { color: rgb(70,178,227);
+ }
+::cue(c.color47B0E3) { color: rgb(71,176,227);
+ }
+::cue(c.color48AEE3) { color: rgb(72,174,227);
+ }
+::cue(c.color48AFE3) { color: rgb(72,175,227);
+ }
+::cue(c.color49ACE3) { color: rgb(73,172,227);
+ }
+::cue(c.color49ADE3) { color: rgb(73,173,227);
+ }
+::cue(c.color4AABE3) { color: rgb(74,171,227);
+ }
+::cue(c.color4AACE3) { color: rgb(74,172,227);
+ }
+::cue(c.color4CA9E3) { color: rgb(76,169,227);
+ }
+::cue(c.color4DA7E2) { color: rgb(77,167,226);
+ }
+::cue(c.color4EA6E2) { color: rgb(78,166,226);
+ }
+::cue(c.color4FA4E2) { color: rgb(79,164,226);
+ }
+::cue(c.color51A2E2) { color: rgb(81,162,226);
+ }
+::cue(c.color52A0E2) { color: rgb(82,160,226);
+ }
+::cue(c.color539EE2) { color: rgb(83,158,226);
+ }
+::cue(c.color539FE2) { color: rgb(83,159,226);
+ }
+::cue(c.color549DE2) { color: rgb(84,157,226);
+ }
+::cue(c.color569AE1) { color: rgb(86,154,225);
+ }
+::cue(c.color569BE1) { color: rgb(86,155,225);
+ }
+::cue(c.color5799E1) { color: rgb(87,153,225);
+ }
+::cue(c.color5897E1) { color: rgb(88,151,225);
+ }
+::cue(c.color5898E1) { color: rgb(88,152,225);
+ }
+::cue(c.color5996E1) { color: rgb(89,150,225);
+ }
+::cue(c.color5A95E1) { color: rgb(90,149,225);
+ }
+::cue(c.color5B94E1) { color: rgb(91,148,225);
+ }
+::cue(c.color5C92E1) { color: rgb(92,146,225);
+ }
+::cue(c.color5D91E1) { color: rgb(93,145,225);
+ }
+::cue(c.color5E8FE1) { color: rgb(94,143,225);
+ }
+::cue(c.color5E90E1) { color: rgb(94,144,225);
+ }
+::cue(c.color5F8EE0) { color: rgb(95,142,224);
+ }
+::cue(c.color608CE0) { color: rgb(96,140,224);
+ }
+::cue(c.color608DE0) { color: rgb(96,141,224);
+ }
+::cue(c.color618AE0) { color: rgb(97,138,224);
+ }
+::cue(c.color6289E0) { color: rgb(98,137,224);
+ }
+::cue(c.color628AE0) { color: rgb(98,138,224);
+ }
+::cue(c.color6387E0) { color: rgb(99,135,224);
+ }
+::cue(c.color6486E0) { color: rgb(100,134,224);
+ }
+::cue(c.color6487E0) { color: rgb(100,135,224);
+ }
+::cue(c.color6585E0) { color: rgb(101,133,224);
+ }
+::cue(c.color6683E0) { color: rgb(102,131,224);
+ }
+::cue(c.color6782E0) { color: rgb(103,130,224);
+ }
+::cue(c.color6783E0) { color: rgb(103,131,224);
+ }
+::cue(c.color697FDF) { color: rgb(105,127,223);
+ }
+::cue(c.color6980DF) { color: rgb(105,128,223);
+ }
+::cue(c.color6A7EDF) { color: rgb(106,126,223);
+ }
+::cue(c.color6C7BDF) { color: rgb(108,123,223);
+ }
+::cue(c.color6E78DF) { color: rgb(110,120,223);
+ }
+::cue(c.color6F76DF) { color: rgb(111,118,223);
+ }
+::cue(c.color6F77DF) { color: rgb(111,119,223);
+ }
+::cue(c.color7173DE) { color: rgb(113,115,222);
+ }
+::cue(c.color7174DE) { color: rgb(113,116,222);
+ }
+::cue(c.color7273DE) { color: rgb(114,115,222);
+ }
+::cue(c.color7371DE) { color: rgb(115,113,222);
+ }
+::cue(c.color746FDE) { color: rgb(116,111,222);
+ }
+::cue(c.color7470DE) { color: rgb(116,112,222);
+ }
+::cue(c.color756FDE) { color: rgb(117,111,222);
+ }
+::cue(c.color766CDE) { color: rgb(118,108,222);
+ }
+::cue(c.color766DDE) { color: rgb(118,109,222);
+ }
+::cue(c.color776CDE) { color: rgb(119,108,222);
+ }
+::cue(c.color7869DE) { color: rgb(120,105,222);
+ }
+::cue(c.color786ADE) { color: rgb(120,106,222);
+ }
+::cue(c.color7968DE) { color: rgb(121,104,222);
+ }
+::cue(c.color7A66DD) { color: rgb(122,102,221);
+ }
+::cue(c.color7A67DD) { color: rgb(122,103,221);
+ }
+::cue(c.color7B65DD) { color: rgb(123,101,221);
+ }
+::cue(c.color7C64DD) { color: rgb(124,100,221);
+ }
+::cue(c.color7D62DD) { color: rgb(125,98,221);
+ }
+::cue(c.color7E61DD) { color: rgb(126,97,221);
+ }
+::cue(c.color7F60DD) { color: rgb(127,96,221);
+ }
+::cue(c.color805EDD) { color: rgb(128,94,221);
+ }
+::cue(c.color805FDD) { color: rgb(128,95,221);
+ }
+::cue(c.color815DDD) { color: rgb(129,93,221);
+ }
+::cue(c.color825BDD) { color: rgb(130,91,221);
+ }
+::cue(c.color825CDD) { color: rgb(130,92,221);
+ }
+::cue(c.color8459DC) { color: rgb(132,89,220);
+ }
+::cue(c.color8557DC) { color: rgb(133,87,220);
+ }
+::cue(c.color8558DC) { color: rgb(133,88,220);
+ }
+::cue(c.color8656DC) { color: rgb(134,86,220);
+ }
+::cue(c.color8754DC) { color: rgb(135,84,220);
+ }
+::cue(c.color8952DC) { color: rgb(137,82,220);
+ }
+::cue(c.color8A50DC) { color: rgb(138,80,220);
+ }
+::cue(c.color8B4FDC) { color: rgb(139,79,220);
+ }
+::cue(c.color8C4DDB) { color: rgb(140,77,219);
+ }
+::cue(c.color8E4ADB) { color: rgb(142,74,219);
+ }
+::cue(c.color8E4BDB) { color: rgb(142,75,219);
+ }
+::cue(c.color8F49DB) { color: rgb(143,73,219);
+ }
+::cue(c.color8F4ADB) { color: rgb(143,74,219);
+ }
+::cue(c.color9047DB) { color: rgb(144,71,219);
+ }
+::cue(c.color9048DB) { color: rgb(144,72,219);
+ }
+::cue(c.color9146DB) { color: rgb(145,70,219);
+ }
+::cue(c.color9244DB) { color: rgb(146,68,219);
+ }
+::cue(c.color9245DB) { color: rgb(146,69,219);
+ }
+::cue(c.color9343DB) { color: rgb(147,67,219);
+ }
+::cue(c.color9441DB) { color: rgb(148,65,219);
+ }
+::cue(c.color9442DB) { color: rgb(148,66,219);
+ }
+::cue(c.color9541DB) { color: rgb(149,65,219);
+ }
+::cue(c.color963FDA) { color: rgb(150,63,218);
+ }
+::cue(c.color9640DA) { color: rgb(150,64,218);
+ }
+::cue(c.color973DDA) { color: rgb(151,61,218);
+ }
+::cue(c.color983CDA) { color: rgb(152,60,218);
+ }
+::cue(c.color993BDA) { color: rgb(153,59,218);
+ }
+::cue(c.color9A3ADA) { color: rgb(154,58,218);
+ }
+::cue(c.color9B37DA) { color: rgb(155,55,218);
+ }
+::cue(c.color9C36DA) { color: rgb(156,54,218);
+ }
+::cue(c.color9D34DA) { color: rgb(157,52,218);
+ }
+::cue(c.color9D35DA) { color: rgb(157,53,218);
+ }
+::cue(c.color9D36DA) { color: rgb(157,54,218);
+ }
+::cue(c.color9E33D9) { color: rgb(158,51,217);
+ }
+::cue(c.color9E34DA) { color: rgb(158,52,218);
+ }
+::cue(c.color9F32D9) { color: rgb(159,50,217);
+ }
+::cue(c.colorA031D9) { color: rgb(160,49,217);
+ }
+::cue(c.colorA0AAB4) { color: rgb(160,170,180);
+ }
+::cue(c.colorA12FD9) { color: rgb(161,47,217);
+ }
+::cue(c.colorA130D9) { color: rgb(161,48,217);
+ }
+::cue(c.colorA22DD9) { color: rgb(162,45,217);
+ }
+::cue(c.colorA22ED9) { color: rgb(162,46,217);
+ }
+::cue(c.colorA32CD9) { color: rgb(163,44,217);
+ }
+::cue(c.colorA42BD9) { color: rgb(164,43,217);
+ }
+::cue(c.colorA628D9) { color: rgb(166,40,217);
+ }
+::cue(c.colorA629D9) { color: rgb(166,41,217);
+ }
+::cue(c.colorA726D8) { color: rgb(167,38,216);
+ }
+::cue(c.colorA727D9) { color: rgb(167,39,217);
+ }
+::cue(c.colorA825D8) { color: rgb(168,37,216);
+ }
+::cue(c.colorA924D8) { color: rgb(169,36,216);
+ }
+::cue(c.colorA925D8) { color: rgb(169,37,216);
+ }
+::cue(c.colorAA22D8) { color: rgb(170,34,216);
+ }
+::cue(c.colorAA23D8) { color: rgb(170,35,216);
+ }
+::cue(c.colorAB20D8) { color: rgb(171,32,216);
+ }
+::cue(c.colorAB21D8) { color: rgb(171,33,216);
+ }
+::cue(c.colorAC1FD8) { color: rgb(172,31,216);
+ }
+::cue(c.colorAD1ED8) { color: rgb(173,30,216);
+ }
+::cue(c.colorAE1DD8) { color: rgb(174,29,216);
+ }
+::cue(c.colorAF1BD8) { color: rgb(175,27,216);
+ }
+::cue(c.colorB01AD8) { color: rgb(176,26,216);
+ }
+::cue(c.colorB118D7) { color: rgb(177,24,215);
+ }
+::cue(c.colorB217D7) { color: rgb(178,23,215);
+ }
+::cue(c.colorB315D7) { color: rgb(179,21,215);
+ }
+::cue(c.colorB316D7) { color: rgb(179,22,215);
+ }
+::cue(c.colorB414D7) { color: rgb(180,20,215);
+ }
+::cue(c.colorB611D7) { color: rgb(182,17,215);
+ }
+::cue(c.colorB612D7) { color: rgb(182,18,215);
+ }
+::cue(c.colorB70FD7) { color: rgb(183,15,215);
+ }
+::cue(c.colorB710D7) { color: rgb(183,16,215);
+ }
+::cue(c.colorB80ED7) { color: rgb(184,14,215);
+ }
+::cue(c.colorB80FD7) { color: rgb(184,15,215);
+ }
+::cue(c.colorB90DD7) { color: rgb(185,13,215);
+ }
+::cue(c.colorBA0CD6) { color: rgb(186,12,214);
+ }
+::cue(c.colorBB0AD6) { color: rgb(187,10,214);
+ }
+::cue(c.colorBC09D6) { color: rgb(188,9,214);
+ }
+::cue(c.colorBD07D6) { color: rgb(189,7,214);
+ }
+::cue(c.colorBE06D6) { color: rgb(190,6,214);
+ }
+::cue(c.colorC300D6) { color: rgb(195,0,214);
+ }
+::cue(c.colorD9D9D9) { color: rgb(217,217,217);
+ }
+##
+
+00:00:00.985 --> 00:00:01.385 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.colorD9D9D9>la ci fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:00.985 --> 00:00:01.385 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.colorD9D9D9>la ci fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:01.385 --> 00:00:01.852 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.colorD9D9D9>ci fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:01.385 --> 00:00:01.852 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.colorD9D9D9>ci fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:01.852 --> 00:00:02.453 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.colorD9D9D9>fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:01.852 --> 00:00:02.453 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.colorD9D9D9>fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:02.453 --> 00:00:02.786 position:58% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.colorD9D9D9>ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:02.453 --> 00:00:02.786 position:58% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.colorD9D9D9>ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:02.786 --> 00:00:03.320 position:61% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.colorD9D9D9>ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:02.786 --> 00:00:03.320 position:61% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.colorD9D9D9>ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:03.320 --> 00:00:03.821 position:64% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.colorD9D9D9>we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:03.320 --> 00:00:03.821 position:64% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.colorD9D9D9>we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:03.821 --> 00:00:04.021 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.color9D34DA>​w</c><c.colorAA23D8>​e </c><c.colorD9D9D9>le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:03.821 --> 00:00:04.021 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.color9D34DA>​w</c><c.colorAA23D8>​e </c><c.colorD9D9D9>le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:04.021 --> 00:00:06.590 position:69% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.color9D34DA>​w</c><c.colorAA23D8>​e </c><c.colorB611D7>​l</c><c.colorC300D6>e​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:04.021 --> 00:00:06.590 position:69% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.color9D34DA>​w</c><c.colorAA23D8>​e </c><c.colorB611D7>​l</c><c.colorC300D6>e​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:06.590 --> 00:00:07.024 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.colorD9D9D9>ya ku la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:06.590 --> 00:00:07.024 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.colorD9D9D9>ya ku la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:07.024 --> 00:00:07.558 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.colorD9D9D9>ku la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:07.024 --> 00:00:07.558 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.colorD9D9D9>ku la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:07.558 --> 00:00:08.092 position:58% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.colorD9D9D9>la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:07.558 --> 00:00:08.092 position:58% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.colorD9D9D9>la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:08.092 --> 00:00:08.425 position:61% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.colorD9D9D9>ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:08.092 --> 00:00:08.425 position:61% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.colorD9D9D9>ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:08.425 --> 00:00:08.926 position:64% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.colorD9D9D9>ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:08.425 --> 00:00:08.926 position:64% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.colorD9D9D9>ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:08.926 --> 00:00:09.460 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorD9D9D9>wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:08.926 --> 00:00:09.460 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorD9D9D9>wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:09.460 --> 00:00:09.693 position:70% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorA031D9>​w</c><c.colorAB20D8>​a </c><c.colorD9D9D9>ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:09.460 --> 00:00:09.693 position:70% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorA031D9>​w</c><c.colorAB20D8>​a </c><c.colorD9D9D9>ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:09.693 --> 00:00:12.296 position:72% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorA031D9>​w</c><c.colorAB20D8>​a </c><c.colorB710D7>​k</c><c.colorC300D6>u​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:09.693 --> 00:00:12.296 position:72% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorA031D9>​w</c><c.colorAB20D8>​a </c><c.colorB710D7>​k</c><c.colorC300D6>u​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:12.296 --> 00:00:12.663 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.colorD9D9D9>la ci fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:12.296 --> 00:00:12.663 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.colorD9D9D9>la ci fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:12.663 --> 00:00:23.941 position:97% line:7%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​A</c><c.color1BEFE8>​m</c><c.color20E7E7>​a</c><c.color26DFE7>​n</c><c.color2BD8E6>​e </c><c.color31D0E6>​K</c><c.color36C8E5>​a</c><c.color3BC0E4>​n</c><c.color41B9E4>​a</c><c.color46B1E3>​t</c><c.color4CA9E3>​a</c><c.color51A2E2>​, </c><c.color569AE1>​T</c><c.color5C92E1>​o</c><c.color618AE0>​k</c><c.color6783E0>​o</c><c.color6C7BDF>​y</c><c.color7173DE>​a</c><c.color776CDE>​m</c><c.color7C64DD>​i </c><c.color825CDD>​T</c><c.color8754DC>​o</c><c.color8C4DDB>​w</c><c.color9245DB>​a </c><c.color973DDA>​- </c><c.color9D36DA>​m</c><c.colorA22ED9>​a</c><c.colorA726D8>​d</c><c.colorAD1ED8>​o</c><c.colorB217D7>​r</c><c.colorB80FD7>​o</c><c.colorBD07D6>​m</c><c.colorC300D6>i​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:12.663 --> 00:00:23.941 position:97% line:7%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​A</c><c.color1BEFE8>​m</c><c.color20E7E7>​a</c><c.color26DFE7>​n</c><c.color2BD8E6>​e </c><c.color31D0E6>​K</c><c.color36C8E5>​a</c><c.color3BC0E4>​n</c><c.color41B9E4>​a</c><c.color46B1E3>​t</c><c.color4CA9E3>​a</c><c.color51A2E2>​, </c><c.color569AE1>​T</c><c.color5C92E1>​o</c><c.color618AE0>​k</c><c.color6783E0>​o</c><c.color6C7BDF>​y</c><c.color7173DE>​a</c><c.color776CDE>​m</c><c.color7C64DD>​i </c><c.color825CDD>​T</c><c.color8754DC>​o</c><c.color8C4DDB>​w</c><c.color9245DB>​a </c><c.color973DDA>​- </c><c.color9D36DA>​m</c><c.colorA22ED9>​a</c><c.colorA726D8>​d</c><c.colorAD1ED8>​o</c><c.colorB217D7>​r</c><c.colorB80FD7>​o</c><c.colorBD07D6>​m</c><c.colorC300D6>i​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:12.663 --> 00:00:15.466 position:97% line:76%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​L</c><c.color1FE9E7>​y</c><c.color29DBE6>​r</c><c.color32CDE5>​i</c><c.color3CC0E4>​c</c><c.color46B2E3>​s</c><c.color4FA4E2>​, </c><c.color5996E1>​C</c><c.color6289E0>​o</c><c.color6C7BDF>​m</c><c.color766DDE>​p</c><c.color7F60DD>​o</c><c.color8952DC>​s</c><c.color9244DB>​i</c><c.color9C36DA>​t</c><c.colorA629D9>​i</c><c.colorAF1BD8>​o</c><c.colorB90DD7>​n</c><c.colorC300D6>:​ ​</c><c.colorA0AAB4>​
+​</c><c.color16F7E9>​ ​T</c><c.color1AF0E8>​a</c><c.color1FE9E7>​k</c><c.color24E2E7>​e</c><c.color29DBE6>​t</c><c.color2ED4E6>​e</c><c.color32CDE5>​r</c><c.color37C6E5>​u </c><c.color3CC0E4>​S</c><c.color41B9E4>​u</c><c.color46B2E3>​n</c><c.color4AABE3>​a</c><c.color4FA4E2>​m</c><c.color549DE2>​o</c><c.color5996E1>​r</c><c.color5E90E1>​i </c><c.color6289E0>​(</c><c.color6782E0>​M</c><c.color6C7BDF>​i</c><c.color7174DE>​r</c><c.color766DDE>​a</c><c.color7A66DD>​i </c><c.color7F60DD>​K</c><c.color8459DC>​o</c><c.color8952DC>​d</c><c.color8E4BDB>​a</c><c.color9244DB>​i </c><c.color973DDA>​O</c><c.color9C36DA>​r</c><c.colorA130D9>​c</c><c.colorA629D9>​h</c><c.colorAA22D8>​e</c><c.colorAF1BD8>​s</c><c.colorB414D7>​t</c><c.colorB90DD7>​r</c><c.colorBE06D6>​a</c><c.colorC300D6>)​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:12.663 --> 00:00:15.466 position:97% line:76%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​L</c><c.color1FE9E7>​y</c><c.color29DBE6>​r</c><c.color32CDE5>​i</c><c.color3CC0E4>​c</c><c.color46B2E3>​s</c><c.color4FA4E2>​, </c><c.color5996E1>​C</c><c.color6289E0>​o</c><c.color6C7BDF>​m</c><c.color766DDE>​p</c><c.color7F60DD>​o</c><c.color8952DC>​s</c><c.color9244DB>​i</c><c.color9C36DA>​t</c><c.colorA629D9>​i</c><c.colorAF1BD8>​o</c><c.colorB90DD7>​n</c><c.colorC300D6>:​ ​</c><c.colorA0AAB4>​
+​</c><c.color16F7E9>​ ​T</c><c.color1AF0E8>​a</c><c.color1FE9E7>​k</c><c.color24E2E7>​e</c><c.color29DBE6>​t</c><c.color2ED4E6>​e</c><c.color32CDE5>​r</c><c.color37C6E5>​u </c><c.color3CC0E4>​S</c><c.color41B9E4>​u</c><c.color46B2E3>​n</c><c.color4AABE3>​a</c><c.color4FA4E2>​m</c><c.color549DE2>​o</c><c.color5996E1>​r</c><c.color5E90E1>​i </c><c.color6289E0>​(</c><c.color6782E0>​M</c><c.color6C7BDF>​i</c><c.color7174DE>​r</c><c.color766DDE>​a</c><c.color7A66DD>​i </c><c.color7F60DD>​K</c><c.color8459DC>​o</c><c.color8952DC>​d</c><c.color8E4BDB>​a</c><c.color9244DB>​i </c><c.color973DDA>​O</c><c.color9C36DA>​r</c><c.colorA130D9>​c</c><c.colorA629D9>​h</c><c.colorAA22D8>​e</c><c.colorAF1BD8>​s</c><c.colorB414D7>​t</c><c.colorB90DD7>​r</c><c.colorBE06D6>​a</c><c.colorC300D6>)​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:12.663 --> 00:00:13.197 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.colorD9D9D9>ci fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:12.663 --> 00:00:13.197 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.colorD9D9D9>ci fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:13.197 --> 00:00:13.697 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.colorD9D9D9>fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:13.197 --> 00:00:13.697 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.colorD9D9D9>fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:13.697 --> 00:00:14.064 position:58% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.colorD9D9D9>ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:13.697 --> 00:00:14.064 position:58% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.colorD9D9D9>ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:14.064 --> 00:00:14.598 position:61% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.colorD9D9D9>ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:14.064 --> 00:00:14.598 position:61% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.colorD9D9D9>ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:14.598 --> 00:00:15.132 position:64% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.colorD9D9D9>we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:14.598 --> 00:00:15.132 position:64% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.colorD9D9D9>we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:15.132 --> 00:00:15.299 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.color9D34DA>​w</c><c.colorAA23D8>​e </c><c.colorD9D9D9>le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:15.132 --> 00:00:15.299 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.color9D34DA>​w</c><c.colorAA23D8>​e </c><c.colorD9D9D9>le​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:15.299 --> 00:00:17.935 position:69% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.color9D34DA>​w</c><c.colorAA23D8>​e </c><c.colorB611D7>​l</c><c.colorC300D6>e​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:15.299 --> 00:00:17.935 position:69% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.color9D34DA>​w</c><c.colorAA23D8>​e </c><c.colorB611D7>​l</c><c.colorC300D6>e​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:15.466 --> 00:00:18.302 position:97% line:76%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​K</c><c.color1CEDE8>​e</c><c.color22E4E7>​y</c><c.color29DBE6>​b</c><c.color2FD2E6>​o</c><c.color36C9E5>​a</c><c.color3CC0E4>​r</c><c.color42B6E4>​d</c><c.color49ADE3>​, </c><c.color4FA4E2>​S</c><c.color569BE1>​t</c><c.color5C92E1>​r</c><c.color6289E0>​i</c><c.color6980DF>​n</c><c.color6F76DF>​g</c><c.color766DDE>​s </c><c.color7C64DD>​A</c><c.color825BDD>​r</c><c.color8952DC>​r</c><c.color8F49DB>​a</c><c.color9640DA>​n</c><c.color9C36DA>​g</c><c.colorA22DD9>​e</c><c.colorA924D8>​m</c><c.colorAF1BD8>​e</c><c.colorB612D7>​n</c><c.colorBC09D6>​t</c><c.colorC300D6>:​ ​</c><c.colorA0AAB4>​
+​</c><c.color16F7E9>​ ​M</c><c.color1BEFE8>​i</c><c.color20E8E7>​y</c><c.color25E1E7>​a</c><c.color2AD9E6>​k</c><c.color2FD2E6>​o </c><c.color34CBE5>​M</c><c.color39C4E5>​a</c><c.color3EBCE4>​t</c><c.color43B5E3>​s</c><c.color48AEE3>​u</c><c.color4DA7E2>​o</c><c.color539FE2>​k</c><c.color5898E1>​a </c><c.color5D91E1>​(</c><c.color628AE0>​M</c><c.color6782E0>​i</c><c.color6C7BDF>​r</c><c.color7174DE>​a</c><c.color766CDE>​i </c><c.color7B65DD>​K</c><c.color805EDD>​o</c><c.color8557DC>​d</c><c.color8B4FDC>​a</c><c.color9048DB>​i </c><c.color9541DB>​O</c><c.color9A3ADA>​r</c><c.color9F32D9>​c</c><c.colorA42BD9>​h</c><c.colorA924D8>​e</c><c.colorAE1DD8>​s</c><c.colorB315D7>​t</c><c.colorB80ED7>​r</c><c.colorBD07D6>​a</c><c.colorC300D6>)​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:15.466 --> 00:00:18.302 position:97% line:76%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​K</c><c.color1CEDE8>​e</c><c.color22E4E7>​y</c><c.color29DBE6>​b</c><c.color2FD2E6>​o</c><c.color36C9E5>​a</c><c.color3CC0E4>​r</c><c.color42B6E4>​d</c><c.color49ADE3>​, </c><c.color4FA4E2>​S</c><c.color569BE1>​t</c><c.color5C92E1>​r</c><c.color6289E0>​i</c><c.color6980DF>​n</c><c.color6F76DF>​g</c><c.color766DDE>​s </c><c.color7C64DD>​A</c><c.color825BDD>​r</c><c.color8952DC>​r</c><c.color8F49DB>​a</c><c.color9640DA>​n</c><c.color9C36DA>​g</c><c.colorA22DD9>​e</c><c.colorA924D8>​m</c><c.colorAF1BD8>​e</c><c.colorB612D7>​n</c><c.colorBC09D6>​t</c><c.colorC300D6>:​ ​</c><c.colorA0AAB4>​
+​</c><c.color16F7E9>​ ​M</c><c.color1BEFE8>​i</c><c.color20E8E7>​y</c><c.color25E1E7>​a</c><c.color2AD9E6>​k</c><c.color2FD2E6>​o </c><c.color34CBE5>​M</c><c.color39C4E5>​a</c><c.color3EBCE4>​t</c><c.color43B5E3>​s</c><c.color48AEE3>​u</c><c.color4DA7E2>​o</c><c.color539FE2>​k</c><c.color5898E1>​a </c><c.color5D91E1>​(</c><c.color628AE0>​M</c><c.color6782E0>​i</c><c.color6C7BDF>​r</c><c.color7174DE>​a</c><c.color766CDE>​i </c><c.color7B65DD>​K</c><c.color805EDD>​o</c><c.color8557DC>​d</c><c.color8B4FDC>​a</c><c.color9048DB>​i </c><c.color9541DB>​O</c><c.color9A3ADA>​r</c><c.color9F32D9>​c</c><c.colorA42BD9>​h</c><c.colorA924D8>​e</c><c.colorAE1DD8>​s</c><c.colorB315D7>​t</c><c.colorB80ED7>​r</c><c.colorBD07D6>​a</c><c.colorC300D6>)​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:17.935 --> 00:00:18.302 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.colorD9D9D9>ya ku la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:17.935 --> 00:00:18.302 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.colorD9D9D9>ya ku la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:18.302 --> 00:00:21.138 position:97% line:85%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​R</c><c.color1AF0E8>​e</c><c.color1FE9E7>​c</c><c.color24E2E7>​o</c><c.color28DCE6>​r</c><c.color2DD5E6>​d</c><c.color32CEE5>​i</c><c.color36C8E5>​n</c><c.color3BC1E4>​g </c><c.color40BAE4>​&amp; </c><c.color44B4E3>​M</c><c.color49ADE3>​i</c><c.color4EA6E2>​x</c><c.color52A0E2>​i</c><c.color5799E1>​n</c><c.color5C92E1>​g </c><c.color608CE0>​E</c><c.color6585E0>​n</c><c.color6A7EDF>​g</c><c.color6E78DF>​i</c><c.color7371DE>​n</c><c.color786ADE>​e</c><c.color7C64DD>​e</c><c.color815DDD>​r</c><c.color8656DC>​: </c><c.color8A50DC>​N</c><c.color8F49DB>​N</c><c.color9442DB>​Z</c><c.color983CDA>​N </c><c.color9D35DA>​(</c><c.colorA22ED9>​O</c><c.colorA628D9>​F</c><c.colorAB21D8>​U</c><c.colorB01AD8>​T</c><c.colorB414D7>​O</c><c.colorB90DD7>​N</c><c.colorBE06D6>​E</c><c.colorC300D6>)​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:18.302 --> 00:00:21.138 position:97% line:85%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​R</c><c.color1AF0E8>​e</c><c.color1FE9E7>​c</c><c.color24E2E7>​o</c><c.color28DCE6>​r</c><c.color2DD5E6>​d</c><c.color32CEE5>​i</c><c.color36C8E5>​n</c><c.color3BC1E4>​g </c><c.color40BAE4>​&amp; </c><c.color44B4E3>​M</c><c.color49ADE3>​i</c><c.color4EA6E2>​x</c><c.color52A0E2>​i</c><c.color5799E1>​n</c><c.color5C92E1>​g </c><c.color608CE0>​E</c><c.color6585E0>​n</c><c.color6A7EDF>​g</c><c.color6E78DF>​i</c><c.color7371DE>​n</c><c.color786ADE>​e</c><c.color7C64DD>​e</c><c.color815DDD>​r</c><c.color8656DC>​: </c><c.color8A50DC>​N</c><c.color8F49DB>​N</c><c.color9442DB>​Z</c><c.color983CDA>​N </c><c.color9D35DA>​(</c><c.colorA22ED9>​O</c><c.colorA628D9>​F</c><c.colorAB21D8>​U</c><c.colorB01AD8>​T</c><c.colorB414D7>​O</c><c.colorB90DD7>​N</c><c.colorBE06D6>​E</c><c.colorC300D6>)​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:18.302 --> 00:00:18.836 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.colorD9D9D9>ku la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:18.302 --> 00:00:18.836 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.colorD9D9D9>ku la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:18.836 --> 00:00:19.370 position:58% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.colorD9D9D9>la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:18.836 --> 00:00:19.370 position:58% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.colorD9D9D9>la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:19.370 --> 00:00:19.703 position:61% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.colorD9D9D9>ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:19.370 --> 00:00:19.703 position:61% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.colorD9D9D9>ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:19.703 --> 00:00:20.237 position:64% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.colorD9D9D9>ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:19.703 --> 00:00:20.237 position:64% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.colorD9D9D9>ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:20.237 --> 00:00:20.771 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorD9D9D9>wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:20.237 --> 00:00:20.771 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorD9D9D9>wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:20.771 --> 00:00:20.938 position:70% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorA031D9>​w</c><c.colorAB20D8>​a </c><c.colorD9D9D9>ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:20.771 --> 00:00:20.938 position:70% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorA031D9>​w</c><c.colorAB20D8>​a </c><c.colorD9D9D9>ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:20.938 --> 00:00:22.539 position:72% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorA031D9>​w</c><c.colorAB20D8>​a </c><c.colorB710D7>​k</c><c.colorC300D6>u​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:20.938 --> 00:00:22.539 position:72% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorA031D9>​w</c><c.colorAB20D8>​a </c><c.colorB710D7>​k</c><c.colorC300D6>u​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:21.138 --> 00:00:23.941 position:98% line:85%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​V</c><c.color1BEFE8>​o</c><c.color20E7E7>​c</c><c.color26DFE7>​a</c><c.color2BD8E6>​l </c><c.color31D0E6>​D</c><c.color36C8E5>​i</c><c.color3BC0E4>​r</c><c.color41B9E4>​e</c><c.color46B1E3>​c</c><c.color4CA9E3>​t</c><c.color51A2E2>​i</c><c.color569AE1>​o</c><c.color5C92E1>​n</c><c.color618AE0>​: </c><c.color6783E0>​K</c><c.color6C7BDF>​a</c><c.color7173DE>​s</c><c.color776CDE>​s</c><c.color7C64DD>​a</c><c.color825CDD>​n </c><c.color8754DC>​(</c><c.color8C4DDB>​N</c><c.color9245DB>​e</c><c.color973DDA>​k</c><c.color9D36DA>​o </c><c.colorA22ED9>​H</c><c.colorA726D8>​a</c><c.colorAD1ED8>​c</c><c.colorB217D7>​k</c><c.colorB80FD7>​e</c><c.colorBD07D6>​r</c><c.colorC300D6>)​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:21.138 --> 00:00:23.941 position:98% line:85%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​V</c><c.color1BEFE8>​o</c><c.color20E7E7>​c</c><c.color26DFE7>​a</c><c.color2BD8E6>​l </c><c.color31D0E6>​D</c><c.color36C8E5>​i</c><c.color3BC0E4>​r</c><c.color41B9E4>​e</c><c.color46B1E3>​c</c><c.color4CA9E3>​t</c><c.color51A2E2>​i</c><c.color569AE1>​o</c><c.color5C92E1>​n</c><c.color618AE0>​: </c><c.color6783E0>​K</c><c.color6C7BDF>​a</c><c.color7173DE>​s</c><c.color776CDE>​s</c><c.color7C64DD>​a</c><c.color825CDD>​n </c><c.color8754DC>​(</c><c.color8C4DDB>​N</c><c.color9245DB>​e</c><c.color973DDA>​k</c><c.color9D36DA>​o </c><c.colorA22ED9>​H</c><c.colorA726D8>​a</c><c.colorAD1ED8>​c</c><c.colorB217D7>​k</c><c.colorB80FD7>​e</c><c.colorBD07D6>​r</c><c.colorC300D6>)​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:24.274 --> 00:00:24.475 line:0%
+<c.colorC300D6>​ma​</c><c.colorD9D9D9>​doromi</c>
+
+00:00:24.274 --> 00:00:25.209 line:92%
+<c.colorC300D6>​Deep in slumber</c>
+
+00:00:24.475 --> 00:00:24.675 line:0%
+<c.colorC300D6>​mado​</c><c.colorD9D9D9>​romi</c>
+
+00:00:24.675 --> 00:00:24.875 line:0%
+<c.colorC300D6>​madoro​</c><c.colorD9D9D9>​mi</c>
+
+00:00:24.875 --> 00:00:25.209 line:0%
+<c.colorC300D6>​madoromi</c>
+
+00:00:25.209 --> 00:00:25.542 line:0%
+<c.colorC300D6>​sa​</c><c.colorD9D9D9>​mezu ni obore yuku</c>
+
+00:00:25.209 --> 00:00:29.079 line:92%
+<c.colorC300D6>​Trapped in an endless siesta</c>
+
+00:00:25.542 --> 00:00:25.843 line:0%
+<c.colorC300D6>​same​</c><c.colorD9D9D9>​zu ni obore yuku</c>
+
+00:00:25.843 --> 00:00:26.243 line:0%
+<c.colorC300D6>​samezu ​</c><c.colorD9D9D9>​ni obore yuku</c>
+
+00:00:26.243 --> 00:00:26.610 line:0%
+<c.colorC300D6>​samezu ni ​</c><c.colorD9D9D9>​obore yuku</c>
+
+00:00:26.610 --> 00:00:26.977 line:0%
+<c.colorC300D6>​samezu ni o​</c><c.colorD9D9D9>​bore yuku</c>
+
+00:00:26.977 --> 00:00:27.311 line:0%
+<c.colorC300D6>​samezu ni obo​</c><c.colorD9D9D9>​re yuku</c>
+
+00:00:27.311 --> 00:00:27.678 line:0%
+<c.colorC300D6>​samezu ni obore ​</c><c.colorD9D9D9>​yuku</c>
+
+00:00:27.678 --> 00:00:28.012 line:0%
+<c.colorC300D6>​samezu ni obore yu​</c><c.colorD9D9D9>​ku</c>
+
+00:00:28.012 --> 00:00:29.079 line:0%
+<c.colorC300D6>​samezu ni obore yuku</c>
+
+00:00:29.079 --> 00:00:29.246 position:61% line:0%
+<c.colorC300D6>​sa​</c><c.colorD9D9D9>​gasu sagasu sagasu sagasu iriguchi</c>
+
+00:00:29.079 --> 00:00:34.551 position:77% line:92%
+<c.colorC300D6>​I search, I seek, I scout, I scour for a way out</c>
+
+00:00:29.246 --> 00:00:29.413 position:61% line:0%
+<c.colorC300D6>​saga​</c><c.colorD9D9D9>​su sagasu sagasu sagasu iriguchi</c>
+
+00:00:29.413 --> 00:00:29.780 position:61% line:0%
+<c.colorC300D6>​sagasu ​</c><c.colorD9D9D9>​sagasu sagasu sagasu iriguchi</c>
+
+00:00:29.780 --> 00:00:29.947 position:61% line:0%
+<c.colorC300D6>​sagasu sa​</c><c.colorD9D9D9>​gasu sagasu sagasu iriguchi</c>
+
+00:00:29.947 --> 00:00:30.114 position:61% line:0%
+<c.colorC300D6>​sagasu saga​</c><c.colorD9D9D9>​su sagasu sagasu iriguchi</c>
+
+00:00:30.114 --> 00:00:30.481 position:61% line:0%
+<c.colorC300D6>​sagasu sagasu ​</c><c.colorD9D9D9>​sagasu sagasu iriguchi</c>
+
+00:00:30.481 --> 00:00:30.647 position:61% line:0%
+<c.colorC300D6>​sagasu sagasu sa​</c><c.colorD9D9D9>​gasu sagasu iriguchi</c>
+
+00:00:30.647 --> 00:00:30.814 position:61% line:0%
+<c.colorC300D6>​sagasu sagasu saga​</c><c.colorD9D9D9>​su sagasu iriguchi</c>
+
+00:00:30.814 --> 00:00:31.215 position:61% line:0%
+<c.colorC300D6>​sagasu sagasu sagasu ​</c><c.colorD9D9D9>​sagasu iriguchi</c>
+
+00:00:31.215 --> 00:00:31.348 position:61% line:0%
+<c.colorC300D6>​sagasu sagasu sagasu sa​</c><c.colorD9D9D9>​gasu iriguchi</c>
+
+00:00:31.348 --> 00:00:31.515 position:61% line:0%
+<c.colorC300D6>​sagasu sagasu sagasu saga​</c><c.colorD9D9D9>​su iriguchi</c>
+
+00:00:31.515 --> 00:00:31.915 position:61% line:0%
+<c.colorC300D6>​sagasu sagasu sagasu sagasu ​</c><c.colorD9D9D9>​iriguchi</c>
+
+00:00:31.915 --> 00:00:32.249 position:61% line:0%
+<c.colorC300D6>​sagasu sagasu sagasu sagasu i​</c><c.colorD9D9D9>​riguchi</c>
+
+00:00:32.249 --> 00:00:32.583 position:61% line:0%
+<c.colorC300D6>​sagasu sagasu sagasu sagasu iri​</c><c.colorD9D9D9>​guchi</c>
+
+00:00:32.583 --> 00:00:32.750 position:61% line:0%
+<c.colorC300D6>​sagasu sagasu sagasu sagasu irigu​</c><c.colorD9D9D9>​chi</c>
+
+00:00:32.750 --> 00:00:34.551 position:58% line:0%
+<c.colorC300D6>​sagasu sagasu sagasu sagasu iriguchi</c>
+
+00:00:35.586 --> 00:00:35.753 line:0%
+<c.color16F7E9>​nu​</c><c.colorD9D9D9>​karumi</c>
+
+00:00:35.586 --> 00:00:36.420 line:92%
+<c.color16F7E9>​Stuck in a mire</c>
+
+00:00:35.753 --> 00:00:35.953 line:0%
+<c.color16F7E9>​nuka​</c><c.colorD9D9D9>​rumi</c>
+
+00:00:35.953 --> 00:00:36.120 line:0%
+<c.color16F7E9>​nukaru​</c><c.colorD9D9D9>​mi</c>
+
+00:00:36.120 --> 00:00:36.420 line:0%
+<c.color16F7E9>​nukarumi</c>
+
+00:00:36.420 --> 00:00:36.854 line:0%
+<c.color16F7E9>​su​</c><c.colorD9D9D9>​kueba te ni tokete</c>
+
+00:00:36.420 --> 00:00:40.357 line:92%
+<c.color16F7E9>​It all slips through my fingers</c>
+
+00:00:36.854 --> 00:00:37.221 line:0%
+<c.color16F7E9>​suku​</c><c.colorD9D9D9>​eba te ni tokete</c>
+
+00:00:37.221 --> 00:00:37.554 line:0%
+<c.color16F7E9>​sukue​</c><c.colorD9D9D9>​ba te ni tokete</c>
+
+00:00:37.554 --> 00:00:37.888 line:0%
+<c.color16F7E9>​sukueba ​</c><c.colorD9D9D9>​te ni tokete</c>
+
+00:00:37.888 --> 00:00:38.255 line:0%
+<c.color16F7E9>​sukueba te ​</c><c.colorD9D9D9>​ni tokete</c>
+
+00:00:38.255 --> 00:00:38.589 line:0%
+<c.color16F7E9>​sukueba te ni ​</c><c.colorD9D9D9>​tokete</c>
+
+00:00:38.589 --> 00:00:38.922 line:0%
+<c.color16F7E9>​sukueba te ni to​</c><c.colorD9D9D9>​kete</c>
+
+00:00:38.922 --> 00:00:39.323 line:0%
+<c.color16F7E9>​sukueba te ni toke​</c><c.colorD9D9D9>​te</c>
+
+00:00:39.323 --> 00:00:40.357 line:0%
+<c.color16F7E9>​sukueba te ni tokete</c>
+
+00:00:40.357 --> 00:00:40.524 line:0%
+<c.color16F7E9>​ki​</c><c.colorD9D9D9>​oku uzuku tsuzuku kuruu kutsuu</c>
+
+00:00:40.357 --> 00:00:45.496 position:98% line:92%
+<c.color16F7E9>​My mind aches, wide awake, it can't take this heartbreak forever</c>
+
+00:00:40.524 --> 00:00:40.724 line:0%
+<c.color16F7E9>​kio​</c><c.colorD9D9D9>​ku uzuku tsuzuku kuruu kutsuu</c>
+
+00:00:40.724 --> 00:00:41.091 line:0%
+<c.color16F7E9>​kioku ​</c><c.colorD9D9D9>​uzuku tsuzuku kuruu kutsuu</c>
+
+00:00:41.091 --> 00:00:41.258 line:0%
+<c.color16F7E9>​kioku u​</c><c.colorD9D9D9>​zuku tsuzuku kuruu kutsuu</c>
+
+00:00:41.258 --> 00:00:41.425 line:0%
+<c.color16F7E9>​kioku uzu​</c><c.colorD9D9D9>​ku tsuzuku kuruu kutsuu</c>
+
+00:00:41.425 --> 00:00:41.725 line:0%
+<c.color16F7E9>​kioku uzuku ​</c><c.colorD9D9D9>​tsuzuku kuruu kutsuu</c>
+
+00:00:41.725 --> 00:00:41.925 line:0%
+<c.color16F7E9>​kioku uzuku tsu​</c><c.colorD9D9D9>​zuku kuruu kutsuu</c>
+
+00:00:41.925 --> 00:00:42.126 line:0%
+<c.color16F7E9>​kioku uzuku tsuzu​</c><c.colorD9D9D9>​ku kuruu kutsuu</c>
+
+00:00:42.126 --> 00:00:42.459 line:0%
+<c.color16F7E9>​kioku uzuku tsuzuku ​</c><c.colorD9D9D9>​kuruu kutsuu</c>
+
+00:00:42.459 --> 00:00:42.659 line:0%
+<c.color16F7E9>​kioku uzuku tsuzuku ku​</c><c.colorD9D9D9>​ruu kutsuu</c>
+
+00:00:42.659 --> 00:00:42.860 line:0%
+<c.color16F7E9>​kioku uzuku tsuzuku kuru​</c><c.colorD9D9D9>​u kutsuu</c>
+
+00:00:42.860 --> 00:00:43.193 line:0%
+<c.color16F7E9>​kioku uzuku tsuzuku kuruu ​</c><c.colorD9D9D9>​kutsuu</c>
+
+00:00:43.193 --> 00:00:43.494 line:0%
+<c.color16F7E9>​kioku uzuku tsuzuku kuruu ku​</c><c.colorD9D9D9>​tsuu</c>
+
+00:00:43.494 --> 00:00:43.727 line:0%
+<c.color16F7E9>​kioku uzuku tsuzuku kuruu kutsu​</c><c.colorD9D9D9>​u</c>
+
+00:00:43.727 --> 00:00:45.496 line:0%
+<c.color16F7E9>​kioku uzuku tsuzuku kuruu kutsuu</c>
+
+00:00:46.897 --> 00:00:47.064 line:0%
+<c.colorC300D6>​i​</c><c.colorD9D9D9>​nishie</c>
+
+00:00:46.897 --> 00:00:47.765 line:92%
+<c.colorC300D6>​Never changing</c>
+
+00:00:47.064 --> 00:00:47.264 line:0%
+<c.colorC300D6>​ini​</c><c.colorD9D9D9>​shie</c>
+
+00:00:47.264 --> 00:00:47.431 line:0%
+<c.colorC300D6>​inishi​</c><c.colorD9D9D9>​e</c>
+
+00:00:47.431 --> 00:00:47.765 line:0%
+<c.colorC300D6>​inishie</c>
+
+00:00:47.765 --> 00:00:48.132 line:0%
+<c.colorC300D6>​shi​</c><c.colorD9D9D9>​rusare sonomama no</c>
+
+00:00:47.765 --> 00:00:51.668 line:92%
+<c.colorC300D6>​Recounting the memories of yore</c>
+
+00:00:48.132 --> 00:00:48.465 line:0%
+<c.colorC300D6>​shiru​</c><c.colorD9D9D9>​sare sonomama no</c>
+
+00:00:48.465 --> 00:00:48.866 line:0%
+<c.colorC300D6>​shirusa​</c><c.colorD9D9D9>​re sonomama no</c>
+
+00:00:48.866 --> 00:00:49.199 line:0%
+<c.colorC300D6>​shirusare ​</c><c.colorD9D9D9>​sonomama no</c>
+
+00:00:49.199 --> 00:00:49.533 line:0%
+<c.colorC300D6>​shirusare so​</c><c.colorD9D9D9>​nomama no</c>
+
+00:00:49.533 --> 00:00:49.867 line:0%
+<c.colorC300D6>​shirusare sono​</c><c.colorD9D9D9>​mama no</c>
+
+00:00:49.867 --> 00:00:50.234 line:0%
+<c.colorC300D6>​shirusare sonoma​</c><c.colorD9D9D9>​ma no</c>
+
+00:00:50.234 --> 00:00:50.601 line:0%
+<c.colorC300D6>​shirusare sonomama ​</c><c.colorD9D9D9>​no</c>
+
+00:00:50.601 --> 00:00:51.668 line:0%
+<c.colorC300D6>​shirusare sonomama no</c>
+
+00:00:51.668 --> 00:00:51.835 line:0%
+<c.colorC300D6>​a​</c><c.colorD9D9D9>​kai akai akai akai kizuato</c>
+
+00:00:51.668 --> 00:00:57.141 position:86% line:92%
+<c.colorC300D6>​These crimson, claret, scarlet, blood-red scars of old</c>
+
+00:00:51.835 --> 00:00:52.002 line:0%
+<c.colorC300D6>​aka​</c><c.colorD9D9D9>​i akai akai akai kizuato</c>
+
+00:00:52.002 --> 00:00:52.369 line:0%
+<c.colorC300D6>​akai ​</c><c.colorD9D9D9>​akai akai akai kizuato</c>
+
+00:00:52.369 --> 00:00:52.536 line:0%
+<c.colorC300D6>​akai a​</c><c.colorD9D9D9>​kai akai akai kizuato</c>
+
+00:00:52.536 --> 00:00:52.770 line:0%
+<c.colorC300D6>​akai aka​</c><c.colorD9D9D9>​i akai akai kizuato</c>
+
+00:00:52.770 --> 00:00:53.070 line:0%
+<c.colorC300D6>​akai akai ​</c><c.colorD9D9D9>​akai akai kizuato</c>
+
+00:00:53.070 --> 00:00:53.237 line:0%
+<c.colorC300D6>​akai akai a​</c><c.colorD9D9D9>​kai akai kizuato</c>
+
+00:00:53.237 --> 00:00:53.437 line:0%
+<c.colorC300D6>​akai akai aka​</c><c.colorD9D9D9>​i akai kizuato</c>
+
+00:00:53.437 --> 00:00:53.771 line:0%
+<c.colorC300D6>​akai akai akai ​</c><c.colorD9D9D9>​akai kizuato</c>
+
+00:00:53.771 --> 00:00:53.937 line:0%
+<c.colorC300D6>​akai akai akai a​</c><c.colorD9D9D9>​kai kizuato</c>
+
+00:00:53.937 --> 00:00:54.138 line:0%
+<c.colorC300D6>​akai akai akai aka​</c><c.colorD9D9D9>​i kizuato</c>
+
+00:00:54.138 --> 00:00:54.471 line:0%
+<c.colorC300D6>​akai akai akai akai ​</c><c.colorD9D9D9>​kizuato</c>
+
+00:00:54.471 --> 00:00:54.805 line:0%
+<c.colorC300D6>​akai akai akai akai ki​</c><c.colorD9D9D9>​zuato</c>
+
+00:00:54.805 --> 00:00:55.205 line:0%
+<c.colorC300D6>​akai akai akai akai kizu​</c><c.colorD9D9D9>​ato</c>
+
+00:00:55.205 --> 00:00:55.372 line:0%
+<c.colorC300D6>​akai akai akai akai kizua​</c><c.colorD9D9D9>​to</c>
+
+00:00:55.372 --> 00:00:57.141 line:0%
+<c.colorC300D6>​akai akai akai akai kizuato</c>
+
+00:00:58.175 --> 00:00:58.342 line:0%
+<c.color16F7E9>​u​</c><c.colorD9D9D9>​takata</c>
+
+00:00:58.175 --> 00:00:59.076 line:92%
+<c.color16F7E9>​Evanescent</c>
+
+00:00:58.342 --> 00:00:58.542 line:0%
+<c.color16F7E9>​uta​</c><c.colorD9D9D9>​kata</c>
+
+00:00:58.542 --> 00:00:58.709 line:0%
+<c.color16F7E9>​utaka​</c><c.colorD9D9D9>​ta</c>
+
+00:00:58.709 --> 00:00:59.076 line:0%
+<c.color16F7E9>​utakata</c>
+
+00:00:59.076 --> 00:00:59.410 line:0%
+<c.color16F7E9>​sa​</c><c.colorD9D9D9>​mezu ni kiete yuku</c>
+
+00:00:59.076 --> 00:01:02.946 line:92%
+<c.color16F7E9>​Fading away in this endless dream</c>
+
+00:00:59.410 --> 00:00:59.743 line:0%
+<c.color16F7E9>​same​</c><c.colorD9D9D9>​zu ni kiete yuku</c>
+
+00:00:59.743 --> 00:01:00.144 line:0%
+<c.color16F7E9>​samezu ​</c><c.colorD9D9D9>​ni kiete yuku</c>
+
+00:01:00.144 --> 00:01:00.477 line:0%
+<c.color16F7E9>​samezu ni ​</c><c.colorD9D9D9>​kiete yuku</c>
+
+00:01:00.477 --> 00:01:00.844 line:0%
+<c.color16F7E9>​samezu ni ki​</c><c.colorD9D9D9>​ete yuku</c>
+
+00:01:00.844 --> 00:01:01.178 line:0%
+<c.color16F7E9>​samezu ni kie​</c><c.colorD9D9D9>​te yuku</c>
+
+00:01:01.178 --> 00:01:01.545 line:0%
+<c.color16F7E9>​samezu ni kiete ​</c><c.colorD9D9D9>​yuku</c>
+
+00:01:01.545 --> 00:01:01.912 line:0%
+<c.color16F7E9>​samezu ni kiete yu​</c><c.colorD9D9D9>​ku</c>
+
+00:01:01.912 --> 00:01:02.946 line:0%
+<c.color16F7E9>​samezu ni kiete yuku</c>
+
+00:01:02.946 --> 00:01:03.113 position:59% line:0%
+<c.color16F7E9>​wa​</c><c.colorD9D9D9>​tashi watashi watashi koko ni ita</c>
+
+00:01:02.946 --> 00:01:08.419 position:95% line:92%
+<c.color16F7E9>​What was once me, ​</c><c.colorC300D6>​myself, </c><c.color16F7E9>​and I w</c><c.color25E0E7>​a</c><c.color35CAE5>​s </c><c.color45B3E3>​r</c><c.color549DE2>​i</c><c.color6486E0>​g</c><c.color7470DE>​h</c><c.color8459DC>​t </c><c.color9343DB>​h</c><c.colorA32CD9>​e</c><c.colorB316D7>​r</c><c.colorC300D6>​e</c>
+
+00:01:03.113 --> 00:01:03.280 position:59% line:0%
+<c.color16F7E9>​wata​</c><c.colorD9D9D9>​shi watashi watashi koko ni ita</c>
+
+00:01:03.280 --> 00:01:03.647 position:59% line:0%
+<c.color16F7E9>​watashi ​</c><c.colorD9D9D9>​watashi watashi koko ni ita</c>
+
+00:01:03.647 --> 00:01:03.814 position:61% line:0%
+<c.color16F7E9>​watashi ​</c><c.colorC300D6>​wa</c><c.colorD9D9D9>​tashi watashi koko ni ita</c>
+
+00:01:03.814 --> 00:01:03.981 position:61% line:0%
+<c.color16F7E9>​watashi ​</c><c.colorC300D6>​wata</c><c.colorD9D9D9>​shi watashi koko ni ita</c>
+
+00:01:03.981 --> 00:01:04.348 position:61% line:0%
+<c.color16F7E9>​watashi ​</c><c.colorC300D6>​watashi </c><c.colorD9D9D9>​watashi koko ni ita</c>
+
+00:01:04.348 --> 00:01:04.515 position:63% line:0%
+<c.color16F7E9>​watashi ​</c><c.colorC300D6>​watashi </c><c.color16F7E9>​wa</c><c.colorD9D9D9>​tashi koko ni ita</c>
+
+00:01:04.515 --> 00:01:04.681 position:63% line:0%
+<c.color16F7E9>​watashi ​</c><c.colorC300D6>​watashi </c><c.color16F7E9>​wata</c><c.colorD9D9D9>​shi koko ni ita</c>
+
+00:01:04.681 --> 00:01:05.049 position:63% line:0%
+<c.color16F7E9>​watashi ​</c><c.colorC300D6>​watashi </c><c.color16F7E9>​watashi </c><c.colorD9D9D9>​koko ni ita</c>
+
+00:01:05.049 --> 00:01:05.215 position:64% line:0%
+<c.color16F7E9>​watashi ​</c><c.colorC300D6>​watashi </c><c.color16F7E9>​watashi k</c><c.color2BD8E6>​o</c><c.colorD9D9D9>​ko ni ita</c>
+
+00:01:05.215 --> 00:01:05.416 position:67% line:0%
+<c.color16F7E9>​watashi ​</c><c.colorC300D6>​watashi </c><c.color16F7E9>​watashi k</c><c.color2BD8E6>​o</c><c.color41B9E4>​k</c><c.color569AE1>​o </c><c.colorD9D9D9>​ni ita</c>
+
+00:01:05.416 --> 00:01:05.749 position:70% line:0%
+<c.color16F7E9>​watashi ​</c><c.colorC300D6>​watashi </c><c.color16F7E9>​watashi k</c><c.color2BD8E6>​o</c><c.color41B9E4>​k</c><c.color569AE1>​o </c><c.color6C7BDF>​n</c><c.color825CDD>​i </c><c.colorD9D9D9>​ita</c>
+
+00:01:05.749 --> 00:01:06.116 position:72% line:0%
+<c.color16F7E9>​watashi ​</c><c.colorC300D6>​watashi </c><c.color16F7E9>​watashi k</c><c.color2BD8E6>​o</c><c.color41B9E4>​k</c><c.color569AE1>​o </c><c.color6C7BDF>​n</c><c.color825CDD>​i </c><c.color973DDA>​i</c><c.colorD9D9D9>​ta</c>
+
+00:01:06.116 --> 00:01:08.419 position:73% line:0%
+<c.color16F7E9>​watashi ​</c><c.colorC300D6>​watashi </c><c.color16F7E9>​watashi k</c><c.color2BD8E6>​o</c><c.color41B9E4>​k</c><c.color569AE1>​o </c><c.color6C7BDF>​n</c><c.color825CDD>​i </c><c.color973DDA>​i</c><c.colorAD1ED8>​t</c><c.colorC300D6>​a</c>
+
+00:01:09.319 --> 00:01:09.486 line:0%
+<c.colorC300D6>​ma​</c><c.colorD9D9D9>​buta no mukou kara</c>
+
+00:01:09.319 --> 00:01:12.156 line:92%
+<c.colorC300D6>​Beyond the closed eyelids</c>
+
+00:01:09.486 --> 00:01:09.653 line:0%
+<c.colorC300D6>​mabu​</c><c.colorD9D9D9>​ta no mukou kara</c>
+
+00:01:09.653 --> 00:01:09.820 line:0%
+<c.colorC300D6>​mabuta ​</c><c.colorD9D9D9>​no mukou kara</c>
+
+00:01:09.820 --> 00:01:10.187 line:0%
+<c.colorC300D6>​mabuta no ​</c><c.colorD9D9D9>​mukou kara</c>
+
+00:01:10.187 --> 00:01:10.354 line:0%
+<c.colorC300D6>​mabuta no mu​</c><c.colorD9D9D9>​kou kara</c>
+
+00:01:10.354 --> 00:01:10.687 line:0%
+<c.colorC300D6>​mabuta no muko​</c><c.colorD9D9D9>​u kara</c>
+
+00:01:10.687 --> 00:01:10.888 line:0%
+<c.colorC300D6>​mabuta no mukou ​</c><c.colorD9D9D9>​kara</c>
+
+00:01:10.888 --> 00:01:11.088 line:0%
+<c.colorC300D6>​mabuta no mukou ka​</c><c.colorD9D9D9>​ra</c>
+
+00:01:11.088 --> 00:01:12.156 line:0%
+<c.colorC300D6>​mabuta no mukou kara</c>
+
+00:01:12.156 --> 00:01:12.289 line:0%
+<c.colorC300D6>​mi​</c><c.colorD9D9D9>​tsume kaesu hitomi</c>
+
+00:01:12.156 --> 00:01:14.925 line:92%
+<c.colorC300D6>​A steady gaze meets mine in turn</c>
+
+00:01:12.289 --> 00:01:12.456 line:0%
+<c.colorC300D6>​mitsu​</c><c.colorD9D9D9>​me kaesu hitomi</c>
+
+00:01:12.456 --> 00:01:12.623 line:0%
+<c.colorC300D6>​mitsume ​</c><c.colorD9D9D9>​kaesu hitomi</c>
+
+00:01:12.623 --> 00:01:12.990 line:0%
+<c.colorC300D6>​mitsume ka​</c><c.colorD9D9D9>​esu hitomi</c>
+
+00:01:12.990 --> 00:01:13.157 line:0%
+<c.colorC300D6>​mitsume kae​</c><c.colorD9D9D9>​su hitomi</c>
+
+00:01:13.157 --> 00:01:13.557 line:0%
+<c.colorC300D6>​mitsume kaesu ​</c><c.colorD9D9D9>​hitomi</c>
+
+00:01:13.557 --> 00:01:13.690 line:0%
+<c.colorC300D6>​mitsume kaesu hi​</c><c.colorD9D9D9>​tomi</c>
+
+00:01:13.690 --> 00:01:13.857 line:0%
+<c.colorC300D6>​mitsume kaesu hito​</c><c.colorD9D9D9>​mi</c>
+
+00:01:13.857 --> 00:01:14.925 line:0%
+<c.colorC300D6>​mitsume kaesu hitomi</c>
+
+00:01:14.925 --> 00:01:15.092 line:0%
+<c.color16F7E9>​ka​</c><c.colorD9D9D9>​gami no mukou de wa</c>
+
+00:01:14.925 --> 00:01:17.227 line:92%
+<c.color16F7E9>​Inside this hazy mirror</c>
+
+00:01:15.092 --> 00:01:15.292 line:0%
+<c.color16F7E9>​kaga​</c><c.colorD9D9D9>​mi no mukou de wa</c>
+
+00:01:15.292 --> 00:01:15.459 line:0%
+<c.color16F7E9>​kagami ​</c><c.colorD9D9D9>​no mukou de wa</c>
+
+00:01:15.459 --> 00:01:15.826 line:0%
+<c.color16F7E9>​kagami no ​</c><c.colorD9D9D9>​mukou de wa</c>
+
+00:01:15.826 --> 00:01:15.993 line:0%
+<c.color16F7E9>​kagami no mu​</c><c.colorD9D9D9>​kou de wa</c>
+
+00:01:15.993 --> 00:01:16.360 line:0%
+<c.color16F7E9>​kagami no muko​</c><c.colorD9D9D9>​u de wa</c>
+
+00:01:16.360 --> 00:01:16.527 line:0%
+<c.color16F7E9>​kagami no mukou ​</c><c.colorD9D9D9>​de wa</c>
+
+00:01:16.527 --> 00:01:16.693 line:0%
+<c.color16F7E9>​kagami no mukou de ​</c><c.colorD9D9D9>​wa</c>
+
+00:01:16.693 --> 00:01:17.227 line:0%
+<c.color16F7E9>​kagami no mukou de wa</c>
+
+00:01:17.227 --> 00:01:17.428 line:0%
+<c.color16F7E9>​ku​</c><c.colorD9D9D9>​rueru tenshi ga mau</c>
+
+00:01:17.227 --> 00:01:23.167 position:59% line:92%
+<c.color16F7E9>​A frenzied angel flutters in the wind</c>
+
+00:01:17.428 --> 00:01:17.594 line:0%
+<c.color16F7E9>​kuru​</c><c.colorD9D9D9>​eru tenshi ga mau</c>
+
+00:01:17.594 --> 00:01:18.162 line:0%
+<c.color16F7E9>​kurue​</c><c.colorD9D9D9>​ru tenshi ga mau</c>
+
+00:01:18.162 --> 00:01:18.662 line:0%
+<c.color16F7E9>​kurueru ​</c><c.colorD9D9D9>​tenshi ga mau</c>
+
+00:01:18.662 --> 00:01:18.862 line:0%
+<c.color16F7E9>​kurueru te​</c><c.colorD9D9D9>​nshi ga mau</c>
+
+00:01:18.862 --> 00:01:19.029 line:0%
+<c.color16F7E9>​kurueru ten​</c><c.colorD9D9D9>​shi ga mau</c>
+
+00:01:19.029 --> 00:01:19.563 line:0%
+<c.color16F7E9>​kurueru tenshi ​</c><c.colorD9D9D9>​ga mau</c>
+
+00:01:19.563 --> 00:01:20.464 line:0%
+<c.color16F7E9>​kurueru tenshi ga ​</c><c.colorD9D9D9>​mau</c>
+
+00:01:20.464 --> 00:01:21.832 line:0%
+<c.color16F7E9>​kurueru tenshi ga ma​</c><c.colorD9D9D9>​u</c>
+
+00:01:21.832 --> 00:01:23.167 line:0%
+<c.color16F7E9>​kurueru tenshi ga mau</c>
+
+00:01:24.301 --> 00:01:24.668 line:0%
+<c.color16F7E9>​o​</c><c.colorD9D9D9>​chite ochite yuke</c>
+
+00:01:24.301 --> 00:01:29.973 line:92%
+<c.color16F7E9>​Further and further you fall</c>
+
+00:01:24.668 --> 00:01:25.202 line:0%
+<c.color16F7E9>​ochi​</c><c.colorD9D9D9>​te ochite yuke</c>
+
+00:01:25.202 --> 00:01:25.736 line:0%
+<c.color16F7E9>​ochite ​</c><c.colorD9D9D9>​ochite yuke</c>
+
+00:01:25.736 --> 00:01:26.036 line:0%
+<c.color16F7E9>​ochite o​</c><c.colorD9D9D9>​chite yuke</c>
+
+00:01:26.036 --> 00:01:26.603 line:0%
+<c.color16F7E9>​ochite ochi​</c><c.colorD9D9D9>​te yuke</c>
+
+00:01:26.603 --> 00:01:27.104 line:0%
+<c.color16F7E9>​ochite ochite ​</c><c.colorD9D9D9>​yuke</c>
+
+00:01:27.104 --> 00:01:27.304 line:0%
+<c.color16F7E9>​ochite ochite yu​</c><c.colorD9D9D9>​ke</c>
+
+00:01:27.304 --> 00:01:29.973 line:0%
+<c.color16F7E9>​ochite ochite yuke</c>
+
+00:01:29.973 --> 00:01:30.140 position:67% line:0%
+<c.color16F7E9>​ne​</c><c.colorD9D9D9>​gaeba ushinau to shiri nagara soredemo</c>
+
+00:01:29.973 --> 00:01:35.612 position:81% line:92%
+<c.color16F7E9>​Knowing that reaching out will only get you spurned</c>
+
+00:01:30.140 --> 00:01:30.340 position:67% line:0%
+<c.color16F7E9>​nega​</c><c.colorD9D9D9>​eba ushinau to shiri nagara soredemo</c>
+
+00:01:30.340 --> 00:01:30.674 position:67% line:0%
+<c.color16F7E9>​negae​</c><c.colorD9D9D9>​ba ushinau to shiri nagara soredemo</c>
+
+00:01:30.674 --> 00:01:31.075 position:67% line:0%
+<c.color16F7E9>​negaeba ​</c><c.colorD9D9D9>​ushinau to shiri nagara soredemo</c>
+
+00:01:31.075 --> 00:01:31.375 position:67% line:0%
+<c.color16F7E9>​negaeba u​</c><c.colorD9D9D9>​shinau to shiri nagara soredemo</c>
+
+00:01:31.375 --> 00:01:31.542 position:67% line:0%
+<c.color16F7E9>​negaeba ushi​</c><c.colorD9D9D9>​nau to shiri nagara soredemo</c>
+
+00:01:31.542 --> 00:01:31.975 position:67% line:0%
+<c.color16F7E9>​negaeba ushina​</c><c.colorD9D9D9>​u to shiri nagara soredemo</c>
+
+00:01:31.975 --> 00:01:32.443 position:67% line:0%
+<c.color16F7E9>​negaeba ushinau ​</c><c.colorD9D9D9>​to shiri nagara soredemo</c>
+
+00:01:32.443 --> 00:01:32.810 position:67% line:0%
+<c.color16F7E9>​negaeba ushinau to ​</c><c.colorD9D9D9>​shiri nagara soredemo</c>
+
+00:01:32.810 --> 00:01:33.143 position:67% line:0%
+<c.color16F7E9>​negaeba ushinau to shi​</c><c.colorD9D9D9>​ri nagara soredemo</c>
+
+00:01:33.143 --> 00:01:33.677 position:67% line:0%
+<c.color16F7E9>​negaeba ushinau to shiri ​</c><c.colorD9D9D9>​nagara soredemo</c>
+
+00:01:33.677 --> 00:01:33.777 position:67% line:0%
+<c.color16F7E9>​negaeba ushinau to shiri na​</c><c.colorD9D9D9>​gara soredemo</c>
+
+00:01:33.777 --> 00:01:33.877 position:67% line:0%
+<c.color16F7E9>​negaeba ushinau to shiri naga​</c><c.colorD9D9D9>​ra soredemo</c>
+
+00:01:33.877 --> 00:01:34.378 position:67% line:0%
+<c.color16F7E9>​negaeba ushinau to shiri nagara ​</c><c.colorD9D9D9>​soredemo</c>
+
+00:01:34.378 --> 00:01:34.745 position:67% line:0%
+<c.color16F7E9>​negaeba ushinau to shiri nagara so​</c><c.colorD9D9D9>​redemo</c>
+
+00:01:34.745 --> 00:01:35.079 position:67% line:0%
+<c.color16F7E9>​negaeba ushinau to shiri nagara sore​</c><c.colorD9D9D9>​demo</c>
+
+00:01:35.079 --> 00:01:35.245 position:67% line:0%
+<c.color16F7E9>​negaeba ushinau to shiri nagara sorede​</c><c.colorD9D9D9>​mo</c>
+
+00:01:35.245 --> 00:01:35.612 position:64% line:0%
+<c.color16F7E9>​negaeba ushinau to shiri nagara soredemo</c>
+
+00:01:35.612 --> 00:01:35.979 position:59% line:0%
+<c.color16F7E9>​fu​</c><c.colorD9D9D9>​kaku tada fukaku motomete shizume</c>
+
+00:01:35.612 --> 00:01:46.190 position:66% line:92%
+<c.color16F7E9>​Still you seek and sink deeper and beyond</c>
+
+00:01:35.979 --> 00:01:36.513 position:59% line:0%
+<c.color16F7E9>​fuka​</c><c.colorD9D9D9>​ku tada fukaku motomete shizume</c>
+
+00:01:36.513 --> 00:01:37.014 position:59% line:0%
+<c.color16F7E9>​fukaku ​</c><c.colorD9D9D9>​tada fukaku motomete shizume</c>
+
+00:01:37.014 --> 00:01:37.381 position:59% line:0%
+<c.color16F7E9>​fukaku ta​</c><c.colorD9D9D9>​da fukaku motomete shizume</c>
+
+00:01:37.381 --> 00:01:37.915 position:59% line:0%
+<c.color16F7E9>​fukaku tada ​</c><c.colorD9D9D9>​fukaku motomete shizume</c>
+
+00:01:37.915 --> 00:01:38.415 position:59% line:0%
+<c.color16F7E9>​fukaku tada fu​</c><c.colorD9D9D9>​kaku motomete shizume</c>
+
+00:01:38.415 --> 00:01:38.582 position:59% line:0%
+<c.color16F7E9>​fukaku tada fuka​</c><c.colorD9D9D9>​ku motomete shizume</c>
+
+00:01:38.582 --> 00:01:41.085 position:59% line:0%
+<c.color16F7E9>​fukaku tada fukaku ​</c><c.colorD9D9D9>​motomete shizume</c>
+
+00:01:41.085 --> 00:01:41.418 position:59% line:0%
+<c.color16F7E9>​fukaku tada fukaku mo​</c><c.colorD9D9D9>​tomete shizume</c>
+
+00:01:41.418 --> 00:01:41.618 position:59% line:0%
+<c.color16F7E9>​fukaku tada fukaku moto​</c><c.colorD9D9D9>​mete shizume</c>
+
+00:01:41.618 --> 00:01:42.319 position:59% line:0%
+<c.color16F7E9>​fukaku tada fukaku motome​</c><c.colorD9D9D9>​te shizume</c>
+
+00:01:42.319 --> 00:01:43.053 position:59% line:0%
+<c.color16F7E9>​fukaku tada fukaku motomete ​</c><c.colorD9D9D9>​shizume</c>
+
+00:01:43.053 --> 00:01:44.088 position:59% line:0%
+<c.color16F7E9>​fukaku tada fukaku motomete shi​</c><c.colorD9D9D9>​zume</c>
+
+00:01:44.088 --> 00:01:44.254 position:59% line:0%
+<c.color16F7E9>​fukaku tada fukaku motomete shizu​</c><c.colorD9D9D9>​me</c>
+
+00:01:44.254 --> 00:01:46.190 position:56% line:0%
+<c.color16F7E9>​fukaku tada fukaku motomete shizume</c>
+
+00:01:46.924 --> 00:01:47.257 line:0%
+<c.colorC300D6>​o​</c><c.colorD9D9D9>​chite ochite yuke</c>
+
+00:01:46.924 --> 00:01:52.529 line:92%
+<c.colorC300D6>​Farther and farther you fall</c>
+
+00:01:47.257 --> 00:01:47.791 line:0%
+<c.colorC300D6>​ochi​</c><c.colorD9D9D9>​te ochite yuke</c>
+
+00:01:47.791 --> 00:01:48.325 line:0%
+<c.colorC300D6>​ochite ​</c><c.colorD9D9D9>​ochite yuke</c>
+
+00:01:48.325 --> 00:01:48.659 line:0%
+<c.colorC300D6>​ochite o​</c><c.colorD9D9D9>​chite yuke</c>
+
+00:01:48.659 --> 00:01:49.226 line:0%
+<c.colorC300D6>​ochite ochi​</c><c.colorD9D9D9>​te yuke</c>
+
+00:01:49.226 --> 00:01:49.726 line:0%
+<c.colorC300D6>​ochite ochite ​</c><c.colorD9D9D9>​yuke</c>
+
+00:01:49.726 --> 00:01:49.893 line:0%
+<c.colorC300D6>​ochite ochite yu​</c><c.colorD9D9D9>​ke</c>
+
+00:01:49.893 --> 00:01:52.529 line:0%
+<c.colorC300D6>​ochite ochite yuke</c>
+
+00:01:52.529 --> 00:01:52.696 position:70% line:0%
+<c.colorC300D6>​hi​</c><c.colorD9D9D9>​tokire no hikari sae sutetara sore de ii</c>
+
+00:01:52.529 --> 00:01:58.202 position:83% line:92%
+<c.colorC300D6>​Leaving behind the ray of light that shines upon you</c>
+
+00:01:52.696 --> 00:01:52.863 position:70% line:0%
+<c.colorC300D6>​hito​</c><c.colorD9D9D9>​kire no hikari sae sutetara sore de ii</c>
+
+00:01:52.863 --> 00:01:53.230 position:70% line:0%
+<c.colorC300D6>​hitoki​</c><c.colorD9D9D9>​re no hikari sae sutetara sore de ii</c>
+
+00:01:53.230 --> 00:01:53.597 position:70% line:0%
+<c.colorC300D6>​hitokire ​</c><c.colorD9D9D9>​no hikari sae sutetara sore de ii</c>
+
+00:01:53.597 --> 00:01:53.931 position:70% line:0%
+<c.colorC300D6>​hitokire no ​</c><c.colorD9D9D9>​hikari sae sutetara sore de ii</c>
+
+00:01:53.931 --> 00:01:54.131 position:70% line:0%
+<c.colorC300D6>​hitokire no hi​</c><c.colorD9D9D9>​kari sae sutetara sore de ii</c>
+
+00:01:54.131 --> 00:01:54.465 position:70% line:0%
+<c.colorC300D6>​hitokire no hika​</c><c.colorD9D9D9>​ri sae sutetara sore de ii</c>
+
+00:01:54.465 --> 00:01:54.998 position:70% line:0%
+<c.colorC300D6>​hitokire no hikari ​</c><c.colorD9D9D9>​sae sutetara sore de ii</c>
+
+00:01:54.998 --> 00:01:55.365 position:70% line:0%
+<c.colorC300D6>​hitokire no hikari sa​</c><c.colorD9D9D9>​e sutetara sore de ii</c>
+
+00:01:55.365 --> 00:01:55.699 position:70% line:0%
+<c.colorC300D6>​hitokire no hikari sae ​</c><c.colorD9D9D9>​sutetara sore de ii</c>
+
+00:01:55.699 --> 00:01:56.233 position:70% line:0%
+<c.colorC300D6>​hitokire no hikari sae su​</c><c.colorD9D9D9>​tetara sore de ii</c>
+
+00:01:56.233 --> 00:01:56.333 position:70% line:0%
+<c.colorC300D6>​hitokire no hikari sae sute​</c><c.colorD9D9D9>​tara sore de ii</c>
+
+00:01:56.333 --> 00:01:56.433 position:70% line:0%
+<c.colorC300D6>​hitokire no hikari sae suteta​</c><c.colorD9D9D9>​ra sore de ii</c>
+
+00:01:56.433 --> 00:01:56.934 position:70% line:0%
+<c.colorC300D6>​hitokire no hikari sae sutetara ​</c><c.colorD9D9D9>​sore de ii</c>
+
+00:01:56.934 --> 00:01:57.301 position:70% line:0%
+<c.colorC300D6>​hitokire no hikari sae sutetara so​</c><c.colorD9D9D9>​re de ii</c>
+
+00:01:57.301 --> 00:01:57.634 position:70% line:0%
+<c.colorC300D6>​hitokire no hikari sae sutetara sore ​</c><c.colorD9D9D9>​de ii</c>
+
+00:01:57.634 --> 00:01:57.801 position:70% line:0%
+<c.colorC300D6>​hitokire no hikari sae sutetara sore de ​</c><c.colorD9D9D9>​ii</c>
+
+00:01:57.801 --> 00:01:57.935 position:70% line:0%
+<c.colorC300D6>​hitokire no hikari sae sutetara sore de i​</c><c.colorD9D9D9>​i</c>
+
+00:01:57.935 --> 00:01:58.202 position:67% line:0%
+<c.colorC300D6>​hitokire no hikari sae sutetara sore de ii</c>
+
+00:01:58.202 --> 00:01:58.535 position:63% line:0%
+<c.colorC300D6>​sa​</c><c.colorD9D9D9>​kasa mawaru tokei michibiku hate de</c>
+
+00:01:58.202 --> 00:02:08.745 position:77% line:92%
+<c.colorC300D6>​All the way to where this clock in reverse leads</c>
+
+00:01:58.535 --> 00:01:59.036 position:63% line:0%
+<c.colorC300D6>​saka​</c><c.colorD9D9D9>​sa mawaru tokei michibiku hate de</c>
+
+00:01:59.036 --> 00:01:59.603 position:63% line:0%
+<c.colorC300D6>​sakasa ​</c><c.colorD9D9D9>​mawaru tokei michibiku hate de</c>
+
+00:01:59.603 --> 00:01:59.970 position:63% line:0%
+<c.colorC300D6>​sakasa ma​</c><c.colorD9D9D9>​waru tokei michibiku hate de</c>
+
+00:01:59.970 --> 00:02:00.504 position:63% line:0%
+<c.colorC300D6>​sakasa mawa​</c><c.colorD9D9D9>​ru tokei michibiku hate de</c>
+
+00:02:00.504 --> 00:02:01.004 position:63% line:0%
+<c.colorC300D6>​sakasa mawaru ​</c><c.colorD9D9D9>​tokei michibiku hate de</c>
+
+00:02:01.004 --> 00:02:01.205 position:63% line:0%
+<c.colorC300D6>​sakasa mawaru to​</c><c.colorD9D9D9>​kei michibiku hate de</c>
+
+00:02:01.205 --> 00:02:03.674 position:63% line:0%
+<c.colorC300D6>​sakasa mawaru tokei ​</c><c.colorD9D9D9>​michibiku hate de</c>
+
+00:02:03.674 --> 00:02:04.007 position:63% line:0%
+<c.colorC300D6>​sakasa mawaru tokei mi​</c><c.colorD9D9D9>​chibiku hate de</c>
+
+00:02:04.007 --> 00:02:04.208 position:63% line:0%
+<c.colorC300D6>​sakasa mawaru tokei michi​</c><c.colorD9D9D9>​biku hate de</c>
+
+00:02:04.208 --> 00:02:04.908 position:63% line:0%
+<c.colorC300D6>​sakasa mawaru tokei michibi​</c><c.colorD9D9D9>​ku hate de</c>
+
+00:02:04.908 --> 00:02:05.609 position:63% line:0%
+<c.colorC300D6>​sakasa mawaru tokei michibiku ​</c><c.colorD9D9D9>​hate de</c>
+
+00:02:05.609 --> 00:02:06.643 position:63% line:0%
+<c.colorC300D6>​sakasa mawaru tokei michibiku ha​</c><c.colorD9D9D9>​te de</c>
+
+00:02:06.643 --> 00:02:06.844 position:63% line:0%
+<c.colorC300D6>​sakasa mawaru tokei michibiku hate ​</c><c.colorD9D9D9>​de</c>
+
+00:02:06.844 --> 00:02:08.745 position:59% line:0%
+<c.colorC300D6>​sakasa mawaru tokei michibiku hate de</c>
+
+00:02:10.013 --> 00:02:10.180 position:58% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.colorD9D9D9>au no wa kami ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:10.013 --> 00:02:10.180 position:58% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.colorD9D9D9>au no wa kami ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:10.013 --> 00:02:15.486 position:98% line:92%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​W</c><c.color1BEFE8>​h</c><c.color20E8E7>​o </c><c.color25E0E7>​w</c><c.color2AD9E6>​i</c><c.color30D1E6>​l</c><c.color35CAE5>​l </c><c.color3AC2E4>​y</c><c.color3FBBE4>​o</c><c.color45B3E3>​u </c><c.color4AACE3>​f</c><c.color4FA4E2>​i</c><c.color549DE2>​n</c><c.color5A95E1>​d </c><c.color5F8EE0>​t</c><c.color6486E0>​h</c><c.color697FDF>​e</c><c.color6F77DF>​r</c><c.color7470DE>​e</c><c.color7968DE>​, </c><c.color7E61DD>​G</c><c.color8459DC>​o</c><c.color8952DC>​d </c><c.color8E4ADB>​o</c><c.color9343DB>​r </c><c.color993BDA>​t</c><c.color9E34DA>​h</c><c.colorA32CD9>​e </c><c.colorA825D8>​D</c><c.colorAE1DD8>​e</c><c.colorB316D7>​v</c><c.colorB80ED7>​i</c><c.colorBD07D6>​l</c><c.colorC300D6>?​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:10.013 --> 00:02:15.486 position:98% line:92%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​W</c><c.color1BEFE8>​h</c><c.color20E8E7>​o </c><c.color25E0E7>​w</c><c.color2AD9E6>​i</c><c.color30D1E6>​l</c><c.color35CAE5>​l </c><c.color3AC2E4>​y</c><c.color3FBBE4>​o</c><c.color45B3E3>​u </c><c.color4AACE3>​f</c><c.color4FA4E2>​i</c><c.color549DE2>​n</c><c.color5A95E1>​d </c><c.color5F8EE0>​t</c><c.color6486E0>​h</c><c.color697FDF>​e</c><c.color6F77DF>​r</c><c.color7470DE>​e</c><c.color7968DE>​, </c><c.color7E61DD>​G</c><c.color8459DC>​o</c><c.color8952DC>​d </c><c.color8E4ADB>​o</c><c.color9343DB>​r </c><c.color993BDA>​t</c><c.color9E34DA>​h</c><c.colorA32CD9>​e </c><c.colorA825D8>​D</c><c.colorAE1DD8>​e</c><c.colorB316D7>​v</c><c.colorB80ED7>​i</c><c.colorBD07D6>​l</c><c.colorC300D6>?​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:10.180 --> 00:02:10.347 position:59% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.colorD9D9D9>u no wa kami ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:10.180 --> 00:02:10.347 position:59% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.colorD9D9D9>u no wa kami ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:10.347 --> 00:02:10.514 position:61% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.colorD9D9D9>no wa kami ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:10.347 --> 00:02:10.514 position:61% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.colorD9D9D9>no wa kami ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:10.514 --> 00:02:10.714 position:64% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.colorD9D9D9>wa kami ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:10.514 --> 00:02:10.714 position:64% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.colorD9D9D9>wa kami ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:10.714 --> 00:02:11.048 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.colorD9D9D9>kami ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:10.714 --> 00:02:11.048 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.colorD9D9D9>kami ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:11.048 --> 00:02:11.415 position:70% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.colorD9D9D9>mi ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:11.048 --> 00:02:11.415 position:70% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.colorD9D9D9>mi ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:11.415 --> 00:02:11.582 position:73% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.colorD9D9D9>ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:11.415 --> 00:02:11.582 position:73% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.colorD9D9D9>ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:11.582 --> 00:02:11.748 position:77% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.color7D62DD>​k</c><c.color8656DC>​a </c><c.colorD9D9D9>akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:11.582 --> 00:02:11.748 position:77% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.color7D62DD>​k</c><c.color8656DC>​a </c><c.colorD9D9D9>akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:11.748 --> 00:02:11.949 position:78% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.color7D62DD>​k</c><c.color8656DC>​a </c><c.color8F4ADB>​a</c><c.colorD9D9D9>kuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:11.748 --> 00:02:11.949 position:78% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.color7D62DD>​k</c><c.color8656DC>​a </c><c.color8F4ADB>​a</c><c.colorD9D9D9>kuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:11.949 --> 00:02:12.116 position:81% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.color7D62DD>​k</c><c.color8656DC>​a </c><c.color8F4ADB>​a</c><c.color973DDA>​k</c><c.colorA031D9>​u</c><c.colorD9D9D9>ma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:11.949 --> 00:02:12.116 position:81% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.color7D62DD>​k</c><c.color8656DC>​a </c><c.color8F4ADB>​a</c><c.color973DDA>​k</c><c.colorA031D9>​u</c><c.colorD9D9D9>ma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:12.116 --> 00:02:12.483 position:84% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.color7D62DD>​k</c><c.color8656DC>​a </c><c.color8F4ADB>​a</c><c.color973DDA>​k</c><c.colorA031D9>​u</c><c.colorA925D8>​m</c><c.colorB118D7>​a </c><c.colorD9D9D9>ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:12.116 --> 00:02:12.483 position:84% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.color7D62DD>​k</c><c.color8656DC>​a </c><c.color8F4ADB>​a</c><c.color973DDA>​k</c><c.colorA031D9>​u</c><c.colorA925D8>​m</c><c.colorB118D7>​a </c><c.colorD9D9D9>ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:12.483 --> 00:02:15.486 position:86% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.color7D62DD>​k</c><c.color8656DC>​a </c><c.color8F4ADB>​a</c><c.color973DDA>​k</c><c.colorA031D9>​u</c><c.colorA925D8>​m</c><c.colorB118D7>​a </c><c.colorBA0CD6>​k</c><c.colorC300D6>a​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:12.483 --> 00:02:15.486 position:86% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.color7D62DD>​k</c><c.color8656DC>​a </c><c.color8F4ADB>​a</c><c.color973DDA>​k</c><c.colorA031D9>​u</c><c.colorA925D8>​m</c><c.colorB118D7>​a </c><c.colorBA0CD6>​k</c><c.colorC300D6>a​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:15.853 --> 00:02:16.019 line:0%
+<c.color16F7E9>​ho​</c><c.colorD9D9D9>​shikuzu</c>
+
+00:02:15.853 --> 00:02:16.720 line:92%
+<c.color16F7E9>​Stardust</c>
+
+00:02:16.019 --> 00:02:16.186 line:0%
+<c.color16F7E9>​hoshi​</c><c.colorD9D9D9>​kuzu</c>
+
+00:02:16.186 --> 00:02:16.386 line:0%
+<c.color16F7E9>​hoshiku​</c><c.colorD9D9D9>​zu</c>
+
+00:02:16.386 --> 00:02:16.720 line:0%
+<c.color16F7E9>​hoshikuzu</c>
+
+00:02:16.720 --> 00:02:17.054 line:0%
+<c.color16F7E9>​na​</c><c.colorD9D9D9>​raku no chi no soko de</c>
+
+00:02:16.720 --> 00:02:20.524 line:92%
+<c.color16F7E9>​Even in the darkest depths of Hell</c>
+
+00:02:17.054 --> 00:02:17.387 line:0%
+<c.color16F7E9>​nara​</c><c.colorD9D9D9>​ku no chi no soko de</c>
+
+00:02:17.387 --> 00:02:17.688 line:0%
+<c.color16F7E9>​naraku ​</c><c.colorD9D9D9>​no chi no soko de</c>
+
+00:02:17.688 --> 00:02:18.088 line:0%
+<c.color16F7E9>​naraku no ​</c><c.colorD9D9D9>​chi no soko de</c>
+
+00:02:18.088 --> 00:02:18.455 line:0%
+<c.color16F7E9>​naraku no chi ​</c><c.colorD9D9D9>​no soko de</c>
+
+00:02:18.455 --> 00:02:18.822 line:0%
+<c.color16F7E9>​naraku no chi no ​</c><c.colorD9D9D9>​soko de</c>
+
+00:02:18.822 --> 00:02:19.189 line:0%
+<c.color16F7E9>​naraku no chi no so​</c><c.colorD9D9D9>​ko de</c>
+
+00:02:19.189 --> 00:02:19.556 line:0%
+<c.color16F7E9>​naraku no chi no soko ​</c><c.colorD9D9D9>​de</c>
+
+00:02:19.556 --> 00:02:20.524 line:0%
+<c.color16F7E9>​naraku no chi no soko de</c>
+
+00:02:20.524 --> 00:02:20.757 position:61% line:0%
+<c.color16F7E9>​sa​</c><c.colorD9D9D9>​kasu sakasu sakasu sakasu hanataba</c>
+
+00:02:20.524 --> 00:02:25.362 position:94% line:92%
+<c.color16F7E9>​Budding, burgeoning, blooming, blossoming, a bed of flowers</c>
+
+00:02:20.757 --> 00:02:20.991 position:61% line:0%
+<c.color16F7E9>​saka​</c><c.colorD9D9D9>​su sakasu sakasu sakasu hanataba</c>
+
+00:02:20.991 --> 00:02:21.291 position:61% line:0%
+<c.color16F7E9>​sakasu ​</c><c.colorD9D9D9>​sakasu sakasu sakasu hanataba</c>
+
+00:02:21.291 --> 00:02:21.492 position:61% line:0%
+<c.color16F7E9>​sakasu sa​</c><c.colorD9D9D9>​kasu sakasu sakasu hanataba</c>
+
+00:02:21.492 --> 00:02:21.692 position:61% line:0%
+<c.color16F7E9>​sakasu saka​</c><c.colorD9D9D9>​su sakasu sakasu hanataba</c>
+
+00:02:21.692 --> 00:02:21.959 position:61% line:0%
+<c.color16F7E9>​sakasu sakasu ​</c><c.colorD9D9D9>​sakasu sakasu hanataba</c>
+
+00:02:21.959 --> 00:02:22.192 position:61% line:0%
+<c.color16F7E9>​sakasu sakasu sa​</c><c.colorD9D9D9>​kasu sakasu hanataba</c>
+
+00:02:22.192 --> 00:02:22.392 position:61% line:0%
+<c.color16F7E9>​sakasu sakasu saka​</c><c.colorD9D9D9>​su sakasu hanataba</c>
+
+00:02:22.392 --> 00:02:22.726 position:61% line:0%
+<c.color16F7E9>​sakasu sakasu sakasu ​</c><c.colorD9D9D9>​sakasu hanataba</c>
+
+00:02:22.726 --> 00:02:22.926 position:61% line:0%
+<c.color16F7E9>​sakasu sakasu sakasu sa​</c><c.colorD9D9D9>​kasu hanataba</c>
+
+00:02:22.926 --> 00:02:23.127 position:61% line:0%
+<c.color16F7E9>​sakasu sakasu sakasu saka​</c><c.colorD9D9D9>​su hanataba</c>
+
+00:02:23.127 --> 00:02:23.427 position:61% line:0%
+<c.color16F7E9>​sakasu sakasu sakasu sakasu ​</c><c.colorD9D9D9>​hanataba</c>
+
+00:02:23.427 --> 00:02:23.794 position:61% line:0%
+<c.color16F7E9>​sakasu sakasu sakasu sakasu ha​</c><c.colorD9D9D9>​nataba</c>
+
+00:02:23.794 --> 00:02:24.128 position:61% line:0%
+<c.color16F7E9>​sakasu sakasu sakasu sakasu hana​</c><c.colorD9D9D9>​taba</c>
+
+00:02:24.128 --> 00:02:24.328 position:61% line:0%
+<c.color16F7E9>​sakasu sakasu sakasu sakasu hanata​</c><c.colorD9D9D9>​ba</c>
+
+00:02:24.328 --> 00:02:25.362 position:58% line:0%
+<c.color16F7E9>​sakasu sakasu sakasu sakasu hanataba</c>
+
+00:02:27.131 --> 00:02:27.297 line:0%
+<c.colorC300D6>​ma​</c><c.colorD9D9D9>​doromi</c>
+
+00:02:27.131 --> 00:02:28.031 line:92%
+<c.colorC300D6>​Deep in slumber</c>
+
+00:02:27.297 --> 00:02:27.498 line:0%
+<c.colorC300D6>​mado​</c><c.colorD9D9D9>​romi</c>
+
+00:02:27.498 --> 00:02:27.664 line:0%
+<c.colorC300D6>​madoro​</c><c.colorD9D9D9>​mi</c>
+
+00:02:27.664 --> 00:02:28.031 line:0%
+<c.colorC300D6>​madoromi</c>
+
+00:02:28.031 --> 00:02:28.365 line:0%
+<c.colorC300D6>​sa​</c><c.colorD9D9D9>​mezu ni obore yuku</c>
+
+00:02:28.031 --> 00:02:31.935 line:92%
+<c.colorC300D6>​Trapped in an endless siesta</c>
+
+00:02:28.365 --> 00:02:28.665 line:0%
+<c.colorC300D6>​same​</c><c.colorD9D9D9>​zu ni obore yuku</c>
+
+00:02:28.665 --> 00:02:29.066 line:0%
+<c.colorC300D6>​samezu ​</c><c.colorD9D9D9>​ni obore yuku</c>
+
+00:02:29.066 --> 00:02:29.466 line:0%
+<c.colorC300D6>​samezu ni ​</c><c.colorD9D9D9>​obore yuku</c>
+
+00:02:29.466 --> 00:02:29.800 line:0%
+<c.colorC300D6>​samezu ni o​</c><c.colorD9D9D9>​bore yuku</c>
+
+00:02:29.800 --> 00:02:30.167 line:0%
+<c.colorC300D6>​samezu ni obo​</c><c.colorD9D9D9>​re yuku</c>
+
+00:02:30.167 --> 00:02:30.501 line:0%
+<c.colorC300D6>​samezu ni obore ​</c><c.colorD9D9D9>​yuku</c>
+
+00:02:30.501 --> 00:02:30.834 line:0%
+<c.colorC300D6>​samezu ni obore yu​</c><c.colorD9D9D9>​ku</c>
+
+00:02:30.834 --> 00:02:31.935 line:0%
+<c.colorC300D6>​samezu ni obore yuku</c>
+
+00:02:31.935 --> 00:02:32.102 position:61% line:0%
+<c.colorC300D6>​ni​</c><c.colorD9D9D9>​getai ikitai kietai deguchi wa nai</c>
+
+00:02:31.935 --> 00:02:37.541 position:98% line:92%
+<c.colorC300D6>​Want to leave, ​</c><c.color16F7E9>​want to live, </c><c.colorC300D6>​evaporate, t</c><c.colorB611D7>​h</c><c.colorAA23D8>​e</c><c.color9D34DA>​r</c><c.color9146DB>​e</c><c.color8558DC>​'</c><c.color7869DE>​s </c><c.color6C7BDF>​n</c><c.color608DE0>​o </c><c.color539EE2>​e</c><c.color47B0E3>​s</c><c.color3BC2E4>​c</c><c.color2ED3E6>​a</c><c.color22E5E7>​p</c><c.color16F7E9>​e</c>
+
+00:02:32.102 --> 00:02:32.269 position:61% line:0%
+<c.colorC300D6>​nige​</c><c.colorD9D9D9>​tai ikitai kietai deguchi wa nai</c>
+
+00:02:32.269 --> 00:02:32.636 position:61% line:0%
+<c.colorC300D6>​nigetai ​</c><c.colorD9D9D9>​ikitai kietai deguchi wa nai</c>
+
+00:02:32.636 --> 00:02:32.803 position:63% line:0%
+<c.colorC300D6>​nigetai ​</c><c.color16F7E9>​i</c><c.colorD9D9D9>​kitai kietai deguchi wa nai</c>
+
+00:02:32.803 --> 00:02:32.970 position:63% line:0%
+<c.colorC300D6>​nigetai ​</c><c.color16F7E9>​iki</c><c.colorD9D9D9>​tai kietai deguchi wa nai</c>
+
+00:02:32.970 --> 00:02:33.337 position:63% line:0%
+<c.colorC300D6>​nigetai ​</c><c.color16F7E9>​ikitai </c><c.colorD9D9D9>​kietai deguchi wa nai</c>
+
+00:02:33.337 --> 00:02:33.504 position:64% line:0%
+<c.colorC300D6>​nigetai ​</c><c.color16F7E9>​ikitai </c><c.colorC300D6>​ki</c><c.colorD9D9D9>​etai deguchi wa nai</c>
+
+00:02:33.504 --> 00:02:33.670 position:64% line:0%
+<c.colorC300D6>​nigetai ​</c><c.color16F7E9>​ikitai </c><c.colorC300D6>​kie</c><c.colorD9D9D9>​tai deguchi wa nai</c>
+
+00:02:33.670 --> 00:02:34.037 position:64% line:0%
+<c.colorC300D6>​nigetai ​</c><c.color16F7E9>​ikitai </c><c.colorC300D6>​kietai </c><c.colorD9D9D9>​deguchi wa nai</c>
+
+00:02:34.037 --> 00:02:34.204 position:66% line:0%
+<c.colorC300D6>​nigetai ​</c><c.color16F7E9>​ikitai </c><c.colorC300D6>​kietai d</c><c.colorB316D7>​e</c><c.colorD9D9D9>​guchi wa nai</c>
+
+00:02:34.204 --> 00:02:34.371 position:69% line:0%
+<c.colorC300D6>​nigetai ​</c><c.color16F7E9>​ikitai </c><c.colorC300D6>​kietai d</c><c.colorB316D7>​e</c><c.colorA32CD9>​g</c><c.color9343DB>​u</c><c.colorD9D9D9>​chi wa nai</c>
+
+00:02:34.371 --> 00:02:34.738 position:73% line:0%
+<c.colorC300D6>​nigetai ​</c><c.color16F7E9>​ikitai </c><c.colorC300D6>​kietai d</c><c.colorB316D7>​e</c><c.colorA32CD9>​g</c><c.color9343DB>​u</c><c.color8459DC>​c</c><c.color7470DE>​h</c><c.color6486E0>​i </c><c.colorD9D9D9>​wa nai</c>
+
+00:02:34.738 --> 00:02:35.072 position:77% line:0%
+<c.colorC300D6>​nigetai ​</c><c.color16F7E9>​ikitai </c><c.colorC300D6>​kietai d</c><c.colorB316D7>​e</c><c.colorA32CD9>​g</c><c.color9343DB>​u</c><c.color8459DC>​c</c><c.color7470DE>​h</c><c.color6486E0>​i </c><c.color549DE2>​w</c><c.color45B3E3>​a </c><c.colorD9D9D9>​nai</c>
+
+00:02:35.072 --> 00:02:37.541 position:80% line:0%
+<c.colorC300D6>​nigetai ​</c><c.color16F7E9>​ikitai </c><c.colorC300D6>​kietai d</c><c.colorB316D7>​e</c><c.colorA32CD9>​g</c><c.color9343DB>​u</c><c.color8459DC>​c</c><c.color7470DE>​h</c><c.color6486E0>​i </c><c.color549DE2>​w</c><c.color45B3E3>​a </c><c.color35CAE5>​n</c><c.color25E0E7>​a</c><c.color16F7E9>​i</c>
+
+00:02:38.442 --> 00:02:38.609 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​f</c><c.color2ED3E6>​a </c><c.colorD9D9D9>ve te fu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:38.442 --> 00:02:38.609 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​f</c><c.color2ED3E6>​a </c><c.colorD9D9D9>ve te fu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:38.609 --> 00:02:38.775 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​f</c><c.color2ED3E6>​a </c><c.color47B0E3>​v</c><c.color608DE0>​e </c><c.colorD9D9D9>te fu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:38.609 --> 00:02:38.775 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​f</c><c.color2ED3E6>​a </c><c.color47B0E3>​v</c><c.color608DE0>​e </c><c.colorD9D9D9>te fu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:38.775 --> 00:02:38.976 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​f</c><c.color2ED3E6>​a </c><c.color47B0E3>​v</c><c.color608DE0>​e </c><c.color7869DE>​t</c><c.color9146DB>​e </c><c.colorD9D9D9>fu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:38.775 --> 00:02:38.976 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​f</c><c.color2ED3E6>​a </c><c.color47B0E3>​v</c><c.color608DE0>​e </c><c.color7869DE>​t</c><c.color9146DB>​e </c><c.colorD9D9D9>fu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:38.976 --> 00:02:39.276 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​f</c><c.color2ED3E6>​a </c><c.color47B0E3>​v</c><c.color608DE0>​e </c><c.color7869DE>​t</c><c.color9146DB>​e </c><c.colorAA23D8>​f</c><c.colorC300D6>u​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:38.976 --> 00:02:39.276 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​f</c><c.color2ED3E6>​a </c><c.color47B0E3>​v</c><c.color608DE0>​e </c><c.color7869DE>​t</c><c.color9146DB>​e </c><c.colorAA23D8>​f</c><c.colorC300D6>u​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:39.276 --> 00:02:39.643 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.colorD9D9D9>la ci fu wa ya u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:39.276 --> 00:02:39.643 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.colorD9D9D9>la ci fu wa ya u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:39.643 --> 00:02:39.977 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.colorD9D9D9>ci fu wa ya u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:39.643 --> 00:02:39.977 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.colorD9D9D9>ci fu wa ya u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:39.977 --> 00:02:40.344 position:56% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.colorD9D9D9>fu wa ya u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:39.977 --> 00:02:40.344 position:56% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.colorD9D9D9>fu wa ya u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:40.344 --> 00:02:40.711 position:59% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.colorD9D9D9>wa ya u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:40.344 --> 00:02:40.711 position:59% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.colorD9D9D9>wa ya u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:40.711 --> 00:02:41.078 position:63% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​w</c><c.color7869DE>​a </c><c.colorD9D9D9>ya u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:40.711 --> 00:02:41.078 position:63% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​w</c><c.color7869DE>​a </c><c.colorD9D9D9>ya u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:41.078 --> 00:02:41.411 position:66% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​w</c><c.color7869DE>​a </c><c.color8558DC>​y</c><c.color9146DB>​a </c><c.colorD9D9D9>u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:41.078 --> 00:02:41.411 position:66% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​w</c><c.color7869DE>​a </c><c.color8558DC>​y</c><c.color9146DB>​a </c><c.colorD9D9D9>u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:41.411 --> 00:02:41.778 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​w</c><c.color7869DE>​a </c><c.color8558DC>​y</c><c.color9146DB>​a </c><c.color9D34DA>​u </c><c.colorD9D9D9>u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:41.411 --> 00:02:41.778 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​w</c><c.color7869DE>​a </c><c.color8558DC>​y</c><c.color9146DB>​a </c><c.color9D34DA>​u </c><c.colorD9D9D9>u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:41.778 --> 00:02:42.112 position:69% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​w</c><c.color7869DE>​a </c><c.color8558DC>​y</c><c.color9146DB>​a </c><c.color9D34DA>​u </c><c.colorAA23D8>​u </c><c.colorD9D9D9>we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:41.778 --> 00:02:42.112 position:69% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​w</c><c.color7869DE>​a </c><c.color8558DC>​y</c><c.color9146DB>​a </c><c.color9D34DA>​u </c><c.colorAA23D8>​u </c><c.colorD9D9D9>we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:42.112 --> 00:02:43.180 position:70% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​w</c><c.color7869DE>​a </c><c.color8558DC>​y</c><c.color9146DB>​a </c><c.color9D34DA>​u </c><c.colorAA23D8>​u </c><c.colorB611D7>​w</c><c.colorC300D6>e​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:42.112 --> 00:02:43.180 position:70% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​w</c><c.color7869DE>​a </c><c.color8558DC>​y</c><c.color9146DB>​a </c><c.color9D34DA>​u </c><c.colorAA23D8>​u </c><c.colorB611D7>​w</c><c.colorC300D6>e​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:43.180 --> 00:02:43.347 position:89% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.colorD9D9D9>fi to ko fi to ko fi to hu se fu ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:43.180 --> 00:02:43.347 position:89% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.colorD9D9D9>fi to ko fi to ko fi to hu se fu ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:43.347 --> 00:02:43.547 position:92% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.colorD9D9D9>to ko fi to ko fi to hu se fu ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:43.347 --> 00:02:43.547 position:92% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.colorD9D9D9>to ko fi to ko fi to hu se fu ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:43.547 --> 00:02:43.881 position:95% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.colorD9D9D9>ko fi to ko fi to hu se fu ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:43.547 --> 00:02:43.881 position:95% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.colorD9D9D9>ko fi to ko fi to hu se fu ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:43.881 --> 00:02:44.081 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.colorD9D9D9>fi to ko fi to hu se fu ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:43.881 --> 00:02:44.081 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.colorD9D9D9>fi to ko fi to hu se fu ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:44.081 --> 00:02:44.248 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.colorD9D9D9>to ko fi to hu se fu ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:44.081 --> 00:02:44.248 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.colorD9D9D9>to ko fi to hu se fu ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:44.248 --> 00:02:44.581 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.color4DA7E2>​t</c><c.color539FE2>​o </c><c.colorD9D9D9>ko fi to hu se fu ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:44.248 --> 00:02:44.581 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.color4DA7E2>​t</c><c.color539FE2>​o </c><c.colorD9D9D9>ko fi to hu se fu ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:44.581 --> 00:02:44.781 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.color4DA7E2>​t</c><c.color539FE2>​o </c><c.color5897E1>​k</c><c.color5E8FE1>​o </c><c.colorD9D9D9>fi to hu se fu ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:44.581 --> 00:02:44.781 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.color4DA7E2>​t</c><c.color539FE2>​o </c><c.color5897E1>​k</c><c.color5E8FE1>​o </c><c.colorD9D9D9>fi to hu se fu ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:44.781 --> 00:02:44.948 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.color4DA7E2>​t</c><c.color539FE2>​o </c><c.color5897E1>​k</c><c.color5E8FE1>​o </c><c.color6487E0>​f</c><c.color697FDF>​i </c><c.colorD9D9D9>to hu se fu ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:44.781 --> 00:02:44.948 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.color4DA7E2>​t</c><c.color539FE2>​o </c><c.color5897E1>​k</c><c.color5E8FE1>​o </c><c.color6487E0>​f</c><c.color697FDF>​i </c><c.colorD9D9D9>to hu se fu ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:44.948 --> 00:02:45.315 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.color4DA7E2>​t</c><c.color539FE2>​o </c><c.color5897E1>​k</c><c.color5E8FE1>​o </c><c.color6487E0>​f</c><c.color697FDF>​i </c><c.color6F77DF>​t</c><c.color746FDE>​o </c><c.colorD9D9D9>hu se fu ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:44.948 --> 00:02:45.315 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.color4DA7E2>​t</c><c.color539FE2>​o </c><c.color5897E1>​k</c><c.color5E8FE1>​o </c><c.color6487E0>​f</c><c.color697FDF>​i </c><c.color6F77DF>​t</c><c.color746FDE>​o </c><c.colorD9D9D9>hu se fu ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:45.315 --> 00:02:45.482 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.color4DA7E2>​t</c><c.color539FE2>​o </c><c.color5897E1>​k</c><c.color5E8FE1>​o </c><c.color6487E0>​f</c><c.color697FDF>​i </c><c.color6F77DF>​t</c><c.color746FDE>​o </c><c.color7A67DD>​h</c><c.color805FDD>​u </c><c.colorD9D9D9>se fu ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:45.315 --> 00:02:45.482 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.color4DA7E2>​t</c><c.color539FE2>​o </c><c.color5897E1>​k</c><c.color5E8FE1>​o </c><c.color6487E0>​f</c><c.color697FDF>​i </c><c.color6F77DF>​t</c><c.color746FDE>​o </c><c.color7A67DD>​h</c><c.color805FDD>​u </c><c.colorD9D9D9>se fu ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:45.482 --> 00:02:45.682 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.color4DA7E2>​t</c><c.color539FE2>​o </c><c.color5897E1>​k</c><c.color5E8FE1>​o </c><c.color6487E0>​f</c><c.color697FDF>​i </c><c.color6F77DF>​t</c><c.color746FDE>​o </c><c.color7A67DD>​h</c><c.color805FDD>​u </c><c.color8557DC>​s</c><c.color8B4FDC>​e </c><c.colorD9D9D9>fu ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:45.482 --> 00:02:45.682 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.color4DA7E2>​t</c><c.color539FE2>​o </c><c.color5897E1>​k</c><c.color5E8FE1>​o </c><c.color6487E0>​f</c><c.color697FDF>​i </c><c.color6F77DF>​t</c><c.color746FDE>​o </c><c.color7A67DD>​h</c><c.color805FDD>​u </c><c.color8557DC>​s</c><c.color8B4FDC>​e </c><c.colorD9D9D9>fu ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:45.682 --> 00:02:46.016 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.color4DA7E2>​t</c><c.color539FE2>​o </c><c.color5897E1>​k</c><c.color5E8FE1>​o </c><c.color6487E0>​f</c><c.color697FDF>​i </c><c.color6F77DF>​t</c><c.color746FDE>​o </c><c.color7A67DD>​h</c><c.color805FDD>​u </c><c.color8557DC>​s</c><c.color8B4FDC>​e </c><c.color9047DB>​f</c><c.color963FDA>​u </c><c.colorD9D9D9>ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:45.682 --> 00:02:46.016 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.color4DA7E2>​t</c><c.color539FE2>​o </c><c.color5897E1>​k</c><c.color5E8FE1>​o </c><c.color6487E0>​f</c><c.color697FDF>​i </c><c.color6F77DF>​t</c><c.color746FDE>​o </c><c.color7A67DD>​h</c><c.color805FDD>​u </c><c.color8557DC>​s</c><c.color8B4FDC>​e </c><c.color9047DB>​f</c><c.color963FDA>​u </c><c.colorD9D9D9>ye se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:46.016 --> 00:02:46.383 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.color4DA7E2>​t</c><c.color539FE2>​o </c><c.color5897E1>​k</c><c.color5E8FE1>​o </c><c.color6487E0>​f</c><c.color697FDF>​i </c><c.color6F77DF>​t</c><c.color746FDE>​o </c><c.color7A67DD>​h</c><c.color805FDD>​u </c><c.color8557DC>​s</c><c.color8B4FDC>​e </c><c.color9047DB>​f</c><c.color963FDA>​u </c><c.color9B37DA>​y</c><c.colorA12FD9>​e </c><c.colorD9D9D9>se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:46.016 --> 00:02:46.383 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.color4DA7E2>​t</c><c.color539FE2>​o </c><c.color5897E1>​k</c><c.color5E8FE1>​o </c><c.color6487E0>​f</c><c.color697FDF>​i </c><c.color6F77DF>​t</c><c.color746FDE>​o </c><c.color7A67DD>​h</c><c.color805FDD>​u </c><c.color8557DC>​s</c><c.color8B4FDC>​e </c><c.color9047DB>​f</c><c.color963FDA>​u </c><c.color9B37DA>​y</c><c.colorA12FD9>​e </c><c.colorD9D9D9>se nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:46.383 --> 00:02:46.717 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.color4DA7E2>​t</c><c.color539FE2>​o </c><c.color5897E1>​k</c><c.color5E8FE1>​o </c><c.color6487E0>​f</c><c.color697FDF>​i </c><c.color6F77DF>​t</c><c.color746FDE>​o </c><c.color7A67DD>​h</c><c.color805FDD>​u </c><c.color8557DC>​s</c><c.color8B4FDC>​e </c><c.color9047DB>​f</c><c.color963FDA>​u </c><c.color9B37DA>​y</c><c.colorA12FD9>​e </c><c.colorA727D9>​s</c><c.colorAC1FD8>​e </c><c.colorD9D9D9>nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:46.383 --> 00:02:46.717 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.color4DA7E2>​t</c><c.color539FE2>​o </c><c.color5897E1>​k</c><c.color5E8FE1>​o </c><c.color6487E0>​f</c><c.color697FDF>​i </c><c.color6F77DF>​t</c><c.color746FDE>​o </c><c.color7A67DD>​h</c><c.color805FDD>​u </c><c.color8557DC>​s</c><c.color8B4FDC>​e </c><c.color9047DB>​f</c><c.color963FDA>​u </c><c.color9B37DA>​y</c><c.colorA12FD9>​e </c><c.colorA727D9>​s</c><c.colorAC1FD8>​e </c><c.colorD9D9D9>nu so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:46.717 --> 00:02:46.884 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.color4DA7E2>​t</c><c.color539FE2>​o </c><c.color5897E1>​k</c><c.color5E8FE1>​o </c><c.color6487E0>​f</c><c.color697FDF>​i </c><c.color6F77DF>​t</c><c.color746FDE>​o </c><c.color7A67DD>​h</c><c.color805FDD>​u </c><c.color8557DC>​s</c><c.color8B4FDC>​e </c><c.color9047DB>​f</c><c.color963FDA>​u </c><c.color9B37DA>​y</c><c.colorA12FD9>​e </c><c.colorA727D9>​s</c><c.colorAC1FD8>​e </c><c.colorB217D7>​n</c><c.colorB70FD7>​u </c><c.colorD9D9D9>so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:46.717 --> 00:02:46.884 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.color4DA7E2>​t</c><c.color539FE2>​o </c><c.color5897E1>​k</c><c.color5E8FE1>​o </c><c.color6487E0>​f</c><c.color697FDF>​i </c><c.color6F77DF>​t</c><c.color746FDE>​o </c><c.color7A67DD>​h</c><c.color805FDD>​u </c><c.color8557DC>​s</c><c.color8B4FDC>​e </c><c.color9047DB>​f</c><c.color963FDA>​u </c><c.color9B37DA>​y</c><c.colorA12FD9>​e </c><c.colorA727D9>​s</c><c.colorAC1FD8>​e </c><c.colorB217D7>​n</c><c.colorB70FD7>​u </c><c.colorD9D9D9>so​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:46.884 --> 00:02:48.118 position:97% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.color4DA7E2>​t</c><c.color539FE2>​o </c><c.color5897E1>​k</c><c.color5E8FE1>​o </c><c.color6487E0>​f</c><c.color697FDF>​i </c><c.color6F77DF>​t</c><c.color746FDE>​o </c><c.color7A67DD>​h</c><c.color805FDD>​u </c><c.color8557DC>​s</c><c.color8B4FDC>​e </c><c.color9047DB>​f</c><c.color963FDA>​u </c><c.color9B37DA>​y</c><c.colorA12FD9>​e </c><c.colorA727D9>​s</c><c.colorAC1FD8>​e </c><c.colorB217D7>​n</c><c.colorB70FD7>​u </c><c.colorBD07D6>​s</c><c.colorC300D6>o​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:46.884 --> 00:02:48.118 position:97% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1BEFE8>​o </c><c.color21E7E7>​f</c><c.color26DFE7>​i </c><c.color2CD7E6>​t</c><c.color31CFE5>​o </c><c.color37C7E5>​k</c><c.color3DBFE4>​o </c><c.color42B7E4>​f</c><c.color48AFE3>​i </c><c.color4DA7E2>​t</c><c.color539FE2>​o </c><c.color5897E1>​k</c><c.color5E8FE1>​o </c><c.color6487E0>​f</c><c.color697FDF>​i </c><c.color6F77DF>​t</c><c.color746FDE>​o </c><c.color7A67DD>​h</c><c.color805FDD>​u </c><c.color8557DC>​s</c><c.color8B4FDC>​e </c><c.color9047DB>​f</c><c.color963FDA>​u </c><c.color9B37DA>​y</c><c.colorA12FD9>​e </c><c.colorA727D9>​s</c><c.colorAC1FD8>​e </c><c.colorB217D7>​n</c><c.colorB70FD7>​u </c><c.colorBD07D6>​s</c><c.colorC300D6>o​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:49.720 --> 00:02:49.887 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​f</c><c.color2ED3E6>​a </c><c.colorD9D9D9>ve te fu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:49.720 --> 00:02:49.887 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​f</c><c.color2ED3E6>​a </c><c.colorD9D9D9>ve te fu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:49.887 --> 00:02:50.087 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​f</c><c.color2ED3E6>​a </c><c.color47B0E3>​v</c><c.color608DE0>​e </c><c.colorD9D9D9>te fu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:49.887 --> 00:02:50.087 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​f</c><c.color2ED3E6>​a </c><c.color47B0E3>​v</c><c.color608DE0>​e </c><c.colorD9D9D9>te fu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:50.087 --> 00:02:50.254 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​f</c><c.color2ED3E6>​a </c><c.color47B0E3>​v</c><c.color608DE0>​e </c><c.color7869DE>​t</c><c.color9146DB>​e </c><c.colorD9D9D9>fu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:50.087 --> 00:02:50.254 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​f</c><c.color2ED3E6>​a </c><c.color47B0E3>​v</c><c.color608DE0>​e </c><c.color7869DE>​t</c><c.color9146DB>​e </c><c.colorD9D9D9>fu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:50.254 --> 00:02:50.587 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​f</c><c.color2ED3E6>​a </c><c.color47B0E3>​v</c><c.color608DE0>​e </c><c.color7869DE>​t</c><c.color9146DB>​e </c><c.colorAA23D8>​f</c><c.colorC300D6>u​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:50.254 --> 00:02:50.587 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​f</c><c.color2ED3E6>​a </c><c.color47B0E3>​v</c><c.color608DE0>​e </c><c.color7869DE>​t</c><c.color9146DB>​e </c><c.colorAA23D8>​f</c><c.colorC300D6>u​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:50.587 --> 00:02:50.954 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.colorD9D9D9>la ci fu wa ya u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:50.587 --> 00:02:50.954 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.colorD9D9D9>la ci fu wa ya u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:50.954 --> 00:02:51.288 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.colorD9D9D9>ci fu wa ya u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:50.954 --> 00:02:51.288 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.colorD9D9D9>ci fu wa ya u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:51.288 --> 00:02:51.622 position:56% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.colorD9D9D9>fu wa ya u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:51.288 --> 00:02:51.622 position:56% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.colorD9D9D9>fu wa ya u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:51.622 --> 00:02:52.022 position:59% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.colorD9D9D9>wa ya u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:51.622 --> 00:02:52.022 position:59% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.colorD9D9D9>wa ya u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:52.022 --> 00:02:52.356 position:63% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​w</c><c.color7869DE>​a </c><c.colorD9D9D9>ya u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:52.022 --> 00:02:52.356 position:63% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​w</c><c.color7869DE>​a </c><c.colorD9D9D9>ya u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:52.356 --> 00:02:52.689 position:66% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​w</c><c.color7869DE>​a </c><c.color8558DC>​y</c><c.color9146DB>​a </c><c.colorD9D9D9>u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:52.356 --> 00:02:52.689 position:66% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​w</c><c.color7869DE>​a </c><c.color8558DC>​y</c><c.color9146DB>​a </c><c.colorD9D9D9>u u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:52.689 --> 00:02:53.023 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​w</c><c.color7869DE>​a </c><c.color8558DC>​y</c><c.color9146DB>​a </c><c.color9D34DA>​u </c><c.colorD9D9D9>u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:52.689 --> 00:02:53.023 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​w</c><c.color7869DE>​a </c><c.color8558DC>​y</c><c.color9146DB>​a </c><c.color9D34DA>​u </c><c.colorD9D9D9>u we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:53.023 --> 00:02:53.423 position:69% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​w</c><c.color7869DE>​a </c><c.color8558DC>​y</c><c.color9146DB>​a </c><c.color9D34DA>​u </c><c.colorAA23D8>​u </c><c.colorD9D9D9>we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:53.023 --> 00:02:53.423 position:69% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​w</c><c.color7869DE>​a </c><c.color8558DC>​y</c><c.color9146DB>​a </c><c.color9D34DA>​u </c><c.colorAA23D8>​u </c><c.colorD9D9D9>we​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:53.423 --> 00:02:54.491 position:70% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​w</c><c.color7869DE>​a </c><c.color8558DC>​y</c><c.color9146DB>​a </c><c.color9D34DA>​u </c><c.colorAA23D8>​u </c><c.colorB611D7>​w</c><c.colorC300D6>e​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:53.423 --> 00:02:54.491 position:70% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​w</c><c.color7869DE>​a </c><c.color8558DC>​y</c><c.color9146DB>​a </c><c.color9D34DA>​u </c><c.colorAA23D8>​u </c><c.colorB611D7>​w</c><c.colorC300D6>e​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:54.491 --> 00:02:54.658 position:80% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.colorD9D9D9>fi to ko fi to ko fi to la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:54.491 --> 00:02:54.658 position:80% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.colorD9D9D9>fi to ko fi to ko fi to la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:54.658 --> 00:02:54.858 position:83% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.colorD9D9D9>to ko fi to ko fi to la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:54.658 --> 00:02:54.858 position:83% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.colorD9D9D9>to ko fi to ko fi to la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:54.858 --> 00:02:55.225 position:86% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.colorD9D9D9>ko fi to ko fi to la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:54.858 --> 00:02:55.225 position:86% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.colorD9D9D9>ko fi to ko fi to la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:55.225 --> 00:02:55.359 position:89% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.color3CC0E4>​k</c><c.color42B6E4>​o </c><c.colorD9D9D9>fi to ko fi to la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:55.225 --> 00:02:55.359 position:89% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.color3CC0E4>​k</c><c.color42B6E4>​o </c><c.colorD9D9D9>fi to ko fi to la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:55.359 --> 00:02:55.559 position:92% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.color3CC0E4>​k</c><c.color42B6E4>​o </c><c.color49ADE3>​f</c><c.color4FA4E2>​i </c><c.colorD9D9D9>to ko fi to la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:55.359 --> 00:02:55.559 position:92% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.color3CC0E4>​k</c><c.color42B6E4>​o </c><c.color49ADE3>​f</c><c.color4FA4E2>​i </c><c.colorD9D9D9>to ko fi to la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:55.559 --> 00:02:55.893 position:95% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.color3CC0E4>​k</c><c.color42B6E4>​o </c><c.color49ADE3>​f</c><c.color4FA4E2>​i </c><c.color569BE1>​t</c><c.color5C92E1>​o </c><c.colorD9D9D9>ko fi to la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:55.559 --> 00:02:55.893 position:95% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.color3CC0E4>​k</c><c.color42B6E4>​o </c><c.color49ADE3>​f</c><c.color4FA4E2>​i </c><c.color569BE1>​t</c><c.color5C92E1>​o </c><c.colorD9D9D9>ko fi to la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:55.893 --> 00:02:56.059 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.color3CC0E4>​k</c><c.color42B6E4>​o </c><c.color49ADE3>​f</c><c.color4FA4E2>​i </c><c.color569BE1>​t</c><c.color5C92E1>​o </c><c.color6289E0>​k</c><c.color6980DF>​o </c><c.colorD9D9D9>fi to la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:55.893 --> 00:02:56.059 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.color3CC0E4>​k</c><c.color42B6E4>​o </c><c.color49ADE3>​f</c><c.color4FA4E2>​i </c><c.color569BE1>​t</c><c.color5C92E1>​o </c><c.color6289E0>​k</c><c.color6980DF>​o </c><c.colorD9D9D9>fi to la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:56.059 --> 00:02:56.260 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.color3CC0E4>​k</c><c.color42B6E4>​o </c><c.color49ADE3>​f</c><c.color4FA4E2>​i </c><c.color569BE1>​t</c><c.color5C92E1>​o </c><c.color6289E0>​k</c><c.color6980DF>​o </c><c.color6F76DF>​f</c><c.color766DDE>​i </c><c.colorD9D9D9>to la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:56.059 --> 00:02:56.260 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.color3CC0E4>​k</c><c.color42B6E4>​o </c><c.color49ADE3>​f</c><c.color4FA4E2>​i </c><c.color569BE1>​t</c><c.color5C92E1>​o </c><c.color6289E0>​k</c><c.color6980DF>​o </c><c.color6F76DF>​f</c><c.color766DDE>​i </c><c.colorD9D9D9>to la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:56.260 --> 00:02:56.627 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.color3CC0E4>​k</c><c.color42B6E4>​o </c><c.color49ADE3>​f</c><c.color4FA4E2>​i </c><c.color569BE1>​t</c><c.color5C92E1>​o </c><c.color6289E0>​k</c><c.color6980DF>​o </c><c.color6F76DF>​f</c><c.color766DDE>​i </c><c.color7C64DD>​t</c><c.color825BDD>​o </c><c.colorD9D9D9>la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:56.260 --> 00:02:56.627 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.color3CC0E4>​k</c><c.color42B6E4>​o </c><c.color49ADE3>​f</c><c.color4FA4E2>​i </c><c.color569BE1>​t</c><c.color5C92E1>​o </c><c.color6289E0>​k</c><c.color6980DF>​o </c><c.color6F76DF>​f</c><c.color766DDE>​i </c><c.color7C64DD>​t</c><c.color825BDD>​o </c><c.colorD9D9D9>la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:56.627 --> 00:02:56.760 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.color3CC0E4>​k</c><c.color42B6E4>​o </c><c.color49ADE3>​f</c><c.color4FA4E2>​i </c><c.color569BE1>​t</c><c.color5C92E1>​o </c><c.color6289E0>​k</c><c.color6980DF>​o </c><c.color6F76DF>​f</c><c.color766DDE>​i </c><c.color7C64DD>​t</c><c.color825BDD>​o </c><c.color8952DC>​l</c><c.color8F49DB>​a </c><c.colorD9D9D9>ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:56.627 --> 00:02:56.760 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.color3CC0E4>​k</c><c.color42B6E4>​o </c><c.color49ADE3>​f</c><c.color4FA4E2>​i </c><c.color569BE1>​t</c><c.color5C92E1>​o </c><c.color6289E0>​k</c><c.color6980DF>​o </c><c.color6F76DF>​f</c><c.color766DDE>​i </c><c.color7C64DD>​t</c><c.color825BDD>​o </c><c.color8952DC>​l</c><c.color8F49DB>​a </c><c.colorD9D9D9>ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:56.760 --> 00:02:56.960 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.color3CC0E4>​k</c><c.color42B6E4>​o </c><c.color49ADE3>​f</c><c.color4FA4E2>​i </c><c.color569BE1>​t</c><c.color5C92E1>​o </c><c.color6289E0>​k</c><c.color6980DF>​o </c><c.color6F76DF>​f</c><c.color766DDE>​i </c><c.color7C64DD>​t</c><c.color825BDD>​o </c><c.color8952DC>​l</c><c.color8F49DB>​a </c><c.color9640DA>​c</c><c.color9C36DA>​i </c><c.colorD9D9D9>ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:56.760 --> 00:02:56.960 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.color3CC0E4>​k</c><c.color42B6E4>​o </c><c.color49ADE3>​f</c><c.color4FA4E2>​i </c><c.color569BE1>​t</c><c.color5C92E1>​o </c><c.color6289E0>​k</c><c.color6980DF>​o </c><c.color6F76DF>​f</c><c.color766DDE>​i </c><c.color7C64DD>​t</c><c.color825BDD>​o </c><c.color8952DC>​l</c><c.color8F49DB>​a </c><c.color9640DA>​c</c><c.color9C36DA>​i </c><c.colorD9D9D9>ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:56.960 --> 00:02:57.327 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.color3CC0E4>​k</c><c.color42B6E4>​o </c><c.color49ADE3>​f</c><c.color4FA4E2>​i </c><c.color569BE1>​t</c><c.color5C92E1>​o </c><c.color6289E0>​k</c><c.color6980DF>​o </c><c.color6F76DF>​f</c><c.color766DDE>​i </c><c.color7C64DD>​t</c><c.color825BDD>​o </c><c.color8952DC>​l</c><c.color8F49DB>​a </c><c.color9640DA>​c</c><c.color9C36DA>​i </c><c.colorA22DD9>​t</c><c.colorA924D8>​a </c><c.colorD9D9D9>wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:56.960 --> 00:02:57.327 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.color3CC0E4>​k</c><c.color42B6E4>​o </c><c.color49ADE3>​f</c><c.color4FA4E2>​i </c><c.color569BE1>​t</c><c.color5C92E1>​o </c><c.color6289E0>​k</c><c.color6980DF>​o </c><c.color6F76DF>​f</c><c.color766DDE>​i </c><c.color7C64DD>​t</c><c.color825BDD>​o </c><c.color8952DC>​l</c><c.color8F49DB>​a </c><c.color9640DA>​c</c><c.color9C36DA>​i </c><c.colorA22DD9>​t</c><c.colorA924D8>​a </c><c.colorD9D9D9>wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:57.327 --> 00:02:57.694 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.color3CC0E4>​k</c><c.color42B6E4>​o </c><c.color49ADE3>​f</c><c.color4FA4E2>​i </c><c.color569BE1>​t</c><c.color5C92E1>​o </c><c.color6289E0>​k</c><c.color6980DF>​o </c><c.color6F76DF>​f</c><c.color766DDE>​i </c><c.color7C64DD>​t</c><c.color825BDD>​o </c><c.color8952DC>​l</c><c.color8F49DB>​a </c><c.color9640DA>​c</c><c.color9C36DA>​i </c><c.colorA22DD9>​t</c><c.colorA924D8>​a </c><c.colorAF1BD8>​w</c><c.colorB612D7>​a </c><c.colorD9D9D9>ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:57.327 --> 00:02:57.694 position:98% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.color3CC0E4>​k</c><c.color42B6E4>​o </c><c.color49ADE3>​f</c><c.color4FA4E2>​i </c><c.color569BE1>​t</c><c.color5C92E1>​o </c><c.color6289E0>​k</c><c.color6980DF>​o </c><c.color6F76DF>​f</c><c.color766DDE>​i </c><c.color7C64DD>​t</c><c.color825BDD>​o </c><c.color8952DC>​l</c><c.color8F49DB>​a </c><c.color9640DA>​c</c><c.color9C36DA>​i </c><c.colorA22DD9>​t</c><c.colorA924D8>​a </c><c.colorAF1BD8>​w</c><c.colorB612D7>​a </c><c.colorD9D9D9>ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:57.694 --> 00:02:59.963 position:97% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.color3CC0E4>​k</c><c.color42B6E4>​o </c><c.color49ADE3>​f</c><c.color4FA4E2>​i </c><c.color569BE1>​t</c><c.color5C92E1>​o </c><c.color6289E0>​k</c><c.color6980DF>​o </c><c.color6F76DF>​f</c><c.color766DDE>​i </c><c.color7C64DD>​t</c><c.color825BDD>​o </c><c.color8952DC>​l</c><c.color8F49DB>​a </c><c.color9640DA>​c</c><c.color9C36DA>​i </c><c.colorA22DD9>​t</c><c.colorA924D8>​a </c><c.colorAF1BD8>​w</c><c.colorB612D7>​a </c><c.colorBC09D6>​k</c><c.colorC300D6>u​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:57.694 --> 00:02:59.963 position:97% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​k</c><c.color1CEDE8>​o </c><c.color22E4E7>​f</c><c.color29DBE6>​i </c><c.color2FD2E6>​t</c><c.color36C9E5>​o </c><c.color3CC0E4>​k</c><c.color42B6E4>​o </c><c.color49ADE3>​f</c><c.color4FA4E2>​i </c><c.color569BE1>​t</c><c.color5C92E1>​o </c><c.color6289E0>​k</c><c.color6980DF>​o </c><c.color6F76DF>​f</c><c.color766DDE>​i </c><c.color7C64DD>​t</c><c.color825BDD>​o </c><c.color8952DC>​l</c><c.color8F49DB>​a </c><c.color9640DA>​c</c><c.color9C36DA>​i </c><c.colorA22DD9>​t</c><c.colorA924D8>​a </c><c.colorAF1BD8>​w</c><c.colorB612D7>​a </c><c.colorBC09D6>​k</c><c.colorC300D6>u​ ​</c><c.colorA0AAB4>​</c>
+
+00:03:00.864 --> 00:03:01.031 line:0%
+<c.color16F7E9>​ko​</c><c.colorD9D9D9>​no sekai ni kamisama</c>
+
+00:03:00.864 --> 00:03:03.634 line:92%
+<c.color16F7E9>​If our world is home</c>
+
+00:03:01.031 --> 00:03:01.198 line:0%
+<c.color16F7E9>​kono ​</c><c.colorD9D9D9>​sekai ni kamisama</c>
+
+00:03:01.198 --> 00:03:01.365 line:0%
+<c.color16F7E9>​kono se​</c><c.colorD9D9D9>​kai ni kamisama</c>
+
+00:03:01.365 --> 00:03:01.598 line:0%
+<c.color16F7E9>​kono seka​</c><c.colorD9D9D9>​i ni kamisama</c>
+
+00:03:01.598 --> 00:03:01.732 line:0%
+<c.color16F7E9>​kono sekai ​</c><c.colorD9D9D9>​ni kamisama</c>
+
+00:03:01.732 --> 00:03:01.899 line:0%
+<c.color16F7E9>​kono sekai ni ​</c><c.colorD9D9D9>​kamisama</c>
+
+00:03:01.899 --> 00:03:02.299 line:0%
+<c.color16F7E9>​kono sekai ni ka​</c><c.colorD9D9D9>​misama</c>
+
+00:03:02.299 --> 00:03:02.466 line:0%
+<c.color16F7E9>​kono sekai ni kami​</c><c.colorD9D9D9>​sama</c>
+
+00:03:02.466 --> 00:03:02.633 line:0%
+<c.color16F7E9>​kono sekai ni kamisa​</c><c.colorD9D9D9>​ma</c>
+
+00:03:02.633 --> 00:03:03.634 line:0%
+<c.color16F7E9>​kono sekai ni kamisama</c>
+
+00:03:03.634 --> 00:03:03.834 line:0%
+<c.color16F7E9>​a​</c><c.colorD9D9D9>​marinimo ooi nara</c>
+
+00:03:03.634 --> 00:03:06.503 line:92%
+<c.color16F7E9>​To one god too many</c>
+
+00:03:03.834 --> 00:03:04.001 line:0%
+<c.color16F7E9>​ama​</c><c.colorD9D9D9>​rinimo ooi nara</c>
+
+00:03:04.001 --> 00:03:04.201 line:0%
+<c.color16F7E9>​amari​</c><c.colorD9D9D9>​nimo ooi nara</c>
+
+00:03:04.201 --> 00:03:04.535 line:0%
+<c.color16F7E9>​amarini​</c><c.colorD9D9D9>​mo ooi nara</c>
+
+00:03:04.535 --> 00:03:04.701 line:0%
+<c.color16F7E9>​amarinimo ​</c><c.colorD9D9D9>​ooi nara</c>
+
+00:03:04.701 --> 00:03:04.835 line:0%
+<c.color16F7E9>​amarinimo o​</c><c.colorD9D9D9>​oi nara</c>
+
+00:03:04.835 --> 00:03:05.035 line:0%
+<c.color16F7E9>​amarinimo oo​</c><c.colorD9D9D9>​i nara</c>
+
+00:03:05.035 --> 00:03:05.235 line:0%
+<c.color16F7E9>​amarinimo ooi ​</c><c.colorD9D9D9>​nara</c>
+
+00:03:05.235 --> 00:03:05.402 line:0%
+<c.color16F7E9>​amarinimo ooi na​</c><c.colorD9D9D9>​ra</c>
+
+00:03:05.402 --> 00:03:06.503 line:0%
+<c.color16F7E9>​amarinimo ooi nara</c>
+
+00:03:06.503 --> 00:03:06.670 line:0%
+<c.colorC300D6>​do​</c><c.colorD9D9D9>​koka ni sutereba ii</c>
+
+00:03:06.503 --> 00:03:09.273 line:92%
+<c.colorC300D6>​Banish them forever to</c>
+
+00:03:06.670 --> 00:03:06.870 line:0%
+<c.colorC300D6>​doko​</c><c.colorD9D9D9>​ka ni sutereba ii</c>
+
+00:03:06.870 --> 00:03:07.037 line:0%
+<c.colorC300D6>​dokoka ​</c><c.colorD9D9D9>​ni sutereba ii</c>
+
+00:03:07.037 --> 00:03:07.337 line:0%
+<c.colorC300D6>​dokoka ni ​</c><c.colorD9D9D9>​sutereba ii</c>
+
+00:03:07.337 --> 00:03:07.538 line:0%
+<c.colorC300D6>​dokoka ni su​</c><c.colorD9D9D9>​tereba ii</c>
+
+00:03:07.538 --> 00:03:07.905 line:0%
+<c.colorC300D6>​dokoka ni sute​</c><c.colorD9D9D9>​reba ii</c>
+
+00:03:07.905 --> 00:03:08.071 line:0%
+<c.colorC300D6>​dokoka ni sutere​</c><c.colorD9D9D9>​ba ii</c>
+
+00:03:08.071 --> 00:03:08.272 line:0%
+<c.colorC300D6>​dokoka ni sutereba ​</c><c.colorD9D9D9>​ii</c>
+
+00:03:08.272 --> 00:03:08.438 line:0%
+<c.colorC300D6>​dokoka ni sutereba i​</c><c.colorD9D9D9>​i</c>
+
+00:03:08.438 --> 00:03:09.273 line:0%
+<c.colorC300D6>​dokoka ni sutereba ii</c>
+
+00:03:09.273 --> 00:03:09.473 line:0%
+<c.colorC300D6>​mi​</c><c.colorD9D9D9>​enai tsuki no ura</c>
+
+00:03:09.273 --> 00:03:12.109 line:92%
+<c.colorC300D6>​The dark side of the moon</c>
+
+00:03:09.473 --> 00:03:09.673 line:0%
+<c.colorC300D6>​mie​</c><c.colorD9D9D9>​nai tsuki no ura</c>
+
+00:03:09.673 --> 00:03:09.840 line:0%
+<c.colorC300D6>​miena​</c><c.colorD9D9D9>​i tsuki no ura</c>
+
+00:03:09.840 --> 00:03:10.140 line:0%
+<c.colorC300D6>​mienai ​</c><c.colorD9D9D9>​tsuki no ura</c>
+
+00:03:10.140 --> 00:03:10.340 line:0%
+<c.colorC300D6>​mienai tsu​</c><c.colorD9D9D9>​ki no ura</c>
+
+00:03:10.340 --> 00:03:10.741 line:0%
+<c.colorC300D6>​mienai tsuki ​</c><c.colorD9D9D9>​no ura</c>
+
+00:03:10.741 --> 00:03:10.908 line:0%
+<c.colorC300D6>​mienai tsuki no ​</c><c.colorD9D9D9>​ura</c>
+
+00:03:10.908 --> 00:03:11.074 line:0%
+<c.colorC300D6>​mienai tsuki no u​</c><c.colorD9D9D9>​ra</c>
+
+00:03:11.074 --> 00:03:12.109 line:0%
+<c.colorC300D6>​mienai tsuki no ura</c>
+
+00:03:12.109 --> 00:03:12.309 line:0%
+<c.color16F7E9>​ma​</c><c.colorD9D9D9>​buta no mukou kara</c>
+
+00:03:12.109 --> 00:03:14.978 line:92%
+<c.color16F7E9>​Beyond the closed eyelids</c>
+
+00:03:12.309 --> 00:03:12.476 line:0%
+<c.color16F7E9>​mabu​</c><c.colorD9D9D9>​ta no mukou kara</c>
+
+00:03:12.476 --> 00:03:12.643 line:0%
+<c.color16F7E9>​mabuta ​</c><c.colorD9D9D9>​no mukou kara</c>
+
+00:03:12.643 --> 00:03:13.010 line:0%
+<c.color16F7E9>​mabuta no ​</c><c.colorD9D9D9>​mukou kara</c>
+
+00:03:13.010 --> 00:03:13.177 line:0%
+<c.color16F7E9>​mabuta no mu​</c><c.colorD9D9D9>​kou kara</c>
+
+00:03:13.177 --> 00:03:13.544 line:0%
+<c.color16F7E9>​mabuta no muko​</c><c.colorD9D9D9>​u kara</c>
+
+00:03:13.544 --> 00:03:13.744 line:0%
+<c.color16F7E9>​mabuta no mukou ​</c><c.colorD9D9D9>​kara</c>
+
+00:03:13.744 --> 00:03:13.911 line:0%
+<c.color16F7E9>​mabuta no mukou ka​</c><c.colorD9D9D9>​ra</c>
+
+00:03:13.911 --> 00:03:14.978 line:0%
+<c.color16F7E9>​mabuta no mukou kara</c>
+
+00:03:14.978 --> 00:03:15.145 line:0%
+<c.color16F7E9>​mi​</c><c.colorD9D9D9>​tsume kaesu hitomi</c>
+
+00:03:14.978 --> 00:03:17.781 line:92%
+<c.color16F7E9>​A steady gaze meets mine in turn</c>
+
+00:03:15.145 --> 00:03:15.312 line:0%
+<c.color16F7E9>​mitsu​</c><c.colorD9D9D9>​me kaesu hitomi</c>
+
+00:03:15.312 --> 00:03:15.479 line:0%
+<c.color16F7E9>​mitsume ​</c><c.colorD9D9D9>​kaesu hitomi</c>
+
+00:03:15.479 --> 00:03:15.846 line:0%
+<c.color16F7E9>​mitsume ka​</c><c.colorD9D9D9>​esu hitomi</c>
+
+00:03:15.846 --> 00:03:16.013 line:0%
+<c.color16F7E9>​mitsume kae​</c><c.colorD9D9D9>​su hitomi</c>
+
+00:03:16.013 --> 00:03:16.346 line:0%
+<c.color16F7E9>​mitsume kaesu ​</c><c.colorD9D9D9>​hitomi</c>
+
+00:03:16.346 --> 00:03:16.547 line:0%
+<c.color16F7E9>​mitsume kaesu hi​</c><c.colorD9D9D9>​tomi</c>
+
+00:03:16.547 --> 00:03:16.713 line:0%
+<c.color16F7E9>​mitsume kaesu hito​</c><c.colorD9D9D9>​mi</c>
+
+00:03:16.713 --> 00:03:17.781 line:0%
+<c.color16F7E9>​mitsume kaesu hitomi</c>
+
+00:03:17.781 --> 00:03:17.948 line:0%
+<c.colorC300D6>​ka​</c><c.colorD9D9D9>​gami no mukou de wa</c>
+
+00:03:17.781 --> 00:03:20.083 line:92%
+<c.colorC300D6>​Inside this hazy mirror</c>
+
+00:03:17.948 --> 00:03:18.148 line:0%
+<c.colorC300D6>​kaga​</c><c.colorD9D9D9>​mi no mukou de wa</c>
+
+00:03:18.148 --> 00:03:18.315 line:0%
+<c.colorC300D6>​kagami ​</c><c.colorD9D9D9>​no mukou de wa</c>
+
+00:03:18.315 --> 00:03:18.649 line:0%
+<c.colorC300D6>​kagami no ​</c><c.colorD9D9D9>​mukou de wa</c>
+
+00:03:18.649 --> 00:03:18.849 line:0%
+<c.colorC300D6>​kagami no mu​</c><c.colorD9D9D9>​kou de wa</c>
+
+00:03:18.849 --> 00:03:19.183 line:0%
+<c.colorC300D6>​kagami no muko​</c><c.colorD9D9D9>​u de wa</c>
+
+00:03:19.183 --> 00:03:19.349 line:0%
+<c.colorC300D6>​kagami no mukou ​</c><c.colorD9D9D9>​de wa</c>
+
+00:03:19.349 --> 00:03:19.550 line:0%
+<c.colorC300D6>​kagami no mukou de ​</c><c.colorD9D9D9>​wa</c>
+
+00:03:19.550 --> 00:03:20.083 line:0%
+<c.colorC300D6>​kagami no mukou de wa</c>
+
+00:03:20.083 --> 00:03:20.250 line:0%
+<c.colorC300D6>​ku​</c><c.colorD9D9D9>​rueru watashi to au</c>
+
+00:03:20.083 --> 00:03:25.956 position:61% line:92%
+<c.colorC300D6>​My frenzied self and I are intertwined</c>
+
+00:03:20.250 --> 00:03:20.417 line:0%
+<c.colorC300D6>​kuru​</c><c.colorD9D9D9>​eru watashi to au</c>
+
+00:03:20.417 --> 00:03:20.951 line:0%
+<c.colorC300D6>​kurue​</c><c.colorD9D9D9>​ru watashi to au</c>
+
+00:03:20.951 --> 00:03:21.485 line:0%
+<c.colorC300D6>​kurueru ​</c><c.colorD9D9D9>​watashi to au</c>
+
+00:03:21.485 --> 00:03:21.685 line:0%
+<c.colorC300D6>​kurueru wa​</c><c.colorD9D9D9>​tashi to au</c>
+
+00:03:21.685 --> 00:03:21.818 line:0%
+<c.colorC300D6>​kurueru wata​</c><c.colorD9D9D9>​shi to au</c>
+
+00:03:21.818 --> 00:03:22.386 line:0%
+<c.colorC300D6>​kurueru watashi ​</c><c.colorD9D9D9>​to au</c>
+
+00:03:22.386 --> 00:03:23.253 line:0%
+<c.colorC300D6>​kurueru watashi to ​</c><c.colorD9D9D9>​au</c>
+
+00:03:23.253 --> 00:03:24.655 line:0%
+<c.colorC300D6>​kurueru watashi to a​</c><c.colorD9D9D9>​u</c>
+
+00:03:24.655 --> 00:03:25.956 line:0%
+<c.colorC300D6>​kurueru watashi to au</c>
+
+00:03:27.090 --> 00:03:27.457 line:0%
+<c.colorC300D6>​o​</c><c.colorD9D9D9>​chite ochite yuke</c>
+
+00:03:27.090 --> 00:03:32.796 line:92%
+<c.colorC300D6>​Further and further you fall</c>
+
+00:03:27.457 --> 00:03:28.025 line:0%
+<c.colorC300D6>​ochi​</c><c.colorD9D9D9>​te ochite yuke</c>
+
+00:03:28.025 --> 00:03:28.559 line:0%
+<c.colorC300D6>​ochite ​</c><c.colorD9D9D9>​ochite yuke</c>
+
+00:03:28.559 --> 00:03:28.892 line:0%
+<c.colorC300D6>​ochite o​</c><c.colorD9D9D9>​chite yuke</c>
+
+00:03:28.892 --> 00:03:29.426 line:0%
+<c.colorC300D6>​ochite ochi​</c><c.colorD9D9D9>​te yuke</c>
+
+00:03:29.426 --> 00:03:29.927 line:0%
+<c.colorC300D6>​ochite ochite ​</c><c.colorD9D9D9>​yuke</c>
+
+00:03:29.927 --> 00:03:30.127 line:0%
+<c.colorC300D6>​ochite ochite yu​</c><c.colorD9D9D9>​ke</c>
+
+00:03:30.127 --> 00:03:32.796 line:0%
+<c.colorC300D6>​ochite ochite yuke</c>
+
+00:03:32.796 --> 00:03:32.963 position:67% line:0%
+<c.colorC300D6>​ne​</c><c.colorD9D9D9>​gaeba ushinau to shiri nagara soredemo</c>
+
+00:03:32.796 --> 00:03:38.435 position:81% line:92%
+<c.colorC300D6>​Knowing that reaching out will only get you spurned</c>
+
+00:03:32.963 --> 00:03:33.130 position:67% line:0%
+<c.colorC300D6>​nega​</c><c.colorD9D9D9>​eba ushinau to shiri nagara soredemo</c>
+
+00:03:33.130 --> 00:03:33.497 position:67% line:0%
+<c.colorC300D6>​negae​</c><c.colorD9D9D9>​ba ushinau to shiri nagara soredemo</c>
+
+00:03:33.497 --> 00:03:33.897 position:67% line:0%
+<c.colorC300D6>​negaeba ​</c><c.colorD9D9D9>​ushinau to shiri nagara soredemo</c>
+
+00:03:33.897 --> 00:03:34.198 position:67% line:0%
+<c.colorC300D6>​negaeba u​</c><c.colorD9D9D9>​shinau to shiri nagara soredemo</c>
+
+00:03:34.198 --> 00:03:34.331 position:67% line:0%
+<c.colorC300D6>​negaeba ushi​</c><c.colorD9D9D9>​nau to shiri nagara soredemo</c>
+
+00:03:34.331 --> 00:03:34.731 position:67% line:0%
+<c.colorC300D6>​negaeba ushina​</c><c.colorD9D9D9>​u to shiri nagara soredemo</c>
+
+00:03:34.731 --> 00:03:35.232 position:67% line:0%
+<c.colorC300D6>​negaeba ushinau ​</c><c.colorD9D9D9>​to shiri nagara soredemo</c>
+
+00:03:35.232 --> 00:03:35.632 position:67% line:0%
+<c.colorC300D6>​negaeba ushinau to ​</c><c.colorD9D9D9>​shiri nagara soredemo</c>
+
+00:03:35.632 --> 00:03:35.933 position:67% line:0%
+<c.colorC300D6>​negaeba ushinau to shi​</c><c.colorD9D9D9>​ri nagara soredemo</c>
+
+00:03:35.933 --> 00:03:36.466 position:67% line:0%
+<c.colorC300D6>​negaeba ushinau to shiri ​</c><c.colorD9D9D9>​nagara soredemo</c>
+
+00:03:36.466 --> 00:03:36.600 position:67% line:0%
+<c.colorC300D6>​negaeba ushinau to shiri na​</c><c.colorD9D9D9>​gara soredemo</c>
+
+00:03:36.600 --> 00:03:36.667 position:67% line:0%
+<c.colorC300D6>​negaeba ushinau to shiri naga​</c><c.colorD9D9D9>​ra soredemo</c>
+
+00:03:36.667 --> 00:03:37.201 position:67% line:0%
+<c.colorC300D6>​negaeba ushinau to shiri nagara ​</c><c.colorD9D9D9>​soredemo</c>
+
+00:03:37.201 --> 00:03:37.534 position:67% line:0%
+<c.colorC300D6>​negaeba ushinau to shiri nagara so​</c><c.colorD9D9D9>​redemo</c>
+
+00:03:37.534 --> 00:03:37.901 position:67% line:0%
+<c.colorC300D6>​negaeba ushinau to shiri nagara sore​</c><c.colorD9D9D9>​demo</c>
+
+00:03:37.901 --> 00:03:38.068 position:67% line:0%
+<c.colorC300D6>​negaeba ushinau to shiri nagara sorede​</c><c.colorD9D9D9>​mo</c>
+
+00:03:38.068 --> 00:03:38.435 position:64% line:0%
+<c.colorC300D6>​negaeba ushinau to shiri nagara soredemo</c>
+
+00:03:38.435 --> 00:03:38.769 position:59% line:0%
+<c.color16F7E9>​fu​</c><c.colorD9D9D9>​kaku tada fukaku motomete shizume</c>
+
+00:03:38.435 --> 00:03:48.645 position:66% line:92%
+<c.color16F7E9>​Still you seek and sink deeper and beyond</c>
+
+00:03:38.769 --> 00:03:39.303 position:59% line:0%
+<c.color16F7E9>​fuka​</c><c.colorD9D9D9>​ku tada fukaku motomete shizume</c>
+
+00:03:39.303 --> 00:03:39.836 position:59% line:0%
+<c.color16F7E9>​fukaku ​</c><c.colorD9D9D9>​tada fukaku motomete shizume</c>
+
+00:03:39.836 --> 00:03:40.204 position:59% line:0%
+<c.color16F7E9>​fukaku ta​</c><c.colorD9D9D9>​da fukaku motomete shizume</c>
+
+00:03:40.204 --> 00:03:40.737 position:59% line:0%
+<c.color16F7E9>​fukaku tada ​</c><c.colorD9D9D9>​fukaku motomete shizume</c>
+
+00:03:40.737 --> 00:03:41.238 position:59% line:0%
+<c.color16F7E9>​fukaku tada fu​</c><c.colorD9D9D9>​kaku motomete shizume</c>
+
+00:03:41.238 --> 00:03:41.438 position:59% line:0%
+<c.color16F7E9>​fukaku tada fuka​</c><c.colorD9D9D9>​ku motomete shizume</c>
+
+00:03:41.438 --> 00:03:43.907 position:59% line:0%
+<c.color16F7E9>​fukaku tada fukaku ​</c><c.colorD9D9D9>​motomete shizume</c>
+
+00:03:43.907 --> 00:03:44.241 position:59% line:0%
+<c.color16F7E9>​fukaku tada fukaku mo​</c><c.colorD9D9D9>​tomete shizume</c>
+
+00:03:44.241 --> 00:03:44.441 position:59% line:0%
+<c.color16F7E9>​fukaku tada fukaku moto​</c><c.colorD9D9D9>​mete shizume</c>
+
+00:03:44.441 --> 00:03:45.142 position:59% line:0%
+<c.color16F7E9>​fukaku tada fukaku motome​</c><c.colorD9D9D9>​te shizume</c>
+
+00:03:45.142 --> 00:03:45.842 position:59% line:0%
+<c.color16F7E9>​fukaku tada fukaku motomete ​</c><c.colorD9D9D9>​shizume</c>
+
+00:03:45.842 --> 00:03:46.910 position:59% line:0%
+<c.color16F7E9>​fukaku tada fukaku motomete shi​</c><c.colorD9D9D9>​zume</c>
+
+00:03:46.910 --> 00:03:47.077 position:59% line:0%
+<c.color16F7E9>​fukaku tada fukaku motomete shizu​</c><c.colorD9D9D9>​me</c>
+
+00:03:47.077 --> 00:03:48.645 position:56% line:0%
+<c.color16F7E9>​fukaku tada fukaku motomete shizume</c>
+
+00:03:49.713 --> 00:03:50.013 line:0%
+<c.color16F7E9>​o​</c><c.colorD9D9D9>​chite ochite yuke</c>
+
+00:03:49.713 --> 00:03:55.352 line:92%
+<c.color16F7E9>​Farther and farther you fall</c>
+
+00:03:50.013 --> 00:03:50.581 line:0%
+<c.color16F7E9>​ochi​</c><c.colorD9D9D9>​te ochite yuke</c>
+
+00:03:50.581 --> 00:03:51.114 line:0%
+<c.color16F7E9>​ochite ​</c><c.colorD9D9D9>​ochite yuke</c>
+
+00:03:51.114 --> 00:03:51.448 line:0%
+<c.color16F7E9>​ochite o​</c><c.colorD9D9D9>​chite yuke</c>
+
+00:03:51.448 --> 00:03:52.015 line:0%
+<c.color16F7E9>​ochite ochi​</c><c.colorD9D9D9>​te yuke</c>
+
+00:03:52.015 --> 00:03:52.516 line:0%
+<c.color16F7E9>​ochite ochite ​</c><c.colorD9D9D9>​yuke</c>
+
+00:03:52.516 --> 00:03:52.683 line:0%
+<c.color16F7E9>​ochite ochite yu​</c><c.colorD9D9D9>​ke</c>
+
+00:03:52.683 --> 00:03:55.352 line:0%
+<c.color16F7E9>​ochite ochite yuke</c>
+
+00:03:55.352 --> 00:03:55.519 position:70% line:0%
+<c.color16F7E9>​hi​</c><c.colorD9D9D9>​tokire no hikari sae sutetara sore de ii</c>
+
+00:03:55.352 --> 00:04:00.991 position:83% line:92%
+<c.color16F7E9>​Leaving behind the ray of light that shines upon you</c>
+
+00:03:55.519 --> 00:03:55.686 position:70% line:0%
+<c.color16F7E9>​hito​</c><c.colorD9D9D9>​kire no hikari sae sutetara sore de ii</c>
+
+00:03:55.686 --> 00:03:56.053 position:70% line:0%
+<c.color16F7E9>​hitoki​</c><c.colorD9D9D9>​re no hikari sae sutetara sore de ii</c>
+
+00:03:56.053 --> 00:03:56.420 position:70% line:0%
+<c.color16F7E9>​hitokire ​</c><c.colorD9D9D9>​no hikari sae sutetara sore de ii</c>
+
+00:03:56.420 --> 00:03:56.753 position:70% line:0%
+<c.color16F7E9>​hitokire no ​</c><c.colorD9D9D9>​hikari sae sutetara sore de ii</c>
+
+00:03:56.753 --> 00:03:56.954 position:70% line:0%
+<c.color16F7E9>​hitokire no hi​</c><c.colorD9D9D9>​kari sae sutetara sore de ii</c>
+
+00:03:56.954 --> 00:03:57.287 position:70% line:0%
+<c.color16F7E9>​hitokire no hika​</c><c.colorD9D9D9>​ri sae sutetara sore de ii</c>
+
+00:03:57.287 --> 00:03:57.821 position:70% line:0%
+<c.color16F7E9>​hitokire no hikari ​</c><c.colorD9D9D9>​sae sutetara sore de ii</c>
+
+00:03:57.821 --> 00:03:58.188 position:70% line:0%
+<c.color16F7E9>​hitokire no hikari sa​</c><c.colorD9D9D9>​e sutetara sore de ii</c>
+
+00:03:58.188 --> 00:03:58.522 position:70% line:0%
+<c.color16F7E9>​hitokire no hikari sae ​</c><c.colorD9D9D9>​sutetara sore de ii</c>
+
+00:03:58.522 --> 00:03:59.056 position:70% line:0%
+<c.color16F7E9>​hitokire no hikari sae su​</c><c.colorD9D9D9>​tetara sore de ii</c>
+
+00:03:59.056 --> 00:03:59.189 position:70% line:0%
+<c.color16F7E9>​hitokire no hikari sae sute​</c><c.colorD9D9D9>​tara sore de ii</c>
+
+00:03:59.189 --> 00:03:59.256 position:70% line:0%
+<c.color16F7E9>​hitokire no hikari sae suteta​</c><c.colorD9D9D9>​ra sore de ii</c>
+
+00:03:59.256 --> 00:03:59.756 position:70% line:0%
+<c.color16F7E9>​hitokire no hikari sae sutetara ​</c><c.colorD9D9D9>​sore de ii</c>
+
+00:03:59.756 --> 00:04:00.123 position:70% line:0%
+<c.color16F7E9>​hitokire no hikari sae sutetara so​</c><c.colorD9D9D9>​re de ii</c>
+
+00:04:00.123 --> 00:04:00.490 position:70% line:0%
+<c.color16F7E9>​hitokire no hikari sae sutetara sore ​</c><c.colorD9D9D9>​de ii</c>
+
+00:04:00.490 --> 00:04:00.624 position:70% line:0%
+<c.color16F7E9>​hitokire no hikari sae sutetara sore de ​</c><c.colorD9D9D9>​ii</c>
+
+00:04:00.624 --> 00:04:00.757 position:70% line:0%
+<c.color16F7E9>​hitokire no hikari sae sutetara sore de i​</c><c.colorD9D9D9>​i</c>
+
+00:04:00.757 --> 00:04:00.991 position:67% line:0%
+<c.color16F7E9>​hitokire no hikari sae sutetara sore de ii</c>
+
+00:04:00.991 --> 00:04:01.358 position:63% line:0%
+<c.colorC300D6>​sa​</c><c.colorD9D9D9>​kasa mawaru tokei michibiku hate de</c>
+
+00:04:00.991 --> 00:04:11.435 position:77% line:92%
+<c.colorC300D6>​All the way to where this clock in reverse leads</c>
+
+00:04:01.358 --> 00:04:01.858 position:63% line:0%
+<c.colorC300D6>​saka​</c><c.colorD9D9D9>​sa mawaru tokei michibiku hate de</c>
+
+00:04:01.858 --> 00:04:02.392 position:63% line:0%
+<c.colorC300D6>​sakasa ​</c><c.colorD9D9D9>​mawaru tokei michibiku hate de</c>
+
+00:04:02.392 --> 00:04:02.759 position:63% line:0%
+<c.colorC300D6>​sakasa ma​</c><c.colorD9D9D9>​waru tokei michibiku hate de</c>
+
+00:04:02.759 --> 00:04:03.293 position:63% line:0%
+<c.colorC300D6>​sakasa mawa​</c><c.colorD9D9D9>​ru tokei michibiku hate de</c>
+
+00:04:03.293 --> 00:04:03.827 position:63% line:0%
+<c.colorC300D6>​sakasa mawaru ​</c><c.colorD9D9D9>​tokei michibiku hate de</c>
+
+00:04:03.827 --> 00:04:03.994 position:63% line:0%
+<c.colorC300D6>​sakasa mawaru to​</c><c.colorD9D9D9>​kei michibiku hate de</c>
+
+00:04:03.994 --> 00:04:06.463 position:63% line:0%
+<c.colorC300D6>​sakasa mawaru tokei ​</c><c.colorD9D9D9>​michibiku hate de</c>
+
+00:04:06.463 --> 00:04:06.797 position:63% line:0%
+<c.colorC300D6>​sakasa mawaru tokei mi​</c><c.colorD9D9D9>​chibiku hate de</c>
+
+00:04:06.797 --> 00:04:06.997 position:63% line:0%
+<c.colorC300D6>​sakasa mawaru tokei michi​</c><c.colorD9D9D9>​biku hate de</c>
+
+00:04:06.997 --> 00:04:07.698 position:63% line:0%
+<c.colorC300D6>​sakasa mawaru tokei michibi​</c><c.colorD9D9D9>​ku hate de</c>
+
+00:04:07.698 --> 00:04:08.398 position:63% line:0%
+<c.colorC300D6>​sakasa mawaru tokei michibiku ​</c><c.colorD9D9D9>​hate de</c>
+
+00:04:08.398 --> 00:04:09.466 position:63% line:0%
+<c.colorC300D6>​sakasa mawaru tokei michibiku ha​</c><c.colorD9D9D9>​te de</c>
+
+00:04:09.466 --> 00:04:09.633 position:63% line:0%
+<c.colorC300D6>​sakasa mawaru tokei michibiku hate ​</c><c.colorD9D9D9>​de</c>
+
+00:04:09.633 --> 00:04:11.435 position:59% line:0%
+<c.colorC300D6>​sakasa mawaru tokei michibiku hate de</c>
+
+00:04:12.836 --> 00:04:13.003 position:58% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.colorD9D9D9>au no wa kami ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:12.836 --> 00:04:13.003 position:58% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.colorD9D9D9>au no wa kami ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:12.836 --> 00:04:17.507 position:98% line:92%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​W</c><c.color1BEFE8>​h</c><c.color20E8E7>​o </c><c.color25E0E7>​w</c><c.color2AD9E6>​i</c><c.color30D1E6>​l</c><c.color35CAE5>​l </c><c.color3AC2E4>​y</c><c.color3FBBE4>​o</c><c.color45B3E3>​u </c><c.color4AACE3>​f</c><c.color4FA4E2>​i</c><c.color549DE2>​n</c><c.color5A95E1>​d </c><c.color5F8EE0>​t</c><c.color6486E0>​h</c><c.color697FDF>​e</c><c.color6F77DF>​r</c><c.color7470DE>​e</c><c.color7968DE>​, </c><c.color7E61DD>​G</c><c.color8459DC>​o</c><c.color8952DC>​d </c><c.color8E4ADB>​o</c><c.color9343DB>​r </c><c.color993BDA>​t</c><c.color9E34DA>​h</c><c.colorA32CD9>​e </c><c.colorA825D8>​D</c><c.colorAE1DD8>​e</c><c.colorB316D7>​v</c><c.colorB80ED7>​i</c><c.colorBD07D6>​l</c><c.colorC300D6>?​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:12.836 --> 00:04:17.507 position:98% line:92%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​W</c><c.color1BEFE8>​h</c><c.color20E8E7>​o </c><c.color25E0E7>​w</c><c.color2AD9E6>​i</c><c.color30D1E6>​l</c><c.color35CAE5>​l </c><c.color3AC2E4>​y</c><c.color3FBBE4>​o</c><c.color45B3E3>​u </c><c.color4AACE3>​f</c><c.color4FA4E2>​i</c><c.color549DE2>​n</c><c.color5A95E1>​d </c><c.color5F8EE0>​t</c><c.color6486E0>​h</c><c.color697FDF>​e</c><c.color6F77DF>​r</c><c.color7470DE>​e</c><c.color7968DE>​, </c><c.color7E61DD>​G</c><c.color8459DC>​o</c><c.color8952DC>​d </c><c.color8E4ADB>​o</c><c.color9343DB>​r </c><c.color993BDA>​t</c><c.color9E34DA>​h</c><c.colorA32CD9>​e </c><c.colorA825D8>​D</c><c.colorAE1DD8>​e</c><c.colorB316D7>​v</c><c.colorB80ED7>​i</c><c.colorBD07D6>​l</c><c.colorC300D6>?​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:13.003 --> 00:04:13.170 position:59% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.colorD9D9D9>u no wa kami ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:13.003 --> 00:04:13.170 position:59% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.colorD9D9D9>u no wa kami ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:13.170 --> 00:04:13.337 position:61% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.colorD9D9D9>no wa kami ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:13.170 --> 00:04:13.337 position:61% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.colorD9D9D9>no wa kami ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:13.337 --> 00:04:13.537 position:64% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.colorD9D9D9>wa kami ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:13.337 --> 00:04:13.537 position:64% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.colorD9D9D9>wa kami ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:13.537 --> 00:04:13.870 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.colorD9D9D9>kami ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:13.537 --> 00:04:13.870 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.colorD9D9D9>kami ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:13.870 --> 00:04:14.238 position:70% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.colorD9D9D9>mi ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:13.870 --> 00:04:14.238 position:70% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.colorD9D9D9>mi ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:14.238 --> 00:04:14.404 position:73% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.colorD9D9D9>ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:14.238 --> 00:04:14.404 position:73% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.colorD9D9D9>ka akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:14.404 --> 00:04:14.571 position:77% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.color7D62DD>​k</c><c.color8656DC>​a </c><c.colorD9D9D9>akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:14.404 --> 00:04:14.571 position:77% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.color7D62DD>​k</c><c.color8656DC>​a </c><c.colorD9D9D9>akuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:14.571 --> 00:04:14.738 position:78% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.color7D62DD>​k</c><c.color8656DC>​a </c><c.color8F4ADB>​a</c><c.colorD9D9D9>kuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:14.571 --> 00:04:14.738 position:78% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.color7D62DD>​k</c><c.color8656DC>​a </c><c.color8F4ADB>​a</c><c.colorD9D9D9>kuma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:14.738 --> 00:04:14.938 position:81% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.color7D62DD>​k</c><c.color8656DC>​a </c><c.color8F4ADB>​a</c><c.color973DDA>​k</c><c.colorA031D9>​u</c><c.colorD9D9D9>ma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:14.738 --> 00:04:14.938 position:81% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.color7D62DD>​k</c><c.color8656DC>​a </c><c.color8F4ADB>​a</c><c.color973DDA>​k</c><c.colorA031D9>​u</c><c.colorD9D9D9>ma ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:14.938 --> 00:04:15.305 position:84% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.color7D62DD>​k</c><c.color8656DC>​a </c><c.color8F4ADB>​a</c><c.color973DDA>​k</c><c.colorA031D9>​u</c><c.colorA925D8>​m</c><c.colorB118D7>​a </c><c.colorD9D9D9>ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:14.938 --> 00:04:15.305 position:84% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.color7D62DD>​k</c><c.color8656DC>​a </c><c.color8F4ADB>​a</c><c.color973DDA>​k</c><c.colorA031D9>​u</c><c.colorA925D8>​m</c><c.colorB118D7>​a </c><c.colorD9D9D9>ka​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:15.305 --> 00:04:17.507 position:86% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.color7D62DD>​k</c><c.color8656DC>​a </c><c.color8F4ADB>​a</c><c.color973DDA>​k</c><c.colorA031D9>​u</c><c.colorA925D8>​m</c><c.colorB118D7>​a </c><c.colorBA0CD6>​k</c><c.colorC300D6>a​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:15.305 --> 00:04:17.507 position:86% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​d</c><c.color1EEAE8>​e</c><c.color27DEE7>​a</c><c.color2FD1E6>​u </c><c.color38C5E5>​n</c><c.color41B9E4>​o </c><c.color49ACE3>​w</c><c.color52A0E2>​a </c><c.color5B94E1>​k</c><c.color6387E0>​a</c><c.color6C7BDF>​m</c><c.color756FDE>​i </c><c.color7D62DD>​k</c><c.color8656DC>​a </c><c.color8F4ADB>​a</c><c.color973DDA>​k</c><c.colorA031D9>​u</c><c.colorA925D8>​m</c><c.colorB118D7>​a </c><c.colorBA0CD6>​k</c><c.colorC300D6>a​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:17.941 --> 00:04:18.308 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.colorD9D9D9>la ci fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:17.941 --> 00:04:18.308 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.colorD9D9D9>la ci fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:18.308 --> 00:04:21.111 line:85%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​D</c><c.color29DBE6>​r</c><c.color3CC0E4>​u</c><c.color4FA4E2>​m</c><c.color6289E0>​s</c><c.color766DDE>​: </c><c.color8952DC>​H</c><c.color9C36DA>​A</c><c.colorAF1BD8>​Z</c><c.colorC300D6>E​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:18.308 --> 00:04:21.111 line:85%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​D</c><c.color29DBE6>​r</c><c.color3CC0E4>​u</c><c.color4FA4E2>​m</c><c.color6289E0>​s</c><c.color766DDE>​: </c><c.color8952DC>​H</c><c.color9C36DA>​A</c><c.colorAF1BD8>​Z</c><c.colorC300D6>E​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:18.308 --> 00:04:18.775 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.colorD9D9D9>ci fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:18.308 --> 00:04:18.775 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.colorD9D9D9>ci fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:18.775 --> 00:04:19.343 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.colorD9D9D9>fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:18.775 --> 00:04:19.343 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.colorD9D9D9>fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:19.343 --> 00:04:19.710 position:58% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.colorD9D9D9>ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:19.343 --> 00:04:19.710 position:58% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.colorD9D9D9>ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:19.710 --> 00:04:20.244 position:61% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.colorD9D9D9>ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:19.710 --> 00:04:20.244 position:61% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.colorD9D9D9>ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:20.244 --> 00:04:20.744 position:64% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.colorD9D9D9>we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:20.244 --> 00:04:20.744 position:64% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.colorD9D9D9>we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:20.744 --> 00:04:20.944 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.color9D34DA>​w</c><c.colorAA23D8>​e </c><c.colorD9D9D9>le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:20.744 --> 00:04:20.944 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.color9D34DA>​w</c><c.colorAA23D8>​e </c><c.colorD9D9D9>le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:20.944 --> 00:04:23.614 position:69% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.color9D34DA>​w</c><c.colorAA23D8>​e </c><c.colorB611D7>​l</c><c.colorC300D6>e​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:20.944 --> 00:04:23.614 position:69% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.color9D34DA>​w</c><c.colorAA23D8>​e </c><c.colorB611D7>​l</c><c.colorC300D6>e​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:21.111 --> 00:04:23.947 position:98% line:85%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​V</c><c.color1BEFE8>​i</c><c.color21E7E7>​o</c><c.color26DFE7>​l</c><c.color2CD7E6>​i</c><c.color31CFE5>​n</c><c.color37C7E5>​: </c><c.color3DBFE4>​A</c><c.color42B7E4>​t</c><c.color48AFE3>​s</c><c.color4DA7E2>​u</c><c.color539FE2>​k</c><c.color5897E1>​i </c><c.color5E8FE1>​Y</c><c.color6487E0>​o</c><c.color697FDF>​s</c><c.color6F77DF>​h</c><c.color746FDE>​i</c><c.color7A67DD>​d</c><c.color805FDD>​a </c><c.color8557DC>​(</c><c.color8B4FDC>​E</c><c.color9047DB>​M</c><c.color963FDA>​O </c><c.color9B37DA>​s</c><c.colorA12FD9>​t</c><c.colorA727D9>​r</c><c.colorAC1FD8>​i</c><c.colorB217D7>​n</c><c.colorB70FD7>​g</c><c.colorBD07D6>​s</c><c.colorC300D6>)​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:21.111 --> 00:04:23.947 position:98% line:85%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​V</c><c.color1BEFE8>​i</c><c.color21E7E7>​o</c><c.color26DFE7>​l</c><c.color2CD7E6>​i</c><c.color31CFE5>​n</c><c.color37C7E5>​: </c><c.color3DBFE4>​A</c><c.color42B7E4>​t</c><c.color48AFE3>​s</c><c.color4DA7E2>​u</c><c.color539FE2>​k</c><c.color5897E1>​i </c><c.color5E8FE1>​Y</c><c.color6487E0>​o</c><c.color697FDF>​s</c><c.color6F77DF>​h</c><c.color746FDE>​i</c><c.color7A67DD>​d</c><c.color805FDD>​a </c><c.color8557DC>​(</c><c.color8B4FDC>​E</c><c.color9047DB>​M</c><c.color963FDA>​O </c><c.color9B37DA>​s</c><c.colorA12FD9>​t</c><c.colorA727D9>​r</c><c.colorAC1FD8>​i</c><c.colorB217D7>​n</c><c.colorB70FD7>​g</c><c.colorBD07D6>​s</c><c.colorC300D6>)​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:23.614 --> 00:04:24.014 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.colorD9D9D9>ya ku la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:23.614 --> 00:04:24.014 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.colorD9D9D9>ya ku la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:23.947 --> 00:04:26.783 position:67% line:85%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​V</c><c.color20E7E7>​i</c><c.color2BD8E6>​o</c><c.color36C8E5>​l</c><c.color41B9E4>​i</c><c.color4CA9E3>​n</c><c.color569AE1>​: </c><c.color618AE0>​A</c><c.color6C7BDF>​n</c><c.color776CDE>​z</c><c.color825CDD>​u </c><c.color8C4DDB>​S</c><c.color973DDA>​u</c><c.colorA22ED9>​h</c><c.colorAD1ED8>​a</c><c.colorB80FD7>​r</c><c.colorC300D6>a​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:23.947 --> 00:04:26.783 position:67% line:85%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​V</c><c.color20E7E7>​i</c><c.color2BD8E6>​o</c><c.color36C8E5>​l</c><c.color41B9E4>​i</c><c.color4CA9E3>​n</c><c.color569AE1>​: </c><c.color618AE0>​A</c><c.color6C7BDF>​n</c><c.color776CDE>​z</c><c.color825CDD>​u </c><c.color8C4DDB>​S</c><c.color973DDA>​u</c><c.colorA22ED9>​h</c><c.colorAD1ED8>​a</c><c.colorB80FD7>​r</c><c.colorC300D6>a​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:24.014 --> 00:04:24.514 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.colorD9D9D9>ku la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:24.014 --> 00:04:24.514 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.colorD9D9D9>ku la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:24.514 --> 00:04:25.015 position:58% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.colorD9D9D9>la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:24.514 --> 00:04:25.015 position:58% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.colorD9D9D9>la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:25.015 --> 00:04:25.382 position:61% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.colorD9D9D9>ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:25.015 --> 00:04:25.382 position:61% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.colorD9D9D9>ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:25.382 --> 00:04:25.916 position:64% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.colorD9D9D9>ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:25.382 --> 00:04:25.916 position:64% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.colorD9D9D9>ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:25.916 --> 00:04:26.350 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorD9D9D9>wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:25.916 --> 00:04:26.350 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorD9D9D9>wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:26.350 --> 00:04:26.617 position:70% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorA031D9>​w</c><c.colorAB20D8>​a </c><c.colorD9D9D9>ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:26.350 --> 00:04:26.617 position:70% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorA031D9>​w</c><c.colorAB20D8>​a </c><c.colorD9D9D9>ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:26.617 --> 00:04:29.219 position:72% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorA031D9>​w</c><c.colorAB20D8>​a </c><c.colorB710D7>​k</c><c.colorC300D6>u​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:26.617 --> 00:04:29.219 position:72% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorA031D9>​w</c><c.colorAB20D8>​a </c><c.colorB710D7>​k</c><c.colorC300D6>u​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:26.783 --> 00:04:29.586 position:73% line:85%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​V</c><c.color1FE9E7>​i</c><c.color29DBE6>​o</c><c.color32CDE5>​l</c><c.color3CC0E4>​a</c><c.color46B2E3>​: </c><c.color4FA4E2>​I</c><c.color5996E1>​z</c><c.color6289E0>​u</c><c.color6C7BDF>​m</c><c.color766DDE>​i </c><c.color7F60DD>​K</c><c.color8952DC>​a</c><c.color9244DB>​w</c><c.color9C36DA>​a</c><c.colorA629D9>​m</c><c.colorAF1BD8>​u</c><c.colorB90DD7>​r</c><c.colorC300D6>a​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:26.783 --> 00:04:29.586 position:73% line:85%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​V</c><c.color1FE9E7>​i</c><c.color29DBE6>​o</c><c.color32CDE5>​l</c><c.color3CC0E4>​a</c><c.color46B2E3>​: </c><c.color4FA4E2>​I</c><c.color5996E1>​z</c><c.color6289E0>​u</c><c.color6C7BDF>​m</c><c.color766DDE>​i </c><c.color7F60DD>​K</c><c.color8952DC>​a</c><c.color9244DB>​w</c><c.color9C36DA>​a</c><c.colorA629D9>​m</c><c.colorAF1BD8>​u</c><c.colorB90DD7>​r</c><c.colorC300D6>a​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:29.219 --> 00:04:29.586 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.colorD9D9D9>la ci fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:29.219 --> 00:04:29.586 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.colorD9D9D9>la ci fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:29.586 --> 00:04:32.522 position:67% line:85%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​C</c><c.color20E7E7>​e</c><c.color2BD8E6>​l</c><c.color36C8E5>​l</c><c.color41B9E4>​o</c><c.color4CA9E3>​: </c><c.color569AE1>​K</c><c.color618AE0>​i</c><c.color6C7BDF>​r</c><c.color776CDE>​i</c><c.color825CDD>​n </c><c.color8C4DDB>​U</c><c.color973DDA>​c</c><c.colorA22ED9>​h</c><c.colorAD1ED8>​i</c><c.colorB80FD7>​d</c><c.colorC300D6>a​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:29.586 --> 00:04:32.522 position:67% line:85%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​C</c><c.color20E7E7>​e</c><c.color2BD8E6>​l</c><c.color36C8E5>​l</c><c.color41B9E4>​o</c><c.color4CA9E3>​: </c><c.color569AE1>​K</c><c.color618AE0>​i</c><c.color6C7BDF>​r</c><c.color776CDE>​i</c><c.color825CDD>​n </c><c.color8C4DDB>​U</c><c.color973DDA>​c</c><c.colorA22ED9>​h</c><c.colorAD1ED8>​i</c><c.colorB80FD7>​d</c><c.colorC300D6>a​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:29.586 --> 00:04:30.087 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.colorD9D9D9>ci fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:29.586 --> 00:04:30.087 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.colorD9D9D9>ci fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:30.087 --> 00:04:30.654 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.colorD9D9D9>fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:30.087 --> 00:04:30.654 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.colorD9D9D9>fu ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:30.654 --> 00:04:30.988 position:58% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.colorD9D9D9>ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:30.654 --> 00:04:30.988 position:58% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.colorD9D9D9>ya ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:30.988 --> 00:04:31.521 position:61% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.colorD9D9D9>ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:30.988 --> 00:04:31.521 position:61% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.colorD9D9D9>ba we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:31.521 --> 00:04:32.022 position:64% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.colorD9D9D9>we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:31.521 --> 00:04:32.022 position:64% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.colorD9D9D9>we le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:32.022 --> 00:04:32.222 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.color9D34DA>​w</c><c.colorAA23D8>​e </c><c.colorD9D9D9>le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:32.022 --> 00:04:32.222 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.color9D34DA>​w</c><c.colorAA23D8>​e </c><c.colorD9D9D9>le​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:32.222 --> 00:04:34.891 position:69% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.color9D34DA>​w</c><c.colorAA23D8>​e </c><c.colorB611D7>​l</c><c.colorC300D6>e​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:32.222 --> 00:04:34.891 position:69% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​e </c><c.color22E5E7>​l</c><c.color2ED3E6>​a </c><c.color3BC2E4>​c</c><c.color47B0E3>​i </c><c.color539EE2>​f</c><c.color608DE0>​u </c><c.color6C7BDF>​y</c><c.color7869DE>​a </c><c.color8558DC>​b</c><c.color9146DB>​a </c><c.color9D34DA>​w</c><c.colorAA23D8>​e </c><c.colorB611D7>​l</c><c.colorC300D6>e​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:32.522 --> 00:04:35.225 position:73% line:85%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​B</c><c.color1FE9E7>​a</c><c.color29DBE6>​s</c><c.color32CDE5>​s</c><c.color3CC0E4>​: </c><c.color46B2E3>​T</c><c.color4FA4E2>​a</c><c.color5996E1>​k</c><c.color6289E0>​u</c><c.color6C7BDF>​m</c><c.color766DDE>​i </c><c.color7F60DD>​K</c><c.color8952DC>​a</c><c.color9244DB>​g</c><c.color9C36DA>​a</c><c.colorA629D9>​h</c><c.colorAF1BD8>​a</c><c.colorB90DD7>​r</c><c.colorC300D6>a​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:32.522 --> 00:04:35.225 position:73% line:85%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​B</c><c.color1FE9E7>​a</c><c.color29DBE6>​s</c><c.color32CDE5>​s</c><c.color3CC0E4>​: </c><c.color46B2E3>​T</c><c.color4FA4E2>​a</c><c.color5996E1>​k</c><c.color6289E0>​u</c><c.color6C7BDF>​m</c><c.color766DDE>​i </c><c.color7F60DD>​K</c><c.color8952DC>​a</c><c.color9244DB>​g</c><c.color9C36DA>​a</c><c.colorA629D9>​h</c><c.colorAF1BD8>​a</c><c.colorB90DD7>​r</c><c.colorC300D6>a​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:34.891 --> 00:04:35.225 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.colorD9D9D9>ya ku la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:34.891 --> 00:04:35.225 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.colorD9D9D9>ya ku la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:35.225 --> 00:04:38.061 position:94% line:85%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​R</c><c.color1DECE8>​e</c><c.color24E2E7>​c</c><c.color2BD8E6>​o</c><c.color32CDE5>​r</c><c.color3AC3E5>​d</c><c.color41B9E4>​i</c><c.color48AEE3>​n</c><c.color4FA4E2>​g </c><c.color569AE1>​S</c><c.color5E90E1>​t</c><c.color6585E0>​u</c><c.color6C7BDF>​d</c><c.color7371DE>​i</c><c.color7A66DD>​o</c><c.color825CDD>​: </c><c.color8952DC>​s</c><c.color9048DB>​t</c><c.color973DDA>​u</c><c.color9E33D9>​d</c><c.colorA629D9>​i</c><c.colorAD1ED8>​o </c><c.colorB414D7>​M</c><c.colorBB0AD6>​S</c><c.colorC300D6>R​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:35.225 --> 00:04:38.061 position:94% line:85%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​R</c><c.color1DECE8>​e</c><c.color24E2E7>​c</c><c.color2BD8E6>​o</c><c.color32CDE5>​r</c><c.color3AC3E5>​d</c><c.color41B9E4>​i</c><c.color48AEE3>​n</c><c.color4FA4E2>​g </c><c.color569AE1>​S</c><c.color5E90E1>​t</c><c.color6585E0>​u</c><c.color6C7BDF>​d</c><c.color7371DE>​i</c><c.color7A66DD>​o</c><c.color825CDD>​: </c><c.color8952DC>​s</c><c.color9048DB>​t</c><c.color973DDA>​u</c><c.color9E33D9>​d</c><c.colorA629D9>​i</c><c.colorAD1ED8>​o </c><c.colorB414D7>​M</c><c.colorBB0AD6>​S</c><c.colorC300D6>R​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:35.225 --> 00:04:35.792 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.colorD9D9D9>ku la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:35.225 --> 00:04:35.792 line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.colorD9D9D9>ku la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:35.792 --> 00:04:36.293 position:58% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.colorD9D9D9>la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:35.792 --> 00:04:36.293 position:58% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.colorD9D9D9>la ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:36.293 --> 00:04:36.660 position:61% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.colorD9D9D9>ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:36.293 --> 00:04:36.660 position:61% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.colorD9D9D9>ci ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:36.660 --> 00:04:37.194 position:64% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.colorD9D9D9>ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:36.660 --> 00:04:37.194 position:64% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.colorD9D9D9>ta wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:37.194 --> 00:04:37.694 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorD9D9D9>wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:37.194 --> 00:04:37.694 position:67% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorD9D9D9>wa ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:37.694 --> 00:04:37.928 position:70% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorA031D9>​w</c><c.colorAB20D8>​a </c><c.colorD9D9D9>ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:37.694 --> 00:04:37.928 position:70% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorA031D9>​w</c><c.colorAB20D8>​a </c><c.colorD9D9D9>ku​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:37.928 --> 00:04:39.496 position:72% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorA031D9>​w</c><c.colorAB20D8>​a </c><c.colorB710D7>​k</c><c.colorC300D6>u​ ​</c><c.colorA0AAB4>​</c>
+
+00:04:37.928 --> 00:04:39.496 position:72% line:0%
+<c.colorA0AAB4>​​</c><c.color16F7E9>​ ​s</c><c.color21E6E7>​e </c><c.color2DD6E6>​y</c><c.color38C5E5>​a </c><c.color44B5E3>​k</c><c.color4FA4E2>​u </c><c.color5B94E1>​l</c><c.color6683E0>​a </c><c.color7273DE>​c</c><c.color7D62DD>​i </c><c.color8952DC>​t</c><c.color9441DB>​a </c><c.colorA031D9>​w</c><c.colorAB20D8>​a </c><c.colorB710D7>​k</c><c.colorC300D6>u​ ​</c><c.colorA0AAB4>​</c>
+

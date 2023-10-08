@@ -1,0 +1,2230 @@
+WEBVTT
+Kind: captions
+Language: en
+Style:
+::cue(c.color5AC1F4) { color: rgb(90,193,244);
+ }
+::cue(c.color5EBEF3) { color: rgb(94,190,243);
+ }
+::cue(c.color5FBDF3) { color: rgb(95,189,243);
+ }
+::cue(c.color61BBF3) { color: rgb(97,187,243);
+ }
+::cue(c.color62BBF3) { color: rgb(98,187,243);
+ }
+::cue(c.color63BAF3) { color: rgb(99,186,243);
+ }
+::cue(c.color64B9F3) { color: rgb(100,185,243);
+ }
+::cue(c.color66B8F3) { color: rgb(102,184,243);
+ }
+::cue(c.color69B6F3) { color: rgb(105,182,243);
+ }
+::cue(c.color6AB5F2) { color: rgb(106,181,242);
+ }
+::cue(c.color6AB6F2) { color: rgb(106,182,242);
+ }
+::cue(c.color6BB4F2) { color: rgb(107,180,242);
+ }
+::cue(c.color6DB3F2) { color: rgb(109,179,242);
+ }
+::cue(c.color6EB2F2) { color: rgb(110,178,242);
+ }
+::cue(c.color6EB3F2) { color: rgb(110,179,242);
+ }
+::cue(c.color6FB2F2) { color: rgb(111,178,242);
+ }
+::cue(c.color71B1F2) { color: rgb(113,177,242);
+ }
+::cue(c.color72B0F2) { color: rgb(114,176,242);
+ }
+::cue(c.color73B0F2) { color: rgb(115,176,242);
+ }
+::cue(c.color75AEF2) { color: rgb(117,174,242);
+ }
+::cue(c.color76ADF2) { color: rgb(118,173,242);
+ }
+::cue(c.color77ADF2) { color: rgb(119,173,242);
+ }
+::cue(c.color79ABF2) { color: rgb(121,171,242);
+ }
+::cue(c.color7AAAF1) { color: rgb(122,170,241);
+ }
+::cue(c.color7AABF1) { color: rgb(122,171,241);
+ }
+::cue(c.color7BAAF1) { color: rgb(123,170,241);
+ }
+::cue(c.color7DA8F1) { color: rgb(125,168,241);
+ }
+::cue(c.color7EA8F1) { color: rgb(126,168,241);
+ }
+::cue(c.color80A6F1) { color: rgb(128,166,241);
+ }
+::cue(c.color80A7F1) { color: rgb(128,167,241);
+ }
+::cue(c.color81A6F1) { color: rgb(129,166,241);
+ }
+::cue(c.color82A5F1) { color: rgb(130,165,241);
+ }
+::cue(c.color84A4F1) { color: rgb(132,164,241);
+ }
+::cue(c.color85A3F1) { color: rgb(133,163,241);
+ }
+::cue(c.color86A2F1) { color: rgb(134,162,241);
+ }
+::cue(c.color87A2F1) { color: rgb(135,162,241);
+ }
+::cue(c.color89A1F1) { color: rgb(137,161,241);
+ }
+::cue(c.color8AA0F0) { color: rgb(138,160,240);
+ }
+::cue(c.color8B9FF0) { color: rgb(139,159,240);
+ }
+::cue(c.color8C9FF0) { color: rgb(140,159,240);
+ }
+::cue(c.color8E9DF0) { color: rgb(142,157,240);
+ }
+::cue(c.color909CF0) { color: rgb(144,156,240);
+ }
+::cue(c.color919BF0) { color: rgb(145,155,240);
+ }
+::cue(c.color929AF0) { color: rgb(146,154,240);
+ }
+::cue(c.color9499F0) { color: rgb(148,153,240);
+ }
+::cue(c.color9697F0) { color: rgb(150,151,240);
+ }
+::cue(c.color9698F0) { color: rgb(150,152,240);
+ }
+::cue(c.color9996F0) { color: rgb(153,150,240);
+ }
+::cue(c.color9B94EF) { color: rgb(155,148,239);
+ }
+::cue(c.color9B95EF) { color: rgb(155,149,239);
+ }
+::cue(c.color9D93EF) { color: rgb(157,147,239);
+ }
+::cue(c.color9F92EF) { color: rgb(159,146,239);
+ }
+::cue(c.colorA091EF) { color: rgb(160,145,239);
+ }
+::cue(c.colorA0AAB4) { color: rgb(160,170,180);
+ }
+::cue(c.colorA190EF) { color: rgb(161,144,239);
+ }
+::cue(c.colorA290EF) { color: rgb(162,144,239);
+ }
+::cue(c.colorA38FEF) { color: rgb(163,143,239);
+ }
+::cue(c.colorA58EEF) { color: rgb(165,142,239);
+ }
+::cue(c.colorA68DEF) { color: rgb(166,141,239);
+ }
+::cue(c.colorA78CEF) { color: rgb(167,140,239);
+ }
+::cue(c.colorA88BEF) { color: rgb(168,139,239);
+ }
+::cue(c.colorAB8AEE) { color: rgb(171,138,238);
+ }
+::cue(c.colorAC89EE) { color: rgb(172,137,238);
+ }
+::cue(c.colorAE88EE) { color: rgb(174,136,238);
+ }
+::cue(c.colorAF87EE) { color: rgb(175,135,238);
+ }
+::cue(c.colorB086EE) { color: rgb(176,134,238);
+ }
+::cue(c.colorB185EE) { color: rgb(177,133,238);
+ }
+::cue(c.colorB186EE) { color: rgb(177,134,238);
+ }
+::cue(c.colorB384EE) { color: rgb(179,132,238);
+ }
+::cue(c.colorB484EE) { color: rgb(180,132,238);
+ }
+::cue(c.colorB682EE) { color: rgb(182,130,238);
+ }
+::cue(c.colorB781EE) { color: rgb(183,129,238);
+ }
+::cue(c.colorB782EE) { color: rgb(183,130,238);
+ }
+::cue(c.colorB881EE) { color: rgb(184,129,238);
+ }
+::cue(c.colorBA7FED) { color: rgb(186,127,237);
+ }
+::cue(c.colorBB7FED) { color: rgb(187,127,237);
+ }
+::cue(c.colorBC7EED) { color: rgb(188,126,237);
+ }
+::cue(c.colorBD7EED) { color: rgb(189,126,237);
+ }
+::cue(c.colorBE7DED) { color: rgb(190,125,237);
+ }
+::cue(c.colorBF7CED) { color: rgb(191,124,237);
+ }
+::cue(c.colorC07BED) { color: rgb(192,123,237);
+ }
+::cue(c.colorC27AED) { color: rgb(194,122,237);
+ }
+::cue(c.colorC379ED) { color: rgb(195,121,237);
+ }
+::cue(c.colorC37AED) { color: rgb(195,122,237);
+ }
+::cue(c.colorC479ED) { color: rgb(196,121,237);
+ }
+::cue(c.colorC678ED) { color: rgb(198,120,237);
+ }
+::cue(c.colorC776ED) { color: rgb(199,118,237);
+ }
+::cue(c.colorC777ED) { color: rgb(199,119,237);
+ }
+::cue(c.colorC876ED) { color: rgb(200,118,237);
+ }
+::cue(c.colorCB74EC) { color: rgb(203,116,236);
+ }
+::cue(c.colorCD73EC) { color: rgb(205,115,236);
+ }
+::cue(c.colorCE72EC) { color: rgb(206,114,236);
+ }
+::cue(c.colorCF71EC) { color: rgb(207,113,236);
+ }
+::cue(c.colorCF72EC) { color: rgb(207,114,236);
+ }
+::cue(c.colorD071EC) { color: rgb(208,113,236);
+ }
+::cue(c.colorD0F784) { color: rgb(208,247,132);
+ }
+::cue(c.colorD26FEC) { color: rgb(210,111,236);
+ }
+::cue(c.colorD36EEC) { color: rgb(211,110,236);
+ }
+::cue(c.colorD86CEC) { color: rgb(216,108,236);
+ }
+::cue(c.colorD9D9D9) { color: rgb(217,217,217);
+ }
+##
+
+00:00:10.961 --> 00:00:18.369 line:2%
+<c.colorA0AAB4>​​</c><c.colorD86CEC>​ ​C</c><c.colorD26FEC>​e</c><c.colorCD73EC>​r</c><c.colorC777ED>​e</c><c.colorC27AED>​s </c><c.colorBC7EED>​F</c><c.colorB782EE>​a</c><c.colorB185EE>​u</c><c.colorAC89EE>​n</c><c.colorA68DEF>​a </c><c.colorA190EF>​- </c><c.color9B94EF>​L</c><c.color9698F0>​e</c><c.color909CF0>​t </c><c.color8B9FF0>​M</c><c.color85A3F1>​e </c><c.color80A7F1>​S</c><c.color7AAAF1>​t</c><c.color75AEF2>​a</c><c.color6FB2F2>​y </c><c.color6AB5F2>​H</c><c.color64B9F3>​e</c><c.color5FBDF3>​r</c><c.color5AC1F4>e​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:10.961 --> 00:00:18.369 line:2%
+<c.colorA0AAB4>​​</c><c.colorD86CEC>​ ​C</c><c.colorD26FEC>​e</c><c.colorCD73EC>​r</c><c.colorC777ED>​e</c><c.colorC27AED>​s </c><c.colorBC7EED>​F</c><c.colorB782EE>​a</c><c.colorB185EE>​u</c><c.colorAC89EE>​n</c><c.colorA68DEF>​a </c><c.colorA190EF>​- </c><c.color9B94EF>​L</c><c.color9698F0>​e</c><c.color909CF0>​t </c><c.color8B9FF0>​M</c><c.color85A3F1>​e </c><c.color80A7F1>​S</c><c.color7AAAF1>​t</c><c.color75AEF2>​a</c><c.color6FB2F2>​y </c><c.color6AB5F2>​H</c><c.color64B9F3>​e</c><c.color5FBDF3>​r</c><c.color5AC1F4>e​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:10.961 --> 00:00:13.430
+<c.colorA0AAB4>​​</c><c.colorD86CEC>​ ​L</c><c.colorCD73EC>​y</c><c.colorC37AED>​r</c><c.colorB881EE>​i</c><c.colorAE88EE>​c</c><c.colorA38FEF>​s</c><c.color9996F0>​: </c><c.color8E9DF0>​k</c><c.color84A4F1>​i</c><c.color79ABF2>​d</c><c.color6EB2F2>​l</c><c.color64B9F3>​i</c><c.color5AC1F4>t​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:10.961 --> 00:00:13.430
+<c.colorA0AAB4>​​</c><c.colorD86CEC>​ ​L</c><c.colorCD73EC>​y</c><c.colorC37AED>​r</c><c.colorB881EE>​i</c><c.colorAE88EE>​c</c><c.colorA38FEF>​s</c><c.color9996F0>​: </c><c.color8E9DF0>​k</c><c.color84A4F1>​i</c><c.color79ABF2>​d</c><c.color6EB2F2>​l</c><c.color64B9F3>​i</c><c.color5AC1F4>t​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:13.430 --> 00:00:15.899 positionw:97%
+<c.colorA0AAB4>​​</c><c.colorD86CEC>​ ​C</c><c.colorD36EEC>​o</c><c.colorCF71EC>​m</c><c.colorCB74EC>​p</c><c.colorC776ED>​o</c><c.colorC379ED>​s</c><c.colorBF7CED>​i</c><c.colorBB7FED>​t</c><c.colorB781EE>​i</c><c.colorB384EE>​o</c><c.colorAF87EE>​n</c><c.colorAB8AEE>​/</c><c.colorA78CEF>​A</c><c.colorA38FEF>​r</c><c.color9F92EF>​r</c><c.color9B95EF>​a</c><c.color9697F0>​n</c><c.color929AF0>​g</c><c.color8E9DF0>​e</c><c.color8AA0F0>​m</c><c.color86A2F1>​e</c><c.color82A5F1>​n</c><c.color7EA8F1>​t</c><c.color7AABF1>​: </c><c.color76ADF2>​S</c><c.color72B0F2>​h</c><c.color6EB3F2>​i</c><c.color6AB6F2>​b</c><c.color66B8F3>​a</c><c.color62BBF3>​y</c><c.color5EBEF3>​a</c><c.color5AC1F4>n​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:13.430 --> 00:00:15.899 positionw:97%
+<c.colorA0AAB4>​​</c><c.colorD86CEC>​ ​C</c><c.colorD36EEC>​o</c><c.colorCF71EC>​m</c><c.colorCB74EC>​p</c><c.colorC776ED>​o</c><c.colorC379ED>​s</c><c.colorBF7CED>​i</c><c.colorBB7FED>​t</c><c.colorB781EE>​i</c><c.colorB384EE>​o</c><c.colorAF87EE>​n</c><c.colorAB8AEE>​/</c><c.colorA78CEF>​A</c><c.colorA38FEF>​r</c><c.color9F92EF>​r</c><c.color9B95EF>​a</c><c.color9697F0>​n</c><c.color929AF0>​g</c><c.color8E9DF0>​e</c><c.color8AA0F0>​m</c><c.color86A2F1>​e</c><c.color82A5F1>​n</c><c.color7EA8F1>​t</c><c.color7AABF1>​: </c><c.color76ADF2>​S</c><c.color72B0F2>​h</c><c.color6EB3F2>​i</c><c.color6AB6F2>​b</c><c.color66B8F3>​a</c><c.color62BBF3>​y</c><c.color5EBEF3>​a</c><c.color5AC1F4>n​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:15.899 --> 00:00:18.369 positionw:67%
+<c.colorA0AAB4>​​</c><c.colorD86CEC>​ ​V</c><c.colorD071EC>​o</c><c.colorC876ED>​c</c><c.colorC07BED>​a</c><c.colorB881EE>​l</c><c.colorB086EE>​s</c><c.colorA88BEF>​: </c><c.colorA091EF>​C</c><c.color9996F0>​e</c><c.color919BF0>​r</c><c.color89A1F1>​e</c><c.color81A6F1>​s </c><c.color79ABF2>​F</c><c.color71B1F2>​a</c><c.color69B6F3>​u</c><c.color61BBF3>​n</c><c.color5AC1F4>a​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:15.899 --> 00:00:18.369 positionw:67%
+<c.colorA0AAB4>​​</c><c.colorD86CEC>​ ​V</c><c.colorD071EC>​o</c><c.colorC876ED>​c</c><c.colorC07BED>​a</c><c.colorB881EE>​l</c><c.colorB086EE>​s</c><c.colorA88BEF>​: </c><c.colorA091EF>​C</c><c.color9996F0>​e</c><c.color919BF0>​r</c><c.color89A1F1>​e</c><c.color81A6F1>​s </c><c.color79ABF2>​F</c><c.color71B1F2>​a</c><c.color69B6F3>​u</c><c.color61BBF3>​n</c><c.color5AC1F4>a​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:20.838 --> 00:00:25.809 positionw:72%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​rainbow in the sky, little blue birds​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:20.838 --> 00:00:25.809 positionw:72%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​rainbow in the sky, little blue birds​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:20.838 --> 00:00:21.138 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rain</c><c.colorD9D9D9>bow in the sky aoi kotoritachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:20.838 --> 00:00:21.138 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rain</c><c.colorD9D9D9>bow in the sky aoi kotoritachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:21.138 --> 00:00:21.372 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow </c><c.colorD9D9D9>in the sky aoi kotoritachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:21.138 --> 00:00:21.372 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow </c><c.colorD9D9D9>in the sky aoi kotoritachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:21.372 --> 00:00:21.638 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow in </c><c.colorD9D9D9>the sky aoi kotoritachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:21.372 --> 00:00:21.638 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow in </c><c.colorD9D9D9>the sky aoi kotoritachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:21.638 --> 00:00:21.905 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow in the </c><c.colorD9D9D9>sky aoi kotoritachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:21.638 --> 00:00:21.905 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow in the </c><c.colorD9D9D9>sky aoi kotoritachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:21.905 --> 00:00:22.873 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow in the sky </c><c.colorD9D9D9>aoi kotoritachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:21.905 --> 00:00:22.873 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow in the sky </c><c.colorD9D9D9>aoi kotoritachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:22.873 --> 00:00:23.007 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow in the sky a</c><c.colorD9D9D9>oi kotoritachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:22.873 --> 00:00:23.007 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow in the sky a</c><c.colorD9D9D9>oi kotoritachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:23.007 --> 00:00:23.107 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow in the sky ao</c><c.colorD9D9D9>i kotoritachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:23.007 --> 00:00:23.107 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow in the sky ao</c><c.colorD9D9D9>i kotoritachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:23.107 --> 00:00:23.307 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow in the sky aoi </c><c.colorD9D9D9>kotoritachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:23.107 --> 00:00:23.307 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow in the sky aoi </c><c.colorD9D9D9>kotoritachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:23.307 --> 00:00:23.607 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow in the sky aoi ko</c><c.colorD9D9D9>toritachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:23.307 --> 00:00:23.607 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow in the sky aoi ko</c><c.colorD9D9D9>toritachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:23.607 --> 00:00:23.774 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow in the sky aoi koto</c><c.colorD9D9D9>ritachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:23.607 --> 00:00:23.774 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow in the sky aoi koto</c><c.colorD9D9D9>ritachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:23.774 --> 00:00:24.108 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow in the sky aoi kotori</c><c.colorD9D9D9>tachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:23.774 --> 00:00:24.108 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow in the sky aoi kotori</c><c.colorD9D9D9>tachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:24.108 --> 00:00:24.375 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow in the sky aoi kotorita</c><c.colorD9D9D9>chi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:24.108 --> 00:00:24.375 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow in the sky aoi kotorita</c><c.colorD9D9D9>chi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:24.375 --> 00:00:25.809 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow in the sky aoi kotoritachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:24.375 --> 00:00:25.809 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rainbow in the sky aoi kotoritachi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:25.809 --> 00:00:30.748
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​come sing with me,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​and dance in a circle​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:25.809 --> 00:00:30.748
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​come sing with me,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​and dance in a circle​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:25.809 --> 00:00:26.110 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​o</c><c.colorD9D9D9>ide utaou waninari odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:25.809 --> 00:00:26.110 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​o</c><c.colorD9D9D9>ide utaou waninari odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:26.110 --> 00:00:26.276 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oi</c><c.colorD9D9D9>de utaou waninari odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:26.110 --> 00:00:26.276 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oi</c><c.colorD9D9D9>de utaou waninari odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:26.276 --> 00:00:26.577 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide </c><c.colorD9D9D9>utaou waninari odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:26.276 --> 00:00:26.577 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide </c><c.colorD9D9D9>utaou waninari odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:26.577 --> 00:00:26.877 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide u</c><c.colorD9D9D9>taou waninari odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:26.577 --> 00:00:26.877 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide u</c><c.colorD9D9D9>taou waninari odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:26.877 --> 00:00:27.177 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide uta</c><c.colorD9D9D9>ou waninari odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:26.877 --> 00:00:27.177 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide uta</c><c.colorD9D9D9>ou waninari odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:27.177 --> 00:00:27.511 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide utao</c><c.colorD9D9D9>u waninari odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:27.177 --> 00:00:27.511 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide utao</c><c.colorD9D9D9>u waninari odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:27.511 --> 00:00:28.112 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide utaou </c><c.colorD9D9D9>waninari odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:27.511 --> 00:00:28.112 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide utaou </c><c.colorD9D9D9>waninari odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:28.112 --> 00:00:28.278 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide utaou wa</c><c.colorD9D9D9>ninari odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:28.112 --> 00:00:28.278 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide utaou wa</c><c.colorD9D9D9>ninari odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:28.278 --> 00:00:28.445 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide utaou wani</c><c.colorD9D9D9>nari odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:28.278 --> 00:00:28.445 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide utaou wani</c><c.colorD9D9D9>nari odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:28.445 --> 00:00:28.612 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide utaou wanina</c><c.colorD9D9D9>ri odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:28.445 --> 00:00:28.612 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide utaou wanina</c><c.colorD9D9D9>ri odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:28.612 --> 00:00:28.746 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide utaou waninari </c><c.colorD9D9D9>odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:28.612 --> 00:00:28.746 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide utaou waninari </c><c.colorD9D9D9>odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:28.746 --> 00:00:29.079 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide utaou waninari o</c><c.colorD9D9D9>dorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:28.746 --> 00:00:29.079 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide utaou waninari o</c><c.colorD9D9D9>dorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:29.079 --> 00:00:29.380 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide utaou waninari odo</c><c.colorD9D9D9>rou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:29.079 --> 00:00:29.380 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide utaou waninari odo</c><c.colorD9D9D9>rou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:29.380 --> 00:00:30.748 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide utaou waninari odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:29.380 --> 00:00:30.748 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oide utaou waninari odorou​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:30.748 --> 00:00:35.386 positionw:66%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​dozing off in the evergreen trees​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:30.748 --> 00:00:35.386 positionw:66%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​dozing off in the evergreen trees​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:30.748 --> 00:00:31.048 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In </c><c.colorD9D9D9>the evergreen trees yumeutsutsu de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:30.748 --> 00:00:31.048 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In </c><c.colorD9D9D9>the evergreen trees yumeutsutsu de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:31.048 --> 00:00:31.215 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In the </c><c.colorD9D9D9>evergreen trees yumeutsutsu de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:31.048 --> 00:00:31.215 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In the </c><c.colorD9D9D9>evergreen trees yumeutsutsu de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:31.215 --> 00:00:31.548 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In the ev</c><c.colorD9D9D9>ergreen trees yumeutsutsu de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:31.215 --> 00:00:31.548 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In the ev</c><c.colorD9D9D9>ergreen trees yumeutsutsu de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:31.548 --> 00:00:31.849 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In the ever</c><c.colorD9D9D9>green trees yumeutsutsu de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:31.548 --> 00:00:31.849 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In the ever</c><c.colorD9D9D9>green trees yumeutsutsu de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:31.849 --> 00:00:32.449 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In the evergreen </c><c.colorD9D9D9>trees yumeutsutsu de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:31.849 --> 00:00:32.449 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In the evergreen </c><c.colorD9D9D9>trees yumeutsutsu de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:32.449 --> 00:00:33.083 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In the evergreen trees </c><c.colorD9D9D9>yumeutsutsu de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:32.449 --> 00:00:33.083 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In the evergreen trees </c><c.colorD9D9D9>yumeutsutsu de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:33.083 --> 00:00:33.217 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In the evergreen trees yu</c><c.colorD9D9D9>meutsutsu de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:33.083 --> 00:00:33.217 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In the evergreen trees yu</c><c.colorD9D9D9>meutsutsu de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:33.217 --> 00:00:33.384 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In the evergreen trees yume</c><c.colorD9D9D9>utsutsu de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:33.217 --> 00:00:33.384 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In the evergreen trees yume</c><c.colorD9D9D9>utsutsu de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:33.384 --> 00:00:33.550 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In the evergreen trees yumeu</c><c.colorD9D9D9>tsutsu de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:33.384 --> 00:00:33.550 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In the evergreen trees yumeu</c><c.colorD9D9D9>tsutsu de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:33.550 --> 00:00:33.684 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In the evergreen trees yumeutsu</c><c.colorD9D9D9>tsu de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:33.550 --> 00:00:33.684 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In the evergreen trees yumeutsu</c><c.colorD9D9D9>tsu de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:33.684 --> 00:00:34.018 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In the evergreen trees yumeutsutsu </c><c.colorD9D9D9>de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:33.684 --> 00:00:34.018 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In the evergreen trees yumeutsutsu </c><c.colorD9D9D9>de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:34.018 --> 00:00:35.386 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In the evergreen trees yumeutsutsu de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:34.018 --> 00:00:35.386 positionw:72% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​In the evergreen trees yumeutsutsu de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:35.386 --> 00:00:40.424
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​enchanted with love​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:35.386 --> 00:00:40.424
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​enchanted with love​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:35.386 --> 00:00:35.686 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​ko</c><c.colorD9D9D9>isuru mahou ni kakerareta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:35.386 --> 00:00:35.686 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​ko</c><c.colorD9D9D9>isuru mahou ni kakerareta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:35.686 --> 00:00:35.986 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koi</c><c.colorD9D9D9>suru mahou ni kakerareta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:35.686 --> 00:00:35.986 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koi</c><c.colorD9D9D9>suru mahou ni kakerareta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:35.986 --> 00:00:36.153 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koisu</c><c.colorD9D9D9>ru mahou ni kakerareta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:35.986 --> 00:00:36.153 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koisu</c><c.colorD9D9D9>ru mahou ni kakerareta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:36.153 --> 00:00:36.754 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koisuru </c><c.colorD9D9D9>mahou ni kakerareta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:36.153 --> 00:00:36.754 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koisuru </c><c.colorD9D9D9>mahou ni kakerareta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:36.754 --> 00:00:37.087 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koisuru ma</c><c.colorD9D9D9>hou ni kakerareta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:36.754 --> 00:00:37.087 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koisuru ma</c><c.colorD9D9D9>hou ni kakerareta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:37.087 --> 00:00:37.254 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koisuru maho</c><c.colorD9D9D9>u ni kakerareta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:37.087 --> 00:00:37.254 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koisuru maho</c><c.colorD9D9D9>u ni kakerareta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:37.254 --> 00:00:37.388 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koisuru mahou </c><c.colorD9D9D9>ni kakerareta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:37.254 --> 00:00:37.388 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koisuru mahou </c><c.colorD9D9D9>ni kakerareta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:37.388 --> 00:00:38.022 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koisuru mahou ni </c><c.colorD9D9D9>kakerareta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:37.388 --> 00:00:38.022 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koisuru mahou ni </c><c.colorD9D9D9>kakerareta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:38.022 --> 00:00:38.155 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koisuru mahou ni ka</c><c.colorD9D9D9>kerareta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:38.022 --> 00:00:38.155 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koisuru mahou ni ka</c><c.colorD9D9D9>kerareta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:38.155 --> 00:00:38.489 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koisuru mahou ni kake</c><c.colorD9D9D9>rareta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:38.155 --> 00:00:38.489 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koisuru mahou ni kake</c><c.colorD9D9D9>rareta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:38.489 --> 00:00:38.622 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koisuru mahou ni kakera</c><c.colorD9D9D9>reta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:38.489 --> 00:00:38.622 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koisuru mahou ni kakera</c><c.colorD9D9D9>reta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:38.622 --> 00:00:38.956 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koisuru mahou ni kakerare</c><c.colorD9D9D9>ta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:38.622 --> 00:00:38.956 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koisuru mahou ni kakerare</c><c.colorD9D9D9>ta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:38.956 --> 00:00:40.424 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koisuru mahou ni kakerareta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:38.956 --> 00:00:40.424 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koisuru mahou ni kakerareta​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:40.424 --> 00:00:47.297
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​taking an afternoon nap,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​fairies buzzing in the wind​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:40.424 --> 00:00:47.297
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​taking an afternoon nap,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​fairies buzzing in the wind​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:40.424 --> 00:00:40.624 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​ka</c><c.colorD9D9D9>ze ni sazameku yousei gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:40.424 --> 00:00:40.624 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​ka</c><c.colorD9D9D9>ze ni sazameku yousei gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:40.624 --> 00:00:41.091 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze </c><c.colorD9D9D9>ni sazameku yousei gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:40.624 --> 00:00:41.091 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze </c><c.colorD9D9D9>ni sazameku yousei gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:41.091 --> 00:00:41.725 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni </c><c.colorD9D9D9>sazameku yousei gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:41.091 --> 00:00:41.725 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni </c><c.colorD9D9D9>sazameku yousei gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:41.725 --> 00:00:41.859 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sa</c><c.colorD9D9D9>zameku yousei gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:41.725 --> 00:00:41.859 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sa</c><c.colorD9D9D9>zameku yousei gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:41.859 --> 00:00:42.092 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni saza</c><c.colorD9D9D9>meku yousei gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:41.859 --> 00:00:42.092 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni saza</c><c.colorD9D9D9>meku yousei gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:42.092 --> 00:00:42.326 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazame</c><c.colorD9D9D9>ku yousei gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:42.092 --> 00:00:42.326 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazame</c><c.colorD9D9D9>ku yousei gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:42.326 --> 00:00:42.493 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku </c><c.colorD9D9D9>yousei gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:42.326 --> 00:00:42.493 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku </c><c.colorD9D9D9>yousei gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:42.493 --> 00:00:42.726 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku yo</c><c.colorD9D9D9>usei gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:42.493 --> 00:00:42.726 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku yo</c><c.colorD9D9D9>usei gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:42.726 --> 00:00:42.960 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku you</c><c.colorD9D9D9>sei gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:42.726 --> 00:00:42.960 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku you</c><c.colorD9D9D9>sei gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:42.960 --> 00:00:43.127 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku youse</c><c.colorD9D9D9>i gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:42.960 --> 00:00:43.127 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku youse</c><c.colorD9D9D9>i gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:43.127 --> 00:00:44.194 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku yousei </c><c.colorD9D9D9>gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:43.127 --> 00:00:44.194 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku yousei </c><c.colorD9D9D9>gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:44.194 --> 00:00:44.361 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku yousei go</c><c.colorD9D9D9>go wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:44.194 --> 00:00:44.361 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku yousei go</c><c.colorD9D9D9>go wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:44.361 --> 00:00:44.828 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku yousei gogo </c><c.colorD9D9D9>wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:44.361 --> 00:00:44.828 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku yousei gogo </c><c.colorD9D9D9>wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:44.828 --> 00:00:45.262 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku yousei gogo wa </c><c.colorD9D9D9>oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:44.828 --> 00:00:45.262 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku yousei gogo wa </c><c.colorD9D9D9>oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:45.262 --> 00:00:45.562 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku yousei gogo wa o</c><c.colorD9D9D9>yasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:45.262 --> 00:00:45.562 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku yousei gogo wa o</c><c.colorD9D9D9>yasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:45.562 --> 00:00:45.896 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku yousei gogo wa oya</c><c.colorD9D9D9>sumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:45.562 --> 00:00:45.896 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku yousei gogo wa oya</c><c.colorD9D9D9>sumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:45.896 --> 00:00:46.030 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku yousei gogo wa oyasu</c><c.colorD9D9D9>mi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:45.896 --> 00:00:46.030 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku yousei gogo wa oyasu</c><c.colorD9D9D9>mi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:46.030 --> 00:00:47.297 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku yousei gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:46.030 --> 00:00:47.297 positionw:75% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​kaze ni sazameku yousei gogo wa oyasumi​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:47.297 --> 00:00:50.367
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​riding a unicorn​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:47.297 --> 00:00:50.367
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​riding a unicorn​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:47.297 --> 00:00:47.464 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​yu</c><c.colorD9D9D9>nikoon no senaka de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:47.297 --> 00:00:47.464 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​yu</c><c.colorD9D9D9>nikoon no senaka de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:47.464 --> 00:00:47.698 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​yuni</c><c.colorD9D9D9>koon no senaka de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:47.464 --> 00:00:47.698 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​yuni</c><c.colorD9D9D9>koon no senaka de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:47.698 --> 00:00:47.831 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​yuniko</c><c.colorD9D9D9>on no senaka de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:47.698 --> 00:00:47.831 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​yuniko</c><c.colorD9D9D9>on no senaka de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:47.831 --> 00:00:47.931 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​yunikoo</c><c.colorD9D9D9>n no senaka de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:47.831 --> 00:00:47.931 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​yunikoo</c><c.colorD9D9D9>n no senaka de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:47.931 --> 00:00:48.065 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​yunikoon </c><c.colorD9D9D9>no senaka de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:47.931 --> 00:00:48.065 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​yunikoon </c><c.colorD9D9D9>no senaka de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:48.065 --> 00:00:48.365 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​yunikoon no </c><c.colorD9D9D9>senaka de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:48.065 --> 00:00:48.365 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​yunikoon no </c><c.colorD9D9D9>senaka de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:48.365 --> 00:00:48.532 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​yunikoon no se</c><c.colorD9D9D9>naka de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:48.365 --> 00:00:48.532 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​yunikoon no se</c><c.colorD9D9D9>naka de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:48.532 --> 00:00:48.832 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​yunikoon no sena</c><c.colorD9D9D9>ka de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:48.532 --> 00:00:48.832 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​yunikoon no sena</c><c.colorD9D9D9>ka de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:48.832 --> 00:00:48.999 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​yunikoon no senaka </c><c.colorD9D9D9>de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:48.832 --> 00:00:48.999 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​yunikoon no senaka </c><c.colorD9D9D9>de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:48.999 --> 00:00:50.367 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​yunikoon no senaka de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:48.999 --> 00:00:50.367 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​yunikoon no senaka de​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:50.367 --> 00:00:59.043 positionw:56%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​high up in a castle tower -​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​this bubble is for you​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:50.367 --> 00:00:59.043 positionw:56%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​high up in a castle tower -​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​this bubble is for you​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:50.367 --> 00:00:50.534 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​ta</c><c.colorD9D9D9>kai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:50.367 --> 00:00:50.534 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​ta</c><c.colorD9D9D9>kai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:50.534 --> 00:00:51.001 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​taka</c><c.colorD9D9D9>i oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:50.534 --> 00:00:51.001 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​taka</c><c.colorD9D9D9>i oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:51.001 --> 00:00:51.602 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai </c><c.colorD9D9D9>oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:51.001 --> 00:00:51.602 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai </c><c.colorD9D9D9>oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:51.602 --> 00:00:51.769 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai o</c><c.colorD9D9D9>shiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:51.602 --> 00:00:51.769 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai o</c><c.colorD9D9D9>shiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:51.769 --> 00:00:52.002 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshi</c><c.colorD9D9D9>ro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:51.769 --> 00:00:52.002 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshi</c><c.colorD9D9D9>ro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:52.002 --> 00:00:52.236 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro </c><c.colorD9D9D9>no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:52.002 --> 00:00:52.236 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro </c><c.colorD9D9D9>no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:52.236 --> 00:00:52.369 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no </c><c.colorD9D9D9>tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:52.236 --> 00:00:52.369 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no </c><c.colorD9D9D9>tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:52.369 --> 00:00:52.636 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no to</c><c.colorD9D9D9>u kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:52.369 --> 00:00:52.636 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no to</c><c.colorD9D9D9>u kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:52.636 --> 00:00:52.836 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou </c><c.colorD9D9D9>kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:52.636 --> 00:00:52.836 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou </c><c.colorD9D9D9>kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:52.836 --> 00:00:53.003 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou ka</c><c.colorD9D9D9>ra​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:52.836 --> 00:00:53.003 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou ka</c><c.colorD9D9D9>ra​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:53.003 --> 00:00:54.071 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:53.003 --> 00:00:54.071 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:54.071 --> 00:00:54.238 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​sha</c><c.colorD9D9D9>bondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:54.071 --> 00:00:54.238 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​sha</c><c.colorD9D9D9>bondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:54.238 --> 00:00:54.538 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shabo</c><c.colorD9D9D9>ndama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:54.238 --> 00:00:54.538 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shabo</c><c.colorD9D9D9>ndama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:54.538 --> 00:00:54.705 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shabon</c><c.colorD9D9D9>dama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:54.538 --> 00:00:54.705 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shabon</c><c.colorD9D9D9>dama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:54.705 --> 00:00:55.172 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shabonda</c><c.colorD9D9D9>ma uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:54.705 --> 00:00:55.172 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shabonda</c><c.colorD9D9D9>ma uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:55.172 --> 00:00:55.472 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shabondama </c><c.colorD9D9D9>uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:55.172 --> 00:00:55.472 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shabondama </c><c.colorD9D9D9>uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:55.472 --> 00:00:55.773 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shabondama u</c><c.colorD9D9D9>ketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:55.472 --> 00:00:55.773 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shabondama u</c><c.colorD9D9D9>ketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:55.773 --> 00:00:55.939 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shabondama uke</c><c.colorD9D9D9>totte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:55.773 --> 00:00:55.939 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shabondama uke</c><c.colorD9D9D9>totte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:55.939 --> 00:00:56.273 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shabondama uketo</c><c.colorD9D9D9>tte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:55.939 --> 00:00:56.273 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shabondama uketo</c><c.colorD9D9D9>tte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:56.273 --> 00:00:56.407 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shabondama uketot</c><c.colorD9D9D9>te ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:56.273 --> 00:00:56.407 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shabondama uketot</c><c.colorD9D9D9>te ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:56.407 --> 00:00:56.573 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shabondama uketotte </c><c.colorD9D9D9>ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:56.407 --> 00:00:56.573 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shabondama uketotte </c><c.colorD9D9D9>ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:56.573 --> 00:00:59.043 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:56.573 --> 00:00:59.043 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​takai oshiro no tou kara​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shabondama uketotte ne​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:59.043 --> 00:01:01.045
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​my prince!​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:59.043 --> 00:01:01.045
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​my prince!​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:59.043 --> 00:00:59.343 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​o</c><c.colorD9D9D9>ujisama!​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:59.043 --> 00:00:59.343 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​o</c><c.colorD9D9D9>ujisama!​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:59.343 --> 00:00:59.676 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​ou</c><c.colorD9D9D9>jisama!​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:59.343 --> 00:00:59.676 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​ou</c><c.colorD9D9D9>jisama!​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:59.676 --> 00:00:59.943 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​ouji</c><c.colorD9D9D9>sama!​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:59.676 --> 00:00:59.943 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​ouji</c><c.colorD9D9D9>sama!​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:59.943 --> 00:01:00.411 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oujisa</c><c.colorD9D9D9>ma!​ ​</c><c.colorA0AAB4>​</c>
+
+00:00:59.943 --> 00:01:00.411 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oujisa</c><c.colorD9D9D9>ma!​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:00.411 --> 00:01:01.045 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oujisama!​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:00.411 --> 00:01:01.045 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​oujisama!​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:04.782 --> 00:01:09.553
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​it's just a fairy tale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:04.782 --> 00:01:09.553
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​it's just a fairy tale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:04.782 --> 00:01:05.082 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​It's </c><c.colorD9D9D9>just a fairy tale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:04.782 --> 00:01:05.082 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​It's </c><c.colorD9D9D9>just a fairy tale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:05.082 --> 00:01:05.416 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​It's just </c><c.colorD9D9D9>a fairy tale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:05.082 --> 00:01:05.416 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​It's just </c><c.colorD9D9D9>a fairy tale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:05.416 --> 00:01:07.251 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​It's just a </c><c.colorD9D9D9>fairy tale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:05.416 --> 00:01:07.251 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​It's just a </c><c.colorD9D9D9>fairy tale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:07.251 --> 00:01:07.885 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​It's just a fair</c><c.colorD9D9D9>y tale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:07.251 --> 00:01:07.885 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​It's just a fair</c><c.colorD9D9D9>y tale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:07.885 --> 00:01:08.318 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​It's just a fairy </c><c.colorD9D9D9>tale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:07.885 --> 00:01:08.318 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​It's just a fairy </c><c.colorD9D9D9>tale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:08.318 --> 00:01:09.553 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​It's just a fairy tale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:08.318 --> 00:01:09.553 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​It's just a fairy tale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:09.553 --> 00:01:14.658 positionw:67%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​so it'll melt away like a lollipop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:09.553 --> 00:01:14.658 positionw:67%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​so it'll melt away like a lollipop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:09.553 --> 00:01:09.720 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​So </c><c.colorD9D9D9>it'll melt away like a lollipop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:09.553 --> 00:01:09.720 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​So </c><c.colorD9D9D9>it'll melt away like a lollipop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:09.720 --> 00:01:10.020 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​So it</c><c.colorD9D9D9>'ll melt away like a lollipop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:09.720 --> 00:01:10.020 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​So it</c><c.colorD9D9D9>'ll melt away like a lollipop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:10.020 --> 00:01:10.320 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​So it'll </c><c.colorD9D9D9>melt away like a lollipop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:10.020 --> 00:01:10.320 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​So it'll </c><c.colorD9D9D9>melt away like a lollipop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:10.320 --> 00:01:10.788 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​So it'll melt </c><c.colorD9D9D9>away like a lollipop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:10.320 --> 00:01:10.788 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​So it'll melt </c><c.colorD9D9D9>away like a lollipop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:10.788 --> 00:01:11.255 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​So it'll melt a</c><c.colorD9D9D9>way like a lollipop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:10.788 --> 00:01:11.255 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​So it'll melt a</c><c.colorD9D9D9>way like a lollipop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:11.255 --> 00:01:12.022 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​So it'll melt away </c><c.colorD9D9D9>like a lollipop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:11.255 --> 00:01:12.022 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​So it'll melt away </c><c.colorD9D9D9>like a lollipop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:12.022 --> 00:01:12.489 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​So it'll melt away like </c><c.colorD9D9D9>a lollipop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:12.022 --> 00:01:12.489 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​So it'll melt away like </c><c.colorD9D9D9>a lollipop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:12.489 --> 00:01:12.790 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​So it'll melt away like a </c><c.colorD9D9D9>lollipop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:12.489 --> 00:01:12.790 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​So it'll melt away like a </c><c.colorD9D9D9>lollipop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:12.790 --> 00:01:13.123 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​So it'll melt away like a lol</c><c.colorD9D9D9>lipop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:12.790 --> 00:01:13.123 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​So it'll melt away like a lol</c><c.colorD9D9D9>lipop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:13.123 --> 00:01:13.290 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​So it'll melt away like a lolli</c><c.colorD9D9D9>pop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:13.123 --> 00:01:13.290 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​So it'll melt away like a lolli</c><c.colorD9D9D9>pop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:13.290 --> 00:01:14.658 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​So it'll melt away like a lollipop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:13.290 --> 00:01:14.658 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​So it'll melt away like a lollipop​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:14.658 --> 00:01:16.994
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​riding a flying whale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:14.658 --> 00:01:16.994
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​riding a flying whale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:14.658 --> 00:01:14.958 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rid</c><c.colorD9D9D9>ing a flying whale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:14.658 --> 00:01:14.958 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Rid</c><c.colorD9D9D9>ing a flying whale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:14.958 --> 00:01:15.159 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Riding </c><c.colorD9D9D9>a flying whale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:14.958 --> 00:01:15.159 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Riding </c><c.colorD9D9D9>a flying whale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:15.159 --> 00:01:15.292 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Riding a </c><c.colorD9D9D9>flying whale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:15.159 --> 00:01:15.292 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Riding a </c><c.colorD9D9D9>flying whale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:15.292 --> 00:01:15.592 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Riding a fly</c><c.colorD9D9D9>ing whale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:15.292 --> 00:01:15.592 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Riding a fly</c><c.colorD9D9D9>ing whale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:15.592 --> 00:01:15.759 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Riding a flying </c><c.colorD9D9D9>whale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:15.592 --> 00:01:15.759 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Riding a flying </c><c.colorD9D9D9>whale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:15.759 --> 00:01:16.994 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Riding a flying whale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:15.759 --> 00:01:16.994 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Riding a flying whale​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:16.994 --> 00:01:19.930 positionw:56%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​wondering when I’ll wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:16.994 --> 00:01:19.930 positionw:56%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​wondering when I’ll wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:16.994 --> 00:01:17.461 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Won</c><c.colorD9D9D9>dering when I'll wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:16.994 --> 00:01:17.461 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Won</c><c.colorD9D9D9>dering when I'll wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:17.461 --> 00:01:17.628 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Wonder</c><c.colorD9D9D9>ing when I'll wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:17.461 --> 00:01:17.628 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Wonder</c><c.colorD9D9D9>ing when I'll wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:17.628 --> 00:01:17.761 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Wondering </c><c.colorD9D9D9>when I'll wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:17.628 --> 00:01:17.761 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Wondering </c><c.colorD9D9D9>when I'll wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:17.761 --> 00:01:18.228 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Wondering when </c><c.colorD9D9D9>I'll wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:17.761 --> 00:01:18.228 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Wondering when </c><c.colorD9D9D9>I'll wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:18.228 --> 00:01:18.695 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Wondering when I'll </c><c.colorD9D9D9>wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:18.228 --> 00:01:18.695 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Wondering when I'll </c><c.colorD9D9D9>wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:18.695 --> 00:01:18.996 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Wondering when I'll wake </c><c.colorD9D9D9>up​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:18.695 --> 00:01:18.996 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Wondering when I'll wake </c><c.colorD9D9D9>up​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:18.996 --> 00:01:19.930 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Wondering when I'll wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:18.996 --> 00:01:19.930 positionw:56% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Wondering when I'll wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:19.930 --> 00:01:25.335 positionw:59%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​hey, please, let me stay here​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:19.930 --> 00:01:25.335 positionw:59%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​hey, please, let me stay here​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:19.930 --> 00:01:20.230 positionw:64% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​o</c><c.colorD9D9D9>negai, nee, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:19.930 --> 00:01:20.230 positionw:64% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​o</c><c.colorD9D9D9>negai, nee, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:20.230 --> 00:01:20.697 positionw:64% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​one</c><c.colorD9D9D9>gai, nee, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:20.230 --> 00:01:20.697 positionw:64% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​one</c><c.colorD9D9D9>gai, nee, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:20.697 --> 00:01:21.131 positionw:64% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onega</c><c.colorD9D9D9>i, nee, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:20.697 --> 00:01:21.131 positionw:64% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onega</c><c.colorD9D9D9>i, nee, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:21.131 --> 00:01:22.066 positionw:64% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, </c><c.colorD9D9D9>nee, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:21.131 --> 00:01:22.066 positionw:64% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, </c><c.colorD9D9D9>nee, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:22.066 --> 00:01:22.366 positionw:64% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, ne</c><c.colorD9D9D9>e, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:22.066 --> 00:01:22.366 positionw:64% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, ne</c><c.colorD9D9D9>e, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:22.366 --> 00:01:22.733 positionw:64% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, nee, </c><c.colorD9D9D9>let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:22.366 --> 00:01:22.733 positionw:64% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, nee, </c><c.colorD9D9D9>let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:22.733 --> 00:01:23.333 positionw:64% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, nee, let </c><c.colorD9D9D9>me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:22.733 --> 00:01:23.333 positionw:64% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, nee, let </c><c.colorD9D9D9>me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:23.333 --> 00:01:23.934 positionw:64% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, nee, let me </c><c.colorD9D9D9>stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:23.333 --> 00:01:23.934 positionw:64% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, nee, let me </c><c.colorD9D9D9>stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:23.934 --> 00:01:24.401 positionw:64% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, nee, let me stay </c><c.colorD9D9D9>here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:23.934 --> 00:01:24.401 positionw:64% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, nee, let me stay </c><c.colorD9D9D9>here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:24.401 --> 00:01:25.335 positionw:64% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, nee, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:24.401 --> 00:01:25.335 positionw:64% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, nee, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:25.335 --> 00:01:27.504 positionw:63%
+<c.colorA0AAB4>​​</c><c.colorD86CEC>​ ​L</c><c.colorCF71EC>​o</c><c.colorC777ED>​g</c><c.colorBE7DED>​o</c><c.colorB682EE>​: </c><c.colorAE88EE>​S</c><c.colorA58EEF>​p</c><c.color9D93EF>​i</c><c.color9499F0>​r</c><c.color8C9FF0>​i</c><c.color84A4F1>​t</c><c.color7BAAF1>​s</c><c.color73B0F2>​n</c><c.color6AB5F2>​a</c><c.color62BBF3>​r</c><c.color5AC1F4>e​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:25.335 --> 00:01:27.504 positionw:63%
+<c.colorA0AAB4>​​</c><c.colorD86CEC>​ ​L</c><c.colorCF71EC>​o</c><c.colorC777ED>​g</c><c.colorBE7DED>​o</c><c.colorB682EE>​: </c><c.colorAE88EE>​S</c><c.colorA58EEF>​p</c><c.color9D93EF>​i</c><c.color9499F0>​r</c><c.color8C9FF0>​i</c><c.color84A4F1>​t</c><c.color7BAAF1>​s</c><c.color73B0F2>​n</c><c.color6AB5F2>​a</c><c.color62BBF3>​r</c><c.color5AC1F4>e​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:27.504 --> 00:01:29.973 positionw:59%
+<c.colorA0AAB4>​​</c><c.colorD86CEC>​ ​I</c><c.colorCF72EC>​l</c><c.colorC678ED>​l</c><c.colorBD7EED>​u</c><c.colorB484EE>​s</c><c.colorAB8AEE>​t</c><c.colorA290EF>​r</c><c.color9996F0>​a</c><c.color909CF0>​t</c><c.color87A2F1>​o</c><c.color7DA8F1>​r</c><c.color75AEF2>​: </c><c.color6BB4F2>​a</c><c.color63BAF3>​2</c><c.color5AC1F4>0​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:27.504 --> 00:01:29.973 positionw:59%
+<c.colorA0AAB4>​​</c><c.colorD86CEC>​ ​I</c><c.colorCF72EC>​l</c><c.colorC678ED>​l</c><c.colorBD7EED>​u</c><c.colorB484EE>​s</c><c.colorAB8AEE>​t</c><c.colorA290EF>​r</c><c.color9996F0>​a</c><c.color909CF0>​t</c><c.color87A2F1>​o</c><c.color7DA8F1>​r</c><c.color75AEF2>​: </c><c.color6BB4F2>​a</c><c.color63BAF3>​2</c><c.color5AC1F4>0​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:29.973 --> 00:01:32.443 positionw:58%
+<c.colorA0AAB4>​​</c><c.colorD86CEC>​ ​M</c><c.colorCE72EC>​u</c><c.colorC479ED>​s</c><c.colorBA7FED>​i</c><c.colorB186EE>​c </c><c.colorA78CEF>​V</c><c.color9D93EF>​i</c><c.color9499F0>​d</c><c.color8AA0F0>​e</c><c.color80A6F1>​o</c><c.color77ADF2>​: </c><c.color6DB3F2>​a</c><c.color63BAF3>​w</c><c.color5AC1F4>a​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:29.973 --> 00:01:32.443 positionw:58%
+<c.colorA0AAB4>​​</c><c.colorD86CEC>​ ​M</c><c.colorCE72EC>​u</c><c.colorC479ED>​s</c><c.colorBA7FED>​i</c><c.colorB186EE>​c </c><c.colorA78CEF>​V</c><c.color9D93EF>​i</c><c.color9499F0>​d</c><c.color8AA0F0>​e</c><c.color80A6F1>​o</c><c.color77ADF2>​: </c><c.color6DB3F2>​a</c><c.color63BAF3>​w</c><c.color5AC1F4>a​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:44.822 --> 00:01:47.624 positionw:59%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​ring-a-ring o'roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:44.822 --> 00:01:47.624 positionw:59%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​ring-a-ring o'roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:44.822 --> 00:01:45.122 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-</c><c.colorD9D9D9>a-ring o'roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:44.822 --> 00:01:45.122 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-</c><c.colorD9D9D9>a-ring o'roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:45.122 --> 00:01:45.589 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-</c><c.colorD9D9D9>ring o'roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:45.122 --> 00:01:45.589 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-</c><c.colorD9D9D9>ring o'roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:45.589 --> 00:01:45.923 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring </c><c.colorD9D9D9>o'roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:45.589 --> 00:01:45.923 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring </c><c.colorD9D9D9>o'roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:45.923 --> 00:01:46.223 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'</c><c.colorD9D9D9>roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:45.923 --> 00:01:46.223 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'</c><c.colorD9D9D9>roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:46.223 --> 00:01:46.490 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'ros</c><c.colorD9D9D9>es, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:46.223 --> 00:01:46.490 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'ros</c><c.colorD9D9D9>es, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:46.490 --> 00:01:46.824 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'roses, </c><c.colorD9D9D9>fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:46.490 --> 00:01:46.824 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'roses, </c><c.colorD9D9D9>fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:46.824 --> 00:01:46.990 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'roses, fa-</c><c.colorD9D9D9>la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:46.824 --> 00:01:46.990 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'roses, fa-</c><c.colorD9D9D9>la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:46.990 --> 00:01:47.291 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'roses, fa-la-</c><c.colorD9D9D9>la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:46.990 --> 00:01:47.291 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'roses, fa-la-</c><c.colorD9D9D9>la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:47.291 --> 00:01:47.624 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:47.291 --> 00:01:47.624 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:47.624 --> 00:01:49.760 positionw:58%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​round and round, fa-la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:47.624 --> 00:01:49.760 positionw:58%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​round and round, fa-la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:47.624 --> 00:01:48.092 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round </c><c.colorD9D9D9>and round, fa-la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:47.624 --> 00:01:48.092 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round </c><c.colorD9D9D9>and round, fa-la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:48.092 --> 00:01:48.392 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and </c><c.colorD9D9D9>round, fa-la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:48.092 --> 00:01:48.392 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and </c><c.colorD9D9D9>round, fa-la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:48.392 --> 00:01:48.692 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and round, </c><c.colorD9D9D9>fa-la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:48.392 --> 00:01:48.692 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and round, </c><c.colorD9D9D9>fa-la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:48.692 --> 00:01:48.992 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and round, fa-</c><c.colorD9D9D9>la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:48.692 --> 00:01:48.992 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and round, fa-</c><c.colorD9D9D9>la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:48.992 --> 00:01:49.159 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and round, fa-la-</c><c.colorD9D9D9>la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:48.992 --> 00:01:49.159 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and round, fa-la-</c><c.colorD9D9D9>la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:49.159 --> 00:01:49.326 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and round, fa-la-la-</c><c.colorD9D9D9>la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:49.159 --> 00:01:49.326 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and round, fa-la-la-</c><c.colorD9D9D9>la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:49.326 --> 00:01:49.760 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and round, fa-la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:49.326 --> 00:01:49.760 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and round, fa-la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:49.760 --> 00:01:52.262 positionw:58%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​flying up and down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:49.760 --> 00:01:52.262 positionw:58%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​flying up and down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:49.760 --> 00:01:50.060 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Fly</c><c.colorD9D9D9>ing up and down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:49.760 --> 00:01:50.060 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Fly</c><c.colorD9D9D9>ing up and down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:50.060 --> 00:01:50.527 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying </c><c.colorD9D9D9>up and down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:50.060 --> 00:01:50.527 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying </c><c.colorD9D9D9>up and down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:50.527 --> 00:01:50.828 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up </c><c.colorD9D9D9>and down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:50.527 --> 00:01:50.828 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up </c><c.colorD9D9D9>and down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:50.828 --> 00:01:51.128 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up and </c><c.colorD9D9D9>down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:50.828 --> 00:01:51.128 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up and </c><c.colorD9D9D9>down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:51.128 --> 00:01:51.462 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up and down, </c><c.colorD9D9D9>fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:51.128 --> 00:01:51.462 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up and down, </c><c.colorD9D9D9>fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:51.462 --> 00:01:51.762 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up and down, fa-</c><c.colorD9D9D9>la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:51.462 --> 00:01:51.762 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up and down, fa-</c><c.colorD9D9D9>la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:51.762 --> 00:01:51.929 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up and down, fa-la-</c><c.colorD9D9D9>la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:51.762 --> 00:01:51.929 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up and down, fa-la-</c><c.colorD9D9D9>la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:51.929 --> 00:01:52.262 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up and down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:51.929 --> 00:01:52.262 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up and down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:52.262 --> 00:01:54.698
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​I wanna stay here forever​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:52.262 --> 00:01:54.698
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​I wanna stay here forever​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:52.262 --> 00:01:52.563 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​I </c><c.colorD9D9D9>wanna stay here forever​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:52.262 --> 00:01:52.563 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​I </c><c.colorD9D9D9>wanna stay here forever​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:52.563 --> 00:01:53.030 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​I wan</c><c.colorD9D9D9>na stay here forever​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:52.563 --> 00:01:53.030 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​I wan</c><c.colorD9D9D9>na stay here forever​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:53.030 --> 00:01:53.330 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​I wanna </c><c.colorD9D9D9>stay here forever​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:53.030 --> 00:01:53.330 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​I wanna </c><c.colorD9D9D9>stay here forever​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:53.330 --> 00:01:53.630 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​I wanna stay </c><c.colorD9D9D9>here forever​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:53.330 --> 00:01:53.630 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​I wanna stay </c><c.colorD9D9D9>here forever​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:53.630 --> 00:01:53.964 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​I wanna stay here </c><c.colorD9D9D9>forever​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:53.630 --> 00:01:53.964 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​I wanna stay here </c><c.colorD9D9D9>forever​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:53.964 --> 00:01:54.264 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​I wanna stay here for</c><c.colorD9D9D9>ever​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:53.964 --> 00:01:54.264 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​I wanna stay here for</c><c.colorD9D9D9>ever​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:54.264 --> 00:01:54.431 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​I wanna stay here forev</c><c.colorD9D9D9>er​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:54.264 --> 00:01:54.431 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​I wanna stay here forev</c><c.colorD9D9D9>er​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:54.431 --> 00:01:54.698 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​I wanna stay here forever​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:54.431 --> 00:01:54.698 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​I wanna stay here forever​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:54.698 --> 00:01:57.501 positionw:59%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​ring-a-ring o'roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:54.698 --> 00:01:57.501 positionw:59%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​ring-a-ring o'roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:54.698 --> 00:01:54.998 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-</c><c.colorD9D9D9>a-ring o'roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:54.698 --> 00:01:54.998 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-</c><c.colorD9D9D9>a-ring o'roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:54.998 --> 00:01:55.466 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-</c><c.colorD9D9D9>ring o'roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:54.998 --> 00:01:55.466 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-</c><c.colorD9D9D9>ring o'roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:55.466 --> 00:01:55.799 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring </c><c.colorD9D9D9>o'roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:55.466 --> 00:01:55.799 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring </c><c.colorD9D9D9>o'roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:55.799 --> 00:01:56.100 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'</c><c.colorD9D9D9>roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:55.799 --> 00:01:56.100 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'</c><c.colorD9D9D9>roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:56.100 --> 00:01:56.400 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'ros</c><c.colorD9D9D9>es, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:56.100 --> 00:01:56.400 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'ros</c><c.colorD9D9D9>es, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:56.400 --> 00:01:56.700 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'roses, </c><c.colorD9D9D9>fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:56.400 --> 00:01:56.700 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'roses, </c><c.colorD9D9D9>fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:56.700 --> 00:01:56.867 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'roses, fa-</c><c.colorD9D9D9>la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:56.700 --> 00:01:56.867 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'roses, fa-</c><c.colorD9D9D9>la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:56.867 --> 00:01:57.167 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'roses, fa-la-</c><c.colorD9D9D9>la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:56.867 --> 00:01:57.167 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'roses, fa-la-</c><c.colorD9D9D9>la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:57.167 --> 00:01:57.501 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:57.167 --> 00:01:57.501 positionw:59% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Ring-a-ring o'roses, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:57.501 --> 00:01:59.670 positionw:58%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​round and round, fa-la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:57.501 --> 00:01:59.670 positionw:58%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​round and round, fa-la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:57.501 --> 00:01:57.968 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round </c><c.colorD9D9D9>and round, fa-la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:57.501 --> 00:01:57.968 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round </c><c.colorD9D9D9>and round, fa-la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:57.968 --> 00:01:58.268 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and </c><c.colorD9D9D9>round, fa-la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:57.968 --> 00:01:58.268 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and </c><c.colorD9D9D9>round, fa-la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:58.268 --> 00:01:58.602 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and round, </c><c.colorD9D9D9>fa-la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:58.268 --> 00:01:58.602 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and round, </c><c.colorD9D9D9>fa-la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:58.602 --> 00:01:58.869 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and round, fa-</c><c.colorD9D9D9>la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:58.602 --> 00:01:58.869 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and round, fa-</c><c.colorD9D9D9>la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:58.869 --> 00:01:59.069 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and round, fa-la-</c><c.colorD9D9D9>la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:58.869 --> 00:01:59.069 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and round, fa-la-</c><c.colorD9D9D9>la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:59.069 --> 00:01:59.203 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and round, fa-la-la-</c><c.colorD9D9D9>la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:59.069 --> 00:01:59.203 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and round, fa-la-la-</c><c.colorD9D9D9>la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:59.203 --> 00:01:59.670 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and round, fa-la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:59.203 --> 00:01:59.670 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Round and round, fa-la-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:59.670 --> 00:02:02.139 positionw:58%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​flying up and down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:59.670 --> 00:02:02.139 positionw:58%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​flying up and down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:59.670 --> 00:01:59.970 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Fly</c><c.colorD9D9D9>ing up and down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:59.670 --> 00:01:59.970 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Fly</c><c.colorD9D9D9>ing up and down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:59.970 --> 00:02:00.437 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying </c><c.colorD9D9D9>up and down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:01:59.970 --> 00:02:00.437 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying </c><c.colorD9D9D9>up and down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:00.437 --> 00:02:00.737 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up </c><c.colorD9D9D9>and down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:00.437 --> 00:02:00.737 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up </c><c.colorD9D9D9>and down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:00.737 --> 00:02:01.038 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up and </c><c.colorD9D9D9>down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:00.737 --> 00:02:01.038 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up and </c><c.colorD9D9D9>down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:01.038 --> 00:02:01.371 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up and down, </c><c.colorD9D9D9>fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:01.038 --> 00:02:01.371 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up and down, </c><c.colorD9D9D9>fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:01.371 --> 00:02:01.672 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up and down, fa-</c><c.colorD9D9D9>la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:01.371 --> 00:02:01.672 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up and down, fa-</c><c.colorD9D9D9>la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:01.672 --> 00:02:01.839 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up and down, fa-la-</c><c.colorD9D9D9>la​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:01.672 --> 00:02:01.839 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up and down, fa-la-</c><c.colorD9D9D9>la​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:01.839 --> 00:02:02.139 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up and down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:01.839 --> 00:02:02.139 positionw:58% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Flying up and down, fa-la-la​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:02.139 --> 00:02:04.141
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​come to me​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:02.139 --> 00:02:04.141
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​come to me​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:02.139 --> 00:02:02.439 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​ko</c><c.colorD9D9D9>ko ni kite​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:02.139 --> 00:02:02.439 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​ko</c><c.colorD9D9D9>ko ni kite​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:02.439 --> 00:02:02.906 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koko </c><c.colorD9D9D9>ni kite​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:02.439 --> 00:02:02.906 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koko </c><c.colorD9D9D9>ni kite​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:02.906 --> 00:02:03.207 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koko ni </c><c.colorD9D9D9>kite​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:02.906 --> 00:02:03.207 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koko ni </c><c.colorD9D9D9>kite​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:03.207 --> 00:02:03.507 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koko ni ki</c><c.colorD9D9D9>te​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:03.207 --> 00:02:03.507 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koko ni ki</c><c.colorD9D9D9>te​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:03.507 --> 00:02:04.141 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koko ni kite​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:03.507 --> 00:02:04.141 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​koko ni kite​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:04.141 --> 00:02:14.051
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​the bell tower rings,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​a shy kiss with my prince​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:04.141 --> 00:02:14.051
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​the bell tower rings,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​a shy kiss with my prince​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:04.141 --> 00:02:04.475 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​to</c><c.colorD9D9D9>kei no kane oujisama to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:04.141 --> 00:02:04.475 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​to</c><c.colorD9D9D9>kei no kane oujisama to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:04.475 --> 00:02:04.775 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​toke</c><c.colorD9D9D9>i no kane oujisama to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:04.475 --> 00:02:04.775 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​toke</c><c.colorD9D9D9>i no kane oujisama to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:04.775 --> 00:02:06.610 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei </c><c.colorD9D9D9>no kane oujisama to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:04.775 --> 00:02:06.610 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei </c><c.colorD9D9D9>no kane oujisama to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:06.610 --> 00:02:07.244 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no </c><c.colorD9D9D9>kane oujisama to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:06.610 --> 00:02:07.244 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no </c><c.colorD9D9D9>kane oujisama to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:07.244 --> 00:02:07.711 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no ka</c><c.colorD9D9D9>ne oujisama to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:07.244 --> 00:02:07.711 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no ka</c><c.colorD9D9D9>ne oujisama to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:07.711 --> 00:02:09.079 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane </c><c.colorD9D9D9>oujisama to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:07.711 --> 00:02:09.079 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane </c><c.colorD9D9D9>oujisama to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:09.079 --> 00:02:09.246 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane o</c><c.colorD9D9D9>ujisama to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:09.079 --> 00:02:09.246 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane o</c><c.colorD9D9D9>ujisama to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:09.246 --> 00:02:09.413 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane ou</c><c.colorD9D9D9>jisama to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:09.246 --> 00:02:09.413 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane ou</c><c.colorD9D9D9>jisama to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:09.413 --> 00:02:09.713 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane ouji</c><c.colorD9D9D9>sama to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:09.413 --> 00:02:09.713 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane ouji</c><c.colorD9D9D9>sama to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:09.713 --> 00:02:10.180 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane oujisa</c><c.colorD9D9D9>ma to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:09.713 --> 00:02:10.180 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane oujisa</c><c.colorD9D9D9>ma to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:10.180 --> 00:02:10.647 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane oujisama </c><c.colorD9D9D9>to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:10.180 --> 00:02:10.647 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane oujisama </c><c.colorD9D9D9>to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:10.647 --> 00:02:11.415 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane oujisama to </c><c.colorD9D9D9>hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:10.647 --> 00:02:11.415 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane oujisama to </c><c.colorD9D9D9>hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:11.415 --> 00:02:11.648 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane oujisama to ha</c><c.colorD9D9D9>nikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:11.415 --> 00:02:11.648 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane oujisama to ha</c><c.colorD9D9D9>nikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:11.648 --> 00:02:11.882 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane oujisama to hani</c><c.colorD9D9D9>kande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:11.648 --> 00:02:11.882 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane oujisama to hani</c><c.colorD9D9D9>kande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:11.882 --> 00:02:12.182 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane oujisama to hanika</c><c.colorD9D9D9>nde kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:11.882 --> 00:02:12.182 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane oujisama to hanika</c><c.colorD9D9D9>nde kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:12.182 --> 00:02:12.483 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane oujisama to hanikan</c><c.colorD9D9D9>de kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:12.182 --> 00:02:12.483 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane oujisama to hanikan</c><c.colorD9D9D9>de kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:12.483 --> 00:02:12.716 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane oujisama to hanikande </c><c.colorD9D9D9>kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:12.483 --> 00:02:12.716 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane oujisama to hanikande </c><c.colorD9D9D9>kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:12.716 --> 00:02:13.083 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane oujisama to hanikande ki</c><c.colorD9D9D9>su​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:12.716 --> 00:02:13.083 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane oujisama to hanikande ki</c><c.colorD9D9D9>su​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:13.083 --> 00:02:14.051 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane oujisama to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:13.083 --> 00:02:14.051 positionw:77% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​tokei no kane oujisama to hanikande kisu​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:14.051 --> 00:02:23.927 positionw:61%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​and we live happily ever after​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:14.051 --> 00:02:23.927 positionw:61%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​and we live happily ever after​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:14.051 --> 00:02:14.351 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​fu</c><c.colorD9D9D9>tari wa itsumade datte shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:14.051 --> 00:02:14.351 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​fu</c><c.colorD9D9D9>tari wa itsumade datte shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:14.351 --> 00:02:14.651 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futa</c><c.colorD9D9D9>ri wa itsumade datte shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:14.351 --> 00:02:14.651 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futa</c><c.colorD9D9D9>ri wa itsumade datte shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:14.651 --> 00:02:15.119 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari </c><c.colorD9D9D9>wa itsumade datte shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:14.651 --> 00:02:15.119 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari </c><c.colorD9D9D9>wa itsumade datte shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:15.119 --> 00:02:16.353 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa </c><c.colorD9D9D9>itsumade datte shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:15.119 --> 00:02:16.353 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa </c><c.colorD9D9D9>itsumade datte shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:16.353 --> 00:02:16.520 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa i</c><c.colorD9D9D9>tsumade datte shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:16.353 --> 00:02:16.520 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa i</c><c.colorD9D9D9>tsumade datte shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:16.520 --> 00:02:16.820 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsu</c><c.colorD9D9D9>made datte shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:16.520 --> 00:02:16.820 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsu</c><c.colorD9D9D9>made datte shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:16.820 --> 00:02:17.121 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsuma</c><c.colorD9D9D9>de datte shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:16.820 --> 00:02:17.121 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsuma</c><c.colorD9D9D9>de datte shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:17.121 --> 00:02:17.588 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade </c><c.colorD9D9D9>datte shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:17.121 --> 00:02:17.588 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade </c><c.colorD9D9D9>datte shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:17.588 --> 00:02:18.055 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade da</c><c.colorD9D9D9>tte shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:17.588 --> 00:02:18.055 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade da</c><c.colorD9D9D9>tte shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:18.055 --> 00:02:18.388 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade dat</c><c.colorD9D9D9>te shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:18.055 --> 00:02:18.388 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade dat</c><c.colorD9D9D9>te shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:18.388 --> 00:02:19.289 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade datte </c><c.colorD9D9D9>shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:18.388 --> 00:02:19.289 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade datte </c><c.colorD9D9D9>shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:19.289 --> 00:02:19.590 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade datte shi</c><c.colorD9D9D9>awase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:19.289 --> 00:02:19.590 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade datte shi</c><c.colorD9D9D9>awase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:19.590 --> 00:02:20.057 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade datte shia</c><c.colorD9D9D9>wase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:19.590 --> 00:02:20.057 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade datte shia</c><c.colorD9D9D9>wase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:20.057 --> 00:02:21.458 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade datte shiawa</c><c.colorD9D9D9>se ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:20.057 --> 00:02:21.458 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade datte shiawa</c><c.colorD9D9D9>se ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:21.458 --> 00:02:21.758 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade datte shiawase </c><c.colorD9D9D9>ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:21.458 --> 00:02:21.758 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade datte shiawase </c><c.colorD9D9D9>ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:21.758 --> 00:02:22.092 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade datte shiawase ni </c><c.colorD9D9D9>kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:21.758 --> 00:02:22.092 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade datte shiawase ni </c><c.colorD9D9D9>kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:22.092 --> 00:02:22.693 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade datte shiawase ni ku</c><c.colorD9D9D9>rasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:22.092 --> 00:02:22.693 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade datte shiawase ni ku</c><c.colorD9D9D9>rasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:22.693 --> 00:02:23.327 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade datte shiawase ni kura</c><c.colorD9D9D9>su no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:22.693 --> 00:02:23.327 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade datte shiawase ni kura</c><c.colorD9D9D9>su no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:23.327 --> 00:02:23.627 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade datte shiawase ni kurasu </c><c.colorD9D9D9>no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:23.327 --> 00:02:23.627 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade datte shiawase ni kurasu </c><c.colorD9D9D9>no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:23.627 --> 00:02:23.927 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade datte shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:23.627 --> 00:02:23.927 positionw:86% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​futari wa itsumade datte shiawase ni kurasu no​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:23.927 --> 00:02:28.732
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​but it was just my dream​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:23.927 --> 00:02:28.732
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​but it was just my dream​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:23.927 --> 00:02:24.228 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​But </c><c.colorD9D9D9>it was just my dream​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:23.927 --> 00:02:24.228 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​But </c><c.colorD9D9D9>it was just my dream​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:24.228 --> 00:02:24.561 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​But it </c><c.colorD9D9D9>was just my dream​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:24.228 --> 00:02:24.561 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​But it </c><c.colorD9D9D9>was just my dream​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:24.561 --> 00:02:26.396 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​But it was </c><c.colorD9D9D9>just my dream​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:24.561 --> 00:02:26.396 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​But it was </c><c.colorD9D9D9>just my dream​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:26.396 --> 00:02:27.030 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​But it was just </c><c.colorD9D9D9>my dream​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:26.396 --> 00:02:27.030 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​But it was just </c><c.colorD9D9D9>my dream​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:27.030 --> 00:02:27.498 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​But it was just my </c><c.colorD9D9D9>dream​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:27.030 --> 00:02:27.498 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​But it was just my </c><c.colorD9D9D9>dream​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:27.498 --> 00:02:28.732 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​But it was just my dream​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:27.498 --> 00:02:28.732 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​But it was just my dream​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:28.732 --> 00:02:33.837 positionw:86%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​the golden sunlight shows it’s time to wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:28.732 --> 00:02:33.837 positionw:86%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​the golden sunlight shows it’s time to wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:28.732 --> 00:02:28.899 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​The </c><c.colorD9D9D9>golden sunlight shows​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​it's time to wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:28.732 --> 00:02:28.899 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​The </c><c.colorD9D9D9>golden sunlight shows​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​it's time to wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:28.899 --> 00:02:29.199 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​The gol</c><c.colorD9D9D9>den sunlight shows​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​it's time to wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:28.899 --> 00:02:29.199 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​The gol</c><c.colorD9D9D9>den sunlight shows​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​it's time to wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:29.199 --> 00:02:29.500 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​The golden </c><c.colorD9D9D9>sunlight shows​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​it's time to wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:29.199 --> 00:02:29.500 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​The golden </c><c.colorD9D9D9>sunlight shows​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​it's time to wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:29.500 --> 00:02:29.967 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​The golden sun</c><c.colorD9D9D9>light shows​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​it's time to wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:29.500 --> 00:02:29.967 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​The golden sun</c><c.colorD9D9D9>light shows​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​it's time to wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:29.967 --> 00:02:30.434 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​The golden sunlight </c><c.colorD9D9D9>shows​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​it's time to wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:29.967 --> 00:02:30.434 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​The golden sunlight </c><c.colorD9D9D9>shows​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​it's time to wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:30.434 --> 00:02:31.168 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​The golden sunlight shows​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​it's time to wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:30.434 --> 00:02:31.168 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​The golden sunlight shows​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​it's time to wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:31.168 --> 00:02:31.368 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​The golden sunlight shows​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​it's </c><c.colorD9D9D9>time to wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:31.168 --> 00:02:31.368 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​The golden sunlight shows​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​it's </c><c.colorD9D9D9>time to wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:31.368 --> 00:02:31.668 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​The golden sunlight shows​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​it's time </c><c.colorD9D9D9>to wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:31.368 --> 00:02:31.668 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​The golden sunlight shows​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​it's time </c><c.colorD9D9D9>to wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:31.668 --> 00:02:31.969 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​The golden sunlight shows​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​it's time to </c><c.colorD9D9D9>wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:31.668 --> 00:02:31.969 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​The golden sunlight shows​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​it's time to </c><c.colorD9D9D9>wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:31.969 --> 00:02:32.436 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​The golden sunlight shows​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​it's time to wake </c><c.colorD9D9D9>up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:31.969 --> 00:02:32.436 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​The golden sunlight shows​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​it's time to wake </c><c.colorD9D9D9>up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:32.436 --> 00:02:33.837 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​The golden sunlight shows​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​it's time to wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:32.436 --> 00:02:33.837 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​The golden sunlight shows​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​it's time to wake up​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:33.837 --> 00:02:39.076 positionw:81%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​waiting quietly, shutting my eyes and I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:33.837 --> 00:02:39.076 positionw:81%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​waiting quietly, shutting my eyes and I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:33.837 --> 00:02:34.104 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Wait</c><c.colorD9D9D9>ing quietly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shutting my eyes and I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:33.837 --> 00:02:34.104 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Wait</c><c.colorD9D9D9>ing quietly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shutting my eyes and I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:34.104 --> 00:02:34.438 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Waiting </c><c.colorD9D9D9>quietly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shutting my eyes and I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:34.104 --> 00:02:34.438 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Waiting </c><c.colorD9D9D9>quietly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shutting my eyes and I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:34.438 --> 00:02:34.771 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Waiting qui</c><c.colorD9D9D9>etly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shutting my eyes and I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:34.438 --> 00:02:34.771 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Waiting qui</c><c.colorD9D9D9>etly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shutting my eyes and I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:34.771 --> 00:02:34.905 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Waiting quiet</c><c.colorD9D9D9>ly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shutting my eyes and I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:34.771 --> 00:02:34.905 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Waiting quiet</c><c.colorD9D9D9>ly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shutting my eyes and I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:34.905 --> 00:02:36.173 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Waiting quietly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shutting my eyes and I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:34.905 --> 00:02:36.173 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Waiting quietly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD9D9D9>​ ​shutting my eyes and I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:36.173 --> 00:02:36.306 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Waiting quietly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shut</c><c.colorD9D9D9>ting my eyes and I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:36.173 --> 00:02:36.306 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Waiting quietly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shut</c><c.colorD9D9D9>ting my eyes and I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:36.306 --> 00:02:36.607 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Waiting quietly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shutting </c><c.colorD9D9D9>my eyes and I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:36.306 --> 00:02:36.607 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Waiting quietly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shutting </c><c.colorD9D9D9>my eyes and I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:36.607 --> 00:02:36.940 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Waiting quietly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shutting my </c><c.colorD9D9D9>eyes and I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:36.607 --> 00:02:36.940 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Waiting quietly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shutting my </c><c.colorD9D9D9>eyes and I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:36.940 --> 00:02:37.374 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Waiting quietly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shutting my eyes </c><c.colorD9D9D9>and I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:36.940 --> 00:02:37.374 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Waiting quietly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shutting my eyes </c><c.colorD9D9D9>and I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:37.374 --> 00:02:37.875 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Waiting quietly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shutting my eyes and </c><c.colorD9D9D9>I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:37.374 --> 00:02:37.875 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Waiting quietly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shutting my eyes and </c><c.colorD9D9D9>I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:37.875 --> 00:02:38.175 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Waiting quietly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shutting my eyes and I </c><c.colorD9D9D9>say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:37.875 --> 00:02:38.175 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Waiting quietly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shutting my eyes and I </c><c.colorD9D9D9>say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:38.175 --> 00:02:39.076 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Waiting quietly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shutting my eyes and I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:38.175 --> 00:02:39.076 line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​Waiting quietly,​ ​</c><c.colorA0AAB4>​
+​</c><c.colorD0F784>​ ​shutting my eyes and I say​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:39.076 --> 00:02:44.515 positionw:67%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​please, let me stay here some more​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:39.076 --> 00:02:44.515 positionw:67%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​please, let me stay here some more​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:39.076 --> 00:02:39.376 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​o</c><c.colorD9D9D9>negai, motto, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:39.076 --> 00:02:39.376 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​o</c><c.colorD9D9D9>negai, motto, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:39.376 --> 00:02:39.877 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​one</c><c.colorD9D9D9>gai, motto, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:39.376 --> 00:02:39.877 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​one</c><c.colorD9D9D9>gai, motto, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:39.877 --> 00:02:40.477 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onega</c><c.colorD9D9D9>i, motto, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:39.877 --> 00:02:40.477 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onega</c><c.colorD9D9D9>i, motto, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:40.477 --> 00:02:41.245 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, </c><c.colorD9D9D9>motto, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:40.477 --> 00:02:41.245 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, </c><c.colorD9D9D9>motto, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:41.245 --> 00:02:41.411 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, mo</c><c.colorD9D9D9>tto, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:41.245 --> 00:02:41.411 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, mo</c><c.colorD9D9D9>tto, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:41.411 --> 00:02:41.612 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, mot</c><c.colorD9D9D9>to, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:41.411 --> 00:02:41.612 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, mot</c><c.colorD9D9D9>to, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:41.612 --> 00:02:41.879 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, motto, </c><c.colorD9D9D9>let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:41.612 --> 00:02:41.879 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, motto, </c><c.colorD9D9D9>let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:41.879 --> 00:02:42.479 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, motto, let </c><c.colorD9D9D9>me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:41.879 --> 00:02:42.479 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, motto, let </c><c.colorD9D9D9>me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:42.479 --> 00:02:43.113 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, motto, let me </c><c.colorD9D9D9>stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:42.479 --> 00:02:43.113 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, motto, let me </c><c.colorD9D9D9>stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:43.113 --> 00:02:43.714 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, motto, let me stay </c><c.colorD9D9D9>here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:43.113 --> 00:02:43.714 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, motto, let me stay </c><c.colorD9D9D9>here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:43.714 --> 00:02:44.515 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, motto, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+
+00:02:43.714 --> 00:02:44.515 positionw:67% line:2%
+<c.colorA0AAB4>​​</c><c.colorD0F784>​ ​onegai, motto, let me stay here...​ ​</c><c.colorA0AAB4>​</c>
+

@@ -39,9 +39,15 @@ else{
 <div class="<?php echo $menutogglewidth?> Menu-div">
             <div class="Menu-div-sticky">
             <div class="menu-btns menu-div1">
+<<<<<<< HEAD
                 <div onclick="redirectTo('/YouTube/')" class="menu-a-divs <?php echo $menutogglediv?>"><i class="fa fa-home <?php echo $menutogglei?>" aria-hidden="true"></i> <a class="menu-links <?php echo $menutogglea?>" href="/YouTube/">Home</a></div>
                 <div onclick="redirectTo('/Explorer/')" class="menu-a-divs <?php echo $menutogglediv?>"><i class="fa fa-compass <?php echo $menutogglei?>" aria-hidden="true"></i> <a class="menu-links <?php echo $menutogglea?>" href="/Explorer/">Explorer</a></div>
                 <div onclick="redirectTo('/')" class="menu-a-divs <?php echo $menutogglediv?>"><i class="far fa-folder-open <?php echo $menutogglei?>"></i> <a class="menu-links <?php echo $menutogglea?>" href="/">Server</a></div>
+=======
+                <div class="menu-a-divs <?php echo $menutogglediv?>"><i class="fa fa-home <?php echo $menutogglei?>" aria-hidden="true"></i> <a class="menu-links <?php echo $menutogglea?>" href="/YouTube/">Home</a></div>
+                <div class="menu-a-divs <?php echo $menutogglediv?>"><i class="fa fa-compass <?php echo $menutogglei?>" aria-hidden="true"></i> <a class="menu-links <?php echo $menutogglea?>" href="/Explorer/">Explorer</a></div>
+                <div class="menu-a-divs <?php echo $menutogglediv?>"><i class="far fa-folder-open <?php echo $menutogglei?>"></i> <a class="menu-links <?php echo $menutogglea?>" href="/">Server</a></div>
+>>>>>>> de42f9e607d506fb64ac8cffac0373fbd9656dd2
             </div>
             <div class="menu-btns menu-div2">
                 <div class="menu-a-divs <?php echo $menutogglediv?>"><i class="far fa-newspaper <?php echo $menutogglei?>"></i> <a class="menu-links <?php echo $menutogglea?>" href="#">Journal</a></div>
