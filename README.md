@@ -38,12 +38,34 @@ but its not bothersome you wont notice
 
 1. Copy-paste all the folders (eg, youtube, chatbox, comment section) in your htdocs.
 2. Install the [Electron player](https://drive.google.com/drive/u/0/folders/18UFdW4VaAEURjlz-P35kFZAp5TgF99ky)
+3. Open your xampp, in Apache row click on config, then httpd.conf (first option)
+First search for "\<IfModule alias_module>"
+And add:
+```
+    Alias "/d:" "D:/"
+    Alias "/c:" "C:/"
+```
+before "<\/IfModule>"
 
-3. First add the "userdata" database then "youtube" database from the files provided to your sql (simply copy paste it in sql section of your phpmyadmin)
+Add these codes in bottom:
+```
+<Directory "D:/">
+    Options Indexes FollowSymLinks Includes ExecCGI
+    AllowOverride All
+    Require all granted
+</Directory>
+<Directory "C:/">
+    Options Indexes FollowSymLinks Includes ExecCGI
+    AllowOverride All
+    Require all granted
+</Directory>
+```
 
-4. Add an account to Mysql/phpmyadmin : {username = "admin"; password = "pwdpwd"; Priviledges : All (optional)}
+4. First add the "userdata" database then "youtube" database from the files provided to your sql (simply copy paste it in sql section of your phpmyadmin)
+
+5. Add an account to Mysql/phpmyadmin : {username = "admin"; password = "pwdpwd"; Priviledges : All (optional)}
    
-5. Now You Must allow localfile access in your browser using :
+6. Now You Must allow localfile access in your browser using :
 
 (Alternative method at bottom is better, the first method is the official way i think, but i use the bottom one.
 
