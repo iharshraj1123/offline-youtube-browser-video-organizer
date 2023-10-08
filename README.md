@@ -37,13 +37,13 @@ but its not bothersome you wont notice
 ## HOW to Setup :
 
 1. Copy-paste all the folders (eg, youtube, chatbox, comment section) in your htdocs.
+2. Install the [Electron player](https://drive.google.com/drive/u/0/folders/18UFdW4VaAEURjlz-P35kFZAp5TgF99ky)
 
-2. First add the "userdata" database then "youtube" database from the files provided to your sql (simply copy paste it in sql section of your phpmyadmin)
+3. First add the "userdata" database then "youtube" database from the files provided to your sql (simply copy paste it in sql section of your phpmyadmin)
 
-3. Add an account to Mysql/phpmyadmin : {username = "admin"; password = "pwdpwd"; Priviledges : All (optional)}
-
-4. Now You Must allow localfile access in your browser using : 
-
+4. Add an account to Mysql/phpmyadmin : {username = "admin"; password = "pwdpwd"; Priviledges : All (optional)}
+   
+5. Now You Must allow localfile access in your browser using :
 
 (Alternative method at bottom is better, the first method is the official way i think, but i use the bottom one.
 
