@@ -7,12 +7,6 @@
 ![image](https://github.com/iharshraj1123/offline-youtube-browser-video-organizer/assets/33609172/ea07b43a-caf0-4fa0-8e2e-8a7932d702a2)
 
 
-
-
-
-
-
-
 summoning code: <?php include '/comment section/comments.php' ?>
 
 How to set it up :

@@ -53,13 +53,14 @@ function ready_the_vids(){
     total_vids_on_page = document.getElementsByClassName('video-thumbnail-all').length
     for(let i=0;i<total_vids_on_page;i++){
     let vido_temp = document.getElementsByClassName('video-thumbnail')[i];
-    let temp_src = vido_temp.dataset.src;
+    let temp_src = friendly_link(vido_temp.dataset.src);
     if(!window.location.href.includes("http://localhost")){
     temp_src = temp_src.replace("file:///C:/Users/ihars/Downloads/", "/downloads/");
     temp_src = temp_src.replace("file:///D:/0-entertainment/", "/entertainment/");
     temp_src = temp_src.replace("file:///D:/Video songs/", "/videosongs/");
     temp_src = temp_src.replace("file:///D:/Video%20songs/", "/videosongs/");
     }
+    console.log(temp_src)
     vido_temp.src = temp_src;
     vido_temp.load();
     vido_temp.volume = 0.2;
@@ -146,16 +147,16 @@ function vid_play_search(x,y,z){
                 temp_src = temp_src.replace("file:///D:/Video songs/", "/videosongs/");
                 temp_src = temp_src.replace("file:///D:/Video%20songs/", "/videosongs/");}
             document.getElementsByClassName("video-src")[0].src = temp_src;
-            if(document.getElementsByClassName("video-summoner-divttt")[0].classList.contains("hidemepls")){
-                pop_outclick(0);
-                console.log("send new")
-            }
             
             vid.load();
             switchplayicon("showpause",0)
             vid.click()
             if(z) vid.currentTime = z;
-            vid.pause();
+            if(justpoped_in) {vid.pause();justpoped_in = false}
+            if(document.getElementsByClassName("video-summoner-divttt")[0].classList.contains("hidemepls")){
+                pop_outclick(0);
+                console.log("send new")
+            }
             change_all_data();
         };} 
     }
@@ -235,6 +236,10 @@ function totalcloseNav() {
     for (let i = 0; i < divs.length; i++) {
         divs[i].classList.add('hideme');  
     }
+}
+
+function redirectTo(x){
+    window.location.href =x
 }
 
 function yt_search(){
@@ -499,6 +504,7 @@ function friendly_link(temp_src){
     temp_src = temp_src.replaceAll("&#43;","+")
     temp_src = temp_src.replaceAll("&#63;","?")
     temp_src = temp_src.replaceAll("#","%23")
+    temp_src = temp_src.replaceAll("%23t=","#t=")
 
     return temp_src;
 }

@@ -1,6 +1,6 @@
 "use strict";
 let pip_out_intrv;
-
+let justpoped_in=false;
 let nocursoonfulloscreno;
 let mouseoverocontroloboco = false;
 let just_fullscreened = false;
@@ -9,11 +9,29 @@ let framratetimeoutarr = [];
 let under10kbitrate = true;
 let escape_full = false;
 let vid_random=true;
+var cueso;
 if(getCookie("random_vid")!=""){
     if(getCookie("random_vid")=="true"){ vid_random = true;document.getElementsByClassName("rando-meter")[0].innerText = "ON";}
     else vid_random = false;
 }
 let CssSubFont;
+
+let userAgent = navigator.userAgent;
+var browserName;
+
+if(userAgent.match(/chrome|chromium|crios/i)){
+browserName = "chrome";
+}else if(userAgent.match(/firefox|fxios/i)){
+browserName = "firefox";
+}  else if(userAgent.match(/safari/i)){
+browserName = "safari";
+}else if(userAgent.match(/opr\//i)){
+browserName = "opera";
+} else if(userAgent.match(/edg/i)){
+browserName = "edge";
+}else{
+browserName="No browser detection";
+}
 
 //this functions gets called when page loads
 async function cumstomvideoplayerupdatottt(){
@@ -114,7 +132,7 @@ async function cumstomvideoplayerupdatottt(){
                 tempos_videososos.currentTime += 5;
             } break;
 
-            //loop press 'l'
+            //loop press 'L'
             case "KeyL" : {
                 e.preventDefault();
                 if(vid_loop){
@@ -160,11 +178,13 @@ async function cumstomvideoplayerupdatottt(){
                     vid_random = false;
                     setCookie("random_vid","false")
                     make_icon("not-random");
+                    document.getElementsByClassName("rando-meter")[0].innerText = "OFF";
                 }
                 else{
                     vid_random = true;
                     setCookie("random_vid","true")
                     make_icon("random");
+                    document.getElementsByClassName("rando-meter")[0].innerText = "ON";
                 }
             } break;
                     
@@ -238,56 +258,6 @@ async function cumstomvideoplayerupdatottt(){
     document.getElementsByClassName("previewcarrier-videosos")[0].getElementsByTagName("source")[0].src = temp_src
     document.getElementsByClassName("previewcarrier-videosos")[0].load();
 }
-
-// function dragStart(e,dragItem) {
-//     console.log("start")
-//     if (e.type === "touchstart") {
-//       console.log("a")
-//       initialX = e.touches[0].clientX - xOffset;
-//       initialY = e.touches[0].clientY - yOffset;
-//       console.log(`initialX=${initialX}, initialY=${initialY}`)
-//     } else {
-//       console.log("b")
-//       initialX = e.clientX - xOffset;
-//       initialY = e.clientY - yOffset;
-//       console.log(`initialX=${initialX}, initialY=${initialY}`)
-//     }
-
-//     if (dragItem.contains(e.target)) {
-//       active = true;
-//       console.log("c")
-//     }
-// }
-
-// function dragEnd(e) {
-//     initialX = currentX;
-//     initialY = currentY;
-
-//     active = false;
-//     console.log("end")
-// }
-
-// function drag(e,dragItem) {
-//     if (active) {
-//       e.preventDefault();
-//       if (e.type === "touchmove") {
-//         currentX = e.touches[0].clientX - initialX;
-//         currentY = e.touches[0].clientY - initialY;
-//       } else {
-//         currentX = e.clientX - initialX;
-//         currentY = e.clientY - initialY;
-//       }
-
-//       xOffset = currentX;
-//       yOffset = currentY;
-
-//       setTranslate(currentX, currentY, dragItem);
-//     }
-// }
-
-// function setTranslate(xPos, yPos, el) {
-//     el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
-// }
 
 function reverse_replace_lanlinks(temp_src){
     temp_src = getUrlParts(temp_src).pathname
@@ -732,6 +702,7 @@ function pop_outclick(x){
                     if (this.readyState == 4 && this.status == 200) {
                         let resp = JSON.parse(xmlhttp2.responseText);
                         if(resp.pip_out == false){
+                            justpoped_in = true
                             console.log(resp)
                             clearInterval(pip_out_intrv);
                             document.getElementsByClassName("video-summoner-divttt")[x].classList.remove("hidemepls");
@@ -832,19 +803,36 @@ function turnonsubstitleso(x){
             let default_subs = Object.values(first_subs.subs)[0];
 
             if(!default_subs.style.noedit){
+                cueso = document.getElementsByClassName("temposos-trackos")[0].track.cues
                 if(default_subs.style.editpos){
                     setTimeout(function(){
-                        console.log(default_subs.style.vdist)
-                        let cueso = document.getElementsByClassName("temposos-trackos")[0].track.cues
+                        console.log(`vdist=${default_subs.style.vdist}`)
                         for(let i=0;i< cueso.length;i++){
                             if(default_subs.style.vdist == "default") cueso[i].line = -2
                             else cueso[i].line = parseInt(default_subs.style.vdist)
+                            if(default_subs.style.hdist != "default") cueso[i].position = parseInt(default_subs.style.hdist)
                         }
                     }
-                    ,300)
+                    ,500)
+                }
+                for(let i=1; i < cueso.length;i++){
+                    if(default_subs.style.delDouble== true){
+                        let divexp1 = document.createElement("div");
+                        divexp1.innerHTML = cueso[i].text;
+                        let divexp2 = document.createElement("div");
+                        divexp2.innerHTML = cueso[i-1].text;
+                        if(divexp1.textContent.toLowerCase() == divexp2.textContent.toLowerCase()) {
+                            cueso[i].text = ""
+                        }
+                        if(cueso[i].line == "auto" && browserName.toLowerCase() == "firefox") {
+                            cueso[i].line = 50;
+                        }
+                    }
                 }
                 let newbg,font_size,text_shadow,font_color,font_family ;
-    
+                let custom_font_css = default_subs.style.font.custom;
+                let root_var = default_subs.style.font.root;
+
                 if(default_subs.style.bg.color == "colorless") newbg = "rgba(0, 0, 0, 0)";
                 else newbg = default_subs.style.bg.color;
         
@@ -854,8 +842,8 @@ function turnonsubstitleso(x){
                 if(default_subs.style.font.size == "default") font_size = "var(--subFont)";
                 else font_size = default_subs.style.font.size;
         
-                if(default_subs.style.font.textShadow  == null) text_shadow = "1px 1px 1px #050000";
-                else text_shadow = default_subs.style.font.text_shadow;
+                if(default_subs.style.font.textShadow  == null || default_subs.style.font.textShadow  == "default") text_shadow = "1px 1px 1px #050000";
+                else text_shadow = default_subs.style.font.textShadow;
     
                 if(default_subs.style.font.family != "default") {
                     let temp_fontos =  default_subs.style.font.family;
@@ -867,7 +855,7 @@ function turnonsubstitleso(x){
                 }
                 else{font_family="inherit"}
     
-                document.getElementById("subtitle-styleros").innerHTML=`.default-subtitles::cue{background-color:${newbg};color: ${font_color};font-size: ${font_size};text-shadow: ${text_shadow};font-family: ${font_family};}`;
+                document.getElementById("subtitle-styleros").innerHTML=`:root {${root_var}} .default-subtitles::cue{background-color:${newbg};color: ${font_color};font-size: ${font_size};text-shadow: ${text_shadow};font-family: ${font_family};${custom_font_css}}`;
                 document.getElementsByClassName("custom-videopls")[0].classList.add("default-subtitles");
             }
         }

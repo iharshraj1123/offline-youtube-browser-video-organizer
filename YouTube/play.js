@@ -79,8 +79,9 @@ function play_page(x){
     });
 }
 
-
+//occurs when page reloads
 function turnonsubstitleso2(){
+    console.log("turnonsubstitleso2 was triggered")
     let teracksdivo = document.getElementsByClassName("temposos-trackos")[0]
     changednewvideoso = false
     teracksdivo.track.mode="showing";
@@ -91,19 +92,37 @@ function turnonsubstitleso2(){
     let default_subs = Object.values(first_subs.subs)[0];
 
     if(!default_subs.style.noedit){
+        let cueso = document.getElementsByClassName("temposos-trackos")[0].track.cues
         if(default_subs.style.editpos){
             setTimeout(function(){
-                console.log(default_subs.style.vdist)
-                let cueso = document.getElementsByClassName("temposos-trackos")[0].track.cues
                 for(let i=0;i< cueso.length;i++){
                     if(default_subs.style.vdist == "default") cueso[i].line = -2
                     else cueso[i].line = parseInt(default_subs.style.vdist)
+                    if(default_subs.style.hdist != "default") cueso[i].position = parseInt(default_subs.style.hdist)
                 }
             }
             ,300)
 
         }
+        setTimeout(()=>{
+            for(let i=1; i < cueso.length;i++){
+                if(default_subs.style.delDouble== true){
+                    let divexp1 = document.createElement("div");
+                    divexp1.innerHTML = cueso[i].text;
+                    let divexp2 = document.createElement("div");
+                    divexp2.innerHTML = cueso[i-1].text;
+                    if(divexp1.textContent.toLowerCase() == divexp2.textContent.toLowerCase()) {
+                        cueso[i].text = ""
+                    }
+                    if(cueso[i].line == "auto" && browserName.toLowerCase() == "firefox") {
+                        cueso[i].line = 50;
+                    }
+                }
+            }
+        },400)
         let newbg,font_size,text_shadow,font_color,font_family ;
+        let custom_font_css = default_subs.style.font.custom;
+        let root_var = default_subs.style.font.root;
 
         if(default_subs.style.bg.color == "colorless") newbg = "rgba(0, 0, 0, 0)";
         else newbg = default_subs.style.bg.color;
@@ -114,8 +133,8 @@ function turnonsubstitleso2(){
         if(default_subs.style.font.size == "default") font_size = "var(--subFont)";
         else font_size = default_subs.style.font.size;
 
-        if(default_subs.style.font.textShadow  == null) text_shadow = "1px 1px 1px #050000";
-        else text_shadow = default_subs.style.font.text_shadow;
+        if(default_subs.style.font.textShadow  == null || default_subs.style.font.textShadow  == "default") text_shadow = "1px 1px 1px #050000";
+        else text_shadow = default_subs.style.font.textShadow;
 
         if(default_subs.style.font.family != "default") {
             let temp_fontos =  default_subs.style.font.family;
@@ -126,8 +145,8 @@ function turnonsubstitleso2(){
             }
         }
         else{font_family="inherit"}
-
-        document.getElementById("subtitle-styleros").innerHTML=`.default-subtitles::cue{background-color:${newbg};color: ${font_color};font-size: ${font_size};text-shadow: ${text_shadow};font-family: ${font_family};}`;
+        console.log(`:root {${root_var}} .default-subtitles::cue{background-color:${newbg};color: ${font_color};font-size: ${font_size};text-shadow: ${text_shadow};font-family: ${font_family};${custom_font_css}}`)
+        document.getElementById("subtitle-styleros").innerHTML=`:root {${root_var}} .default-subtitles::cue{background-color:${newbg};color: ${font_color};font-size: ${font_size};text-shadow: ${text_shadow};font-family: ${font_family};${custom_font_css}}`;
         document.getElementsByClassName("custom-videopls")[0].classList.add("default-subtitles");
     }
     
@@ -334,7 +353,8 @@ function change_all_data(){
                 document.getElementsByClassName("subiitilesooovideos")[0].classList.remove("opacitiooneo");
                 document.getElementsByClassName("subiitilesooovideos-innerdiv")[0].style.width="0px";
             }
-        console.log(`yes subtitles = ${temp_subsos}`)
+        console.log(`yes subtitles=`)
+        console.log(temp_subsos)
     }
     else{
         document.getElementsByClassName("temposos-trackos")[0].classList.add("nosubtitloso")
@@ -578,8 +598,10 @@ function edit_captions(){
                             "family": "default",
                             "style": "default",
                             "size": "default",
-                            "color": "default"
+                            "color": "default",
+                            "textShadow": "default"
                           },
+                          "delDouble": false,
                           "align": "bottom",
                           "vdist": "default",
                           "hdist": "default"

@@ -127,12 +127,25 @@ function cut_mp4_name($vid_name) {
             </section>
         </div>
 <script>
-    window.history.pushState("object or string", "Title", '/YouTube/');
     var ids_for_dur=new Array();
 </script>
 
 <!---------SEND IP ADDRESS------------------------->
-    <div class="hideme"><?php $localIP = getHostByName(getHostName());echo 'User local IP Address - <span id="ip-address">'. $localIP . '</span>';?></div>
+    <div class="hideme">  <?php 
+    $exec = 'ipconfig | findstr /R /C:"IPv4.*"';
+    exec($exec, $output);
+    $matches=[];
+    foreach ($output as $outputo){
+        preg_match('/\d+\.\d+\.\d+\.\d+/', $outputo, $matcheso);
+        foreach ($matcheso as $matchesoo){
+            array_push($matches,$matchesoo);
+        }
+    }
+    //$localIP = getHostByName(getHostName());
+
+    $localIP = $matches;
+    echo 'Host local IP Address - <span id="ip-address">'. json_encode($localIP)  . '</span>';
+    ?></div>
 <!---------------------------------------------Videoes-------------------------------------------->
 
     <div class="Main-Video-div">
