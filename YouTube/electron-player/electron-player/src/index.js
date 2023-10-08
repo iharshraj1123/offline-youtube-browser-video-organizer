@@ -35,7 +35,6 @@ const createWindow = () => {
       show: false,
       height: wind_height,
       frame:false,
-      alwaysOnTop: true,
       minimizable: true,
       skipTaskbar:true,
       webPreferences: {
@@ -52,19 +51,17 @@ const createWindow = () => {
       x: earlyX,
       y: earlyY
     });
-    //mainWindow.setPosition(earlyX, earlyY)
     mainWindow.setAspectRatio(16/9);
-    //console.log(`earlyX=${earlyX} and earlyY=${earlyY}`)
-    //console.log (mainWindow)
-    // and load the index.html of the app.
     mainWindow.loadFile(path.join(__dirname, 'index.html'));
+    mainWindow.setAlwaysOnTop(true, 'screen-saver');
     //mainWindow.webContents.send('debuggero',mainWindow.BrowserWindow)
+
     // Open the DevTools.
     //mainWindow.webContents.openDevTools();
     
     ipcMain.on("closeApp",()=>{mainWindow.hide();/*mainWindow.minimize()/*app.quit()*/})
-    ipcMain.on("fullscreenon",()=>{mainWindow.setKiosk(true)})
-    ipcMain.on("fullscreenoff",()=>{mainWindow.setKiosk(false)})
+    ipcMain.on("fullscreenon",()=>{mainWindow.setFullScreen(true);})
+    ipcMain.on("fullscreenoff",()=>{mainWindow.setFullScreen(false);})
     ipcMain.handle('getVidUrl', async (event, someArgument) => {
       let sql = `SELECT vid_name,link,subtitles FROM video_metadatas WHERE vid_id = ${someArgument}`
       const result = await pool.query(sql);
@@ -81,12 +78,7 @@ const createWindow = () => {
       });
       newX = earlyX+someArgument.x;
       newY = earlyY+someArgument.y;
-      //console.log([newX,newY])
-      //console.log([earlyX+someArgument.x, earlyY+someArgument.y])
-      // console.log([someArgument.x, someArgument.y])
       if(wind_width == 0) wind_width = Math.ceil(parseInt(wind_height)*16/9)
-      //mainWindow.setSize(wind_width,wind_height)
-      //console.log([new_width,parseInt(wind_height)])
     })
     ipcMain.handle('settlenewpos', async (event, someArgument) => {
       earlyX=earlyX+someArgument.x; 
@@ -95,7 +87,6 @@ const createWindow = () => {
       newY = earlyY;
     })
     ipcMain.on('settlemergency', () => {
-      //console.log([earlyX,earlyY,newX,newY])
       earlyX = newX;
       earlyY= newY;
     })
@@ -106,8 +97,6 @@ const createWindow = () => {
       newY = earlyY;
       wind_height= newBounds.height
       wind_width = newBounds.width
-      //console.log([earlyX,earlyY,wind_height,wind_width])
-      //setPosition(earlyX,earlyY)
     })
     // Protocol handler for win32
     // if (process.platform == 'win32') {
@@ -122,6 +111,7 @@ const createWindow = () => {
     const gotTheLock = app.requestSingleInstanceLock()
     if (gotTheLock) {
     app.on('second-instance', (e, argv) => {
+      console.log("recieved info-->")
       //if(mainWindow.isMinimized()) mainWindow.restore()
       if(!mainWindow.isVisible()/*mainWindow.isMinimized()*/) {/*mainWindow.restore();*/mainWindow.show()}
       deeplinkingUrl = argv;

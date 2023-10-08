@@ -24,143 +24,6 @@ function cumstomvideoplayerupdatottt(){
     tempos_videososos.addEventListener("playing" , function(){vidosplayer_playing(0)} )
     tempos_videososos.addEventListener("timeupdate" , function(){vidosplayer_playing(0)} )
     tempos_videososos.addEventListener("ended",function(){videosos_endedo(0);} )
-
-    /*tempos_videososos.addEventListener("keydown", e => {
-
-        switch(e.code){
-            //captions 'c'
-            case "KeyC" : {
-                e.preventDefault();
-                turnonsubstitleso(0);
-            } break;
-
-            //delete history 'del'
-            case "NumpadDecimal" : {
-                e.preventDefault();
-                if(prev_id_count>0){
-                    prev_id_count=0;
-                    curr_vid_id = prev_id;
-                }
-                play_history = [];
-                prev_id_count = 0;
-                prev_id = 0;
-                curr_play_index = new_playlist_all_array[0].indexOf(`${curr_vid_id}`);
-                //make_icon("delete-history");
-                //console.log(`${prev_id} = prev_id; ${play_history} = play history`)
-            } break;
-
-            //opposite day 'Num 0'
-            case "Numpad0" : {
-                e.preventDefault();
-                if(oppositeday){ oppositeday  = false; make_icon("not-opposite");}
-                else{ oppositeday  = true; make_icon("opposite");}
-            } break;
-
-            //increase speed 'Num +'
-            case "NumpadAdd" : {
-                e.preventDefault();
-                let new_rateo = tempos_videososos.playbackRate + 0.125;
-                document.getElementsByClassName("custom-videopls")[0].playbackRate = new_rateo;
-                if(new_rateo == 1) new_rateo = "Normal"
-                document.getElementsByClassName("playback-meter")[0].innerHTML = new_rateo + '<img class="settings-icon" src="./resources/custom video player/icons/chevron_right_white_24dp.svg"></span>';
-                show_stattisticso(0,`Playback Speed = ${new_rateo}`)
-            } break;
-            
-            //decrese speed 'Num -'
-            case "NumpadSubtract" : {
-                e.preventDefault();
-                let new_rateo = tempos_videososos.playbackRate - 0.125;
-                document.getElementsByClassName("custom-videopls")[0].playbackRate = new_rateo;
-                if(new_rateo == 1) new_rateo = "Normal"
-                document.getElementsByClassName("playback-meter")[0].innerHTML = new_rateo + '<img class="settings-icon" src="./resources/custom video player/icons/chevron_right_white_24dp.svg"></span>';
-                show_stattisticso(0,`Playback Speed = ${new_rateo}`)
-            } break;
-
-            //pause 'Space'
-            case "Space" : {
-                e.preventDefault();
-                togglevideoplaypause(0);
-            } break;
-            
-            //options 'o'
-            case "KeyO" : {
-                e.preventDefault();
-                mousemove_move(0);
-                settingsoo_clickod(0);
-            } break;
-            //show Info 'I'
-            case "KeyI" : {
-                e.preventDefault();
-                if(document.getElementsByClassName("video-summoner-divttte")[0].classList.contains("visible-v")) removothecontroloboxo(0)
-                else mousemove_move(0)
-            } break;
-
-            //seek 'left-right''
-            case "ArrowLeft" : {
-                e.preventDefault();
-                tempos_videososos.currentTime -= 5;
-            } break;
-            case "ArrowRight" : {
-                e.preventDefault();
-                tempos_videososos.currentTime += 5;
-            } break;
-
-            //loop press 'l'
-            case "KeyL" : {
-                e.preventDefault();
-                if(vid_loop){
-                    vid_loop = false
-                    tempos_videososos.loop = false;
-                    //make_icon("queue");
-                    document.getElementsByClassName("loopo-meter")[0].innerText = "OFF";
-                }
-                else{vid_loop = true;tempos_videososos.loop = true;make_icon("loop"); document.getElementsByClassName("loopo-meter")[0].innerText = "ON"; }
-            } break;
-
-            //volume 'up-down'
-            //0.02 = 2%
-            case "ArrowDown" : {
-                e.preventDefault();
-                if(tempos_videososos.volume <= 0.02) tempos_videososos.volume = 0
-                else tempos_videososos.volume -= 0.020;
-                show_stattisticso(0,`Volume = ${Math.round(tempos_videososos.volume*1000)/10}%`)
-            } break;
-            case "ArrowUp" : {
-                e.preventDefault();
-                if(tempos_videososos.volume >= 0.98) tempos_videososos.volume = 1
-                else tempos_videososos.volume += 0.020;
-                show_stattisticso(0,`Volume = ${Math.round(tempos_videososos.volume*1000)/10}%`)
-            } break;
-
-            case "F1" : {
-                e.preventDefault();
-                let prompto = prompt("Please enter new source", "");
-                if (prompto != null) new_src(0,prompto)
-            } break;
-            case "F2" : {
-                e.preventDefault();
-                let prompto = prompt("Please enter new source title", "");
-                if (prompto != null) new_src2(0,prompto)
-            } break;
-            case "KeyF": {
-                e.preventDefault();
-                fullscreno_clickod(0)
-            } break;
-            case "KeyR": {
-                if(vid_random){
-                    vid_random = false;
-                    setCookie("random_vid","false")
-                    //make_icon("not-random");
-                }
-                else{
-                    vid_random = true;
-                    setCookie("random_vid","true")
-                    //make_icon("random");
-                }
-            } break;
-                    
-        }
-    })*/
     document.getElementsByClassName("video-summoner-divttte3")[0].addEventListener("wheel",function(e){
         //0.05 = 5%
         e.preventDefault();
@@ -212,14 +75,16 @@ function fullscreno_clickod(x){
     just_fullscreened = true;
     let tempos_videososos = document.getElementsByClassName("custom-videopls")[x]
     let outer_vid= document.getElementsByClassName("video-summoner-divttt")[x]
-    if (!document.fullscreenElement){
+    if (!is_fullscreen){
+        is_fullscreen = true
          if(outer_vid.classList.contains("pop-out-parent")) {
             tempos_videososos.classList.remove("pop-out")
             outer_vid.classList.remove("pop-out-parent")
             outer_vid.classList.add("pop-out-parent-temp")
         }
-         outer_vid.requestFullscreen();
-         ipcRenderer.send("fullscreenon")
+        ipcRenderer.send("fullscreenon")
+
+         //outer_vid.requestFullscreen();
          document.getElementsByClassName("pop-out-exit")[0].style.visibility = "hidden"
          outer_vid.classList.add("summoner-div-full")
          tempos_videososos.classList.add("customovideo-fullscreen")
@@ -242,13 +107,14 @@ function fullscreno_clickod(x){
          },1000)
         }
     else{ 
+        is_fullscreen = false
         document.getElementsByClassName("pop-out-exit")[0].style.visibility = "visible"
-         ipcRenderer.send("fullscreenoff")
+        ipcRenderer.send("fullscreenoff")
         tempos_videososos.classList.remove("customovideo-fullscreen")
          outer_vid.classList.remove("summoner-div-full")
          screen.orientation.unlock()
         setTimeout(function(){outer_vid.classList.remove("nocursoronvidododo")},200)
-        if(!escape_full)document.exitFullscreen()
+        //if(!escape_full)document.exitFullscreen()
         if(outer_vid.classList.contains("pop-out-parent-temp")) {
             tempos_videososos.classList.add("pop-out")
             outer_vid.classList.add("pop-out-parent")
@@ -477,6 +343,13 @@ document.getElementsByClassName("video-summoner-divttt")[0].addEventListener("mo
     }
 });
 
+function dragMouse(e){
+    if(is_mousedownvid){
+        e = e || window.event;
+        e.preventDefault();
+        ipcRenderer.invoke('setnewpos', {x:(e.screenX - earlymouseX),y:(e.screenY - earlymouseY)})
+    }
+}
 
 function turnonsubstitleso2(){
     let teracksdivo = document.getElementsByClassName("temposos-trackos")[0]
@@ -489,10 +362,10 @@ function turnonsubstitleso2(){
     let default_subs = Object.values(first_subs.subs)[0];
 
     if(!default_subs.style.noedit){
+        let cueso = document.getElementsByClassName("temposos-trackos")[0].track.cues
         if(default_subs.style.editpos){
             setTimeout(function(){
                 console.log(default_subs.style.vdist)
-                let cueso = document.getElementsByClassName("temposos-trackos")[0].track.cues
                 for(let i=0;i< cueso.length;i++){
                     if(default_subs.style.vdist == "default") cueso[i].line = -2
                     else cueso[i].line = parseInt(default_subs.style.vdist)
@@ -501,7 +374,21 @@ function turnonsubstitleso2(){
             ,300)
 
         }
+        setTimeout(()=>{
+            for(let i=1; i < cueso.length;i++){
+                let divexp1 = document.createElement("div");
+                divexp1.innerHTML = cueso[i].text;
+                let divexp2 = document.createElement("div");
+                divexp2.innerHTML = cueso[i-1].text;
+                if(divexp1.textContent.toLowerCase() == divexp2.textContent.toLowerCase()) {
+                    cueso[i].text = ""
+                }
+                if(cueso[i].line == "auto") {cueso[i].line = -2;}
+            }
+        },300)
         let newbg,font_size,text_shadow,font_color,font_family ;
+        let custom_font_css = default_subs.style.font.custom;
+        let root_var = default_subs.style.font.root;
 
         if(default_subs.style.bg.color == "colorless") newbg = "rgba(0, 0, 0, 0)";
         else newbg = default_subs.style.bg.color;
@@ -513,7 +400,7 @@ function turnonsubstitleso2(){
         else font_size = default_subs.style.font.size;
 
         if(default_subs.style.font.textShadow  == null) text_shadow = "1px 1px 1px #050000";
-        else text_shadow = default_subs.style.font.text_shadow;
+        else text_shadow = default_subs.style.font.textShadow;
 
         if(default_subs.style.font.family != "default") {
             let temp_fontos =  default_subs.style.font.family;
@@ -525,19 +412,8 @@ function turnonsubstitleso2(){
         }
         else{font_family="inherit"}
 
-        document.getElementById("subtitle-styleros").innerHTML=`.default-subtitles::cue{background-color:${newbg};color: ${font_color};font-size: ${font_size};text-shadow: ${text_shadow};font-family: ${font_family};}`;
+        document.getElementById("subtitle-styleros").innerHTML=`:root {${root_var}} .default-subtitles::cue{background-color:${newbg};color: ${font_color};font-size: ${font_size};text-shadow: ${text_shadow};font-family: ${font_family};${custom_font_css}}`;
         document.getElementsByClassName("custom-videopls")[0].classList.add("default-subtitles");
     }
     
-}
-
-
-function dragMouse(e){
-    if(is_mousedownvid){
-        e = e || window.event;
-        e.preventDefault();
-        e.screenX - earlymouseX
-        e.screenY - earlymouseY
-        ipcRenderer.invoke('setnewpos', {x:(e.screenX - earlymouseX),y:(e.screenY - earlymouseY)})
-    }
 }

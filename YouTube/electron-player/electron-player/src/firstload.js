@@ -21,5 +21,7 @@ let mouseX, mouseY;
 let longmousedown = false;
 let longmousedowntimout;
 let first_subs;
+let is_fullscreen = false;
+let c = false;
 const {ipcRenderer} = require("electron");
 //const electron = require("electron");

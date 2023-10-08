@@ -100,26 +100,32 @@ function rerender_vid(recieved_param){
     tempos_videososos.getElementsByTagName("source")[0].src = url_corrector(recieved_param.src,client_url);
     tempos_videososos.load();
     let sub_tempos = recieved_param.subs
-    console.log(curr_vid_id)
+    console.log(recieved_param)
     if(recieved_param.random){
         vid_random = true;
-        setCookie("random_vid","true");
         document.getElementsByClassName("rando-meter")[0].innerText = "ON";
+    }
+    else {
+        vid_random = false;
+        document.getElementsByClassName("rando-meter")[0].innerText = "OFF";
     }
     if(recieved_param.loop){
         vid_loop = true;
         tempos_videososos.loop = true;
-        document.getElementsByClassName("loopo-meter")[x].innerText = "ON";
+        document.getElementsByClassName("loopo-meter")[0].innerText = "ON";
+    }
+    else{
+        vid_loop = false;
+        tempos_videososos.loop = false;
+        document.getElementsByClassName("loopo-meter")[0].innerText = "OFF";
     }
     if(recieved_param.opposite_day){
         oppositeday  = true;
     }
     new_playlist_all_array = recieved_param.playlist_all_arr;
     play_history = recieved_param.play_history;
-    if(!recieved_param.no_subs) {
-        first_subs = sub_tempos
-        get_subsready(sub_tempos)
-    };
+    first_subs = sub_tempos
+    get_subsready(sub_tempos)
 }
 
 function url_corrector(temp_src){

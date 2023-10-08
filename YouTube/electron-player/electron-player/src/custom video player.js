@@ -3,14 +3,9 @@
 /*changes: 
 async->sync cumstomvideoplayerupdatottt() fn
 window mobile deleted
+
 */
-// var active = false;
-// var currentX;
-// var currentY;
-// var initialX;
-// var initialY;
-// var xOffset = 0;
-// var yOffset = 0;
+
 let shdjsopdjpsodjs;
 
 let nocursoonfulloscreno;
@@ -21,280 +16,7 @@ let framratetimeoutarr = [];
 let under10kbitrate = true;
 let escape_full = false;
 let vid_random=true;
-// if(getCookie("random_vid")!=""){
-//     if(getCookie("random_vid")=="true"){ vid_random = true;document.getElementsByClassName("rando-meter")[0].innerText = "ON";}
-//     else vid_random = false;
-// }
 let CssSubFont;
-
-//this functions gets called when page loads
-function cumstomvideoplayerupdatottt(){
-    let tempos_videososos= document.getElementsByClassName("custom-videopls")[0];
-    if(tempos_videososos.autoplay){
-        switchplayicon("showpause",0);
-        mousemove_move(0);
-    }
-    setTimeout(function(){refreshvolvideopl(0)},100)
-    // tempos_videososos.addEventListener('load', function(){
-    //     alert("ty")
-        update_vid_infos(0);
-        if(customcode) get_filesize(0,tempos_videososos.getElementsByTagName("source")[0].src);
-        getframerat(0);
-        //get_filesize(0,vid.getElementsByTagName("source")[0].src)
-    // })
-    tempos_videososos.addEventListener("volumechange",function(){onvideosVol_change(0)} )
-    tempos_videososos.addEventListener("playing" , function(){vidosplayer_playing(0)} )
-    tempos_videososos.addEventListener("timeupdate" , function(){vidosplayer_playing(0)} )
-    tempos_videososos.addEventListener("ended",function(){videosos_endedo(0);} )
-
-    tempos_videososos.addEventListener("keydown", e => {
-
-        switch(e.code){
-            //captions 'c'
-            case "KeyC" : {
-                e.preventDefault();
-                turnonsubstitleso(0);
-            } break;
-
-            //delete history 'del'
-            case "NumpadDecimal" : {
-                e.preventDefault();
-                if(prev_id_count>0){
-                    prev_id_count=0;
-                    curr_vid_id = prev_id;
-                }
-                play_history = [];
-                prev_id_count = 0;
-                prev_id = 0;
-                curr_play_index = new_playlist_all_array[0].indexOf(`${curr_vid_id}`);
-                make_icon("delete-history");
-                //console.log(`${prev_id} = prev_id; ${play_history} = play history`)
-            } break;
-
-            //opposite day 'Num 0'
-            case "Numpad0" : {
-                e.preventDefault();
-                if(oppositeday){ oppositeday  = false; make_icon("not-opposite");}
-                else{ oppositeday  = true; make_icon("opposite");}
-            } break;
-
-            //increase speed 'Num +'
-            case "NumpadAdd" : {
-                e.preventDefault();
-                let new_rateo = tempos_videososos.playbackRate + 0.125;
-                document.getElementsByClassName("custom-videopls")[0].playbackRate = new_rateo;
-                if(new_rateo == 1) new_rateo = "Normal"
-                document.getElementsByClassName("playback-meter")[0].innerHTML = new_rateo + '<img class="settings-icon" src="./resources/custom video player/icons/chevron_right_white_24dp.svg"></span>';
-                show_stattisticso(0,`Playback Speed = ${new_rateo}`)
-            } break;
-            
-            //decrese speed 'Num -'
-            case "NumpadSubtract" : {
-                e.preventDefault();
-                let new_rateo = tempos_videososos.playbackRate - 0.125;
-                document.getElementsByClassName("custom-videopls")[0].playbackRate = new_rateo;
-                if(new_rateo == 1) new_rateo = "Normal"
-                document.getElementsByClassName("playback-meter")[0].innerHTML = new_rateo + '<img class="settings-icon" src="./resources/custom video player/icons/chevron_right_white_24dp.svg"></span>';
-                show_stattisticso(0,`Playback Speed = ${new_rateo}`)
-            } break;
-
-            //pause 'Space'
-            case "Space" : {
-                e.preventDefault();
-                togglevideoplaypause(0);
-            } break;
-            
-            //options 'o'
-            case "KeyO" : {
-                e.preventDefault();
-                mousemove_move(0);
-                settingsoo_clickod(0);
-            } break;
-            //show Info 'I'
-            case "KeyI" : {
-                e.preventDefault();
-                if(document.getElementsByClassName("video-summoner-divttte")[0].classList.contains("visible-v")) removothecontroloboxo(0)
-                else mousemove_move(0)
-            } break;
-
-            //seek 'left-right''
-            case "ArrowLeft" : {
-                e.preventDefault();
-                tempos_videososos.currentTime -= 5;
-            } break;
-            case "ArrowRight" : {
-                e.preventDefault();
-                tempos_videososos.currentTime += 5;
-            } break;
-
-            //loop press 'l'
-            case "KeyL" : {
-                e.preventDefault();
-                if(vid_loop){
-                    vid_loop = false
-                    tempos_videososos.loop = false;
-                    make_icon("queue");
-                    document.getElementsByClassName("loopo-meter")[0].innerText = "OFF";
-                }
-                else{vid_loop = true;tempos_videososos.loop = true;make_icon("loop"); document.getElementsByClassName("loopo-meter")[0].innerText = "ON"; }
-            } break;
-
-            //volume 'up-down'
-            //0.02 = 2%
-            case "ArrowDown" : {
-                e.preventDefault();
-                if(tempos_videososos.volume <= 0.02) tempos_videososos.volume = 0
-                else tempos_videososos.volume -= 0.020;
-                show_stattisticso(0,`Volume = ${Math.round(tempos_videososos.volume*1000)/10}%`)
-            } break;
-            case "ArrowUp" : {
-                e.preventDefault();
-                if(tempos_videososos.volume >= 0.98) tempos_videososos.volume = 1
-                else tempos_videososos.volume += 0.020;
-                show_stattisticso(0,`Volume = ${Math.round(tempos_videososos.volume*1000)/10}%`)
-            } break;
-
-            case "F1" : {
-                e.preventDefault();
-                let prompto = prompt("Please enter new source", "");
-                if (prompto != null) new_src(0,prompto)
-            } break;
-            case "F2" : {
-                e.preventDefault();
-                let prompto = prompt("Please enter new source title", "");
-                if (prompto != null) new_src2(0,prompto)
-            } break;
-            case "KeyF": {
-                e.preventDefault();
-                fullscreno_clickod(0)
-            } break;
-            case "KeyR": {
-                if(vid_random){
-                    vid_random = false;
-                    setCookie("random_vid","false")
-                    make_icon("not-random");
-                }
-                else{
-                    vid_random = true;
-                    setCookie("random_vid","true")
-                    make_icon("random");
-                }
-            } break;
-                    
-        }
-        
-    })
-    // let summ_container = document.getElementsByClassName("video-summoner-divttt")[0]
-    // summ_container.addEventListener("touchstart", function(event){dragStart(event,summ_container)}, false);
-    // summ_container.addEventListener("touchend", dragEnd, false);
-    // summ_container.addEventListener("touchmove", function(event){drag(event,summ_container)}, false);
-    // summ_container.addEventListener("mousedown", function(event){dragStart(event,summ_container)}, false);
-    // summ_container.addEventListener("mouseup", dragEnd, false);
-    // summ_container.addEventListener("mousemove", function(event){drag(event,summ_container)}, false);
-    //dragPopout(0,document.getElementsByClassName("video-summoner-divttt")[0])
-    //document.getElementsByClassName("video-summoner-divttt")[0].addEventListener('dragstart', popooutdrag(0));
-    //document.getElementsByClassName("video-summoner-divttt")[0].addEventListener('dragend', popooutdrag());
-    document.getElementsByClassName("video-summoner-divttte3")[0].addEventListener("wheel",function(e){
-        //0.05 = 5%
-        e.preventDefault();
-        if(e.deltaY <0){
-            if(tempos_videososos.volume >= 0.95) tempos_videososos.volume = 1
-            else tempos_videososos.volume += 0.05;
-            onvideosVol_change(0);
-            mouseoverocontroloboco = false;
-            show_stattisticso(0,`Volume = ${Math.round(tempos_videososos.volume*1000)/10}%`);
-        }
-        else{
-            if(tempos_videososos.volume <= 0.05) tempos_videososos.volume = 0
-            else tempos_videososos.volume -= 0.05;
-            mouseoverocontroloboco = false;
-            onvideosVol_change(0);
-            show_stattisticso(0,`Volume = ${Math.round(tempos_videososos.volume*1000)/10}%`)
-        }
-    });
-    
-    document.getElementsByClassName("video-summoner-controlboxo-voldiv")[0].addEventListener("wheel",function(e){
-        //0.025 = 2.5%
-        e.preventDefault();
-        if(e.deltaY <0){
-            if(tempos_videososos.volume >= 0.975) tempos_videososos.volume = 1
-            else tempos_videososos.volume += 0.025;
-            onvideosVol_change(0);
-            show_stattisticso(0,`Volume = ${Math.round(tempos_videososos.volume*1000)/10}%`);
-
-        }
-        else{
-            if(tempos_videososos.volume <= 0.025) tempos_videososos.volume = 0
-            else tempos_videososos.volume -= 0.025;
-            onvideosVol_change(0);
-            show_stattisticso(0,`Volume = ${Math.round(tempos_videososos.volume*1000)/10}%`);
-        }
-    });
-
-    getframerat(0)
-    document.getElementsByClassName("video-summoner-controlboxo")[0].addEventListener("mouseover",function(e){
-        mouseoverocontroloboco = true;
-    })
-        document.getElementsByClassName("video-summoner-controlboxo")[0].addEventListener("mouseout",function(e){
-        mouseoverocontroloboco = false;
-    })
-
-    document.getElementsByClassName("previewcarrier-videosos")[0].getElementsByTagName("source")[0].src = tempos_videososos.getElementsByTagName("source")[0].src;
-    let temp_src=document.getElementsByClassName("previewcarrier-videosos")[0].getElementsByTagName("source")[0].src;
-    document.getElementsByClassName("previewcarrier-videosos")[0].getElementsByTagName("source")[0].src = temp_src
-    document.getElementsByClassName("previewcarrier-videosos")[0].load();
-
-}
-
-// function dragStart(e,dragItem) {
-//     console.log("start")
-//     if (e.type === "touchstart") {
-//       console.log("a")
-//       initialX = e.touches[0].clientX - xOffset;
-//       initialY = e.touches[0].clientY - yOffset;
-//       console.log(`initialX=${initialX}, initialY=${initialY}`)
-//     } else {
-//       console.log("b")
-//       initialX = e.clientX - xOffset;
-//       initialY = e.clientY - yOffset;
-//       console.log(`initialX=${initialX}, initialY=${initialY}`)
-//     }
-
-//     if (dragItem.contains(e.target)) {
-//       active = true;
-//       console.log("c")
-//     }
-// }
-
-// function dragEnd(e) {
-//     initialX = currentX;
-//     initialY = currentY;
-
-//     active = false;
-//     console.log("end")
-// }
-
-// function drag(e,dragItem) {
-//     if (active) {
-//       e.preventDefault();
-//       if (e.type === "touchmove") {
-//         currentX = e.touches[0].clientX - initialX;
-//         currentY = e.touches[0].clientY - initialY;
-//       } else {
-//         currentX = e.clientX - initialX;
-//         currentY = e.clientY - initialY;
-//       }
-
-//       xOffset = currentX;
-//       yOffset = currentY;
-
-//       setTranslate(currentX, currentY, dragItem);
-//     }
-// }
-
-// function setTranslate(xPos, yPos, el) {
-//     el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
-// }
 
 function reverse_replace_lanlinks(temp_src){
     temp_src = getUrlParts(temp_src).pathname
@@ -534,81 +256,6 @@ function show_timeline(x){
     diciidodothree.classList.remove("nocursoronvidododo");
 }
 
-function fullscreno_clickod(x){
-    just_fullscreened = true;
-    let tempos_videososos = document.getElementsByClassName("custom-videopls")[x]
-    let outer_vid= document.getElementsByClassName("video-summoner-divttt")[x]
-    if (!document.fullscreenElement){
-         if(outer_vid.classList.contains("pop-out-parent")) {
-            tempos_videososos.classList.remove("pop-out")
-            outer_vid.classList.remove("pop-out-parent")
-            outer_vid.classList.add("pop-out-parent-temp")
-        }
-         outer_vid.requestFullscreen();
-         outer_vid.classList.add("summoner-div-full")
-         tempos_videososos.classList.add("customovideo-fullscreen")
-         document.getElementsByClassName("fullscrnvideovid")[x].classList.add("hidemepls")
-         document.getElementsByClassName("theatremodevid")[x].classList.add("hidemepls")
-         document.getElementsByClassName("popoutmodvid")[x].classList.add("hidemepls")
-         document.getElementsByClassName("extfullscrnvideovid")[x].classList.remove("hidemepls")
-         document.getElementsByClassName("video-summoner-divttte3")[0].classList.add("video-summoner-divttte3-fullscreen")
-         document.getElementsByClassName("video-summoner-controlboxo")[0].classList.add("video-summoner-controlboxo-fullscreen")
-         setTimeout(function(){
-            window.screen.orientation.lock("landscape")
-            .then( () => {
-               // document.getElementsByClassName("debuger-div-bot")[0].innerHTML = `done`
-              }
-            )
-            .catch ( error => {
-              //  document.getElementsByClassName("debuger-div-bot")[0].innerHTML = `error`
-
-            });
-         },1000)
-        }
-    else{ 
-        tempos_videososos.classList.remove("customovideo-fullscreen")
-         outer_vid.classList.remove("summoner-div-full")
-         screen.orientation.unlock()
-        setTimeout(function(){outer_vid.classList.remove("nocursoronvidododo")},200)
-        if(!escape_full)document.exitFullscreen()
-        if(outer_vid.classList.contains("pop-out-parent-temp")) {
-            tempos_videososos.classList.add("pop-out")
-            outer_vid.classList.add("pop-out-parent")
-            outer_vid.classList.remove("pop-out-parent-temp")
-        }
-        else{escape_full = false;console.log("yea")}
-        let diciidodo = document.getElementsByClassName("video-summoner-divttte")[x];
-        let diciidodotwo = document.getElementsByClassName("video-summoner-controlboxo")[x];
-        diciidodo.classList.add("visible-v")
-        diciidodotwo.classList.add("visible-v")
-        diciidodo.classList.remove("hidden-v")
-        diciidodotwo.classList.remove("hidden-v")
-         document.getElementsByClassName("popoutmodvid")[x].classList.remove("hidemepls")
-         document.getElementsByClassName("theatremodevid")[x].classList.remove("hidemepls")
-        document.getElementsByClassName("fullscrnvideovid")[x].classList.remove("hidemepls")
-        document.getElementsByClassName("extfullscrnvideovid")[x].classList.add("hidemepls")
-         document.getElementsByClassName("video-summoner-controlboxo")[0].classList.remove("video-summoner-controlboxo-fullscreen")
-         document.getElementsByClassName("video-summoner-divttte3")[0].classList.remove("video-summoner-divttte3-fullscreen")
-    }
-}
-
-// function transition(){
-//     if(!vid.classList.contains("heightcinema")){
-//         vid.classList.add("heightcinema");
-//         document.getElementsByClassName("html-tag")[0].classList.add("scroll-inv")
-//         let pDiv = document.getElementsByClassName("outer-header")[0];
-//         pDiv.classList.add("no-height")
-//         pDiv.classList.add("transition-mode");
-//     }
-//     else{
-//         vid.classList.remove("heightcinema");
-//         document.getElementsByClassName("html-tag")[0].classList.remove("scroll-inv")
-//         let pDiv = document.getElementsByClassName("outer-header")[0];
-//         pDiv.classList.remove("transition-mode");
-//         pDiv.classList.remove("no-height")
-//     }
-// }
-
 function switchplayicon(x,y){
     if(x=="showpause"){
         document.getElementsByClassName("pause-buttonos-video")[y].classList.remove("hidemepls")
@@ -776,6 +423,7 @@ function removothecontroloboxo(x){
 }
 let changednewvideoso = false;
 
+//occurs when pressed captions
 function turnonsubstitleso(x){
     let teracksdivo = document.getElementsByClassName("temposos-trackos")[x]
     if(!teracksdivo.classList.contains("nosubtitloso")){
@@ -803,10 +451,10 @@ function turnonsubstitleso(x){
             let default_subs = Object.values(first_subs.subs)[0];
 
             if(!default_subs.style.noedit){
+                let cueso = document.getElementsByClassName("temposos-trackos")[0].track.cues
                 if(default_subs.style.editpos){
                     setTimeout(function(){
                         console.log(default_subs.style.vdist)
-                        let cueso = document.getElementsByClassName("temposos-trackos")[0].track.cues
                         for(let i=0;i< cueso.length;i++){
                             if(default_subs.style.vdist == "default") cueso[i].line = -2
                             else cueso[i].line = parseInt(default_subs.style.vdist)
@@ -814,8 +462,21 @@ function turnonsubstitleso(x){
                     }
                     ,300)
                 }
+                for(let i=1; i < cueso.length;i++){
+                    let divexp1 = document.createElement("div");
+                    divexp1.innerHTML = cueso[i].text;
+                    let divexp2 = document.createElement("div");
+                    divexp2.innerHTML = cueso[i-1].text;
+                    if(divexp1.textContent.toLowerCase() == divexp2.textContent.toLowerCase()) {
+                        cueso[i].text = ""
+                    }
+                    if(cueso[i].line == "auto") {cueso[i].line = -2;}
+                }
+                
                 let newbg,font_size,text_shadow,font_color,font_family ;
-    
+                let custom_font_css = default_subs.style.font.custom;
+                let root_var = default_subs.style.font.root;
+
                 if(default_subs.style.bg.color == "colorless") newbg = "rgba(0, 0, 0, 0)";
                 else newbg = default_subs.style.bg.color;
         
@@ -826,7 +487,7 @@ function turnonsubstitleso(x){
                 else font_size = default_subs.style.font.size;
         
                 if(default_subs.style.font.textShadow  == null) text_shadow = "1px 1px 1px #050000";
-                else text_shadow = default_subs.style.font.text_shadow;
+                else text_shadow = default_subs.style.font.textShadow;
     
                 if(default_subs.style.font.family != "default") {
                     let temp_fontos =  default_subs.style.font.family;
@@ -838,7 +499,7 @@ function turnonsubstitleso(x){
                 }
                 else{font_family="inherit"}
     
-                document.getElementById("subtitle-styleros").innerHTML=`.default-subtitles::cue{background-color:${newbg};color: ${font_color};font-size: ${font_size};text-shadow: ${text_shadow};font-family: ${font_family};}`;
+                document.getElementById("subtitle-styleros").innerHTML=`${root_var}} .default-subtitles::cue{background-color:${newbg};color: ${font_color};font-size: ${font_size};text-shadow: ${text_shadow};font-family: ${font_family};${custom_font_css}}`;
                 document.getElementsByClassName("custom-videopls")[0].classList.add("default-subtitles");
             }
         }
@@ -998,27 +659,6 @@ function getframerat(x){
 setTimeout(() => {
     getframerate2()
 }, 1000);
-
-function getframerate2(){
-    for(let i= 0; i< document.getElementsByClassName("vid-framerateso").length; i++){
-        if(!document.getElementsByClassName("custom-videopls")[i].paused){
-            let getframeratesosos = document.getElementsByClassName("custom-videopls")[i].getVideoPlaybackQuality().totalVideoFrames
-            framratetimeoutarr[i] = new Object({
-                src : document.getElementsByClassName("custom-videopls")[i].getElementsByTagName("source")[i],
-                time : (function(i){setTimeout(function(){
-                        if(!document.getElementsByClassName("custom-videopls")[i].paused){
-                            getframeratesosos = document.getElementsByClassName("custom-videopls")[i].getVideoPlaybackQuality().totalVideoFrames - getframeratesosos;
-                            if(getframeratesosos > 28 && getframeratesosos< 35) getframeratesosos = 30;
-                            else if(getframeratesosos > 22 && getframeratesosos< 26) getframeratesosos = 24;
-                            else if(getframeratesosos > 55 && getframeratesosos< 65) getframeratesosos = 60;
-                            if(parseInt(document.getElementsByClassName("vid-framerateso")[i].textContent) < getframeratesosos || !parseInt(document.getElementsByClassName("vid-framerateso")[i].textContent)){
-                                if(framratetimeoutarr[i].src == document.getElementsByClassName("custom-videopls")[i].getElementsByTagName("source")[i])document.getElementsByClassName("vid-framerateso")[i].textContent = getframeratesosos
-                            }
-                        }},1000)})(i)
-            })
-        }
-    }
-}
 
 setInterval(() => {
     getframerate2()

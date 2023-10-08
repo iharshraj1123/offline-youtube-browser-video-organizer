@@ -42,7 +42,7 @@ if(!$usr_pic){
                 <div class="Menu menu3"></div>
             </div> 
         </div>
-        <a class="logo-link" href="/YouTube/index.php"> 
+        <a class="logo-link" href="/YouTube/"> 
            <img class="yt-header-logo" src="./resources/icons/youtube header hd 4.png">
            <img class="yt-header-logo-two" src="./resources/icons/yt logo hd 2.png">
         </a>
