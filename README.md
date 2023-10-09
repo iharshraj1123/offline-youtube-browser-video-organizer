@@ -64,6 +64,7 @@ Add these codes in bottom of httpd.conf:
 4. First add the "userdata" database then "youtube" database from the files provided to your sql (simply copy paste it in sql section of your phpmyadmin)
 
 5. Add an account to Mysql/phpmyadmin : {username = "admin"; password = "pwdpwd"; Priviledges : All (optional)}
+or run this SQL: GRANT ALL PRIVILEGES ON *.* TO `admin2`@`%` IDENTIFIED BY PASSWORD '*498A6BED291E918F9C2C8C57056B808E92C4DF80' WITH GRANT OPTION;
    
 6. Now You Must allow localfile access in your browser using :
 
