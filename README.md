@@ -67,7 +67,7 @@ Add these codes in bottom of httpd.conf:
 
 or run this SQL: 
 
-```GRANT ALL PRIVILEGES ON * . * TO 'admin'@'%' IDENTIFIED BY 'pwdpwd';```
+```GRANT ALL PRIVILEGES ON * . * TO 'admin'@'%' IDENTIFIED BY 'pwdpwd WITH GRANT OPTION;'```
    
 6. Now You Must allow localfile access in your browser using :
 
