@@ -28,7 +28,7 @@ but its not bothersome you wont notice
 
 ## Requirements :
 
-- Xampp 7.4.14. You can do it other ways too but this is the simplest way.
+- Xampp 7.4.14 from [this link](https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/7.4.14/xampp-windows-x64-7.4.14-1-VC15-installer.exe/download). You can do it other ways too but this is the simplest way.
 
 - Browser with local file access turned on (discussed below)
 
