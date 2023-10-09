@@ -34,10 +34,11 @@ window.addEventListener("load",function(){
         first_src =  vido_temp_src.src;
         first_src = friendly_link(first_src)
         if(!window.location.href.includes("http://localhost")){
-        first_src = first_src.replace("file:///C:/Users/ihars/Downloads/", "/downloads/");
-        first_src = first_src.replace("file:///D:/0-entertainment/", "/entertainment/");
-        first_src = first_src.replace("file:///D:/Video songs/", "/videosongs/");
-        first_src = first_src.replace("file:///D:/Video%20songs/", "/videosongs/");
+            first_src= dirChanger(first_src)
+        // first_src = first_src.replace("file:///C:/Users/ihars/Downloads/", "/downloads/");
+        // first_src = first_src.replace("file:///D:/0-entertainment/", "/entertainment/");
+        // first_src = first_src.replace("file:///D:/Video songs/", "/videosongs/");
+        // first_src = first_src.replace("file:///D:/Video%20songs/", "/videosongs/");
         
         if(window.mobileCheck()) vid.volume = 1;
        //  document.getElementsByClassName("debuger-div-bot")[0].innerHTML = `<a href='${first_src}'>${first_src}</a>`
@@ -55,10 +56,11 @@ function ready_the_vids(){
     let vido_temp = document.getElementsByClassName('video-thumbnail')[i];
     let temp_src = friendly_link(vido_temp.dataset.src);
     if(!window.location.href.includes("http://localhost")){
-    temp_src = temp_src.replace("file:///C:/Users/ihars/Downloads/", "/downloads/");
-    temp_src = temp_src.replace("file:///D:/0-entertainment/", "/entertainment/");
-    temp_src = temp_src.replace("file:///D:/Video songs/", "/videosongs/");
-    temp_src = temp_src.replace("file:///D:/Video%20songs/", "/videosongs/");
+        temp_src= dirChanger(temp_src)
+    // temp_src = temp_src.replace("file:///C:/Users/ihars/Downloads/", "/downloads/");
+    // temp_src = temp_src.replace("file:///D:/0-entertainment/", "/entertainment/");
+    // temp_src = temp_src.replace("file:///D:/Video songs/", "/videosongs/");
+    // temp_src = temp_src.replace("file:///D:/Video%20songs/", "/videosongs/");
     }
     console.log(temp_src)
     vido_temp.src = temp_src;
@@ -101,10 +103,12 @@ function vid_play(x){
 
             let temp_src = new_vid_data_arr[3];
             if(!window.location.href.includes("http://localhost")){
-                temp_src = temp_src.replace("file:///C:/Users/ihars/Downloads/", "/downloads/");
-                temp_src = temp_src.replace("file:///D:/0-entertainment/", "/entertainment/");
-                temp_src = temp_src.replace("file:///D:/Video songs/", "/videosongs/");
-                temp_src = temp_src.replace("file:///D:/Video%20songs/", "/videosongs/");}
+                temp_src= dirChanger(temp_src)
+                // temp_src = temp_src.replace("file:///C:/Users/ihars/Downloads/", "/downloads/");
+                // temp_src = temp_src.replace("file:///D:/0-entertainment/", "/entertainment/");
+                // temp_src = temp_src.replace("file:///D:/Video songs/", "/videosongs/");
+                // temp_src = temp_src.replace("file:///D:/Video%20songs/", "/videosongs/");
+            }
             document.getElementsByClassName("video-src")[0].src = temp_src ;
             vid.load();
             change_all_data();
@@ -142,10 +146,12 @@ function vid_play_search(x,y,z){
             new_vid_data_arr= temp_strng.split('?')
             let temp_src = friendly_link(new_vid_data_arr[3]);
             if(!window.location.href.includes("http://localhost")){
-                temp_src = temp_src.replace("file:///C:/Users/ihars/Downloads/", "/downloads/");
-                temp_src = temp_src.replace("file:///D:/0-entertainment/", "/entertainment/");
-                temp_src = temp_src.replace("file:///D:/Video songs/", "/videosongs/");
-                temp_src = temp_src.replace("file:///D:/Video%20songs/", "/videosongs/");}
+                temp_src= dirChanger(temp_src)
+                // temp_src = temp_src.replace("file:///C:/Users/ihars/Downloads/", "/downloads/");
+                // temp_src = temp_src.replace("file:///D:/0-entertainment/", "/entertainment/");
+                // temp_src = temp_src.replace("file:///D:/Video songs/", "/videosongs/");
+                // temp_src = temp_src.replace("file:///D:/Video%20songs/", "/videosongs/");
+            }
             document.getElementsByClassName("video-src")[0].src = temp_src;
             
             vid.load();
@@ -271,10 +277,12 @@ function rando_songo(){
         let temp_src = new_vid_data_arr[3];
         temp_src =  friendly_link(temp_src)
         if(!window.location.href.includes("http://localhost")){
-            temp_src = temp_src.replace("file:///C:/Users/ihars/Downloads/", "/downloads/");
-            temp_src = temp_src.replace("file:///D:/0-entertainment/", "/entertainment/");
-            temp_src = temp_src.replace("file:///D:/Video songs/", "/videosongs/");
-            temp_src = temp_src.replace("file:///D:/Video%20songs/", "/videosongs/");}
+            temp_src= dirChanger(temp_src)
+            // temp_src = temp_src.replace("file:///C:/Users/ihars/Downloads/", "/downloads/");
+            // temp_src = temp_src.replace("file:///D:/0-entertainment/", "/entertainment/");
+            // temp_src = temp_src.replace("file:///D:/Video songs/", "/videosongs/");
+            // temp_src = temp_src.replace("file:///D:/Video%20songs/", "/videosongs/");
+        }
         document.getElementsByClassName("video-src")[0].src = temp_src;
         vid.load();
         change_all_data();
@@ -460,14 +468,21 @@ function ready_the_vids2(){
     let vido_temp = document.getElementsByClassName('video-thumbnail')[i];
     let temp_src = vido_temp.dataset.src;
     if(!window.location.href.includes("http://localhost")){
-    temp_src = temp_src.replace("file:///C:/Users/ihars/Downloads/", "/downloads/");
-    temp_src = temp_src.replace("file:///D:/0-entertainment/", "/entertainment/");
-    temp_src = temp_src.replace("file:///D:/Video songs/", "/videosongs/");
-    temp_src = temp_src.replace("file:///D:/Video%20songs/", "/videosongs/");
+        temp_src= dirChanger(temp_src)
+    // temp_src = temp_src.replace("file:///C:/Users/ihars/Downloads/", "/downloads/");
+    // temp_src = temp_src.replace("file:///D:/0-entertainment/", "/entertainment/");
+    // temp_src = temp_src.replace("file:///D:/Video songs/", "/videosongs/");
+    // temp_src = temp_src.replace("file:///D:/Video%20songs/", "/videosongs/");
     }
     vido_temp.src = temp_src;
     vido_temp.load();
     }
+}
+
+function dirChanger(x){
+    x = x.replace("file:///C:/", "/c:/");
+    x = x.replace("file:///D:/", "/d:/");
+    return x;
 }
 
 function show_recent(){
