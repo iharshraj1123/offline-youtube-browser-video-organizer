@@ -156,7 +156,7 @@ function cut_mp4_name($vid_name) {
                 
             
 
-                $vid_data = "SELECT * FROM video_metadatas ORDER BY upload_date DESC, upload_time DESC, vid_id DESC LIMIT 20";
+                $vid_data = "SELECT * FROM video_metadatas WHERE vid_id != 10 ORDER BY upload_date DESC, upload_time DESC, vid_id DESC LIMIT 20";
 
                 //    1        2       3         4              5             6          7         8         9         10           11            12          13      14          15          16
                 // vid_id, vid_name ,link , uploader_id , uploader_name, uploader_img, likes , dislikes , duration , views  , uploaded_date, uploaded_time ,tags , description, comments, subtitles
@@ -218,7 +218,7 @@ function cut_mp4_name($vid_name) {
             <?php 
 
             //1487 1488 1489
-            $blacklist_vids = [330 ,445 ,540 ,645, 646 ,647 ,648 ,649 ,650, 517,518,519];
+            $blacklist_vids = [10];
                 
             for($i=0;$i<20;$i++){
                 $randamono = rand(0,$total_vids-1);
