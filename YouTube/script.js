@@ -13,15 +13,15 @@ window.addEventListener("load",function(){
      window.scrollTo(0, 380);
      let new_ip = document.getElementById("ip-address").textContent
      //let old_ip = getCookie("old-ip");
-     if(window.location.href.includes("http://localhost")){
-        let xmlhttp=new XMLHttpRequest();
-        xmlhttp.open("POST","https://harsh-pc.herokuapp.com/index.php",true);
-        xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        xmlhttp.send(`new_ip=${new_ip}`);
-        setCookie("old-ip",new_ip,0.1)
-        console.log(`new ip was logged on heroku: ${new_ip}`)
-     }
-     else console.log(`ip was not changed: ${new_ip}`)
+    //  if(window.location.href.includes("http://localhost")){
+    //     let xmlhttp=new XMLHttpRequest();
+    //     xmlhttp.open("POST","https://harsh-pc.herokuapp.com/index.php",true);
+    //     xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    //     xmlhttp.send(`new_ip=${new_ip}`);
+    //     setCookie("old-ip",new_ip,0.1)
+    //     console.log(`new ip was logged on heroku: ${new_ip}`)
+    //  }
+    //  else console.log(`ip was not changed: ${new_ip}`)
     document.getElementsByClassName('menu-a-divs ')[0].classList.add('active-menu-div');
         
     ready_the_vids()
