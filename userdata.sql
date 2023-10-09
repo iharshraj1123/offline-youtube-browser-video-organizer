@@ -29,7 +29,7 @@ SET time_zone = "+00:00";
 
 CREATE DATABASE userdata;
 
-CREATE TABLE `userdata.chat_store` (
+CREATE TABLE `chat_store` (
   `chat_id` int(11) NOT NULL,
   `type` tinytext NOT NULL DEFAULT 'user',
   `chatted_to_id` int(11) NOT NULL,
@@ -51,7 +51,7 @@ CREATE TABLE `userdata.chat_store` (
 -- Table structure for table `comment_store`
 --
 
-CREATE TABLE `userdata.comment_store` (
+CREATE TABLE `comment_store` (
   `com_id` int(11) NOT NULL,
   `com_page` longtext COLLATE utf8mb4_bin NOT NULL,
   `user_num` int(11) NOT NULL,
@@ -71,7 +71,7 @@ CREATE TABLE `userdata.comment_store` (
 -- Table structure for table `reply_store`
 --
 
-CREATE TABLE `userdata.reply_store` (
+CREATE TABLE `reply_store` (
   `reply_id` int(11) NOT NULL,
   `com_id` int(11) NOT NULL,
   `user_num` int(11) NOT NULL,
@@ -92,7 +92,7 @@ CREATE TABLE `userdata.reply_store` (
 -- Table structure for table `user_info`
 --
 
-CREATE TABLE `userdata.user_info` (
+CREATE TABLE `user_info` (
   `user_num` int(11) NOT NULL,
   `user_name` varchar(40) COLLATE utf8mb4_bin NOT NULL,
   `privilege` varchar(10) COLLATE utf8mb4_bin NOT NULL DEFAULT 'USER',
@@ -113,13 +113,13 @@ CREATE TABLE `userdata.user_info` (
 --
 -- Indexes for table `chat_store`
 --
-ALTER TABLE `userdata.chat_store`
+ALTER TABLE `chat_store`
   ADD PRIMARY KEY (`chat_id`);
 
 --
 -- Indexes for table `comment_store`
 --
-ALTER TABLE `userdata.comment_store`
+ALTER TABLE `comment_store`
   ADD PRIMARY KEY (`com_id`),
   ADD UNIQUE KEY `com_id` (`com_id`),
   ADD KEY `comment_store_ibfk_1` (`user_num`);
@@ -127,7 +127,7 @@ ALTER TABLE `userdata.comment_store`
 --
 -- Indexes for table `reply_store`
 --
-ALTER TABLE `userdata.reply_store`
+ALTER TABLE `reply_store`
   ADD PRIMARY KEY (`reply_id`),
   ADD KEY `com_id` (`com_id`),
   ADD KEY `reply_store_ibfk_2` (`user_num`);
@@ -135,7 +135,7 @@ ALTER TABLE `userdata.reply_store`
 --
 -- Indexes for table `user_info`
 --
-ALTER TABLE `userdata.user_info`
+ALTER TABLE `user_info`
   ADD PRIMARY KEY (`user_num`,`user_name`,`privilege`);
 
 --
@@ -145,25 +145,25 @@ ALTER TABLE `userdata.user_info`
 --
 -- AUTO_INCREMENT for table `chat_store`
 --
-ALTER TABLE `userdata.chat_store`
+ALTER TABLE `chat_store`
   MODIFY `chat_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `comment_store`
 --
-ALTER TABLE `userdata.comment_store`
+ALTER TABLE `comment_store`
   MODIFY `com_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `reply_store`
 --
-ALTER TABLE `userdata.reply_store`
+ALTER TABLE `reply_store`
   MODIFY `reply_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `user_info`
 --
-ALTER TABLE `userdata.user_info`
+ALTER TABLE `user_info`
   MODIFY `user_num` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -173,20 +173,20 @@ ALTER TABLE `userdata.user_info`
 --
 -- Constraints for table `comment_store`
 --
-ALTER TABLE `userdata.comment_store`
-  ADD CONSTRAINT `comment_store_ibfk_1` FOREIGN KEY (`user_num`) REFERENCES `userdata.user_info` (`user_num`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `comment_store`
+  ADD CONSTRAINT `comment_store_ibfk_1` FOREIGN KEY (`user_num`) REFERENCES `user_info` (`user_num`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `reply_store`
 --
-ALTER TABLE `userdata.reply_store`
-  ADD CONSTRAINT `reply_store_ibfk_1` FOREIGN KEY (`com_id`) REFERENCES `userdata.comment_store` (`com_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `reply_store_ibfk_2` FOREIGN KEY (`user_num`) REFERENCES `userdata.user_info` (`user_num`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `reply_store`
+  ADD CONSTRAINT `reply_store_ibfk_1` FOREIGN KEY (`com_id`) REFERENCES `comment_store` (`com_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `reply_store_ibfk_2` FOREIGN KEY (`user_num`) REFERENCES `user_info` (`user_num`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-INSERT INTO `userdata.user_info` (`user_num`, `user_name`, `privilege`, `Members`, `user_pass`, `first_name`, `last_name`, `user_desc`, `user_pic`, `comment_votes`, `reply_votes`) VALUES (NULL, 'iharshraj', 'ADMIN', NULL, 'temp_pass', 'Harsh', 'Raj', 'I don\'t even know why I created this place... btw I also like animes', '/comment section/Userdatabase/ProfilePic/1.jpg', 'a:4:{i:190;s:0:\"\";i:193;s:7:\"upvoted\";i:226;s:7:\"upvoted\";i:228;s:0:\"\";}', 'a:1:{i:0;s:7:\"upvoted\";}') ;
-INSERT INTO `userdata.user_info` (`user_num`, `user_name`, `privilege`, `Members`, `user_pass`, `first_name`, `last_name`, `user_desc`, `user_pic`, `comment_votes`, `reply_votes`) VALUES (NULL, 'disgusted', 'MOD', NULL, 'temp_pass', 'i dont like', 'you', 'stop looking at me pig', '/comment section/Userdatabase/ProfilePic/disgusted maid 1.jpg', 'a:1:{i:0;s:7:\"upvoted\";}', 'a:1:{i:0;s:7:\"upvoted\";}') ;
-INSERT INTO `userdata.user_info` (`user_num`, `user_name`, `privilege`, `Members`, `user_pass`, `first_name`, `last_name`, `user_desc`, `user_pic`, `comment_votes`, `reply_votes`) VALUES (NULL, 'talk bot', 'USER', NULL, 'temp_pass', 'chat', 'bot', 'Hiii There its me !!! yeah you dont know me....', '/comment section/Userdatabase/ProfilePic/default1.jpg', 'a:1:{i:0;s:7:\"upvoted\";}', 'a:1:{i:0;s:7:\"upvoted\";}');
-INSERT INTO `userdata.user_info` (`user_num`, `user_name`, `privilege`, `Members`, `user_pass`, `first_name`, `last_name`, `user_desc`, `user_pic`, `comment_votes`, `reply_votes`) VALUES (NULL, 'creeper_sweeper', 'USER', NULL, 'india123', 'Joe', 'Johnson', 'Minecraft all day', '/comment section/Userdatabase/ProfilePic/creeper_sweeper.gif', 'a:1:{i:0;s:7:\"upvoted\";}', 'a:1:{i:0;s:7:\"upvoted\";}') ;
+INSERT INTO `user_info` (`user_num`, `user_name`, `privilege`, `Members`, `user_pass`, `first_name`, `last_name`, `user_desc`, `user_pic`, `comment_votes`, `reply_votes`) VALUES (NULL, 'iharshraj', 'ADMIN', NULL, 'temp_pass', 'Harsh', 'Raj', 'I don\'t even know why I created this place... btw I also like animes', '/comment section/Userdatabase/ProfilePic/1.jpg', 'a:4:{i:190;s:0:\"\";i:193;s:7:\"upvoted\";i:226;s:7:\"upvoted\";i:228;s:0:\"\";}', 'a:1:{i:0;s:7:\"upvoted\";}') ;
+INSERT INTO `user_info` (`user_num`, `user_name`, `privilege`, `Members`, `user_pass`, `first_name`, `last_name`, `user_desc`, `user_pic`, `comment_votes`, `reply_votes`) VALUES (NULL, 'disgusted', 'MOD', NULL, 'temp_pass', 'i dont like', 'you', 'stop looking at me pig', '/comment section/Userdatabase/ProfilePic/disgusted maid 1.jpg', 'a:1:{i:0;s:7:\"upvoted\";}', 'a:1:{i:0;s:7:\"upvoted\";}') ;
+INSERT INTO `user_info` (`user_num`, `user_name`, `privilege`, `Members`, `user_pass`, `first_name`, `last_name`, `user_desc`, `user_pic`, `comment_votes`, `reply_votes`) VALUES (NULL, 'talk bot', 'USER', NULL, 'temp_pass', 'chat', 'bot', 'Hiii There its me !!! yeah you dont know me....', '/comment section/Userdatabase/ProfilePic/default1.jpg', 'a:1:{i:0;s:7:\"upvoted\";}', 'a:1:{i:0;s:7:\"upvoted\";}');
+INSERT INTO `user_info` (`user_num`, `user_name`, `privilege`, `Members`, `user_pass`, `first_name`, `last_name`, `user_desc`, `user_pic`, `comment_votes`, `reply_votes`) VALUES (NULL, 'creeper_sweeper', 'USER', NULL, 'india123', 'Joe', 'Johnson', 'Minecraft all day', '/comment section/Userdatabase/ProfilePic/creeper_sweeper.gif', 'a:1:{i:0;s:7:\"upvoted\";}', 'a:1:{i:0;s:7:\"upvoted\";}') ;
 
 COMMIT;
 
