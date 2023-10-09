@@ -29,7 +29,7 @@ SET time_zone = "+00:00";
 
 CREATE DATABASE youtube;
 
-CREATE TABLE `video_metadatas` (
+CREATE TABLE `youtube.video_metadatas` (
   `vid_id` int(11) NOT NULL,
   `vid_name` text NOT NULL,
   `link` text NOT NULL,
@@ -55,7 +55,7 @@ CREATE TABLE `video_metadatas` (
 --
 -- Indexes for table `video_metadatas`
 --
-ALTER TABLE `video_metadatas`
+ALTER TABLE `youtube.video_metadatas`
   ADD PRIMARY KEY (`vid_id`);
 
 --
@@ -65,10 +65,10 @@ ALTER TABLE `video_metadatas`
 --
 -- AUTO_INCREMENT for table `video_metadatas`
 --
-ALTER TABLE `video_metadatas`
+ALTER TABLE `youtube.video_metadatas`
   MODIFY `vid_id` int(11) NOT NULL AUTO_INCREMENT;
 
-INSERT INTO `video_metadatas` (`vid_id`, `vid_name`, `link`, `uploader_id`, `uploader_name`, `uploader_img`, `likes`, `dislikes`, `duration`, `views`, `upload_date`, `upload_time`, `tags`, `subtitles`, `description`, `comments`) VALUES ('10', 'a:0:{}', '', '0', 'ALL Videoes', 'serialize($x)\r\nand\r\nunserialize($x)\r\nworks in php for these arrays', '0', '0', '0', '0', 'current_timestamp()', 'current_timestamp()', '', 'null', 'Published', '0'); 
+INSERT INTO `youtube.video_metadatas` (`vid_id`, `vid_name`, `link`, `uploader_id`, `uploader_name`, `uploader_img`, `likes`, `dislikes`, `duration`, `views`, `upload_date`, `upload_time`, `tags`, `subtitles`, `description`, `comments`) VALUES ('10', 'a:0:{}', '', '0', 'ALL Videoes', 'serialize($x)\r\nand\r\nunserialize($x)\r\nworks in php for these arrays', '0', '0', '0', '0', 'current_timestamp()', 'current_timestamp()', '', 'null', 'Published', '0'); 
 
 COMMIT;
 
