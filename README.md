@@ -28,7 +28,7 @@ but its not bothersome you wont notice
 
 ## Requirements :
 
-- Xampp with of php 7 or above. You can do it other ways too but this is the simplest way.
+- Xampp 7.4.14. You can do it other ways too but this is the simplest way.
 
 - Browser with local file access turned on (discussed below)
 
