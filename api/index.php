@@ -2132,11 +2132,11 @@ function checkAndTranscodeMedia($originalLink) {
     }
 
     if ($needFullVideoTranscode) {
-        // Transcode both video to H.264 (preset superfast for speed) and audio to AAC stereo
-        $transcodeCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath) . ' -c:v libx264 -preset superfast -crf 23 -c:a aac -ac 2 ' . escapeshellarg($cachedFile);
+        // Transcode both video to H.264 (preset superfast for speed) and audio to AAC stereo with faststart flags
+        $transcodeCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath) . ' -c:v libx264 -preset superfast -crf 23 -c:a aac -ac 2 -movflags +faststart ' . escapeshellarg($cachedFile);
     } else {
-        // H.264 video exists, only transcode audio (Fast copy mode)
-        $transcodeCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath) . ' -c:v copy -c:a aac -ac 2 ' . escapeshellarg($cachedFile);
+        // H.264 video exists, only transcode audio (Fast copy mode) with faststart flags
+        $transcodeCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath) . ' -c:v copy -c:a aac -ac 2 -movflags +faststart ' . escapeshellarg($cachedFile);
     }
 
     $transcodeOutput = [];
