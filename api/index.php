@@ -2131,9 +2131,13 @@ function checkAndTranscodeMedia($originalLink) {
         return null; // Fully compatible natively
     }
 
-    // To ensure absolute compatibility on older decoders, we always re-encode both video and audio
-    // (preset superfast for high-speed conversion, CRF 23 for standard quality, 44.1kHz AAC audio, and faststart metadata)
-    $transcodeCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath) . ' -c:v libx264 -preset superfast -crf 23 -pix_fmt yuv420p -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart ' . escapeshellarg($cachedFile);
+    if ($needFullVideoTranscode) {
+        // Transcode both video to H.264 (preset superfast for speed) and audio to AAC stereo (44.1kHz / 128kbps) with faststart flags
+        $transcodeCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath) . ' -c:v libx264 -preset superfast -crf 23 -pix_fmt yuv420p -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart ' . escapeshellarg($cachedFile);
+    } else {
+        // H.264 video exists, only transcode audio to AAC stereo (44.1kHz / 128kbps) with faststart flags
+        $transcodeCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath) . ' -c:v copy -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart ' . escapeshellarg($cachedFile);
+    }
 
     $transcodeOutput = [];
     @exec($transcodeCmd, $transcodeOutput, $transcodeReturnCode);
