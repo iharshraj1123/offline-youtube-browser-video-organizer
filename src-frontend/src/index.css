@@ -2290,7 +2290,6 @@ body.mini-player-dragging * {
 .emote-picker-popover {
   position: absolute;
   top: 40px;
-  left: 56px;
   background: #1f1f1f;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 12px;
@@ -2858,7 +2857,6 @@ body.mini-player-dragging * {
 
   .emote-picker-popover {
     width: 260px;
-    left: 20px;
   }
 
   .user-card-tooltip {
@@ -3892,6 +3890,7 @@ body.mini-player-dragging * {
   0% {
     background-color: rgba(62, 166, 255, 0.2);
   }
+
   100% {
     background-color: transparent;
   }
@@ -4068,9 +4067,20 @@ body.mini-player-dragging * {
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.05); opacity: 1; }
-  100% { transform: scale(1); opacity: 0.8; }
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
 }
 
 .cast-active-title {
@@ -4148,8 +4158,13 @@ body.mini-player-dragging * {
 }
 
 @keyframes cast-spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Transcode modal styles */
@@ -4175,7 +4190,7 @@ body.mini-player-dragging * {
   max-width: 90%;
   padding: 24px;
   color: #fff;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   text-align: left;
   font-family: inherit;
 }
