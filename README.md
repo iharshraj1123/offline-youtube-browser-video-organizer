@@ -28,12 +28,12 @@ A fast, standalone, and premium offline video player, library indexer, and custo
 
 ## 💻 Installation & Setup
 
-1.  **Environment Setup**: Install [XAMPP](https://www.apachefriends.org/) or any local server stack with Apache, PHP, and MySQL. Ensure **FFmpeg** is installed on your system and added to your system environment variables (`PATH`).
-2.  **Clone / Copy**: Extract this repository directly to your Apache server root folder: `C:\xampp\htdocs\youtube-v2\`.
+1.  **Environment Setup**: Install [Laragon](https://laragon.org/) (recommended for Windows) or [XAMPP](https://www.apachefriends.org/), or any local server stack with Apache, PHP 7.4+, and MySQL. Ensure **FFmpeg** is installed on your system and added to your system environment variables (`PATH`).
+2.  **Clone / Copy**: Extract this repository directly to your web server root folder (e.g., `C:\laragon\www\youtube\` for Laragon or `C:\xampp\htdocs\youtube-v2\` for XAMPP).
 3.  **Database Configuration**:
     *   Create a MySQL database named `youtube-v2`.
-    *   Import the [schema.sql](file:///c:/xampp/htdocs/youtube-v2/schema.sql) file structure.
-    *   Configure your database host, username, and password in [api/db.php](file:///c:/xampp/htdocs/youtube-v2/api/db.php).
+    *   Import the [schema.sql](file:///c:/laragon/www/youtube/schema.sql) file structure.
+    *   Configure your database host, username, and password in [api/db.php](file:///c:/laragon/www/youtube/api/db.php).
 4.  **Frontend Compilation**:
     *   Open terminal in the frontend source directory:
         ```bash
@@ -43,13 +43,13 @@ A fast, standalone, and premium offline video player, library indexer, and custo
         ```
     *   Vite compiles and outputs the production bundle directly to the parent directory (`../`), serving it via Apache.
 5.  **Run Application**:
-    *   Start Apache and MySQL from XAMPP Control Panel.
-    *   Visit `http://localhost/youtube-v2/` in your browser.
+    *   Start Apache and MySQL from your server Control Panel (Laragon / XAMPP).
+    *   Visit `http://localhost/youtube/` or `http://youtube.test/` (if using Laragon), or `http://localhost/youtube-v2/` (if using XAMPP) in your browser.
 
 
 ## Requirements :
 
-- Xampp 7.4.14 from [this link](https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/7.4.14/xampp-windows-x64-7.4.14-1-VC15-installer.exe/download). You can do it other ways too but this is the simplest way.
+- A local server environment supporting PHP 7.4+ (such as Laragon or XAMPP). Legacy XAMPP/PHP versions are no longer strictly required.
 
 - Browser with local file access turned on (discussed below)
 
