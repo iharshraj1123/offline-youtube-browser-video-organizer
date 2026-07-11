@@ -2184,12 +2184,9 @@ function checkAndTranscodeMedia($originalLink) {
             }
         }
 
-        $videoArgs = '-c:v ' . $encoder;
-        if ($isGpu) {
-            $videoArgs .= ' -cq 23 -b:v 8M -maxrate 10M -bufsize 16M';
-        } else {
-            $videoArgs .= ' -preset ultrafast -crf 23 -pix_fmt yuv420p -b:v 8M -maxrate 10M -bufsize 16M';
-        }
+        $videoArgsGpu = '-c:v ' . $encoder . ' -rc vbr -cq:v 23 -b:v 8M -maxrate 10M -bufsize 16M';
+        $videoArgsCpu = '-c:v libx264 -preset ultrafast -crf 23 -pix_fmt yuv420p -b:v 8M -maxrate 10M -bufsize 16M';
+        $videoArgs = $isGpu ? $videoArgsGpu : $videoArgsCpu;
 
         $scaleArg = $needScale ? ' -vf "scale=\'min(1920,iw)\':\'min(1080,ih)\':force_original_aspect_ratio=decrease"' : '';
 
@@ -2199,13 +2196,27 @@ function checkAndTranscodeMedia($originalLink) {
             . ' -r 30'
             . ' -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart '
             . escapeshellarg($cachedFile);
+
+        $transcodeOutput = [];
+        @exec($transcodeCmd, $transcodeOutput, $transcodeReturnCode);
+
+        if ($transcodeReturnCode !== 0 && $isGpu) {
+            @unlink($cachedFile);
+            $transcodeCmd = $ffmpegPath . ' -y -threads 0 -i ' . escapeshellarg($localPath)
+                . ' ' . $videoArgsCpu
+                . $scaleArg
+                . ' -r 30'
+                . ' -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart '
+                . escapeshellarg($cachedFile);
+            $transcodeOutput = [];
+            @exec($transcodeCmd, $transcodeOutput, $transcodeReturnCode);
+        }
     } else {
         // H.264 video exists, only transcode audio to AAC stereo (44.1kHz / 128kbps) with faststart flags
         $transcodeCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath) . ' -c:v copy -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart ' . escapeshellarg($cachedFile);
+        $transcodeOutput = [];
+        @exec($transcodeCmd, $transcodeOutput, $transcodeReturnCode);
     }
-
-    $transcodeOutput = [];
-    @exec($transcodeCmd, $transcodeOutput, $transcodeReturnCode);
 
     if ($transcodeReturnCode === 0 && file_exists($cachedFile)) {
         return $cachedUrlPath;
