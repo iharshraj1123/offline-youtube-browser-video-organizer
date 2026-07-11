@@ -45,3 +45,96 @@ A fast, standalone, and premium offline video player, library indexer, and custo
 5.  **Run Application**:
     *   Start Apache and MySQL from XAMPP Control Panel.
     *   Visit `http://localhost/youtube-v2/` in your browser.
+
+
+## Requirements :
+
+- Xampp 7.4.14 from [this link](https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/7.4.14/xampp-windows-x64-7.4.14-1-VC15-installer.exe/download). You can do it other ways too but this is the simplest way.
+
+- Browser with local file access turned on (discussed below)
+
+- Patience. I was lazy so I didnt make a setup page where a lot of things could have been automated but it will take effort to make that.
+
+## HOW to Setup :
+
+1. Copy-paste all the folders (eg, youtube, chatbox, comment section) in your htdocs.
+2. Install the [Electron player](https://drive.google.com/drive/u/0/folders/18UFdW4VaAEURjlz-P35kFZAp5TgF99ky)
+3. Open your xampp, in Apache row click on config, then httpd.conf (first option)
+First search for "\<IfModule alias_module>"
+And add:
+```
+    Alias "/d:" "D:/"
+    Alias "/c:" "C:/"
+```
+before "<\/IfModule>"
+
+Add these codes in bottom of httpd.conf:
+```
+<Directory "D:/">
+    Options Indexes FollowSymLinks Includes ExecCGI
+    AllowOverride All
+    Require all granted
+</Directory>
+<Directory "C:/">
+    Options Indexes FollowSymLinks Includes ExecCGI
+    AllowOverride All
+    Require all granted
+</Directory>
+```
+
+4. First add the "userdata" database then "youtube" database from the files provided to your sql (simply copy paste it in sql section of your phpmyadmin)
+
+5. Add an account to Mysql/phpmyadmin : {username = "admin"; password = "pwdpwd"; Priviledges : All (optional)}
+
+or run this SQL: 
+
+```GRANT ALL PRIVILEGES ON * . * TO 'admin'@'%' IDENTIFIED BY 'pwdpwd' WITH GRANT OPTION;```
+   
+6. Now You Must allow localfile access in your browser using :
+
+--------------------------------------------------
+### Method 1 (best for firefox)
+
+use "about:config" in URL to go to advanced config
+
+now make variables (by searching them, one by one) and set their corresponding values :
+
+capability.policy.policynames = "filelinks"
+
+capability.policy.filelinks.checkloaduri.enabled = "allAccess"
+
+capability.policy.filelinks.sites = "http://localhost/YouTube/play.php http://localhost/YouTube/index.php http://localhost/YouTube/"
+
+
+--------------------------------------------------
+
+### Method 2
+
+// == FILE URI LINK POLICY (checkloaduri) ==
+
+// Create policy enabling http: or https: pages to link to file:
+
+user_pref("capability.policy.policynames", "filelinks");
+
+user_pref("capability.policy.filelinks.checkloaduri.enabled", "allAccess");
+
+// Sites to which the policy applies (protocol://hostname protocol://hostname)
+
+user_pref("capability.policy.filelinks.sites", "http://localhost/YouTube/play.php http://localhost/YouTube/index.php http://localhost/YouTube/");
+
+
+--------------------------------------------------
+
+## HOT KEYs (the video must be focussed to use the ones below)
+
+5 (from Numpad) :  focus video  (use this if video isnt focussed and you too lazy to move mouse)
+
+N: next video, P: previous video, L: Loop, R: Random/in-queue
+
+Space: Pause, F: fullscreen, T : theatre mode, C: captions/subtitles
+
+0 (Numpad) = reverse (works in in-queue mode), 
+
+. (decimal,from numpad): deletes play history
+
+--------------------------------------------------
