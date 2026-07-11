@@ -6,7 +6,7 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState('');
   const [loading, setLoading] = useState(false);
-  
+
   // Emotes list
   const [emotes, setEmotes] = useState([]);
   const [showEmotePicker, setShowEmotePicker] = useState(null); // 'main' or reply_id/com_id
@@ -22,6 +22,25 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
   const [replyAttachmentUrls, setReplyAttachmentUrls] = useState({});
   const [replyAttachmentPreviews, setReplyAttachmentPreviews] = useState({});
   const [replyAttachmentTypes, setReplyAttachmentTypes] = useState({});
+
+  const formatNiceTime = (dateStr, timeStr) => {
+    try {
+      const then = new Date(dateStr + 'T' + (timeStr || '00:00:00'));
+      const diffMs = Date.now() - then.getTime();
+      const diffSecs = Math.floor(diffMs / 1000);
+      const diffMins = Math.floor(diffSecs / 60);
+      const diffHrs = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHrs / 24);
+      if (diffDays > 365) return Math.floor(diffDays / 365) + ' years ago';
+      if (diffDays > 30) return Math.floor(diffDays / 30) + ' months ago';
+      if (diffDays > 0) return diffDays + ' days ago';
+      if (diffHrs > 0) return diffHrs + ' hours ago';
+      if (diffMins > 0) return diffMins + ' minutes ago';
+      return 'just now';
+    } catch {
+      return dateStr;
+    }
+  };
 
   // Hover User Card state
   const [hoveredUser, setHoveredUser] = useState(null); // { username, x, y }
@@ -107,7 +126,7 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
         method: 'POST',
         body: formData
       });
-      
+
       const newComment = await res.json();
       if (newComment && !newComment.error) {
         if (targetKey === 'main') {
@@ -119,13 +138,13 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
           if (mainInputRef.current) mainInputRef.current.style.height = 'auto';
         } else {
           setReplyTexts(prev => ({ ...prev, [targetKey]: '' }));
-          setReplyAttachmentFiles(prev => { const n = {...prev}; delete n[targetKey]; return n; });
-          setReplyAttachmentUrls(prev => { const n = {...prev}; delete n[targetKey]; return n; });
-          setReplyAttachmentPreviews(prev => { const n = {...prev}; delete n[targetKey]; return n; });
-          setReplyAttachmentTypes(prev => { const n = {...prev}; delete n[targetKey]; return n; });
+          setReplyAttachmentFiles(prev => { const n = { ...prev }; delete n[targetKey]; return n; });
+          setReplyAttachmentUrls(prev => { const n = { ...prev }; delete n[targetKey]; return n; });
+          setReplyAttachmentPreviews(prev => { const n = { ...prev }; delete n[targetKey]; return n; });
+          setReplyAttachmentTypes(prev => { const n = { ...prev }; delete n[targetKey]; return n; });
           setActiveReplyBox(null);
         }
-        
+
         // Auto expand replies accordion on posting reply
         if (parentComId) {
           setExpandedThreads(prev => ({ ...prev, [parentComId]: true }));
@@ -373,7 +392,7 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
       } else if (ext === 'gif') {
         type = 'gif';
       }
-      
+
       if (targetKey === 'main') {
         setMainAttachmentUrl(url);
         setMainAttachmentPreview(url);
@@ -398,15 +417,15 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
     const enrichedHtml = enrichHtmlWithReactInterceptors(parseCommentContent(isReply ? node.reply : node.comment));
 
     return (
-      <div 
-        key={itemId} 
+      <div
+        key={itemId}
         className={`comment-node ${isReply ? 'reply-node' : 'root-comment-node'}`}
         onClick={handleCommentContainerClick}
       >
         <div className="comment-layout-row">
-          <img 
-            src={node.user_pic} 
-            alt={authorName} 
+          <img
+            src={node.user_pic}
+            alt={authorName}
             className="comment-user-avatar clickable"
             onClick={() => onNavigateToProfile && onNavigateToProfile(authorName)}
             onMouseEnter={(e) => handleUserMouseEnter(authorName, e)}
@@ -414,7 +433,7 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
           />
           <div className="comment-body-col">
             <div className="comment-meta-info">
-              <span 
+              <span
                 className="comment-author-name clickable"
                 onClick={() => onNavigateToProfile && onNavigateToProfile(authorName)}
                 onMouseEnter={(e) => handleUserMouseEnter(authorName, e)}
@@ -422,20 +441,15 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
               >
                 {authorName}
               </span>
-              {node.karma !== undefined && (
-                <span className="comment-user-karma">
-                  ★ {node.karma}
-                </span>
-              )}
               <span className="comment-timestamp">
-                {node.com_date ? `${node.com_date} ${node.com_time.substring(0, 5)}` : `${node.reply_date} ${node.reply_time.substring(0, 5)}`}
+                {node.com_date ? formatNiceTime(node.com_date, node.com_time) : formatNiceTime(node.reply_date, node.reply_time)}
               </span>
               {node.edited === 'true' && <span className="comment-edited-label">(edited)</span>}
             </div>
 
             <div className="comment-text-wrapper">
               {node.replied_to && isReply && (
-                <span 
+                <span
                   className="reply-to-mention"
                   onClick={() => onNavigateToProfile && onNavigateToProfile(node.replied_to)}
                   onMouseEnter={(e) => handleUserMouseEnter(node.replied_to, e)}
@@ -458,7 +472,7 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
             )}
 
             <div className="comment-actions-bar">
-              <button 
+              <button
                 className={`comment-action-btn ${node.user_vote === 'upvote' ? 'active-upvote' : ''}`}
                 onClick={() => handleVote(voteTargetType, voteTargetId, node.user_vote)}
               >
@@ -466,14 +480,14 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
               </button>
               <span className="action-stat-count">{node.upvotes || 0}</span>
 
-              <button 
+              <button
                 className={`comment-action-btn ${node.user_vote === 'downvote' ? 'active-downvote' : ''}`}
                 onClick={() => handleDownvote(voteTargetType, voteTargetId, node.user_vote)}
               >
                 <ThumbsDown size={14} />
               </button>
 
-              <button 
+              <button
                 className="comment-action-btn reply-trigger"
                 onClick={() => setActiveReplyBox(activeReplyBox === itemId ? null : itemId)}
               >
@@ -481,7 +495,7 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
               </button>
 
               {(isOwn || isAdmin) && (
-                <button 
+                <button
                   className="comment-action-btn delete-btn"
                   onClick={() => handleDelete(voteTargetType, voteTargetId)}
                 >
@@ -492,8 +506,8 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
 
             {/* Reply Input Box (Expands smoothly on focus) */}
             {activeReplyBox === itemId && (
-              <form 
-                onSubmit={(e) => handlePostComment(e, parentComId || node.com_id, isReply ? node.reply_id : null, authorName, itemId)} 
+              <form
+                onSubmit={(e) => handlePostComment(e, parentComId || node.com_id, isReply ? node.reply_id : null, authorName, itemId)}
                 className="inline-reply-form"
               >
                 <div className="growing-input-wrapper">
@@ -517,14 +531,14 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
                     ) : (
                       <img src={replyAttachmentPreviews[itemId]} className="preview-media" alt="preview" />
                     )}
-                    <button 
-                      type="button" 
-                      className="remove-preview-btn" 
+                    <button
+                      type="button"
+                      className="remove-preview-btn"
                       onClick={() => {
-                        setReplyAttachmentFiles(prev => { const n = {...prev}; delete n[itemId]; return n; });
-                        setReplyAttachmentUrls(prev => { const n = {...prev}; delete n[itemId]; return n; });
-                        setReplyAttachmentPreviews(prev => { const n = {...prev}; delete n[itemId]; return n; });
-                        setReplyAttachmentTypes(prev => { const n = {...prev}; delete n[itemId]; return n; });
+                        setReplyAttachmentFiles(prev => { const n = { ...prev }; delete n[itemId]; return n; });
+                        setReplyAttachmentUrls(prev => { const n = { ...prev }; delete n[itemId]; return n; });
+                        setReplyAttachmentPreviews(prev => { const n = { ...prev }; delete n[itemId]; return n; });
+                        setReplyAttachmentTypes(prev => { const n = { ...prev }; delete n[itemId]; return n; });
                       }}
                     >
                       <X size={12} />
@@ -534,8 +548,8 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
 
                 <div className="comment-form-actions">
                   <div className="comment-media-triggers">
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="icon-trigger-btn"
                       onClick={() => setShowEmotePicker(showEmotePicker === itemId ? null : itemId)}
                     >
@@ -547,8 +561,8 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
                       <input type="file" accept="image/*,video/*" onChange={(e) => handleReplyFileSelect(e, itemId)} />
                     </div>
 
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="icon-trigger-btn"
                       onClick={() => handleAddMediaUrl(itemId)}
                       title="Link external media URL"
@@ -566,7 +580,7 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="comment-button-row">
                     <button type="button" className="action-cancel-btn" onClick={() => setActiveReplyBox(null)}>
                       Cancel
@@ -593,9 +607,9 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
       {/* Main Comment Box (Resembles modern YouTube growing input) */}
       <form onSubmit={(e) => handlePostComment(e, null, null, '', 'main')} className="main-comment-form">
         <div className="comment-layout-row">
-          <img 
-            src={currentUser.pic || '/youtube-v2/Userdatabase/ProfilePic/defaulta.jpg'} 
-            alt={currentUser.name || 'Guest'} 
+          <img
+            src={currentUser.pic || '/youtube-v2/Userdatabase/ProfilePic/defaulta.jpg'}
+            alt={currentUser.name || 'Guest'}
             className="comment-user-avatar clickable"
             onClick={() => currentUser.name && onNavigateToProfile && onNavigateToProfile(currentUser.name)}
           />
@@ -624,9 +638,9 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
                 ) : (
                   <img src={mainAttachmentPreview} className="preview-media" alt="preview" />
                 )}
-                <button 
-                  type="button" 
-                  className="remove-preview-btn" 
+                <button
+                  type="button"
+                  className="remove-preview-btn"
                   onClick={() => {
                     setMainAttachmentFile(null);
                     setMainAttachmentUrl('');
@@ -642,8 +656,8 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
             {currentUser.name && (
               <div className="comment-form-actions">
                 <div className="comment-media-triggers">
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="icon-trigger-btn"
                     onClick={() => setShowEmotePicker(showEmotePicker === 'main' ? null : 'main')}
                     title="Emotes"
@@ -656,8 +670,8 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
                     <input type="file" accept="image/*,video/*" onChange={handleMainFileSelect} />
                   </div>
 
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="icon-trigger-btn"
                     onClick={() => handleAddMediaUrl('main')}
                     title="Link external media URL"
@@ -677,9 +691,9 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
                 </div>
 
                 <div className="comment-button-row">
-                  <button 
-                    type="button" 
-                    className="action-cancel-btn" 
+                  <button
+                    type="button"
+                    className="action-cancel-btn"
                     onClick={() => {
                       setCommentText('');
                       setMainAttachmentFile(null);
@@ -691,8 +705,8 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
                   >
                     Cancel
                   </button>
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className="action-submit-btn"
                     disabled={!commentText.trim()}
                   >
@@ -717,7 +731,7 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
 
                 {hasReplies && (
                   <div className="thread-replies-accordion">
-                    <button 
+                    <button
                       onClick={() => toggleRepliesAccordion(com.com_id)}
                       className="accordion-toggle-btn"
                     >
@@ -742,7 +756,7 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
 
       {/* Floating Hover User Cards */}
       {hoveredUser && (
-        <div 
+        <div
           className="user-card-tooltip"
           style={{ left: `${hoveredUser.x}px`, top: `${hoveredUser.y}px` }}
           onMouseEnter={handleCardMouseEnter}
