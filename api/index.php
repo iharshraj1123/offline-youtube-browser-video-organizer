@@ -2158,7 +2158,6 @@ function handleCastControl() {
 
     $controlUrl = $data['control_url'] ?? '';
     $action = $data['action'] ?? '';
-    $mediaUrl = $data['media_url'] ?? '';
     $videoLink = $data['video_link'] ?? '';
 
     if (empty($controlUrl) || empty($action)) {
@@ -2166,7 +2165,7 @@ function handleCastControl() {
     }
 
     $service = 'urn:schemas-upnp-org:service:AVTransport:1';
-    $res = null;
+    $res;
 
     switch ($action) {
         case 'set_uri':
@@ -2179,20 +2178,16 @@ function handleCastControl() {
 
             $finalMediaUrl = '';
 
-            if (!empty($videoLink)) {
-                $cachedPath = checkAndTranscodeMedia($videoLink);
-                if ($cachedPath !== null) {
-                    $fileName = basename($cachedPath);
-                    $finalMediaUrl = "http://" . $serverIp . $portSuffix . "/youtube-v2/uploads/cast_cache/" . $fileName;
-                } else {
-                    $relativePath = str_replace('file:///', '', $videoLink);
-                    $relativePath = rawurldecode($relativePath);
-                    $workspaceRoot = str_replace('\\', '/', dirname(__DIR__) . '/');
-                    $relativePathClean = str_replace($workspaceRoot, '', str_replace('\\', '/', $relativePath));
-                    $finalMediaUrl = "http://" . $serverIp . $portSuffix . "/youtube-v2/api/index.php?action=cast_stream&file=" . urlencode($relativePathClean);
-                }
+            $cachedPath = checkAndTranscodeMedia($videoLink);
+            if ($cachedPath !== null) {
+                $fileName = basename($cachedPath);
+                $finalMediaUrl = "http://" . $serverIp . $portSuffix . "/youtube-v2/uploads/cast_cache/" . $fileName;
             } else {
-                $finalMediaUrl = $mediaUrl;
+                $relativePath = str_replace('file:///', '', $videoLink);
+                $relativePath = rawurldecode($relativePath);
+                $workspaceRoot = str_replace('\\', '/', dirname(__DIR__) . '/');
+                $relativePathClean = str_replace($workspaceRoot, '', str_replace('\\', '/', $relativePath));
+                $finalMediaUrl = "http://" . $serverIp . $portSuffix . "/youtube-v2/api/index.php?action=cast_stream&file=" . urlencode($relativePathClean);
             }
 
             $title = $data['title'] ?? 'Video';

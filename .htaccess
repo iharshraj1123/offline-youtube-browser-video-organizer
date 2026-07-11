@@ -1,15 +1,6 @@
-# Enable sendfile for faster local file serving
-<IfModule mod_sendfile.c>
-    SendFile on
-</IfModule>
+KeepAliveTimeout 30
+Timeout 300
 
-# Increase timeouts for large local transfers
-<IfModule mod_core.c>
-    KeepAliveTimeout 30
-    Timeout 300
-</IfModule>
-
-# Ensure proper MIME types for video formats
 <IfModule mod_mime.c>
     AddType video/mp4 .mp4 .m4v
     AddType video/webm .webm
@@ -17,26 +8,23 @@
     AddType video/x-matroska .mkv
 </IfModule>
 
-# Add browser caching controls for media files
 <IfModule mod_headers.c>
     <FilesMatch "\.(mp4|m4v|webm|mkv|ogv)$">
         Header set Cache-Control "public, max-age=3600"
     </FilesMatch>
+
+    <Location /youtube-v2/uploads/cast_cache>
+        <FilesMatch "\.mp4$">
+            Header set Content-Type "video/mp4"
+            Header set contentFeatures.dlna.org "DLNA.ORG_PN=AVC_MP4_BL_L31_HD_AAC;DLNA.ORG_OP=11;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01700000000000000000000000000000"
+            Header set transferMode.dlna.org "Streaming"
+            Header set realTimeInfo.dlna.org "DLNA.ORG_TLAG=*"
+            Header set Accept-Ranges "bytes"
+            Header set Connection "close"
+        </FilesMatch>
+    </Location>
 </IfModule>
 
-# DLNA compliance headers for MP4 files (Sony Bravia compatible)
-<IfModule mod_headers.c>
-    <FilesMatch "\.mp4$">
-        Header set Content-Type "video/mp4"
-        Header set contentFeatures.dlna.org "DLNA.ORG_PN=AVC_MP4_BL_L31_HD_AAC;DLNA.ORG_OP=11;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01700000000000000000000000000000"
-        Header set transferMode.dlna.org "Streaming"
-        Header set realTimeInfo.dlna.org "DLNA.ORG_TLAG=*"
-        Header set Accept-Ranges "bytes"
-        Header set Connection "close"
-    </FilesMatch>
-</IfModule>
-
-# Disable content negotiation for video files
 <IfModule mod_negotiation.c>
     Options -MultiViews
 </IfModule>
