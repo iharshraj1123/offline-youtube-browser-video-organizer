@@ -1056,11 +1056,39 @@ button {
   border-radius: 12px;
   padding: 16px;
   margin-top: 16px;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, max-height 0.3s ease;
 }
 
 .description-card:hover {
   background-color: rgba(255, 255, 255, 0.08);
+}
+
+.description-card.collapsed .description-content-area {
+  max-height: 48px;
+  overflow: hidden;
+  position: relative;
+  mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+}
+
+.description-card.expanded .description-content-area {
+  max-height: none;
+}
+
+.description-toggle-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-weight: bold;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 0 0 0;
+  margin-top: 8px;
+  display: block;
+}
+
+.description-toggle-btn:hover {
+  text-decoration: underline;
 }
 
 .description-meta {

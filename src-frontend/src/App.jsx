@@ -1322,6 +1322,7 @@ function PlayerView({
   const [editDesc, setEditDesc] = useState(video.description);
   const [editTags, setEditTags] = useState(video.tags);
   const [savingEdit, setSavingEdit] = useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   // Playback control states
   const videoRef = useRef(null);
@@ -1562,6 +1563,7 @@ function PlayerView({
     setEditTitle(video.vid_name);
     setEditDesc(video.description);
     setEditTags(video.tags);
+    setIsDescriptionExpanded(false);
     setIsPlaying(false);
     setCurrentTime(0);
     setDuration(parseInt(video.duration) || 0);
@@ -2575,22 +2577,37 @@ function PlayerView({
               </div>
 
               {/* Premium Glassmorphic Description Card */}
-              <div className="description-card">
+              <div
+                className={`description-card ${isDescriptionExpanded ? 'expanded' : 'collapsed'}`}
+                onClick={() => { if (!isDescriptionExpanded) setIsDescriptionExpanded(true); }}
+                style={{ cursor: !isDescriptionExpanded ? 'pointer' : 'default' }}
+              >
                 <div className="description-meta">
                   {video.views || 0} views • Uploaded at {formatUploadDate(video.upload_date)}
                 </div>
-                <p className="video-detail-description">
-                  {renderDescription(video.description)}
-                </p>
-                {video.tags && (
-                  <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    {video.tags.split(',').map((tag, idx) => (
-                      <span key={idx} className="vid-timestamps" style={{ fontSize: '13px' }}>
-                        #{tag.trim()}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                <div className="description-content-area">
+                  <p className="video-detail-description">
+                    {renderDescription(video.description)}
+                  </p>
+                  {video.tags && (
+                    <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {video.tags.split(',').map((tag, idx) => (
+                        <span key={idx} className="vid-timestamps" style={{ fontSize: '13px' }}>
+                          #{tag.trim()}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <button
+                  className="description-toggle-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsDescriptionExpanded(!isDescriptionExpanded);
+                  }}
+                >
+                  {isDescriptionExpanded ? 'Show less' : '...Show more'}
+                </button>
               </div>
             </div>
 
