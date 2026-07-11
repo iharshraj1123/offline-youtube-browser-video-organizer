@@ -2317,6 +2317,32 @@ function handleCastControl() {
                 'Target' => $target
             ]);
             break;
+        case 'get_position':
+            $soapRes = sendSOAPRequest($controlUrl, $service, 'GetPositionInfo', []);
+            $seconds = 0;
+            $durationSeconds = 0;
+            if ($soapRes['status'] === 'success' && !empty($soapRes['response'])) {
+                if (preg_match('/<RelTime>(.*?)<\/RelTime>/i', $soapRes['response'], $m)) {
+                    $relTime = trim($m[1]);
+                    $parts = explode(':', $relTime);
+                    if (count($parts) === 3) {
+                        $seconds = intval($parts[0]) * 3600 + intval($parts[1]) * 60 + intval($parts[2]);
+                    }
+                }
+                if (preg_match('/<TrackDuration>(.*?)<\/TrackDuration>/i', $soapRes['response'], $m)) {
+                    $trackDur = trim($m[1]);
+                    $parts = explode(':', $trackDur);
+                    if (count($parts) === 3) {
+                        $durationSeconds = intval($parts[0]) * 3600 + intval($parts[1]) * 60 + intval($parts[2]);
+                    }
+                }
+            }
+            echo json_encode([
+                'status' => $soapRes['status'],
+                'position' => $seconds,
+                'duration' => $durationSeconds
+            ]);
+            exit;
         default:
             throw new Exception('Unsupported cast action');
     }

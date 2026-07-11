@@ -1664,8 +1664,10 @@ function PlayerView({
     try {
       if (videoRef.current) {
         videoRef.current.pause();
+        videoRef.current.currentTime = 0;
         setIsPlaying(false);
       }
+      setCurrentTime(0);
 
       const setRes = await fetch(`./api/index.php?action=cast_control&server_ip=${encodeURIComponent(selectedServerIp)}`, {
         method: 'POST',
@@ -1747,27 +1749,50 @@ function PlayerView({
     }
   };
 
-  // Emulate video playback progress locally when casting
+  // Poll TV position every 2 seconds when casting
   useEffect(() => {
     if (!castDevice || !isPlaying) return;
 
-    const timer = setInterval(() => {
-      setCurrentTime(prev => {
-        const next = prev + 1;
-        if (videoRef.current) {
-          videoRef.current.currentTime = next;
-        }
-        if (next >= duration) {
-          clearInterval(timer);
-          handleVideoEnded();
-          return duration;
-        }
-        return next;
-      });
-    }, 1000);
+    let isSubscribed = true;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`./api/index.php?action=cast_control&server_ip=${encodeURIComponent(selectedServerIp)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            control_url: castDevice.control_url,
+            action: 'get_position'
+          })
+        });
+        const data = await res.json();
+        if (isSubscribed && data && data.status === 'success') {
+          const tvPos = parseInt(data.position) || 0;
+          const tvDur = parseInt(data.duration) || duration;
 
-    return () => clearInterval(timer);
-  }, [castDevice, isPlaying, duration]);
+          setCurrentTime(tvPos);
+          if (videoRef.current) {
+            videoRef.current.currentTime = tvPos;
+          }
+          if (tvDur > 0 && tvDur !== duration) {
+            setDuration(tvDur);
+          }
+
+          // Auto-advance if TV video has ended (RelTime equals or exceeds TrackDuration, and TrackDuration > 0)
+          if (tvDur > 0 && tvPos >= tvDur - 1) {
+            clearInterval(interval);
+            handleVideoEnded();
+          }
+        }
+      } catch (e) {
+        console.error('Error polling TV position:', e);
+      }
+    }, 2000);
+
+    return () => {
+      isSubscribed = false;
+      clearInterval(interval);
+    };
+  }, [castDevice, isPlaying, duration, selectedServerIp]);
 
   // Auto-cast next video when video changes and casting is active
   const prevVideoIdRef = useRef(video.vid_id);
