@@ -2071,6 +2071,55 @@ function sendSOAPRequest($controlUrl, $service, $action, $args) {
     ];
 }
 
+function resolveLocalFilePath($link) {
+    $path = str_replace('file:///', '', $link);
+    $path = urldecode($path);
+    return $path;
+}
+
+function checkAndTranscodeAudio($originalLink) {
+    $localPath = resolveLocalFilePath($originalLink);
+    if (!file_exists($localPath)) {
+        return null;
+    }
+
+    $cacheDir = __DIR__ . '/../uploads/cast_cache';
+    if (!file_exists($cacheDir)) {
+        @mkdir($cacheDir, 0777, true);
+    }
+
+    $fileHash = md5($localPath);
+    $cachedFile = $cacheDir . '/' . $fileHash . '.mp4';
+    $cachedUrlPath = '/youtube-v2/uploads/cast_cache/' . $fileHash . '.mp4';
+
+    if (file_exists($cachedFile)) {
+        return $cachedUrlPath;
+    }
+
+    $cmd = 'ffprobe -v error -select_streams a:0 -show_entries stream=codec_name,channels -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($localPath);
+    $output = [];
+    @exec($cmd, $output, $returnCode);
+
+    if ($returnCode === 0 && !empty($output)) {
+        $codec = trim($output[0]);
+        $channels = isset($output[1]) ? intval(trim($output[1])) : 2;
+
+        if (($codec === 'aac' || $codec === 'mp3') && $channels <= 2) {
+            return null;
+        }
+    }
+
+    $transcodeCmd = 'ffmpeg -y -i ' . escapeshellarg($localPath) . ' -c:v copy -c:a aac -ac 2 ' . escapeshellarg($cachedFile);
+    $transcodeOutput = [];
+    @exec($transcodeCmd, $transcodeOutput, $transcodeReturnCode);
+
+    if ($transcodeReturnCode === 0 && file_exists($cachedFile)) {
+        return $cachedUrlPath;
+    }
+
+    return null;
+}
+
 function handleCastControl() {
     $rawData = file_get_contents('php://input');
     $data = json_decode($rawData, true);
@@ -2078,6 +2127,7 @@ function handleCastControl() {
     $controlUrl = $data['control_url'] ?? '';
     $action = $data['action'] ?? '';
     $mediaUrl = $data['media_url'] ?? '';
+    $videoLink = $data['video_link'] ?? '';
 
     if (empty($controlUrl) || empty($action)) {
         throw new Exception('Missing control parameters');
@@ -2088,17 +2138,31 @@ function handleCastControl() {
 
     switch ($action) {
         case 'set_uri':
+            $finalMediaUrl = $mediaUrl;
+            if (!empty($videoLink)) {
+                $cachedPath = checkAndTranscodeAudio($videoLink);
+                if ($cachedPath !== null) {
+                    $serverIp = $_GET['server_ip'] ?? $_SERVER['SERVER_ADDR'] ?? 'localhost';
+                    if (!filter_var($serverIp, FILTER_VALIDATE_IP)) {
+                        $serverIp = 'localhost';
+                    }
+                    $port = $_SERVER['SERVER_PORT'] ?? '80';
+                    $portSuffix = ($port === '80' || $port === '443') ? '' : ':' . $port;
+                    $finalMediaUrl = "http://" . $serverIp . $portSuffix . $cachedPath;
+                }
+            }
+
             $title = $data['title'] ?? 'Video';
             $meta = '<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/">' .
                     '<item id="0" parentID="0" restricted="1">' .
                     '<dc:title>' . htmlspecialchars($title) . '</dc:title>' .
                     '<upnp:class>object.item.videoItem.movie</upnp:class>' .
-                    '<res protocolInfo="http-get:*:video/mp4:*">' . htmlspecialchars($mediaUrl) . '</res>' .
+                    '<res protocolInfo="http-get:*:video/mp4:*">' . htmlspecialchars($finalMediaUrl) . '</res>' .
                     '</item>' .
                     '</DIDL-Lite>';
 
             $res = sendSOAPRequest($controlUrl, $service, 'SetAVTransportURI', [
-                'CurrentURI' => $mediaUrl,
+                'CurrentURI' => $finalMediaUrl,
                 'CurrentURIMetaData' => $meta
             ]);
             break;

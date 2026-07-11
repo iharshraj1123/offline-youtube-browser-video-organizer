@@ -1660,6 +1660,7 @@ function PlayerView({
           control_url: device.control_url,
           action: 'set_uri',
           media_url: mediaUrl,
+          video_link: video.link,
           title: video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')
         })
       });
