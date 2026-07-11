@@ -2135,8 +2135,14 @@ function checkAndTranscodeMedia($originalLink) {
     }
 
     if ($needFullVideoTranscode) {
-        // Transcode both video to H.264 (preset superfast for speed) and audio to AAC stereo (44.1kHz / 128kbps) with faststart flags
-        $transcodeCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath) . ' -c:v libx264 -preset superfast -crf 23 -pix_fmt yuv420p -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart ' . escapeshellarg($cachedFile);
+        // Transcode video to H.264, scale to max 1080p, cap at 30fps
+        // Audio to AAC stereo (44.1kHz / 128kbps) with faststart flags
+        $transcodeCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath)
+            . ' -c:v libx264 -preset superfast -crf 23 -pix_fmt yuv420p'
+            . ' -vf "scale=\'min(1920,iw)\':\'min(1080,ih)\':force_original_aspect_ratio=decrease"'
+            . ' -r 30 -b:v 8M -maxrate 10M -bufsize 16M'
+            . ' -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart '
+            . escapeshellarg($cachedFile);
     } else {
         // H.264 video exists, only transcode audio to AAC stereo (44.1kHz / 128kbps) with faststart flags
         $transcodeCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath) . ' -c:v copy -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart ' . escapeshellarg($cachedFile);
