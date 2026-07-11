@@ -2483,6 +2483,87 @@ function PlayerView({
                     Disconnect
                   </button>
                 </div>
+
+                <div className="cast-active-options" style={{ marginTop: '16px', display: 'flex', gap: '16px', alignItems: 'center' }}>
+                  <button 
+                    className={`cast-option-toggle-btn ${isRandom ? 'active' : ''}`}
+                    onClick={() => {
+                      const next = !isRandom;
+                      setIsRandom(next);
+                      localStorage.setItem('yt_random', String(next));
+                      showFlashNotification(`Random Play: ${next ? 'ON' : 'OFF'}`);
+                    }}
+                    title="Toggle Random Playback"
+                    style={{
+                      background: isRandom ? 'rgba(62, 166, 255, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                      border: isRandom ? '1px solid #3ea6ff' : '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '20px',
+                      padding: '8px 16px',
+                      color: isRandom ? '#3ea6ff' : '#aaa',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <Shuffle size={16} /> Random
+                  </button>
+
+                  <button 
+                    className={`cast-option-toggle-btn ${isLooping ? 'active' : ''}`}
+                    onClick={() => {
+                      const next = !isLooping;
+                      setIsLooping(next);
+                      showFlashNotification(`Loop Video: ${next ? 'ON' : 'OFF'}`);
+                    }}
+                    title="Toggle Loop Video"
+                    style={{
+                      background: isLooping ? 'rgba(62, 166, 255, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                      border: isLooping ? '1px solid #3ea6ff' : '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '20px',
+                      padding: '8px 16px',
+                      color: isLooping ? '#3ea6ff' : '#aaa',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <Repeat size={16} /> Loop
+                  </button>
+
+                  <button 
+                    className={`cast-option-toggle-btn ${isReverseAutoplay ? 'active' : ''}`}
+                    onClick={() => {
+                      const next = !isReverseAutoplay;
+                      setIsReverseAutoplay(next);
+                      showFlashNotification(`Reverse Mode: ${next ? 'ON' : 'OFF'}`);
+                    }}
+                    title="Toggle Reverse Autoplay"
+                    style={{
+                      background: isReverseAutoplay ? 'rgba(62, 166, 255, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                      border: isReverseAutoplay ? '1px solid #3ea6ff' : '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: '20px',
+                      padding: '8px 16px',
+                      color: isReverseAutoplay ? '#3ea6ff' : '#aaa',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <CornerUpLeft size={16} /> Reverse
+                  </button>
+                </div>
               </>
             )}
           </div>
@@ -2820,6 +2901,17 @@ function PlayerView({
                   <span className="settings-item-left"><Shuffle size={16} /> Random Play</span>
                   <span className={`settings-item-right toggle-badge ${isRandom ? 'active' : ''}`}>
                     {isRandom ? 'ON' : 'OFF'}
+                  </span>
+                </div>
+
+                <div className="settings-menu-item" onClick={() => {
+                  const next = !isReverseAutoplay;
+                  setIsReverseAutoplay(next);
+                  showFlashNotification(`Reverse Mode: ${next ? 'ON' : 'OFF'}`);
+                }}>
+                  <span className="settings-item-left"><CornerUpLeft size={16} /> Reverse Mode</span>
+                  <span className={`settings-item-right toggle-badge ${isReverseAutoplay ? 'active' : ''}`}>
+                    {isReverseAutoplay ? 'ON' : 'OFF'}
                   </span>
                 </div>
 
