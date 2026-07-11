@@ -2073,7 +2073,7 @@ function sendSOAPRequest($controlUrl, $service, $action, $args) {
 
 function resolveLocalFilePath($link) {
     $path = str_replace('file:///', '', $link);
-    $path = urldecode($path);
+    $path = rawurldecode($path);
     return $path;
 }
 
@@ -2082,6 +2082,12 @@ function checkAndTranscodeAudio($originalLink) {
     if (!file_exists($localPath)) {
         return null;
     }
+
+    $ffmpegPath = getFFmpegPath();
+    if (!$ffmpegPath) {
+        return null; // FFmpeg not found
+    }
+    $ffprobePath = str_replace('ffmpeg.exe', 'ffprobe.exe', $ffmpegPath);
 
     $cacheDir = __DIR__ . '/../uploads/cast_cache';
     if (!file_exists($cacheDir)) {
@@ -2096,7 +2102,7 @@ function checkAndTranscodeAudio($originalLink) {
         return $cachedUrlPath;
     }
 
-    $cmd = 'ffprobe -v error -select_streams a:0 -show_entries stream=codec_name,channels -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($localPath);
+    $cmd = $ffprobePath . ' -v error -select_streams a:0 -show_entries stream=codec_name,channels -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($localPath);
     $output = [];
     @exec($cmd, $output, $returnCode);
 
@@ -2109,7 +2115,7 @@ function checkAndTranscodeAudio($originalLink) {
         }
     }
 
-    $transcodeCmd = 'ffmpeg -y -i ' . escapeshellarg($localPath) . ' -c:v copy -c:a aac -ac 2 ' . escapeshellarg($cachedFile);
+    $transcodeCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath) . ' -c:v copy -c:a aac -ac 2 ' . escapeshellarg($cachedFile);
     $transcodeOutput = [];
     @exec($transcodeCmd, $transcodeOutput, $transcodeReturnCode);
 
