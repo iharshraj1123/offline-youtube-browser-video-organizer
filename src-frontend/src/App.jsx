@@ -2532,9 +2532,20 @@ function PlayerView({
 
               <div className="video-detail-actions">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <img src={video.uploader_img} alt="" className="channel-avatar" />
+                  <img
+                    src={video.uploader_img}
+                    alt=""
+                    className="channel-avatar"
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => onNavigateToProfile && onNavigateToProfile(video.uploader_name)}
+                  />
                   <div>
-                    <div style={{ fontWeight: 'bold', fontSize: '15px' }}>{video.uploader_name}</div>
+                    <div
+                      style={{ fontWeight: 'bold', fontSize: '15px', cursor: 'pointer' }}
+                      onClick={() => onNavigateToProfile && onNavigateToProfile(video.uploader_name)}
+                    >
+                      {video.uploader_name}
+                    </div>
                     <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Channel Owner</div>
                   </div>
                 </div>
