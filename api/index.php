@@ -15,6 +15,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+// Dynamically determine the base directory path (e.g. "/youtube" or "/youtube-v2" or "")
+$baseDir = str_replace('\\', '/', dirname(dirname($_SERVER['SCRIPT_NAME'] ?? '')));
+if ($baseDir === '/') {
+    $baseDir = '';
+}
+define('BASE_DIR', $baseDir);
+
 require_once 'db.php';
 require_once 'utils/MetadataParser.php';
 
@@ -1174,7 +1181,7 @@ function handleSignup($pdo) {
         $description = 'Hiii There its me !!! yeah you dont know me....';
     }
 
-    $profilePic = '/youtube-v2/Userdatabase/ProfilePic/default' . rand(1, 10) . '.jpg';
+    $profilePic = BASE_DIR . '/Userdatabase/ProfilePic/default' . rand(1, 10) . '.jpg';
     if (isset($_FILES['profile_pic']) && $_FILES['profile_pic']['error'] === UPLOAD_ERR_OK) {
         $picName = $_FILES['profile_pic']['name'];
         $ext = strtolower(pathinfo($picName, PATHINFO_EXTENSION));
@@ -1187,7 +1194,7 @@ function handleSignup($pdo) {
         $newFileName = sanitizeFileName($username) . '_' . time() . '.' . $ext;
         $destPath = $destDir . '/' . $newFileName;
         if (move_uploaded_file($_FILES['profile_pic']['tmp_name'], $destPath)) {
-            $profilePic = '/youtube-v2/Userdatabase/ProfilePic/' . $newFileName;
+            $profilePic = BASE_DIR . '/Userdatabase/ProfilePic/' . $newFileName;
         }
     }
 
@@ -1366,7 +1373,7 @@ function handleAddComment($pdo) {
         $newFileName = 'att_' . $currentUserNum . '_' . time() . '_' . rand(100, 999) . '.' . $ext;
         $destPath = $destDir . '/' . $newFileName;
         if (move_uploaded_file($file['tmp_name'], $destPath)) {
-            $attachmentUrl = '/youtube-v2/uploads/comments/' . $newFileName;
+            $attachmentUrl = BASE_DIR . '/uploads/comments/' . $newFileName;
             if (in_array($ext, ['mp4', 'webm', 'ogg'])) {
                 $attachmentType = 'video';
             } elseif ($ext === 'gif') {
@@ -1739,7 +1746,7 @@ function handleGetEmotes() {
         if (in_array($ext, ['png', 'jpg', 'jpeg', 'gif'])) {
             $emotes[] = [
                 'name' => pathinfo($file, PATHINFO_FILENAME),
-                'url' => '/youtube-v2/uploads/emogies/' . rawurlencode($file)
+                'url' => BASE_DIR . '/uploads/emogies/' . rawurlencode($file)
             ];
         }
     }
@@ -1808,7 +1815,7 @@ function handleUpdateProfile($pdo) {
         $newFileName = sanitizeFileName($username) . '_' . time() . '.' . $ext;
         $destPath = $destDir . '/' . $newFileName;
         if (move_uploaded_file($_FILES['profile_pic']['tmp_name'], $destPath)) {
-            $profilePic = '/youtube-v2/Userdatabase/ProfilePic/' . $newFileName;
+            $profilePic = BASE_DIR . '/Userdatabase/ProfilePic/' . $newFileName;
         }
     }
 
@@ -2130,7 +2137,7 @@ function checkAndTranscodeMedia($originalLink) {
 
     $fileHash = md5($localPath);
     $cachedFile = $cacheDir . '/' . $fileHash . '.mp4';
-    $cachedUrlPath = '/youtube-v2/uploads/cast_cache/' . $fileHash . '.mp4';
+    $cachedUrlPath = BASE_DIR . '/uploads/cast_cache/' . $fileHash . '.mp4';
 
     if (file_exists($cachedFile)) {
         return $cachedUrlPath;
@@ -2254,13 +2261,13 @@ function handleCastControl() {
             $cachedPath = checkAndTranscodeMedia($videoLink);
             if ($cachedPath !== null) {
                 $fileName = basename($cachedPath);
-                $finalMediaUrl = "http://" . $serverIp . $portSuffix . "/youtube-v2/uploads/cast_cache/" . $fileName;
+                $finalMediaUrl = "http://" . $serverIp . $portSuffix . BASE_DIR . "/uploads/cast_cache/" . $fileName;
             } else {
                 $relativePath = str_replace('file:///', '', $videoLink);
                 $relativePath = rawurldecode($relativePath);
                 $workspaceRoot = str_replace('\\', '/', dirname(__DIR__) . '/');
                 $relativePathClean = str_replace($workspaceRoot, '', str_replace('\\', '/', $relativePath));
-                $finalMediaUrl = "http://" . $serverIp . $portSuffix . "/youtube-v2/api/index.php?action=cast_stream&file=" . urlencode($relativePathClean);
+                $finalMediaUrl = "http://" . $serverIp . $portSuffix . BASE_DIR . "/api/index.php?action=cast_stream&file=" . urlencode($relativePathClean);
             }
 
             $title = $data['title'] ?? 'Video';

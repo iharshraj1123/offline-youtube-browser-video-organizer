@@ -796,7 +796,7 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
       <form onSubmit={(e) => handlePostComment(e, null, null, '', 'main')} className="main-comment-form">
         <div className="comment-layout-row">
           <img
-            src={currentUser.pic || '/youtube-v2/Userdatabase/ProfilePic/defaulta.jpg'}
+            src={currentUser.pic || './Userdatabase/ProfilePic/defaulta.jpg'}
             alt={currentUser.name || 'Guest'}
             className="comment-user-avatar clickable"
             onClick={() => currentUser.name && onNavigateToProfile && onNavigateToProfile(currentUser.name)}

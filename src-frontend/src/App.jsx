@@ -115,7 +115,7 @@ export default function App() {
   // User details from cookies
   const [user, setUser] = useState(() => {
     const name = getCookie('loggedusername') || null;
-    const pic = getCookie('loggeduserpic') || '/youtube-v2/Userdatabase/ProfilePic/defaulta.jpg';
+    const pic = getCookie('loggeduserpic') || './Userdatabase/ProfilePic/defaulta.jpg';
     const privilege = getCookie('loggeduserprivilege') || 'USER';
     const num = getCookie('loggedusernum') ? parseInt(getCookie('loggedusernum')) : null;
     return { name, pic, privilege, num };
@@ -174,7 +174,7 @@ export default function App() {
   useEffect(() => {
     // Read session cookies if available
     const name = getCookie('loggedusername') || null;
-    const pic = getCookie('loggeduserpic') || '/youtube-v2/Userdatabase/ProfilePic/defaulta.jpg';
+    const pic = getCookie('loggeduserpic') || './Userdatabase/ProfilePic/defaulta.jpg';
     const privilege = getCookie('loggeduserprivilege') || 'USER';
     const num = getCookie('loggedusernum') ? parseInt(getCookie('loggedusernum')) : null;
     setUser({ name, pic, privilege, num });
@@ -479,7 +479,7 @@ export default function App() {
       if (data.status === 'success') {
         setUser({
           name: null,
-          pic: '/youtube-v2/Userdatabase/ProfilePic/defaulta.jpg',
+          pic: './Userdatabase/ProfilePic/defaulta.jpg',
           privilege: 'USER',
           num: null
         });
@@ -589,7 +589,7 @@ export default function App() {
 
           <div className="logo-container" style={{ cursor: 'pointer' }} onClick={handleGoHome}>
             <img
-              src="/youtube-v2/yt-logo.png"
+              src="./yt-logo.png"
               alt="YouTube"
               style={{ height: '24px', objectFit: 'contain', display: 'block' }}
             />
