@@ -2310,6 +2310,13 @@ function handleCastControl() {
         case 'stop':
             $res = sendSOAPRequest($controlUrl, $service, 'Stop', []);
             break;
+        case 'seek':
+            $target = $data['target'] ?? '00:00:00';
+            $res = sendSOAPRequest($controlUrl, $service, 'Seek', [
+                'Unit' => 'REL_TIME',
+                'Target' => $target
+            ]);
+            break;
         default:
             throw new Exception('Unsupported cast action');
     }

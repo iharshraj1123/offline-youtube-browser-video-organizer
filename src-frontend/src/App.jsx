@@ -1517,6 +1517,18 @@ function PlayerView({
     return 0;
   };
 
+  const formatUPnPTime = (seconds) => {
+    if (isNaN(seconds) || seconds < 0) return '00:00:00';
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+
+    const hStr = h < 10 ? '0' + h : h;
+    const mStr = m < 10 ? '0' + m : m;
+    const sStr = s < 10 ? '0' + s : s;
+    return `${hStr}:${mStr}:${sStr}`;
+  };
+
   const renderDescription = (text) => {
     if (!text) return 'Enjoy!';
     const combinedRegex = /(https?:\/\/[^\s]+)|(\d{1,2}:\d{2}(?::\d{2})?)/g;
@@ -1715,6 +1727,47 @@ function PlayerView({
       console.error(e);
     }
   };
+
+  const handleRemoteSeek = async (seconds) => {
+    if (!castDevice) return;
+    try {
+      const targetTime = formatUPnPTime(seconds);
+      await fetch('./api/index.php?action=cast_control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          control_url: castDevice.control_url,
+          action: 'seek',
+          target: targetTime
+        })
+      });
+      showFlashNotification(`Seeked to ${formatTime(seconds)}`);
+    } catch (e) {
+      console.error('Remote seek error:', e);
+    }
+  };
+
+  // Emulate video playback progress locally when casting
+  useEffect(() => {
+    if (!castDevice || !isPlaying) return;
+
+    const timer = setInterval(() => {
+      setCurrentTime(prev => {
+        const next = prev + 1;
+        if (videoRef.current) {
+          videoRef.current.currentTime = next;
+        }
+        if (next >= duration) {
+          clearInterval(timer);
+          handleVideoEnded();
+          return duration;
+        }
+        return next;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [castDevice, isPlaying, duration]);
 
   // Auto-cast next video when video changes and casting is active
   const prevVideoIdRef = useRef(video.vid_id);
@@ -2115,7 +2168,11 @@ function PlayerView({
           const newTime = Math.max(0, videoRef.current.currentTime - 5);
           videoRef.current.currentTime = newTime;
           setCurrentTime(newTime);
-          showFlashNotification(`⏪ ${formatTime(newTime)}`);
+          if (castDevice) {
+            handleRemoteSeek(newTime);
+          } else {
+            showFlashNotification(`⏪ ${formatTime(newTime)}`);
+          }
         }
       }
       if (e.code === 'ArrowRight') {
@@ -2124,7 +2181,11 @@ function PlayerView({
           const newTime = Math.min(duration, videoRef.current.currentTime + 5);
           videoRef.current.currentTime = newTime;
           setCurrentTime(newTime);
-          showFlashNotification(`⏩ ${formatTime(newTime)}`);
+          if (castDevice) {
+            handleRemoteSeek(newTime);
+          } else {
+            showFlashNotification(`⏩ ${formatTime(newTime)}`);
+          }
         }
       }
       // Arrow Up/Down: volume ±2% — only when video element is focused
@@ -2153,7 +2214,7 @@ function PlayerView({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isPlaying, isMuted, isFullscreen, duration, playbackSpeed, allVideos, video, isVideoFocused]);
+  }, [isPlaying, isMuted, isFullscreen, duration, playbackSpeed, allVideos, video, isVideoFocused, castDevice]);
 
   const handleVideoEnded = () => {
     if (isLooping) return;
@@ -2493,8 +2554,38 @@ function PlayerView({
                   <button className="cast-remote-btn" onClick={handlePrevVideo} title="Previous Video">
                     <SkipBack size={24} fill="currentColor" />
                   </button>
+                  <button 
+                    className="cast-remote-btn" 
+                    onClick={() => {
+                      if (videoRef.current) {
+                        const newTime = Math.max(0, videoRef.current.currentTime - 10);
+                        videoRef.current.currentTime = newTime;
+                        setCurrentTime(newTime);
+                        handleRemoteSeek(newTime);
+                      }
+                    }} 
+                    title="Seek Backward 10s"
+                    style={{ fontSize: '13px', fontWeight: 'bold' }}
+                  >
+                    -10s
+                  </button>
                   <button className="cast-remote-btn" onClick={togglePlay} title={isPlaying ? "Pause" : "Play"}>
                     {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" />}
+                  </button>
+                  <button 
+                    className="cast-remote-btn" 
+                    onClick={() => {
+                      if (videoRef.current) {
+                        const newTime = Math.min(duration, videoRef.current.currentTime + 10);
+                        videoRef.current.currentTime = newTime;
+                        setCurrentTime(newTime);
+                        handleRemoteSeek(newTime);
+                      }
+                    }} 
+                    title="Seek Forward 10s"
+                    style={{ fontSize: '13px', fontWeight: 'bold' }}
+                  >
+                    +10s
                   </button>
                   <button className="cast-remote-btn" onClick={handleNextVideo} title="Next Video">
                     <SkipForward size={24} fill="currentColor" />
