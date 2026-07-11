@@ -458,7 +458,7 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
                   @{node.replied_to}
                 </span>
               )}
-              <div className="comment-body-text" dangerouslySetInnerHTML={{ __html: enrichedHtml }} />
+              <span className="comment-body-text" dangerouslySetInnerHTML={{ __html: enrichedHtml }} />
             </div>
 
             {node.attachment_url && (
