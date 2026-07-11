@@ -323,7 +323,6 @@ export default function App() {
           setMobileSearchActive(true);
           setTimeout(() => {
             searchInput.focus();
-            searchInput.select();
           }, 50);
         }
       }
@@ -1982,6 +1981,27 @@ function PlayerView({
     const handleKeyDown = (e) => {
       if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
         return;
+      }
+      if (e.code === 'KeyL') {
+        e.preventDefault();
+        setIsLooping(prev => {
+          const next = !prev;
+          showFlashNotification(`Loop Video: ${next ? 'ON' : 'OFF'}`);
+          return next;
+        });
+      }
+      if (e.code === 'KeyR') {
+        e.preventDefault();
+        setIsRandom(prev => {
+          const next = !prev;
+          localStorage.setItem('yt_random', String(next));
+          showFlashNotification(`Random Play: ${next ? 'ON' : 'OFF'}`);
+          return next;
+        });
+      }
+      if (e.code === 'KeyO') {
+        e.preventDefault();
+        setShowSettings(prev => !prev);
       }
       if (castDevice) {
         if (e.code === 'Space') {
