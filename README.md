@@ -1,5 +1,12 @@
 # Offline YouTube Browser & Video Organizer (YouTube-v2)
 
+<img width="1912" height="967" alt="image" src="https://github.com/user-attachments/assets/dac41d5a-d97a-417b-ac3e-a087c51e432f" />
+
+<img width="1915" height="922" alt="image" src="https://github.com/user-attachments/assets/8552707e-6b96-458a-98c1-6f83fdd378ad" />
+
+<img width="1910" height="917" alt="image" src="https://github.com/user-attachments/assets/c007a1d0-8bc3-4326-9b00-8bdb6e80309a" />
+
+
 A fast, standalone, and premium offline video player, library indexer, and custom social space. Built with React, Vite, PHP, and MySQL, this application scans local directories for video files, extracts rich technical metadata and thumbnail preview frames using FFmpeg, and presents them in a modern, glassmorphic dark-theme YouTube-clone interface.
 
 ## 🚀 Key Features
