@@ -2590,6 +2590,7 @@ function PlayerView({
               currentUser={currentUser}
               onOpenAuth={onOpenAuth}
               onNavigateToProfile={onNavigateToProfile}
+              showFlashNotification={showFlashNotification}
               onSeekVideo={(seconds) => {
                 if (videoRef.current) {
                   videoRef.current.currentTime = seconds;

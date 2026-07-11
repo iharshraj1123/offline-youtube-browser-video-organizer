@@ -105,6 +105,9 @@ try {
         case 'delete_comment':
             handleDeleteComment($pdo);
             break;
+        case 'edit_comment':
+            handleEditComment($pdo);
+            break;
         case 'get_user_card':
             handleGetUserCard($pdo);
             break;
@@ -1588,6 +1591,54 @@ function handleDeleteComment($pdo) {
         $stmt->execute([':id' => $targetId]);
         echo json_encode(['status' => 'deleted']);
     }
+    exit;
+}
+
+function handleEditComment($pdo) {
+    $currentUserNum = getCurrentUserNum();
+    if (!$currentUserNum) {
+        header('HTTP/1.1 401 Unauthorized');
+        echo json_encode(['error' => 'Authentication required']);
+        exit;
+    }
+
+    $rawData = file_get_contents('php://input');
+    $data = json_decode($rawData, true);
+
+    $targetType = $data['target_type'] ?? '';
+    $targetId = intval($data['target_id'] ?? 0);
+    $newText = trim($data['new_text'] ?? '');
+
+    if (!in_array($targetType, ['comment', 'reply']) || $targetId <= 0 || $newText === '') {
+        throw new Exception('Invalid edit parameters');
+    }
+
+    $table = $targetType === 'comment' ? 'comments' : 'replies';
+    $idCol = $targetType === 'comment' ? 'com_id' : 'reply_id';
+    $textCol = $targetType === 'comment' ? 'comment' : 'reply';
+
+    // Verify owner
+    $stmt = $pdo->prepare("SELECT user_num FROM `$table` WHERE `$idCol` = :id");
+    $stmt->execute([':id' => $targetId]);
+    $item = $stmt->fetch();
+    if (!$item) {
+        throw new Exception('Item not found');
+    }
+
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    $isAdmin = isset($_SESSION['loggeduserprivilege']) && $_SESSION['loggeduserprivilege'] === 'ADMIN';
+    if (intval($item['user_num']) !== $currentUserNum && !$isAdmin) {
+        header('HTTP/1.1 403 Forbidden');
+        echo json_encode(['error' => 'Permission denied']);
+        exit;
+    }
+
+    $stmt = $pdo->prepare("UPDATE `$table` SET `$textCol` = :text, edited = 'true' WHERE `$idCol` = :id");
+    $stmt->execute([':text' => $newText, ':id' => $targetId]);
+
+    echo json_encode(['status' => 'success']);
     exit;
 }
 

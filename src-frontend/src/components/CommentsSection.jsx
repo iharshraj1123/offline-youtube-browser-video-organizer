@@ -1,11 +1,26 @@
 // c:\xampp\htdocs\youtube-v2\src-frontend\src\components\CommentsSection.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { ThumbsUp, ThumbsDown, MessageSquare, Trash2, Smile, Image, Play, ChevronDown, ChevronUp, Loader2, Paperclip, X } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, MessageSquare, Trash2, Smile, Image, Play, ChevronDown, ChevronUp, Loader2, Paperclip, X, MoreVertical, Pencil, Share2 } from 'lucide-react';
 
-export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo, onNavigateToProfile }) {
+export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo, onNavigateToProfile, showFlashNotification }) {
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // More menu, editing states
+  const [activeMenuId, setActiveMenuId] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [editText, setEditText] = useState('');
+
+  useEffect(() => {
+    const handleDocumentClick = (e) => {
+      if (!e.target.closest('.comment-more-menu-container')) {
+        setActiveMenuId(null);
+      }
+    };
+    document.addEventListener('click', handleDocumentClick);
+    return () => document.removeEventListener('click', handleDocumentClick);
+  }, []);
 
   // Emotes list
   const [emotes, setEmotes] = useState([]);
@@ -192,6 +207,28 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
       if (data && !data.error) fetchComments();
     } catch (err) {
       console.error('Error downvoting:', err);
+    }
+  };
+
+  const handleEditSave = async (targetType, targetId) => {
+    if (!editText.trim()) return;
+    try {
+      const res = await fetch('./api/index.php?action=edit_comment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          target_type: targetType,
+          target_id: targetId,
+          new_text: editText
+        })
+      });
+      const data = await res.json();
+      if (data && !data.error) {
+        setEditingId(null);
+        fetchComments();
+      }
+    } catch (err) {
+      console.error('Error editing comment:', err);
     }
   };
 
@@ -447,22 +484,122 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
               {node.edited === 'true' && <span className="comment-edited-label">(edited)</span>}
             </div>
 
-            <div className="comment-text-wrapper">
-              {node.replied_to && isReply && (
-                <span
-                  className="reply-to-mention"
-                  onClick={() => onNavigateToProfile && onNavigateToProfile(node.replied_to)}
-                  onMouseEnter={(e) => handleUserMouseEnter(node.replied_to, e)}
-                  onMouseLeave={handleUserMouseLeave}
-                >
-                  @{node.replied_to}
-                </span>
-              )}
-              <span className="comment-body-text" dangerouslySetInnerHTML={{ __html: enrichedHtml }} />
+            {editingId === itemId ? (
+              <div className="comment-inline-edit-box">
+                <textarea
+                  className="comment-edit-textarea"
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                  autoFocus
+                />
+                <div className="comment-edit-actions">
+                  <button
+                    className="comment-edit-cancel"
+                    onClick={() => setEditingId(null)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="comment-edit-save"
+                    onClick={() => handleEditSave(voteTargetType, voteTargetId)}
+                    disabled={!editText.trim()}
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="comment-text-wrapper">
+                {node.replied_to && isReply && (
+                  <span
+                    className="reply-to-mention"
+                    onClick={() => onNavigateToProfile && onNavigateToProfile(node.replied_to)}
+                    onMouseEnter={(e) => handleUserMouseEnter(node.replied_to, e)}
+                    onMouseLeave={handleUserMouseLeave}
+                  >
+                    @{node.replied_to}
+                  </span>
+                )}
+                <span className="comment-body-text" dangerouslySetInnerHTML={{ __html: enrichedHtml }} />
+              </div>
+            )}
             </div>
 
+            <div className="comment-more-menu-container">
+              <button
+                className="comment-more-menu-trigger"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveMenuId(activeMenuId === itemId ? null : itemId);
+                }}
+                title="Options"
+              >
+                <MoreVertical size={16} />
+              </button>
+              {activeMenuId === itemId && (
+                <div className="comment-more-dropdown-overlay">
+                  {(isOwn || isAdmin) ? (
+                    <>
+                      <button
+                        className="dropdown-menu-item"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingId(itemId);
+                          setEditText(isReply ? node.reply : node.comment);
+                          setActiveMenuId(null);
+                        }}
+                      >
+                        <Pencil size={14} />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        className="dropdown-menu-item"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(voteTargetType, voteTargetId);
+                          setActiveMenuId(null);
+                        }}
+                      >
+                        <Trash2 size={14} />
+                        <span>Delete</span>
+                      </button>
+                      <button
+                        className="dropdown-menu-item"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const deepLink = `${window.location.origin}${window.location.pathname}?v=${videoId}#${itemId}`;
+                          navigator.clipboard.writeText(deepLink);
+                          if (showFlashNotification) showFlashNotification('Comment link copied!');
+                          setActiveMenuId(null);
+                        }}
+                      >
+                        <Share2 size={14} />
+                        <span>Share</span>
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      className="dropdown-menu-item"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const deepLink = `${window.location.origin}${window.location.pathname}?v=${videoId}#${itemId}`;
+                        navigator.clipboard.writeText(deepLink);
+                        if (showFlashNotification) showFlashNotification('Comment link copied!');
+                        setActiveMenuId(null);
+                      }}
+                    >
+                      <Share2 size={14} />
+                      <span>Share</span>
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="comment-body-col-actions-wrapper" style={{ paddingLeft: '52px' }}>
             {node.attachment_url && (
-              <div className="comment-attachment-display">
+              <div className="comment-attachment-display" style={{ marginBottom: '8px' }}>
                 {node.attachment_type === 'video' ? (
                   <video src={node.attachment_url} className="comment-att-media-v" controls preload="metadata" />
                 ) : (
@@ -493,15 +630,6 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
               >
                 Reply
               </button>
-
-              {(isOwn || isAdmin) && (
-                <button
-                  className="comment-action-btn delete-btn"
-                  onClick={() => handleDelete(voteTargetType, voteTargetId)}
-                >
-                  <Trash2 size={13} />
-                </button>
-              )}
             </div>
 
             {/* Reply Input Box (Expands smoothly on focus) */}
@@ -594,7 +722,6 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
             )}
           </div>
         </div>
-      </div>
     );
   };
 

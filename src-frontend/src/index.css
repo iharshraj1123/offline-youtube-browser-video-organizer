@@ -2464,7 +2464,7 @@ body.mini-player-dragging * {
 
 .reply-to-mention {
   color: #3ea6ff;
-  font-weight: bold;
+  font-weight: 500;
   margin-right: 6px;
   cursor: pointer;
 }
@@ -3698,4 +3698,153 @@ body.mini-player-dragging * {
   color: #555;
   cursor: not-allowed;
   background-color: transparent;
+}
+
+/* Comment Options More Menu */
+.comment-node {
+  position: relative;
+}
+
+.comment-more-menu-container {
+  position: relative;
+  margin-top: 2px;
+}
+
+.comment-more-menu-trigger {
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, color 0.2s;
+  opacity: 0;
+}
+
+.comment-node:hover .comment-more-menu-trigger,
+.comment-more-menu-container:focus-within .comment-more-menu-trigger {
+  opacity: 1;
+}
+
+.comment-more-menu-trigger:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.comment-more-dropdown-overlay {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: rgba(28, 28, 28, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 6px 0;
+  min-width: 130px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  z-index: 200;
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-menu-item {
+  background: none;
+  border: none;
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  color: #eee;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background-color 0.15s;
+}
+
+.dropdown-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.dropdown-menu-item svg {
+  color: #aaa;
+}
+
+.dropdown-menu-item:hover svg {
+  color: #fff;
+}
+
+/* Comment Inline Edit Box */
+.comment-inline-edit-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.comment-edit-textarea {
+  background-color: transparent;
+  border: none;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 40px;
+  padding: 6px 0;
+  width: 100%;
+  outline: none;
+  transition: border-bottom-color 0.25s;
+}
+
+.comment-edit-textarea:focus {
+  border-bottom-color: #3ea6ff;
+}
+
+.comment-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.comment-edit-cancel,
+.comment-edit-save {
+  background: none;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 18px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.comment-edit-cancel {
+  color: #aaa;
+}
+
+.comment-edit-cancel:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.comment-edit-save {
+  background-color: #3ea6ff;
+  color: #0f0f0f;
+}
+
+.comment-edit-save:hover {
+  background-color: #65b8ff;
+}
+
+.comment-edit-save:disabled {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #717171;
+  cursor: not-allowed;
 }
