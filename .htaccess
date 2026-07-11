@@ -24,12 +24,15 @@
     </FilesMatch>
 </IfModule>
 
-# DLNA compliance headers for MP4 files (enables seamless casting to legacy TVs)
+# DLNA compliance headers for MP4 files (Sony Bravia compatible)
 <IfModule mod_headers.c>
     <FilesMatch "\.mp4$">
-        Header set contentFeatures.dlna.org "DLNA.ORG_PN=AVC_MP4_HP_HD_24p;DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01700000000000000000000000000000"
+        Header set Content-Type "video/mp4; DLNA.ORG_PN=AVC_MP4_HP_HD_24p"
+        Header set contentFeatures.dlna.org "DLNA.ORG_PN=AVC_MP4_HP_HD_24p;DLNA.ORG_OP=03;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=8d700000000000000000000000000000"
         Header set transferMode.dlna.org "Streaming"
-        Header set realTimeInfo.dlna.org "DLNA.ORG_LXT=0"
+        Header set realTimeInfo.dlna.org "DLNA.ORG_TLAG=*"
+        Header set Accept-Ranges "bytes"
+        Header set Connection "close"
     </FilesMatch>
 </IfModule>
 

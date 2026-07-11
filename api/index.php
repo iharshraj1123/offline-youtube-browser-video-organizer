@@ -2183,7 +2183,7 @@ function handleCastControl() {
                 $cachedPath = checkAndTranscodeMedia($videoLink);
                 if ($cachedPath !== null) {
                     $fileName = basename($cachedPath);
-                    $finalMediaUrl = "http://" . $serverIp . $portSuffix . "/youtube-v2/api/index.php?action=cast_stream&file=" . urlencode($fileName);
+                    $finalMediaUrl = "http://" . $serverIp . $portSuffix . "/youtube-v2/uploads/cast_cache/" . $fileName;
                 } else {
                     $relativePath = str_replace('file:///', '', $videoLink);
                     $relativePath = rawurldecode($relativePath);
