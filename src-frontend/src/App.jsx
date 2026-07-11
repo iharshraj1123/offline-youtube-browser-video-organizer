@@ -858,6 +858,9 @@ export default function App() {
               }}
               isMiniPlayer={currentView !== 'player'}
               onExpand={() => {
+                if (playingVideo) {
+                  window.history.pushState(null, '', `?v=${playingVideo.vid_id}`);
+                }
                 setCurrentView('player');
                 window.scrollTo(0, 0);
               }}
