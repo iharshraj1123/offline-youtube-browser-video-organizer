@@ -2187,9 +2187,8 @@ function handleCastControl() {
                 } else {
                     $relativePath = str_replace('file:///', '', $videoLink);
                     $relativePath = rawurldecode($relativePath);
-                    $workspaceRoot = str_replace('\\', '/', dirname(__DIR__) . '/');
-                    $relativePathClean = str_replace($workspaceRoot, '', str_replace('\\', '/', $relativePath));
-                    $finalMediaUrl = "http://" . $serverIp . $portSuffix . "/youtube-v2/api/index.php?action=cast_stream&file=" . urlencode($relativePathClean);
+                    $apachePath = '/' . strtolower(substr($relativePath, 0, 1)) . ':' . substr($relativePath, 2);
+                    $finalMediaUrl = "http://" . $serverIp . $portSuffix . $apachePath;
                 }
             } else {
                 $finalMediaUrl = $mediaUrl;
