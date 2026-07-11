@@ -7,7 +7,7 @@ import {
   Play, Pause, Volume2, VolumeX, Maximize, Minimize,
   Settings, Trash2, Edit, RefreshCw, Plus, Check, Loader2,
   ThumbsUp, ThumbsDown, Info, Mic, Bell, Share2, CornerUpLeft,
-  Repeat, Shuffle, Download, SkipBack, SkipForward, ListMusic, X
+  Repeat, Shuffle, Download, SkipBack, SkipForward, ListMusic, X, RotateCcw, RotateCw
 } from 'lucide-react';
 import { AuthModal } from './components/AuthModal';
 import { CommentsSection } from './components/CommentsSection';
@@ -2549,7 +2549,27 @@ function PlayerView({
               <>
                 <Tv size={64} className="cast-active-icon" />
                 <div className="cast-active-title">Casting to {castDevice.name}</div>
-                <div className="cast-active-status">Playing: {video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}</div>
+                 <div className="cast-active-status">Playing: {video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}</div>
+                <div 
+                  className="cast-active-time-meter" 
+                  style={{ 
+                    fontSize: '14px', 
+                    fontWeight: '500', 
+                    color: '#3ea6ff', 
+                    marginTop: '8px', 
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '12px',
+                    padding: '4px 12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <span style={{ color: '#fff' }}>{formatTime(currentTime)}</span>
+                  <span style={{ color: '#606060' }}>/</span>
+                  <span style={{ color: '#aaa' }}>{formatTime(duration)}</span>
+                </div>
                 <div className="cast-active-controls">
                   <button className="cast-remote-btn" onClick={handlePrevVideo} title="Previous Video">
                     <SkipBack size={24} fill="currentColor" />
@@ -2565,9 +2585,10 @@ function PlayerView({
                       }
                     }} 
                     title="Seek Backward 10s"
-                    style={{ fontSize: '13px', fontWeight: 'bold' }}
+                    style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}
                   >
-                    -10s
+                    <RotateCcw size={18} />
+                    <span style={{ fontSize: '9px', fontWeight: 'bold', opacity: 0.8 }}>10s</span>
                   </button>
                   <button className="cast-remote-btn" onClick={togglePlay} title={isPlaying ? "Pause" : "Play"}>
                     {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" />}
@@ -2583,9 +2604,10 @@ function PlayerView({
                       }
                     }} 
                     title="Seek Forward 10s"
-                    style={{ fontSize: '13px', fontWeight: 'bold' }}
+                    style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}
                   >
-                    +10s
+                    <RotateCw size={18} />
+                    <span style={{ fontSize: '9px', fontWeight: 'bold', opacity: 0.8 }}>10s</span>
                   </button>
                   <button className="cast-remote-btn" onClick={handleNextVideo} title="Next Video">
                     <SkipForward size={24} fill="currentColor" />
