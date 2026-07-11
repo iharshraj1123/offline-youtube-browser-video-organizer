@@ -72,17 +72,72 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
 
   // Auto-resize input ref
   const mainInputRef = useRef(null);
+  const hasScrolledToHash = useRef(false);
+
+  // Reset scroll-to-hash ref when video changes
+  useEffect(() => {
+    hasScrolledToHash.current = false;
+  }, [videoId]);
 
   useEffect(() => {
     fetchComments();
     fetchEmotes();
   }, [videoId]);
 
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash && comments.length > 0 && !hasScrolledToHash.current) {
+      const targetIdStr = hash.replace('#', '');
+      setTimeout(() => {
+        const element = document.getElementById(targetIdStr);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.classList.add('highlighted-comment-node');
+          hasScrolledToHash.current = true;
+          setTimeout(() => {
+            element.classList.remove('highlighted-comment-node');
+          }, 3000);
+        }
+      }, 600);
+    }
+  }, [comments, expandedThreads, videoId]);
+
   const fetchComments = async () => {
     try {
       const res = await fetch(`./api/index.php?action=get_comments&video_id=${videoId}`);
       const data = await res.json();
-      setComments(Array.isArray(data) ? data : []);
+      let commentsList = Array.isArray(data) ? data : [];
+
+      // Check if we need to highlight a specific comment or reply thread
+      const hash = window.location.hash;
+      if (hash) {
+        const targetIdStr = hash.replace('#', '');
+        let targetComId = null;
+
+        if (targetIdStr.startsWith('com_')) {
+          targetComId = parseInt(targetIdStr.replace('com_', ''));
+        } else if (targetIdStr.startsWith('rep_')) {
+          const replyId = parseInt(targetIdStr.replace('rep_', ''));
+          const parentCom = commentsList.find(c => (c.replies || []).some(r => r.reply_id === replyId));
+          if (parentCom) {
+            targetComId = parentCom.com_id;
+            // Auto expand replies thread
+            setExpandedThreads(prev => ({ ...prev, [parentCom.com_id]: true }));
+          }
+        }
+
+        // Put the target comment thread at the top
+        if (targetComId) {
+          const targetIndex = commentsList.findIndex(c => c.com_id === targetComId);
+          if (targetIndex > -1) {
+            const targetCom = commentsList[targetIndex];
+            commentsList.splice(targetIndex, 1);
+            commentsList.unshift(targetCom);
+          }
+        }
+      }
+
+      setComments(commentsList);
     } catch (e) {
       console.error('Error fetching comments:', e);
     }
@@ -456,6 +511,7 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
     return (
       <div
         key={itemId}
+        id={itemId}
         className={`comment-node ${isReply ? 'reply-node' : 'root-comment-node'}`}
         onClick={handleCommentContainerClick}
       >
@@ -482,6 +538,11 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
                 {node.com_date ? formatNiceTime(node.com_date, node.com_time) : formatNiceTime(node.reply_date, node.reply_time)}
               </span>
               {node.edited === 'true' && <span className="comment-edited-label">(edited)</span>}
+              {window.location.hash.replace('#', '') === itemId && (
+                <span className="highlighted-comment-badge">
+                  Highlighted {isReply ? 'reply' : 'comment'}
+                </span>
+              )}
             </div>
 
             {editingId === itemId ? (

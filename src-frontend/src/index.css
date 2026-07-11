@@ -3848,3 +3848,29 @@ body.mini-player-dragging * {
   color: #717171;
   cursor: not-allowed;
 }
+
+.highlighted-comment-badge {
+  font-size: 11px;
+  background-color: rgba(62, 166, 255, 0.15);
+  color: #3ea6ff;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  margin-left: 8px;
+  display: inline-block;
+}
+
+@keyframes flashHighlight {
+  0% {
+    background-color: rgba(62, 166, 255, 0.2);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.highlighted-comment-node {
+  animation: flashHighlight 3s forwards;
+  border-radius: 6px;
+  padding: 4px;
+}
