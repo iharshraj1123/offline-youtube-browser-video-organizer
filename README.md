@@ -89,42 +89,7 @@ or run this SQL:
 
 ```GRANT ALL PRIVILEGES ON * . * TO 'admin'@'%' IDENTIFIED BY 'pwdpwd' WITH GRANT OPTION;```
    
-5. Now You Must allow localfile access in your browser using :
-
---------------------------------------------------
-### Method 1 (best for firefox)
-
-use "about:config" in URL to go to advanced config
-
-now make variables (by searching them, one by one) and set their corresponding values :
-
-capability.policy.policynames = "filelinks"
-
-capability.policy.filelinks.checkloaduri.enabled = "allAccess"
-
-capability.policy.filelinks.sites = "http://localhost/YouTube/play.php http://localhost/YouTube/index.php http://localhost/YouTube/"
-
-
---------------------------------------------------
-
-### Method 2
-
-// == FILE URI LINK POLICY (checkloaduri) ==
-
-// Create policy enabling http: or https: pages to link to file:
-
-user_pref("capability.policy.policynames", "filelinks");
-
-user_pref("capability.policy.filelinks.checkloaduri.enabled", "allAccess");
-
-// Sites to which the policy applies (protocol://hostname protocol://hostname)
-
-user_pref("capability.policy.filelinks.sites", "http://localhost/YouTube/play.php http://localhost/YouTube/index.php http://localhost/YouTube/");
-
-
---------------------------------------------------
-
-## HOT KEYs (the video must be focussed to use the ones below)
+5. **HOT KEYs** (the video must be focussed to use the ones below)
 
 5 (from Numpad) :  focus video  (use this if video isnt focussed and you too lazy to move mouse)
 
