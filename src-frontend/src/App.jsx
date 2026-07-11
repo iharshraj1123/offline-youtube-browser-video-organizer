@@ -1627,7 +1627,7 @@ function PlayerView({
   };
 
   const startCasting = async (device) => {
-    const isMp4 = video.video_path.toLowerCase().endsWith('.mp4');
+    const isMp4 = video.link && video.link.toLowerCase().endsWith('.mp4');
     if (!isMp4) {
       showFlashNotification(`Casting only supports MP4 files. Skipping "${video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}".`);
       if (activePlaylist && playlists.find(p => p.pl_id === activePlaylist)?.videos?.length > 1) {
@@ -1639,7 +1639,13 @@ function PlayerView({
     }
 
     const localHostIp = selectedServerIp || window.location.hostname;
-    const mediaUrl = `${window.location.protocol}//${localHostIp}${video.video_path}`;
+    const translatedPath = translateVideoUrl(video.link);
+    const encodedPath = translatedPath.split('/').map(seg => {
+      if (seg.match(/^[a-zA-Z]:$/)) return seg;
+      return encodeURIComponent(seg);
+    }).join('/');
+
+    const mediaUrl = `${window.location.protocol}//${localHostIp}${encodedPath}`;
 
     try {
       if (videoRef.current) {
@@ -1653,7 +1659,8 @@ function PlayerView({
         body: JSON.stringify({
           control_url: device.control_url,
           action: 'set_uri',
-          media_url: mediaUrl
+          media_url: mediaUrl,
+          title: video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')
         })
       });
       const setResult = await setRes.json();
@@ -1708,7 +1715,13 @@ function PlayerView({
     }
 
     const localHostIp = selectedServerIp || window.location.hostname;
-    const mediaUrl = `${window.location.protocol}//${localHostIp}${video.video_path}`;
+    const translatedPath = translateVideoUrl(video.link);
+    const encodedPath = translatedPath.split('/').map(seg => {
+      if (seg.match(/^[a-zA-Z]:$/)) return seg;
+      return encodeURIComponent(seg);
+    }).join('/');
+
+    const mediaUrl = `${window.location.protocol}//${localHostIp}${encodedPath}`;
     
     const request = new PresentationRequest([mediaUrl]);
     try {
