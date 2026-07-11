@@ -2262,12 +2262,12 @@ function handleCastStream() {
         exit('Cannot open file');
     }
 
-    header("Content-Type: video/mp4");
+    header("Content-Type: video/mp4; DLNA.ORG_PN=AVC_MP4_HP_HD_24p");
     header("Accept-Ranges: bytes");
-    header("contentFeatures.dlna.org: DLNA.ORG_PN=AVC_MP4_HP_HD_24p;DLNA.ORG_OP=03;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01700000000000000000000000000000");
+    header("contentFeatures.dlna.org: DLNA.ORG_PN=AVC_MP4_HP_HD_24p;DLNA.ORG_OP=03;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=8d700000000000000000000000000000");
     header("transferMode.dlna.org: Streaming");
-    header("realTimeInfo.dlna.org: DLNA.ORG_LXT=0");
-    header("Connection: keep-alive");
+    header("realTimeInfo.dlna.org: DLNA.ORG_TLAG=*");
+    header("Connection: close");
 
     $start = 0;
     $end = $size - 1;
