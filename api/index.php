@@ -2077,7 +2077,7 @@ function resolveLocalFilePath($link) {
     return $path;
 }
 
-function checkAndTranscodeAudio($originalLink) {
+function checkAndTranscodeMedia($originalLink) {
     $localPath = resolveLocalFilePath($originalLink);
     if (!file_exists($localPath)) {
         return null;
@@ -2102,20 +2102,43 @@ function checkAndTranscodeAudio($originalLink) {
         return $cachedUrlPath;
     }
 
-    $cmd = $ffprobePath . ' -v error -select_streams a:0 -show_entries stream=codec_name,channels -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($localPath);
-    $output = [];
-    @exec($cmd, $output, $returnCode);
-
-    if ($returnCode === 0 && !empty($output)) {
-        $codec = trim($output[0]);
-        $channels = isset($output[1]) ? intval(trim($output[1])) : 2;
-
-        if (($codec === 'aac' || $codec === 'mp3') && $channels <= 2) {
-            return null;
-        }
+    // Check video codec
+    $videoCodec = '';
+    $vcmd = $ffprobePath . ' -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($localPath);
+    $voutput = [];
+    @exec($vcmd, $voutput, $vcode);
+    if ($vcode === 0 && !empty($voutput)) {
+        $videoCodec = trim($voutput[0]);
     }
 
-    $transcodeCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath) . ' -c:v copy -c:a aac -ac 2 ' . escapeshellarg($cachedFile);
+    // Check audio codec and channels
+    $audioCodec = '';
+    $audioChannels = 2;
+    $acmd = $ffprobePath . ' -v error -select_streams a:0 -show_entries stream=codec_name,channels -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($localPath);
+    $aoutput = [];
+    @exec($acmd, $aoutput, $acode);
+    if ($acode === 0 && !empty($aoutput)) {
+        $audioCodec = trim($aoutput[0]);
+        $audioChannels = isset($aoutput[1]) ? intval(trim($aoutput[1])) : 2;
+    }
+
+    $ext = strtolower(pathinfo($localPath, PATHINFO_EXTENSION));
+
+    $needFullVideoTranscode = ($ext !== 'mp4' || $videoCodec !== 'h264');
+    $needAudioTranscode = (($audioCodec !== 'aac' && $audioCodec !== 'mp3') || $audioChannels > 2);
+
+    if (!$needFullVideoTranscode && !$needAudioTranscode) {
+        return null; // Fully compatible natively
+    }
+
+    if ($needFullVideoTranscode) {
+        // Transcode both video to H.264 (preset superfast for speed) and audio to AAC stereo
+        $transcodeCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath) . ' -c:v libx264 -preset superfast -crf 23 -c:a aac -ac 2 ' . escapeshellarg($cachedFile);
+    } else {
+        // H.264 video exists, only transcode audio (Fast copy mode)
+        $transcodeCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath) . ' -c:v copy -c:a aac -ac 2 ' . escapeshellarg($cachedFile);
+    }
+
     $transcodeOutput = [];
     @exec($transcodeCmd, $transcodeOutput, $transcodeReturnCode);
 
@@ -2146,7 +2169,7 @@ function handleCastControl() {
         case 'set_uri':
             $finalMediaUrl = $mediaUrl;
             if (!empty($videoLink)) {
-                $cachedPath = checkAndTranscodeAudio($videoLink);
+                $cachedPath = checkAndTranscodeMedia($videoLink);
                 if ($cachedPath !== null) {
                     $serverIp = $_GET['server_ip'] ?? $_SERVER['SERVER_ADDR'] ?? 'localhost';
                     if (!filter_var($serverIp, FILTER_VALIDATE_IP)) {

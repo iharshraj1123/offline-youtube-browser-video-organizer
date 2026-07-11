@@ -1332,6 +1332,8 @@ function PlayerView({
   const [discovering, setDiscovering] = useState(false);
   const [serverIps, setServerIps] = useState([]);
   const [selectedServerIp, setSelectedServerIp] = useState(() => localStorage.getItem('yt_cast_server_ip') || '');
+  const [isTranscoding, setIsTranscoding] = useState(false);
+  const [pendingTranscodeDevice, setPendingTranscodeDevice] = useState(null);
 
   // Playback control states
   const videoRef = useRef(null);
@@ -1626,17 +1628,18 @@ function PlayerView({
     }
   };
 
-  const startCasting = async (device) => {
+  const startCasting = (device) => {
     const isMp4 = video.link && video.link.toLowerCase().endsWith('.mp4');
     if (!isMp4) {
-      showFlashNotification(`Casting only supports MP4 files. Skipping "${video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}".`);
-      if (activePlaylist && playlists.find(p => p.pl_id === activePlaylist)?.videos?.length > 1) {
-        handleNextVideo();
-      } else {
-        if (videoRef.current) videoRef.current.pause();
-      }
+      setPendingTranscodeDevice(device);
       return;
     }
+    executeCast(device);
+  };
+
+  const executeCast = async (device) => {
+    setPendingTranscodeDevice(null);
+    setIsTranscoding(true);
 
     const localHostIp = selectedServerIp || window.location.hostname;
     const translatedPath = translateVideoUrl(video.link);
@@ -1653,7 +1656,7 @@ function PlayerView({
         setIsPlaying(false);
       }
 
-      const setRes = await fetch('./api/index.php?action=cast_control', {
+      const setRes = await fetch(`./api/index.php?action=cast_control&server_ip=${encodeURIComponent(selectedServerIp)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1685,6 +1688,8 @@ function PlayerView({
     } catch (e) {
       console.error(e);
       showFlashNotification('Casting error occurred.');
+    } finally {
+      setIsTranscoding(false);
     }
   };
 
@@ -2438,19 +2443,30 @@ function PlayerView({
           onBlur={() => setIsVideoFocused(false)}
           tabIndex={0}
         />
-        {castDevice && (
+        {(castDevice || isTranscoding) && (
           <div className="player-cast-active-overlay">
-            <Tv size={64} className="cast-active-icon" />
-            <div className="cast-active-title">Casting to {castDevice.name}</div>
-            <div className="cast-active-status">Playing: {video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}</div>
-            <div className="cast-active-controls">
-              <button className="cast-remote-btn" onClick={togglePlay}>
-                {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" />}
-              </button>
-              <button className="cast-remote-btn stop" onClick={() => handleRemoteControl('stop')}>
-                Disconnect
-              </button>
-            </div>
+            {isTranscoding ? (
+              <div className="cast-transcode-loader">
+                <div className="cast-spinner"></div>
+                <div className="cast-active-title" style={{ marginTop: '16px' }}>Preparing Media for TV...</div>
+                <div className="cast-active-status">Re-encoding video format for compatibility</div>
+                <span style={{ fontSize: '11px', color: '#aaa', marginTop: '8px' }}>This may take a moment depending on the video file size.</span>
+              </div>
+            ) : (
+              <>
+                <Tv size={64} className="cast-active-icon" />
+                <div className="cast-active-title">Casting to {castDevice.name}</div>
+                <div className="cast-active-status">Playing: {video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}</div>
+                <div className="cast-active-controls">
+                  <button className="cast-remote-btn" onClick={togglePlay}>
+                    {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" />}
+                  </button>
+                  <button className="cast-remote-btn stop" onClick={() => handleRemoteControl('stop')}>
+                    Disconnect
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -2828,6 +2844,42 @@ function PlayerView({
           </div>
         )}
       </div>
+
+      {/* Transcode Confirmation Modal */}
+      {pendingTranscodeDevice && (
+        <div className="cast-transcode-modal-backdrop">
+          <div className="cast-transcode-modal">
+            <h3>Incompatible Video Format</h3>
+            <p>
+              The video <strong>"{video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}"</strong> is not natively supported by your TV.
+            </p>
+            <p className="modal-desc">
+              We can re-encode this video container to MP4 (H.264 / AAC) in the background. Your original file will not be changed.
+            </p>
+            <div className="modal-actions">
+              <button
+                className="modal-btn confirm"
+                onClick={() => executeCast(pendingTranscodeDevice)}
+              >
+                Re-encode & Cast
+              </button>
+              <button
+                className="modal-btn cancel"
+                onClick={() => {
+                  setPendingTranscodeDevice(null);
+                  if (activePlaylist && playlists.find(p => p.pl_id === activePlaylist)?.videos?.length > 1) {
+                    handleNextVideo();
+                  } else {
+                    if (videoRef.current) videoRef.current.pause();
+                  }
+                }}
+              >
+                Skip Video
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {!isMiniPlayer && (
         <>
