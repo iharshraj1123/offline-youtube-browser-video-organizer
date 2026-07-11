@@ -223,15 +223,13 @@ function handleGetVideos($pdo) {
     // Category filter
     if ($category !== 'all') {
         if ($category === 'video songs') {
-            $whereClauses[] = '(tags LIKE :cat_tag1 OR tags LIKE :cat_tag2 OR vid_name LIKE :cat_name1 OR vid_name LIKE :cat_name2)';
-            $params[':cat_tag1'] = '%video songs%';
-            $params[':cat_tag2'] = '%videosongs%';
-            $params[':cat_name1'] = '%video songs%';
-            $params[':cat_name2'] = '%videosongs%';
+            $whereClauses[] = '(link LIKE :cat_link)';
+            $params[':cat_link'] = '%/Video songs/%';
         } else if ($category === 'downloads') {
-            $whereClauses[] = '(tags LIKE :cat_tag OR vid_name LIKE :cat_name)';
-            $params[':cat_tag'] = '%downloads%';
-            $params[':cat_name'] = '%downloads%';
+            $whereClauses[] = '(link LIKE :cat_link1 OR link LIKE :cat_link2 OR link LIKE :cat_link3)';
+            $params[':cat_link1'] = '%/Downloads/%';
+            $params[':cat_link2'] = '%/downloaded videos/%';
+            $params[':cat_link3'] = '%/downloaded videos new/%';
         } else if ($category === 'favourite') {
             $whereClauses[] = '(tags LIKE :cat_tag OR vid_name LIKE :cat_name)';
             $params[':cat_tag'] = '%favourite%';
