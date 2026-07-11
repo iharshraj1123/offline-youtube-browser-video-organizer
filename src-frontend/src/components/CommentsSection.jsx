@@ -283,7 +283,7 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
     let clean = text.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
 
     // Parse legacy tags or replace new :emote: shortcuts
-    clean = clean.replace(/:([a-zA-Z0-9_\-\s]{1,40}):/g, (match, emoteName) => {
+    clean = clean.replace(/:([a-zA-Z0-9_\-]+):/g, (match, emoteName) => {
       if (emoteMap[emoteName]) {
         return `<img class="com_emot" src="${emoteMap[emoteName]}" alt="${emoteName}" title="${emoteName}">`;
       }

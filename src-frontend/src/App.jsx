@@ -302,6 +302,9 @@ export default function App() {
         // Don't update search input text, just play the video (user request)
         fetchVideoAndPlay(selected.vid_id, true);
         setShowSuggestions(false);
+        if (videoRef.current) {
+          videoRef.current.focus();
+        }
       }
     } else if (e.key === 'Escape') {
       setShowSuggestions(false);
