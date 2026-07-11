@@ -1615,7 +1615,7 @@ function PlayerView({
     setDiscovering(true);
     setDiscoveredDevices([]);
     try {
-      const res = await fetch('./api/index.php?action=cast_discover');
+      const res = await fetch(`./api/index.php?action=cast_discover&server_ip=${encodeURIComponent(selectedServerIp)}`);
       const data = await res.json();
       setDiscoveredDevices(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -2681,8 +2681,13 @@ function PlayerView({
                   <select
                     value={selectedServerIp}
                     onChange={(e) => {
-                      setSelectedServerIp(e.target.value);
-                      localStorage.setItem('yt_cast_server_ip', e.target.value);
+                      const newIp = e.target.value;
+                      setSelectedServerIp(newIp);
+                      localStorage.setItem('yt_cast_server_ip', newIp);
+                      // Trigger discovery on the new interface
+                      setTimeout(() => {
+                        discoverDevices();
+                      }, 100);
                     }}
                     className="cast-ip-select"
                   >

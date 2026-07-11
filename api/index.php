@@ -1930,9 +1930,20 @@ function parseUPnPDescription($url) {
     $baseUrl = $parts['scheme'] . '://' . $parts['host'] . (isset($parts['port']) ? ':' . $parts['port'] : '');
 
     $controlUrl = '';
-    if (preg_match('/<serviceType>urn:schemas-upnp-org:service:AVTransport:[1-9]<\/serviceType>.*?<controlURL>(.*?)<\/controlURL>/is', $xml, $m)) {
-        $controlUrl = trim($m[1]);
-    } else {
+    
+    // Split XML into <service> segments to avoid tag order dependency inside <service>
+    $services = preg_split('/<\/service>/i', $xml);
+    foreach ($services as $srv) {
+        if (preg_match('/urn:schemas-upnp-org:service:AVTransport:[1-9]/i', $srv)) {
+            if (preg_match('/<controlURL>(.*?)<\/controlURL>/i', $srv, $m)) {
+                $controlUrl = trim($m[1]);
+                break;
+            }
+        }
+    }
+
+    // Fallback if no AVTransport service was found
+    if (empty($controlUrl)) {
         if (preg_match('/<controlURL>(.*?)<\/controlURL>/i', $xml, $m)) {
             $controlUrl = trim($m[1]);
         }
@@ -1958,22 +1969,35 @@ function handleGetServerIps() {
 }
 
 function handleCastDiscover() {
-    $msg = "M-SEARCH * HTTP/1.1\r\n" .
-           "HOST: 239.255.255.250:1900\r\n" .
-           "MAN: \"ssdp:discover\"\r\n" .
-           "MX: 2\r\n" .
-           "ST: urn:schemas-upnp-org:device:MediaRenderer:1\r\n\r\n";
+    $serverIp = $_GET['server_ip'] ?? '0.0.0.0';
+    if (!filter_var($serverIp, FILTER_VALIDATE_IP)) {
+        $serverIp = '0.0.0.0';
+    }
 
-    $socket = @stream_socket_server("udp://0.0.0.0:0", $errno, $errstr);
+    $targets = [
+        "urn:schemas-upnp-org:device:MediaRenderer:1",
+        "urn:schemas-upnp-org:service:AVTransport:1",
+        "upnp:rootdevice"
+    ];
+
+    $socket = @stream_socket_server("udp://" . $serverIp . ":0", $errno, $errstr);
     $devices = [];
     $locations = [];
 
     if ($socket) {
         stream_set_timeout($socket, 1, 500000);
-        @stream_socket_sendto($socket, $msg, 0, '239.255.255.250:1900');
+        
+        foreach ($targets as $target) {
+            $msg = "M-SEARCH * HTTP/1.1\r\n" .
+                   "HOST: 239.255.255.250:1900\r\n" .
+                   "MAN: \"ssdp:discover\"\r\n" .
+                   "MX: 2\r\n" .
+                   "ST: " . $target . "\r\n\r\n";
+            @stream_socket_sendto($socket, $msg, 0, '239.255.255.250:1900');
+        }
 
         $start = microtime(true);
-        while ((microtime(true) - $start) < 1.5) {
+        while ((microtime(true) - $start) < 2.0) {
             $r = [$socket];
             $w = null;
             $e = null;
@@ -1997,7 +2021,10 @@ function handleCastDiscover() {
     foreach ($locations as $loc) {
         $dev = parseUPnPDescription($loc);
         if ($dev) {
-            $devices[] = $dev;
+            // Avoid duplicate devices by control_url
+            if (!in_array($dev['control_url'], array_column($devices, 'control_url'))) {
+                $devices[] = $dev;
+            }
         }
     }
 
