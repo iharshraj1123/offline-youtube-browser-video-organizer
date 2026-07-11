@@ -2080,6 +2080,29 @@ function resolveLocalFilePath($link) {
     return $path;
 }
 
+function evictCastCache($maxBytes) {
+    $cacheDir = __DIR__ . '/../uploads/cast_cache';
+    $files = glob($cacheDir . '/*.mp4');
+    if (!$files) return;
+
+    $totalSize = 0;
+    foreach ($files as $f) {
+        $totalSize += filesize($f);
+    }
+
+    if ($totalSize <= $maxBytes) return;
+
+    usort($files, function($a, $b) {
+        return fileatime($a) - fileatime($b);
+    });
+
+    foreach ($files as $f) {
+        if ($totalSize <= $maxBytes) break;
+        $totalSize -= filesize($f);
+        @unlink($f);
+    }
+}
+
 function checkAndTranscodeMedia($originalLink) {
     $localPath = resolveLocalFilePath($originalLink);
     if (!file_exists($localPath)) {
@@ -2133,6 +2156,8 @@ function checkAndTranscodeMedia($originalLink) {
     if (!$needFullVideoTranscode && !$needAudioTranscode) {
         return null; // Fully compatible natively
     }
+
+    evictCastCache(500 * 1024 * 1024);
 
     if ($needFullVideoTranscode) {
         // Transcode video to H.264, scale to max 1080p, cap at 30fps
