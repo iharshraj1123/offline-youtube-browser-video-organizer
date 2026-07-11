@@ -2313,22 +2313,14 @@ function handleCastStream() {
         ob_end_clean();
     }
 
-    $buffer = 1024 * 512; // 512KB chunks
-    while (!feof($fp) && ($start <= $end)) {
-        $bytesToRead = (($start + $buffer) > $end) ? ($end - $start + 1) : $buffer;
-        if ($bytesToRead <= 0) {
-            break;
-        }
-        $data = fread($fp, $bytesToRead);
-        echo $data;
-        flush();
-        $start += $bytesToRead;
-        
-        if (connection_aborted()) {
-            break;
-        }
+    if (isset($_SERVER['HTTP_RANGE'])) {
+        fseek($fp, $start);
+        fpassthru($fp);
+    } else {
+        fclose($fp);
+        readfile($filePath);
     }
-    fclose($fp);
+
     exit;
 }
 
