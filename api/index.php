@@ -2078,6 +2078,16 @@ function resolveLocalFilePath($link) {
     return $path;
 }
 
+function detectGpuEncoder($ffmpegPath) {
+    $encoders = [];
+    @exec($ffmpegPath . ' -encoders 2>&1', $encoders, $ec);
+    $line = implode("\n", $encoders);
+    if (strpos($line, 'h264_nvenc') !== false) return 'h264_nvenc';
+    if (strpos($line, 'h264_qsv') !== false) return 'h264_qsv';
+    if (strpos($line, 'h264_amf') !== false) return 'h264_amf';
+    return 'libx264';
+}
+
 function evictCastCache($maxBytes) {
     $cacheDir = __DIR__ . '/../uploads/cast_cache';
     $files = glob($cacheDir . '/*.mp4');
@@ -2158,12 +2168,35 @@ function checkAndTranscodeMedia($originalLink) {
     evictCastCache(500 * 1024 * 1024);
 
     if ($needFullVideoTranscode) {
-        // Transcode video to H.264, scale to max 1080p, cap at 30fps
-        // Audio to AAC stereo (44.1kHz / 128kbps) with faststart flags
-        $transcodeCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath)
-            . ' -c:v libx264 -preset superfast -crf 23 -pix_fmt yuv420p'
-            . ' -vf "scale=\'min(1920,iw)\':\'min(1080,ih)\':force_original_aspect_ratio=decrease"'
-            . ' -r 30 -b:v 8M -maxrate 10M -bufsize 16M'
+        $encoder = detectGpuEncoder($ffmpegPath);
+        $isGpu = ($encoder !== 'libx264');
+
+        $vcmd2 = $ffprobePath . ' -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 ' . escapeshellarg($localPath);
+        $vdims = [];
+        @exec($vcmd2, $vdims, $vdc);
+        $needScale = false;
+        if ($vdc === 0 && !empty($vdims)) {
+            $dims = explode(',', trim($vdims[0]));
+            $w = intval($dims[0] ?? 0);
+            $h = intval($dims[1] ?? 0);
+            if ($w > 1920 || $h > 1080) {
+                $needScale = true;
+            }
+        }
+
+        $videoArgs = '-c:v ' . $encoder;
+        if ($isGpu) {
+            $videoArgs .= ' -cq 23 -b:v 8M -maxrate 10M -bufsize 16M';
+        } else {
+            $videoArgs .= ' -preset ultrafast -crf 23 -pix_fmt yuv420p -b:v 8M -maxrate 10M -bufsize 16M';
+        }
+
+        $scaleArg = $needScale ? ' -vf "scale=\'min(1920,iw)\':\'min(1080,ih)\':force_original_aspect_ratio=decrease"' : '';
+
+        $transcodeCmd = $ffmpegPath . ' -y -threads 0 -i ' . escapeshellarg($localPath)
+            . ' ' . $videoArgs
+            . $scaleArg
+            . ' -r 30'
             . ' -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart '
             . escapeshellarg($cachedFile);
     } else {
