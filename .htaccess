@@ -1,6 +1,3 @@
-KeepAliveTimeout 30
-Timeout 300
-
 <IfModule mod_mime.c>
     AddType video/mp4 .mp4 .m4v
     AddType video/webm .webm
@@ -13,16 +10,14 @@ Timeout 300
         Header set Cache-Control "public, max-age=3600"
     </FilesMatch>
 
-    <Location /youtube-v2/uploads/cast_cache>
-        <FilesMatch "\.mp4$">
-            Header set Content-Type "video/mp4"
-            Header set contentFeatures.dlna.org "DLNA.ORG_PN=AVC_MP4_BL_L31_HD_AAC;DLNA.ORG_OP=11;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01700000000000000000000000000000"
-            Header set transferMode.dlna.org "Streaming"
-            Header set realTimeInfo.dlna.org "DLNA.ORG_TLAG=*"
-            Header set Accept-Ranges "bytes"
-            Header set Connection "close"
-        </FilesMatch>
-    </Location>
+    <FilesMatch "\.mp4$">
+        Header set Content-Type "video/mp4"
+        Header set contentFeatures.dlna.org "DLNA.ORG_PN=AVC_MP4_BL_L31_HD_AAC;DLNA.ORG_OP=11;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01700000000000000000000000000000"
+        Header set transferMode.dlna.org "Streaming"
+        Header set realTimeInfo.dlna.org "DLNA.ORG_TLAG=*"
+        Header set Accept-Ranges "bytes"
+        Header set Connection "close"
+    </FilesMatch>
 </IfModule>
 
 <IfModule mod_negotiation.c>
