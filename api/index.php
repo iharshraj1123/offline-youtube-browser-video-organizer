@@ -117,6 +117,9 @@ try {
         case 'cast_control':
             handleCastControl();
             break;
+        case 'cast_stream':
+            handleCastStream();
+            break;
         case 'get_user_card':
             handleGetUserCard($pdo);
             break;
@@ -2167,18 +2170,29 @@ function handleCastControl() {
 
     switch ($action) {
         case 'set_uri':
-            $finalMediaUrl = $mediaUrl;
+            $serverIp = $_GET['server_ip'] ?? $_SERVER['SERVER_ADDR'] ?? 'localhost';
+            if (!filter_var($serverIp, FILTER_VALIDATE_IP)) {
+                $serverIp = 'localhost';
+            }
+            $port = $_SERVER['SERVER_PORT'] ?? '80';
+            $portSuffix = ($port === '80' || $port === '443') ? '' : ':' . $port;
+
+            $finalMediaUrl = '';
+
             if (!empty($videoLink)) {
                 $cachedPath = checkAndTranscodeMedia($videoLink);
                 if ($cachedPath !== null) {
-                    $serverIp = $_GET['server_ip'] ?? $_SERVER['SERVER_ADDR'] ?? 'localhost';
-                    if (!filter_var($serverIp, FILTER_VALIDATE_IP)) {
-                        $serverIp = 'localhost';
-                    }
-                    $port = $_SERVER['SERVER_PORT'] ?? '80';
-                    $portSuffix = ($port === '80' || $port === '443') ? '' : ':' . $port;
-                    $finalMediaUrl = "http://" . $serverIp . $portSuffix . $cachedPath;
+                    $fileName = basename($cachedPath);
+                    $finalMediaUrl = "http://" . $serverIp . $portSuffix . "/youtube-v2/api/index.php?action=cast_stream&file=" . urlencode($fileName);
+                } else {
+                    $relativePath = str_replace('file:///', '', $videoLink);
+                    $relativePath = rawurldecode($relativePath);
+                    $workspaceRoot = str_replace('\\', '/', dirname(__DIR__) . '/');
+                    $relativePathClean = str_replace($workspaceRoot, '', str_replace('\\', '/', $relativePath));
+                    $finalMediaUrl = "http://" . $serverIp . $portSuffix . "/youtube-v2/api/index.php?action=cast_stream&file=" . urlencode($relativePathClean);
                 }
+            } else {
+                $finalMediaUrl = $mediaUrl;
             }
 
             $title = $data['title'] ?? 'Video';
@@ -2211,6 +2225,110 @@ function handleCastControl() {
     }
 
     echo json_encode($res);
+    exit;
+}
+
+function handleCastStream() {
+    $fileParam = $_GET['file'] ?? '';
+    if (empty($fileParam)) {
+        header('HTTP/1.1 400 Bad Request');
+        exit('Missing file parameter');
+    }
+
+    $filePath = '';
+    if (preg_match('/^[a-f0-9]{32}\.mp4$/i', $fileParam)) {
+        $filePath = __DIR__ . '/../uploads/cast_cache/' . $fileParam;
+    } else {
+        $fileParam = str_replace(['..\\', '../', '\\\\', '//'], '', $fileParam);
+        $fileParam = ltrim($fileParam, '/\\');
+        
+        // If it starts with a drive letter (e.g. D:), check it directly, otherwise map to workspace root
+        if (preg_match('/^[a-zA-Z]:/i', $fileParam)) {
+            $filePath = $fileParam;
+        } else {
+            $filePath = dirname(__DIR__) . '/' . $fileParam;
+        }
+    }
+
+    if (empty($filePath) || !file_exists($filePath) || !is_file($filePath)) {
+        header('HTTP/1.1 404 Not Found');
+        exit('File not found: ' . $fileParam);
+    }
+
+    $size = filesize($filePath);
+    $fp = @fopen($filePath, 'rb');
+    if (!$fp) {
+        header('HTTP/1.1 500 Internal Server Error');
+        exit('Cannot open file');
+    }
+
+    header("Content-Type: video/mp4");
+    header("Accept-Ranges: bytes");
+    header("contentFeatures.dlna.org: DLNA.ORG_PN=AVC_MP4_HP_HD_24p;DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01700000000000000000000000000000");
+    header("transferMode.dlna.org: Streaming");
+    header("realTimeInfo.dlna.org: DLNA.ORG_LXT=0");
+    header("Connection: keep-alive");
+
+    $start = 0;
+    $end = $size - 1;
+
+    if (isset($_SERVER['HTTP_RANGE'])) {
+        $c_start = $start;
+        $c_end = $end;
+
+        list(, $range) = explode('=', $_SERVER['HTTP_RANGE'], 2);
+        if (strpos($range, ',') !== false) {
+            header('HTTP/1.1 416 Requested Range Not Satisfiable');
+            header("Content-Range: bytes $start-$end/$size");
+            exit;
+        }
+        if ($range == '-') {
+            $c_start = $size - substr($range, 1);
+        } else {
+            $range = explode('-', $range);
+            $c_start = $range[0];
+            $c_end = (isset($range[1]) && is_numeric($range[1])) ? $range[1] : $size - 1;
+        }
+        $c_end = ($c_end > $end) ? $end : $c_end;
+        if ($c_start > $c_end || $c_start > $size - 1 || $c_end >= $size) {
+            header('HTTP/1.1 416 Requested Range Not Satisfiable');
+            header("Content-Range: bytes $start-$end/$size");
+            exit;
+        }
+        $start = $c_start;
+        $end = $c_end;
+        $length = $end - $start + 1;
+        
+        fseek($fp, $start);
+        header('HTTP/1.1 206 Partial Content');
+        header("Content-Range: bytes $start-$end/$size");
+        header("Content-Length: " . $length);
+    } else {
+        header("Content-Length: " . $size);
+    }
+
+    @set_time_limit(0);
+
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+
+    $buffer = 1024 * 64; // 64KB chunks
+    while (!feof($fp) && ($start <= $end)) {
+        $bytesToRead = (($start + $buffer) > $end) ? ($end - $start + 1) : $buffer;
+        if ($bytesToRead <= 0) {
+            break;
+        }
+        $data = fread($fp, $bytesToRead);
+        echo $data;
+        flush();
+        $start += $bytesToRead;
+        
+        if (connection_aborted()) {
+            break;
+        }
+    }
+    fclose($fp);
     exit;
 }
 
