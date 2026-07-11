@@ -302,9 +302,6 @@ export default function App() {
         // Don't update search input text, just play the video (user request)
         fetchVideoAndPlay(selected.vid_id, true);
         setShowSuggestions(false);
-        if (videoRef.current) {
-          videoRef.current.focus();
-        }
       }
     } else if (e.key === 'Escape') {
       setShowSuggestions(false);
@@ -1578,6 +1575,13 @@ function PlayerView({
       videoRef.current.playbackRate = 1;
       videoRef.current.volume = volume;
       videoRef.current.muted = isMuted;
+      if (!isMiniPlayer) {
+        setTimeout(() => {
+          if (videoRef.current) {
+            videoRef.current.focus();
+          }
+        }, 150);
+      }
     }
   }, [video]);
 
