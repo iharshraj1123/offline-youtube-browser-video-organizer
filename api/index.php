@@ -2187,8 +2187,9 @@ function handleCastControl() {
                 } else {
                     $relativePath = str_replace('file:///', '', $videoLink);
                     $relativePath = rawurldecode($relativePath);
-                    $apachePath = '/' . strtolower(substr($relativePath, 0, 1)) . ':' . substr($relativePath, 2);
-                    $finalMediaUrl = "http://" . $serverIp . $portSuffix . $apachePath;
+                    $workspaceRoot = str_replace('\\', '/', dirname(__DIR__) . '/');
+                    $relativePathClean = str_replace($workspaceRoot, '', str_replace('\\', '/', $relativePath));
+                    $finalMediaUrl = "http://" . $serverIp . $portSuffix . "/youtube-v2/api/index.php?action=cast_stream&file=" . urlencode($relativePathClean);
                 }
             } else {
                 $finalMediaUrl = $mediaUrl;
@@ -2312,7 +2313,7 @@ function handleCastStream() {
         ob_end_clean();
     }
 
-    $buffer = 1024 * 64; // 64KB chunks
+    $buffer = 1024 * 512; // 512KB chunks
     while (!feof($fp) && ($start <= $end)) {
         $bytesToRead = (($start + $buffer) > $end) ? ($end - $start + 1) : $buffer;
         if ($bytesToRead <= 0) {
