@@ -387,7 +387,7 @@ function cleanLegacyString($str) {
                             ':first_name' => $u['first_name'],
                             ':last_name' => $u['last_name'],
                             ':user_desc' => $u['user_desc'],
-                            ':user_pic' => str_replace('/comment section/', '/youtube-v2/', $u['user_pic']),
+                            ':user_pic' => str_replace('/comment section/', '/youtube-v2/', $u['user_pic'] ?? ''),
                             ':comment_votes' => $u['comment_votes'],
                             ':reply_votes' => $u['reply_votes']
                         ]);
@@ -411,7 +411,7 @@ function cleanLegacyString($str) {
                     ");
                     $pdo->beginTransaction();
                     foreach ($oldComments as $c) {
-                        $cleanComment = str_replace('/comment section/', '/youtube-v2/', $c['comment']);
+                        $cleanComment = str_replace('/comment section/', '/youtube-v2/', $c['comment'] ?? '');
                         $insertComment->execute([
                             ':com_id' => $c['com_id'],
                             ':com_page' => $c['com_page'],
@@ -445,7 +445,7 @@ function cleanLegacyString($str) {
                     ");
                     $pdo->beginTransaction();
                     foreach ($oldReplies as $r) {
-                        $cleanReply = str_replace('/comment section/', '/youtube-v2/', $r['reply']);
+                        $cleanReply = str_replace('/comment section/', '/youtube-v2/', $r['reply'] ?? '');
                         $insertReply->execute([
                             ':reply_id' => $r['reply_id'],
                             ':com_id' => $r['com_id'],
@@ -485,13 +485,13 @@ function cleanLegacyString($str) {
                             ':type' => $ch['type'],
                             ':chatted_to_id' => $ch['chatted_to_id'],
                             ':chat_to_name' => $ch['chat_to_name'],
-                            ':chat_to_img' => str_replace('/comment section/', '/youtube-v2/', $ch['chat_to_img']),
+                            ':chat_to_img' => str_replace('/comment section/', '/youtube-v2/', $ch['chat_to_img'] ?? ''),
                             ':chatted_by_id' => $ch['chatted_by_id'],
                             ':chat_by_name' => $ch['chat_by_name'],
-                            ':chat_by_img' => str_replace('/comment section/', '/youtube-v2/', $ch['chat_by_img']),
+                            ':chat_by_img' => str_replace('/comment section/', '/youtube-v2/', $ch['chat_by_img'] ?? ''),
                             ':chat_date' => $ch['chat_date'],
                             ':chat_time' => $ch['chat_time'],
-                            ':chat_text' => str_replace('/comment section/', '/youtube-v2/', $ch['chat_text']),
+                            ':chat_text' => str_replace('/comment section/', '/youtube-v2/', $ch['chat_text'] ?? ''),
                             ':chat_edited' => $ch['chat_edited'],
                             ':chat_read' => $ch['chat_read']
                         ]);

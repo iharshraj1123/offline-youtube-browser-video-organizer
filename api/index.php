@@ -1106,13 +1106,13 @@ function handleLogin($pdo) {
     $_SESSION['loggeduseruserdesc'] = $user['user_desc'];
 
     $expiry = time() + (365 * 24 * 60 * 60);
-    setcookie('loggedusername', $user['user_name'], $expiry, '/');
-    setcookie('loggedusernum', $user['user_num'], $expiry, '/');
-    setcookie('loggeduserpic', $user['user_pic'], $expiry, '/');
-    setcookie('loggeduserprivilege', $user['privilege'], $expiry, '/');
-    setcookie('loggeduserfirstname', $user['first_name'], $expiry, '/');
-    setcookie('loggeduserlastname', $user['last_name'], $expiry, '/');
-    setcookie('loggeduseruserdesc', $user['user_desc'], $expiry, '/');
+    setcookie('loggedusername', $user['user_name'] ?? '', $expiry, '/');
+    setcookie('loggedusernum', $user['user_num'] ?? '', $expiry, '/');
+    setcookie('loggeduserpic', $user['user_pic'] ?? '', $expiry, '/');
+    setcookie('loggeduserprivilege', $user['privilege'] ?? '', $expiry, '/');
+    setcookie('loggeduserfirstname', $user['first_name'] ?? '', $expiry, '/');
+    setcookie('loggeduserlastname', $user['last_name'] ?? '', $expiry, '/');
+    setcookie('loggeduseruserdesc', $user['user_desc'] ?? '', $expiry, '/');
 
     echo json_encode([
         'status' => 'success',
@@ -1857,11 +1857,11 @@ function handleUpdateProfile($pdo) {
 
     // Refresh cookies
     $expiry = time() + (365 * 24 * 60 * 60);
-    setcookie('loggedusername', $username, $expiry, '/');
-    setcookie('loggeduserpic', $profilePic, $expiry, '/');
-    setcookie('loggeduserfirstname', $firstName, $expiry, '/');
-    setcookie('loggeduserlastname', $lastName, $expiry, '/');
-    setcookie('loggeduseruserdesc', $description, $expiry, '/');
+    setcookie('loggedusername', $username ?? '', $expiry, '/');
+    setcookie('loggeduserpic', $profilePic ?? '', $expiry, '/');
+    setcookie('loggeduserfirstname', $firstName ?? '', $expiry, '/');
+    setcookie('loggeduserlastname', $lastName ?? '', $expiry, '/');
+    setcookie('loggeduseruserdesc', $description ?? '', $expiry, '/');
 
     echo json_encode([
         'status' => 'success',

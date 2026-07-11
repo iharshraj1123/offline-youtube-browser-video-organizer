@@ -220,7 +220,7 @@ class MetadataParser {
         $result = [];
 
         // 1. Parse Duration & Timescale from mvhd
-        if ($mvhd_pos !== false) {
+        if ($mvhd_pos !== false && strlen($data) >= $mvhd_pos + 32) {
             $version = ord($data[$mvhd_pos + 4]);
             if ($version === 1) {
                 // Version 1: 64-bit creation, modification, timescale, duration
@@ -241,7 +241,7 @@ class MetadataParser {
 
         // 2. Parse Width & Height from tkhd (track header)
         // There can be multiple tracks (video/audio). We scan for the video track (which has non-zero width/height)
-        if ($tkhd_pos !== false) {
+        if ($tkhd_pos !== false && strlen($data) >= $tkhd_pos + 5) {
             $version = ord($data[$tkhd_pos + 4]);
             $offset = ($version === 1) ? 84 : 72; // size varies based on version
             
