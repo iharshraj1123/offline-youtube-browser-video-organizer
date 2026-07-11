@@ -58,8 +58,7 @@ A fast, standalone, and premium offline video player, library indexer, and custo
 ## HOW to Setup :
 
 1. Copy-paste all the folders (eg, youtube, chatbox, comment section) in your htdocs.
-2. Install the [Electron player](https://drive.google.com/drive/u/0/folders/18UFdW4VaAEURjlz-P35kFZAp5TgF99ky)
-3. Open your xampp, in Apache row click on config, then httpd.conf (first option)
+2. Open your xampp, in Apache row click on config, then httpd.conf (first option)
 First search for "\<IfModule alias_module>"
 And add:
 ```
@@ -82,15 +81,15 @@ Add these codes in bottom of httpd.conf:
 </Directory>
 ```
 
-4. First add the "userdata" database then "youtube" database from the files provided to your sql (simply copy paste it in sql section of your phpmyadmin)
+3. First add the "userdata" database then "youtube" database from the files provided to your sql (simply copy paste it in sql section of your phpmyadmin)
 
-5. Add an account to Mysql/phpmyadmin : {username = "admin"; password = "pwdpwd"; Priviledges : All (optional)}
+4. Add an account to Mysql/phpmyadmin : {username = "admin"; password = "pwdpwd"; Priviledges : All (optional)}
 
 or run this SQL: 
 
 ```GRANT ALL PRIVILEGES ON * . * TO 'admin'@'%' IDENTIFIED BY 'pwdpwd' WITH GRANT OPTION;```
    
-6. Now You Must allow localfile access in your browser using :
+5. Now You Must allow localfile access in your browser using :
 
 --------------------------------------------------
 ### Method 1 (best for firefox)
