@@ -127,6 +127,23 @@ export default function App() {
   const [profileUsername, setProfileUsername] = useState('');
   const userDropdownRef = useRef(null);
 
+  // Global Flash Notification States
+  const [showNotification, setShowNotification] = useState('');
+  const [notifKey, setNotifKey] = useState(0);
+  const notificationTimeoutRef = useRef(null);
+
+  const showFlashNotification = (text) => {
+    setShowNotification(text);
+    setNotifKey(prev => prev + 1);
+
+    if (notificationTimeoutRef.current) clearTimeout(notificationTimeoutRef.current);
+    if (text) {
+      notificationTimeoutRef.current = setTimeout(() => {
+        setShowNotification('');
+      }, 1800);
+    }
+  };
+
   // Fetch video details and set to play (used on URL load & popstate)
   const fetchVideoAndPlay = async (videoId, updateUrl = false) => {
     setLoading(true);
@@ -676,8 +693,8 @@ export default function App() {
             <Bell size={20} />
           </button>
           <div ref={userDropdownRef} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <button 
-              className="header-avatar-btn" 
+            <button
+              className="header-avatar-btn"
               onClick={() => {
                 if (user.name) {
                   setShowUserDropdown(!showUserDropdown);
@@ -696,7 +713,7 @@ export default function App() {
                 <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)', fontSize: '13px', color: '#aaa' }}>
                   Signed in as <strong style={{ color: '#fff', display: 'block', textOverflow: 'ellipsis', overflow: 'hidden' }}>{user.name}</strong>
                 </div>
-                <button 
+                <button
                   className="user-menu-item"
                   onClick={() => {
                     setShowUserDropdown(false);
@@ -882,6 +899,7 @@ export default function App() {
               currentUser={user}
               onOpenAuth={(tab) => { setAuthModalTab(tab || 'login'); setShowAuthModal(true); }}
               onNavigateToProfile={handleGoToProfile}
+              showFlashNotification={showFlashNotification}
             />
           )}
 
@@ -915,7 +933,7 @@ export default function App() {
           )}
 
           {currentView === 'profile' && (
-            <ProfileView 
+            <ProfileView
               username={profileUsername}
               currentUser={user}
               onPlayVideoId={(vidId) => fetchVideoAndPlay(vidId, true)}
@@ -940,6 +958,12 @@ export default function App() {
           }}
           initialTab={authModalTab}
         />
+      )}
+
+      {showNotification && (
+        <div key={notifKey} className="player-notification-banner">
+          {showNotification}
+        </div>
       )}
     </div>
   );
@@ -1282,7 +1306,7 @@ function PlayerView({
   video, onVideoDeleted, allVideos, onPlayVideo, isMiniPlayer, onExpand, onClose, isTheaterMode, setIsTheaterMode, onPlayRandom,
   playlists, activePlaylist, setActivePlaylist, currentPlaylistIndex, setCurrentPlaylistIndex,
   addVideoToPlaylist, removeVideoFromPlaylist, createPlaylist, updatePlaylistOrder,
-  isSidebarCollapsed, setIsSidebarCollapsed, currentUser, onOpenAuth, onNavigateToProfile
+  isSidebarCollapsed, setIsSidebarCollapsed, currentUser, onOpenAuth, onNavigateToProfile, showFlashNotification
 }) {
   const [likes, setLikes] = useState(parseInt(video.likes) || 0);
   const [dislikes, setDislikes] = useState(parseInt(video.dislikes) || 0);
@@ -1450,19 +1474,7 @@ function PlayerView({
 
   // Theater and Reverse Autoplay states
   const [isReverseAutoplay, setIsReverseAutoplay] = useState(false);
-  const [showNotification, setShowNotification] = useState('');
-  const [notifKey, setNotifKey] = useState(0);
-  const notificationTimeoutRef = useRef(null);
 
-  const showFlashNotification = (text) => {
-    setShowNotification(text);
-    setNotifKey(prev => prev + 1); // <-- ADD THIS: Forces a remount
-
-    if (notificationTimeoutRef.current) clearTimeout(notificationTimeoutRef.current);
-    notificationTimeoutRef.current = setTimeout(() => {
-      setShowNotification('');
-    }, 1800);
-  };
 
   // Keep volumeRef in sync with the volume state so the keydown closure always reads the latest value
   useEffect(() => {
@@ -1558,7 +1570,7 @@ function PlayerView({
     setIsLooping(false);
     setShowStats(false);
     setSettingsSubmenu('main');
-    setShowNotification('');
+    showFlashNotification('');
     if (videoRef.current) {
       videoRef.current.playbackRate = 1;
       videoRef.current.volume = volume;
@@ -2247,12 +2259,7 @@ function PlayerView({
           tabIndex={0}
         />
 
-        {/* Flash Notification Banner */}
-        {showNotification && (
-          <div key={notifKey} className="player-notification-banner">
-            {showNotification}
-          </div>
-        )}
+
 
         {/* Stats for Nerds Overlay */}
         {showStats && (
@@ -2512,366 +2519,366 @@ function PlayerView({
       {!isMiniPlayer && (
         <>
           <div className="player-main-col">
-        {/* Video details metadata block */}
-        <div className="video-metadata-details">
-          <h1 className="video-detail-title">{video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}</h1>
+            {/* Video details metadata block */}
+            <div className="video-metadata-details">
+              <h1 className="video-detail-title">{video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}</h1>
 
-          <div className="video-detail-actions">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <img src={video.uploader_img} alt="" className="channel-avatar" />
-              <div>
-                <div style={{ fontWeight: 'bold', fontSize: '15px' }}>{video.uploader_name}</div>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Channel Owner</div>
-              </div>
-            </div>
+              <div className="video-detail-actions">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <img src={video.uploader_img} alt="" className="channel-avatar" />
+                  <div>
+                    <div style={{ fontWeight: 'bold', fontSize: '15px' }}>{video.uploader_name}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Channel Owner</div>
+                  </div>
+                </div>
 
-            <div className="detail-actions-right">
-              {/* Split Pill Like/Dislike Button Group */}
-              <div className="like-dislike-pill-group">
-                <button className={`like-btn-pill ${liked ? 'active' : ''}`} onClick={handleLike}>
-                  <ThumbsUp size={16} fill={liked ? "currentColor" : "none"} /> <span>{likes}</span>
-                </button>
-                <div className="pill-separator"></div>
-                <button className={`dislike-btn-pill ${disliked ? 'active' : ''}`} onClick={handleDislike}>
-                  <ThumbsDown size={16} fill={disliked ? "currentColor" : "none"} /> <span>{dislikes}</span>
-                </button>
-              </div>
+                <div className="detail-actions-right">
+                  {/* Split Pill Like/Dislike Button Group */}
+                  <div className="like-dislike-pill-group">
+                    <button className={`like-btn-pill ${liked ? 'active' : ''}`} onClick={handleLike}>
+                      <ThumbsUp size={16} fill={liked ? "currentColor" : "none"} /> <span>{likes}</span>
+                    </button>
+                    <div className="pill-separator"></div>
+                    <button className={`dislike-btn-pill ${disliked ? 'active' : ''}`} onClick={handleDislike}>
+                      <ThumbsDown size={16} fill={disliked ? "currentColor" : "none"} /> <span>{dislikes}</span>
+                    </button>
+                  </div>
 
-              <button className="action-pill-btn" onClick={() => setShowEditModal(true)}>
-                <Edit size={16} /> <span>Edit</span>
-              </button>
-              <button className="action-pill-btn delete-pill-btn" onClick={handleDelete}>
-                <Trash2 size={16} /> <span>Delete</span>
-              </button>
-              <button className="action-pill-btn" onClick={() => setShowSaveModal(true)}>
-                <Bookmark size={16} /> <span>Save</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Premium Glassmorphic Description Card */}
-          <div className="description-card">
-            <div className="description-meta">
-              {video.views || 0} views • Uploaded at {formatUploadDate(video.upload_date)}
-            </div>
-            <p className="video-detail-description">
-              {renderDescription(video.description)}
-            </p>
-            {video.tags && (
-              <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                {video.tags.split(',').map((tag, idx) => (
-                  <span key={idx} className="vid-timestamps" style={{ fontSize: '13px' }}>
-                    #{tag.trim()}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Native React Comments Section */}
-        <CommentsSection
-          key={video.vid_id}
-          videoId={video.vid_id}
-          currentUser={currentUser}
-          onOpenAuth={onOpenAuth}
-          onNavigateToProfile={onNavigateToProfile}
-          onSeekVideo={(seconds) => {
-            if (videoRef.current) {
-              videoRef.current.currentTime = seconds;
-              setCurrentTime(seconds);
-            }
-          }}
-        />
-      </div>
-
-      {/* RIGHT COLUMN: RECOMMENDATIONS & PLAYLIST QUEUE */}
-      <div className="player-sidebar-col">
-        {activePlaylist && (
-          <div className="playlist-queue-panel" style={{
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            borderRadius: '12px',
-            overflow: 'hidden',
-            marginBottom: '20px',
-            boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
-          }}>
-            {/* Playlist Queue Header */}
-            <div style={{
-              padding: '16px',
-              background: 'rgba(255, 255, 255, 0.02)',
-              borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ fontSize: '15px', fontWeight: 'bold', color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  <ListMusic size={18} style={{ color: 'var(--primary-color)', flexShrink: 0 }} />
-                  <span>{activePlaylist.playlist_name}</span>
-                </h3>
-                <button
-                  onClick={() => setActivePlaylist(null)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#aaa',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    backgroundColor: 'rgba(255,255,255,0.05)'
-                  }}
-                  title="Close playlist queue"
-                >
-                  Clear Queue
-                </button>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
-                <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  {currentPlaylistIndex + 1} / {(activePlaylist.video_ids || []).length} videos
-                </span>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <button
-                    onClick={() => {
-                      const next = !isRandom;
-                      setIsRandom(next);
-                      localStorage.setItem('yt_random', String(next));
-                      showFlashNotification(`Playlist Shuffle: ${next ? 'ON' : 'OFF'}`);
-                    }}
-                    style={{ background: 'none', border: 'none', color: isRandom ? 'var(--primary-color)' : '#aaa', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                    title="Shuffle playlist"
-                  >
-                    <Shuffle size={16} />
+                  <button className="action-pill-btn" onClick={() => setShowEditModal(true)}>
+                    <Edit size={16} /> <span>Edit</span>
                   </button>
-                  <button
-                    onClick={() => {
-                      setIsLooping(prev => !prev);
-                      showFlashNotification(`Playlist Loop: ${!isLooping ? 'ON' : 'OFF'}`);
-                    }}
-                    style={{ background: 'none', border: 'none', color: isLooping ? 'var(--primary-color)' : '#aaa', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                    title="Loop playlist"
-                  >
-                    <Repeat size={16} />
+                  <button className="action-pill-btn delete-pill-btn" onClick={handleDelete}>
+                    <Trash2 size={16} /> <span>Delete</span>
+                  </button>
+                  <button className="action-pill-btn" onClick={() => setShowSaveModal(true)}>
+                    <Bookmark size={16} /> <span>Save</span>
                   </button>
                 </div>
               </div>
+
+              {/* Premium Glassmorphic Description Card */}
+              <div className="description-card">
+                <div className="description-meta">
+                  {video.views || 0} views • Uploaded at {formatUploadDate(video.upload_date)}
+                </div>
+                <p className="video-detail-description">
+                  {renderDescription(video.description)}
+                </p>
+                {video.tags && (
+                  <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {video.tags.split(',').map((tag, idx) => (
+                      <span key={idx} className="vid-timestamps" style={{ fontSize: '13px' }}>
+                        #{tag.trim()}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Scrollable Playlist Queue Video List */}
-            <div style={{ maxHeight: '380px', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-              {(activePlaylist.video_ids || []).map((id, idx) => {
-                const vid = allVideos.find(v => v.vid_id === parseInt(id));
-                if (!vid) return null;
-                const isCurrent = parseInt(id) === video.vid_id;
-                const cleanTitle = (vid.vid_name || '').replace(/\.[a-zA-Z0-9]+$/, '');
-                return (
-                  <div
-                    key={vid.vid_id}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, idx)}
-                    onDragEnter={(e) => handleDragEnter(e, idx)}
-                    onDragEnd={handleDragEnd}
-                    onDragOver={(e) => e.preventDefault()}
-                    onClick={() => onPlayVideo(vid, activePlaylist, idx)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      padding: '8px 16px',
-                      cursor: 'grab',
-                      background: isCurrent ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
-                      borderBottom: '1px solid rgba(255, 255, 255, 0.03)',
-                      transition: 'background 0.2s',
-                      userSelect: 'none'
-                    }}
-                    className="queue-item"
-                  >
-                    <div style={{ fontSize: '11px', color: isCurrent ? 'var(--primary-color)' : '#666', fontWeight: 'bold', width: '16px', textAlign: 'center', flexShrink: 0 }}>
-                      {isCurrent ? '▶' : idx + 1}
-                    </div>
+            {/* Native React Comments Section */}
+            <CommentsSection
+              key={video.vid_id}
+              videoId={video.vid_id}
+              currentUser={currentUser}
+              onOpenAuth={onOpenAuth}
+              onNavigateToProfile={onNavigateToProfile}
+              onSeekVideo={(seconds) => {
+                if (videoRef.current) {
+                  videoRef.current.currentTime = seconds;
+                  setCurrentTime(seconds);
+                }
+              }}
+            />
+          </div>
 
-                    <div style={{
-                      width: '64px',
-                      height: '36px',
-                      borderRadius: '4px',
-                      overflow: 'hidden',
-                      background: '#000',
-                      position: 'relative',
-                      flexShrink: 0
-                    }}>
-                      <img 
-                        src={`./thumbnails/${vid.vid_id}.jpg`} 
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
+          {/* RIGHT COLUMN: RECOMMENDATIONS & PLAYLIST QUEUE */}
+          <div className="player-sidebar-col">
+            {activePlaylist && (
+              <div className="playlist-queue-panel" style={{
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                marginBottom: '20px',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
+              }}>
+                {/* Playlist Queue Header */}
+                <div style={{
+                  padding: '16px',
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h3 style={{ fontSize: '15px', fontWeight: 'bold', color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <ListMusic size={18} style={{ color: 'var(--primary-color)', flexShrink: 0 }} />
+                      <span>{activePlaylist.playlist_name}</span>
+                    </h3>
+                    <button
+                      onClick={() => setActivePlaylist(null)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#aaa',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        backgroundColor: 'rgba(255,255,255,0.05)'
+                      }}
+                      title="Close playlist queue"
+                    >
+                      Clear Queue
+                    </button>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                      {currentPlaylistIndex + 1} / {(activePlaylist.video_ids || []).length} videos
+                    </span>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      <button
+                        onClick={() => {
+                          const next = !isRandom;
+                          setIsRandom(next);
+                          localStorage.setItem('yt_random', String(next));
+                          showFlashNotification(`Playlist Shuffle: ${next ? 'ON' : 'OFF'}`);
                         }}
-                        alt="" 
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                      />
-                      <div style={{ display: 'none', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', color: '#444' }}>
-                        <Play size={12} />
-                      </div>
-                    </div>
-
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{
-                        fontSize: '13px',
-                        fontWeight: isCurrent ? 'bold' : 'normal',
-                        color: isCurrent ? 'var(--primary-color)' : '#fff',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis'
-                      }}>
-                        {cleanTitle}
-                      </div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                        {vid.uploader_name}
-                      </div>
+                        style={{ background: 'none', border: 'none', color: isRandom ? 'var(--primary-color)' : '#aaa', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                        title="Shuffle playlist"
+                      >
+                        <Shuffle size={16} />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsLooping(prev => !prev);
+                          showFlashNotification(`Playlist Loop: ${!isLooping ? 'ON' : 'OFF'}`);
+                        }}
+                        style={{ background: 'none', border: 'none', color: isLooping ? 'var(--primary-color)' : '#aaa', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                        title="Loop playlist"
+                      >
+                        <Repeat size={16} />
+                      </button>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        <h2 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '4px' }}>Watch Next</h2>
-
-        {recommendations.map(vid => (
-          <SidebarVideoCard key={vid.vid_id} vid={vid} onPlayVideo={onPlayVideo} />
-        ))}
-      </div>
-
-      {/* Metadata Editing Modal Overlay */}
-      {showEditModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
-              <span className="modal-title">Edit Video Metadata</span>
-              <button className="modal-close" onClick={() => setShowEditModal(false)}>&times;</button>
-            </div>
-            <form onSubmit={handleSaveMetadata} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div className="form-group">
-                <label className="form-label">Video Title</label>
-                <input
-                  type="text"
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  className="form-input"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Description</label>
-                <textarea
-                  value={editDesc}
-                  onChange={(e) => setEditDesc(e.target.value)}
-                  className="form-input"
-                  rows={4}
-                  style={{ fontFamily: 'inherit' }}
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Tags (comma separated)</label>
-                <input
-                  type="text"
-                  value={editTags}
-                  onChange={(e) => setEditTags(e.target.value)}
-                  placeholder="videosongs, downloads, fun"
-                  className="form-input"
-                />
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '10px' }}>
-                <button
-                  type="button"
-                  className="action-btn"
-                  onClick={() => setShowEditModal(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="btn-primary"
-                  style={{ padding: '8px 20px' }}
-                  disabled={savingEdit}
-                >
-                  {savingEdit ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Save to Playlist Modal Overlay */}
-      {showSaveModal && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: '360px', padding: '24px', background: 'rgba(20, 20, 20, 0.85)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <div className="modal-header" style={{ marginBottom: '20px' }}>
-              <span className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px', fontWeight: '600' }}>
-                <Bookmark size={20} className="text-primary-color" style={{ color: 'var(--primary-color)' }} /> Save video to...
-              </span>
-              <button className="modal-close" onClick={() => setShowSaveModal(false)}>&times;</button>
-            </div>
-
-            {/* Playlists checklist */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '200px', overflowY: 'auto', paddingRight: '4px', marginBottom: '20px' }}>
-              {playlists.map(pl => {
-                const isSaved = pl.video_ids && pl.video_ids.includes(video.vid_id);
-                return (
-                  <label key={pl.id} className="playlist-save-item">
-                    <input
-                      type="checkbox"
-                      checked={isSaved}
-                      onChange={() => {
-                        if (isSaved) {
-                          removeVideoFromPlaylist(pl.id, video.vid_id);
-                        } else {
-                          addVideoToPlaylist(pl.id, video.vid_id);
-                        }
-                      }}
-                      className="playlist-save-checkbox"
-                    />
-                    <span className="playlist-save-label-text">{pl.playlist_name}</span>
-                  </label>
-                );
-              })}
-            </div>
-
-            {/* Create Playlist Form */}
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '16px' }}>
-              <span style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '12px', fontWeight: '500' }}>Create a new playlist</span>
-              <form onSubmit={async (e) => {
-                e.preventDefault();
-                if (newPlaylistName.trim()) {
-                  const pl = await createPlaylist(newPlaylistName.trim());
-                  if (pl && pl.id) {
-                    await addVideoToPlaylist(pl.id, video.vid_id);
-                  }
-                  setNewPlaylistName('');
-                }
-              }} style={{ display: 'flex', flexDirection: 'column' }}>
-                <div className="create-pl-input-container">
-                  <input
-                    type="text"
-                    placeholder="Enter playlist name..."
-                    value={newPlaylistName}
-                    onChange={(e) => setNewPlaylistName(e.target.value)}
-                    className="create-pl-input"
-                    required
-                  />
-                  <div className="create-pl-focus-line"></div>
                 </div>
-                <button
-                  type="submit"
-                  className="create-pl-btn"
-                  disabled={!newPlaylistName.trim()}
-                >
-                  + Create Playlist
-                </button>
-              </form>
-            </div>
+
+                {/* Scrollable Playlist Queue Video List */}
+                <div style={{ maxHeight: '380px', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+                  {(activePlaylist.video_ids || []).map((id, idx) => {
+                    const vid = allVideos.find(v => v.vid_id === parseInt(id));
+                    if (!vid) return null;
+                    const isCurrent = parseInt(id) === video.vid_id;
+                    const cleanTitle = (vid.vid_name || '').replace(/\.[a-zA-Z0-9]+$/, '');
+                    return (
+                      <div
+                        key={vid.vid_id}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, idx)}
+                        onDragEnter={(e) => handleDragEnter(e, idx)}
+                        onDragEnd={handleDragEnd}
+                        onDragOver={(e) => e.preventDefault()}
+                        onClick={() => onPlayVideo(vid, activePlaylist, idx)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          padding: '8px 16px',
+                          cursor: 'grab',
+                          background: isCurrent ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
+                          borderBottom: '1px solid rgba(255, 255, 255, 0.03)',
+                          transition: 'background 0.2s',
+                          userSelect: 'none'
+                        }}
+                        className="queue-item"
+                      >
+                        <div style={{ fontSize: '11px', color: isCurrent ? 'var(--primary-color)' : '#666', fontWeight: 'bold', width: '16px', textAlign: 'center', flexShrink: 0 }}>
+                          {isCurrent ? '▶' : idx + 1}
+                        </div>
+
+                        <div style={{
+                          width: '64px',
+                          height: '36px',
+                          borderRadius: '4px',
+                          overflow: 'hidden',
+                          background: '#000',
+                          position: 'relative',
+                          flexShrink: 0
+                        }}>
+                          <img
+                            src={`./thumbnails/${vid.vid_id}.jpg`}
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'flex';
+                            }}
+                            alt=""
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
+                          <div style={{ display: 'none', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', color: '#444' }}>
+                            <Play size={12} />
+                          </div>
+                        </div>
+
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{
+                            fontSize: '13px',
+                            fontWeight: isCurrent ? 'bold' : 'normal',
+                            color: isCurrent ? 'var(--primary-color)' : '#fff',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                          }}>
+                            {cleanTitle}
+                          </div>
+                          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                            {vid.uploader_name}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <h2 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '4px' }}>Watch Next</h2>
+
+            {recommendations.map(vid => (
+              <SidebarVideoCard key={vid.vid_id} vid={vid} onPlayVideo={onPlayVideo} />
+            ))}
           </div>
-        </div>
-      )}
+
+          {/* Metadata Editing Modal Overlay */}
+          {showEditModal && (
+            <div className="modal-overlay">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <span className="modal-title">Edit Video Metadata</span>
+                  <button className="modal-close" onClick={() => setShowEditModal(false)}>&times;</button>
+                </div>
+                <form onSubmit={handleSaveMetadata} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div className="form-group">
+                    <label className="form-label">Video Title</label>
+                    <input
+                      type="text"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      className="form-input"
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Description</label>
+                    <textarea
+                      value={editDesc}
+                      onChange={(e) => setEditDesc(e.target.value)}
+                      className="form-input"
+                      rows={4}
+                      style={{ fontFamily: 'inherit' }}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Tags (comma separated)</label>
+                    <input
+                      type="text"
+                      value={editTags}
+                      onChange={(e) => setEditTags(e.target.value)}
+                      placeholder="videosongs, downloads, fun"
+                      className="form-input"
+                    />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '10px' }}>
+                    <button
+                      type="button"
+                      className="action-btn"
+                      onClick={() => setShowEditModal(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn-primary"
+                      style={{ padding: '8px 20px' }}
+                      disabled={savingEdit}
+                    >
+                      {savingEdit ? 'Saving...' : 'Save Changes'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Save to Playlist Modal Overlay */}
+          {showSaveModal && (
+            <div className="modal-overlay">
+              <div className="modal-content" style={{ maxWidth: '360px', padding: '24px', background: 'rgba(20, 20, 20, 0.85)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div className="modal-header" style={{ marginBottom: '20px' }}>
+                  <span className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px', fontWeight: '600' }}>
+                    <Bookmark size={20} className="text-primary-color" style={{ color: 'var(--primary-color)' }} /> Save video to...
+                  </span>
+                  <button className="modal-close" onClick={() => setShowSaveModal(false)}>&times;</button>
+                </div>
+
+                {/* Playlists checklist */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '200px', overflowY: 'auto', paddingRight: '4px', marginBottom: '20px' }}>
+                  {playlists.map(pl => {
+                    const isSaved = pl.video_ids && pl.video_ids.includes(video.vid_id);
+                    return (
+                      <label key={pl.id} className="playlist-save-item">
+                        <input
+                          type="checkbox"
+                          checked={isSaved}
+                          onChange={() => {
+                            if (isSaved) {
+                              removeVideoFromPlaylist(pl.id, video.vid_id);
+                            } else {
+                              addVideoToPlaylist(pl.id, video.vid_id);
+                            }
+                          }}
+                          className="playlist-save-checkbox"
+                        />
+                        <span className="playlist-save-label-text">{pl.playlist_name}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+
+                {/* Create Playlist Form */}
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '16px' }}>
+                  <span style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '12px', fontWeight: '500' }}>Create a new playlist</span>
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (newPlaylistName.trim()) {
+                      const pl = await createPlaylist(newPlaylistName.trim());
+                      if (pl && pl.id) {
+                        await addVideoToPlaylist(pl.id, video.vid_id);
+                      }
+                      setNewPlaylistName('');
+                    }
+                  }} style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div className="create-pl-input-container">
+                      <input
+                        type="text"
+                        placeholder="Enter playlist name..."
+                        value={newPlaylistName}
+                        onChange={(e) => setNewPlaylistName(e.target.value)}
+                        className="create-pl-input"
+                        required
+                      />
+                      <div className="create-pl-focus-line"></div>
+                    </div>
+                    <button
+                      type="submit"
+                      className="create-pl-btn"
+                      disabled={!newPlaylistName.trim()}
+                    >
+                      + Create Playlist
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>
@@ -3361,14 +3368,14 @@ function PlaylistView({ playlist, allVideos, onPlayVideo, onRemoveVideo, onReord
                     flexShrink: 0
                   }}
                 >
-                  <img 
-                    src={`./thumbnails/${vid.vid_id}.jpg`} 
+                  <img
+                    src={`./thumbnails/${vid.vid_id}.jpg`}
                     onError={(e) => {
                       e.target.style.display = 'none';
                       e.target.nextSibling.style.display = 'flex';
                     }}
-                    alt="" 
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    alt=""
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                   <div style={{ display: 'none', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', color: '#444' }}>
                     <Play size={20} />
