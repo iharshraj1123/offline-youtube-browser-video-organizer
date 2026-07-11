@@ -1714,6 +1714,15 @@ function PlayerView({
     }
   };
 
+  // Auto-cast next video when video changes and casting is active
+  const prevVideoIdRef = useRef(video.vid_id);
+  useEffect(() => {
+    if (castDevice && prevVideoIdRef.current !== video.vid_id) {
+      startCasting(castDevice);
+    }
+    prevVideoIdRef.current = video.vid_id;
+  }, [video.vid_id, castDevice]);
+
   const startModernCast = async () => {
     if (!navigator.presentation) {
       showFlashNotification('Native browser casting not supported by your browser.');
@@ -2430,7 +2439,7 @@ function PlayerView({
           ref={videoRef}
           src={translateVideoUrl(video.link)}
           className="html5-video"
-          autoPlay
+          autoPlay={!castDevice}
           loop={isLooping}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
