@@ -2165,16 +2165,17 @@ function checkAndTranscodeMedia($originalLink) {
 
     $ext = strtolower(pathinfo($localPath, PATHINFO_EXTENSION));
 
-    $needFullVideoTranscode = ($ext !== 'mp4' || $videoCodec !== 'h264');
+    $needVideoTranscode = ($videoCodec !== 'h264');
     $needAudioTranscode = (($audioCodec !== 'aac' && $audioCodec !== 'mp3') || $audioChannels > 2);
+    $needRemux = ($ext !== 'mp4');
 
-    if (!$needFullVideoTranscode && !$needAudioTranscode) {
+    if (!$needVideoTranscode && !$needAudioTranscode && !$needRemux) {
         return null; // Fully compatible natively
     }
 
     evictCastCache(500 * 1024 * 1024);
 
-    if ($needFullVideoTranscode) {
+    if ($needVideoTranscode) {
         $encoder = detectGpuEncoder($ffmpegPath);
         $isGpu = ($encoder !== 'libx264');
 
@@ -2191,7 +2192,16 @@ function checkAndTranscodeMedia($originalLink) {
             }
         }
 
-        $videoArgsGpu = '-c:v ' . $encoder . ' -rc vbr -cq:v 23 -b:v 8M -maxrate 10M -bufsize 16M';
+        // Apply fast presets for detected GPU encoders
+        if ($encoder === 'h264_nvenc') {
+            $videoArgsGpu = '-c:v h264_nvenc -preset fast -rc vbr -cq:v 23 -b:v 8M -maxrate 10M -bufsize 16M';
+        } elseif ($encoder === 'h264_qsv') {
+            $videoArgsGpu = '-c:v h264_qsv -preset fast -b:v 8M -maxrate 10M -bufsize 16M';
+        } elseif ($encoder === 'h264_amf') {
+            $videoArgsGpu = '-c:v h264_amf -preset speed -b:v 8M -maxrate 10M -bufsize 16M';
+        } else {
+            $videoArgsGpu = '-c:v ' . $encoder . ' -b:v 8M -maxrate 10M -bufsize 16M';
+        }
         $videoArgsCpu = '-c:v libx264 -preset ultrafast -crf 23 -pix_fmt yuv420p -b:v 8M -maxrate 10M -bufsize 16M';
         $videoArgs = $isGpu ? $videoArgsGpu : $videoArgsCpu;
 
@@ -2219,8 +2229,10 @@ function checkAndTranscodeMedia($originalLink) {
             @exec($transcodeCmd, $transcodeOutput, $transcodeReturnCode);
         }
     } else {
-        // H.264 video exists, only transcode audio to AAC stereo (44.1kHz / 128kbps) with faststart flags
-        $transcodeCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath) . ' -c:v copy -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart ' . escapeshellarg($cachedFile);
+        // Video is already H.264, no need to transcode video.
+        // We only remux the video stream (-c:v copy) and transcode audio if needed.
+        $audioArg = $needAudioTranscode ? '-c:a aac -ac 2 -ar 44100 -b:a 128k' : '-c:a copy';
+        $transcodeCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath) . ' -c:v copy ' . $audioArg . ' -movflags +faststart ' . escapeshellarg($cachedFile);
         $transcodeOutput = [];
         @exec($transcodeCmd, $transcodeOutput, $transcodeReturnCode);
     }
