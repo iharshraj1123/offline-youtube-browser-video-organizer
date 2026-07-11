@@ -2200,7 +2200,7 @@ function handleCastControl() {
                     '<item id="0" parentID="0" restricted="1">' .
                     '<dc:title>' . htmlspecialchars($title) . '</dc:title>' .
                     '<upnp:class>object.item.videoItem.movie</upnp:class>' .
-                    '<res protocolInfo="http-get:*:video/mp4:DLNA.ORG_PN=AVC_MP4_HP_HD_24p;DLNA.ORG_OP=03;DLNA.ORG_FLAGS=8d700000000000000000000000000000">' . htmlspecialchars($finalMediaUrl) . '</res>' .
+                    '<res protocolInfo="http-get:*:video/mp4:DLNA.ORG_PN=AVC_MP4_BL_L31_HD_AAC;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01700000000000000000000000000000">' . htmlspecialchars($finalMediaUrl) . '</res>' .
                     '</item>' .
                     '</DIDL-Lite>';
 
@@ -2262,9 +2262,9 @@ function handleCastStream() {
         exit('Cannot open file');
     }
 
-    header("Content-Type: video/mp4; DLNA.ORG_PN=AVC_MP4_HP_HD_24p");
+    header("Content-Type: video/mp4");
     header("Accept-Ranges: bytes");
-    header("contentFeatures.dlna.org: DLNA.ORG_PN=AVC_MP4_HP_HD_24p;DLNA.ORG_OP=03;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=8d700000000000000000000000000000");
+    header("contentFeatures.dlna.org: DLNA.ORG_PN=AVC_MP4_BL_L31_HD_AAC;DLNA.ORG_OP=11;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01700000000000000000000000000000");
     header("transferMode.dlna.org: Streaming");
     header("realTimeInfo.dlna.org: DLNA.ORG_TLAG=*");
     header("Connection: close");
