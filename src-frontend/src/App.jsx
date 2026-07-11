@@ -1324,6 +1324,15 @@ function PlayerView({
   const [savingEdit, setSavingEdit] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
+  // Casting States
+  const [showCastMenu, setShowCastMenu] = useState(false);
+  const [castMode, setCastMode] = useState(null); // 'select', 'legacy', 'modern'
+  const [castDevice, setCastDevice] = useState(null);
+  const [discoveredDevices, setDiscoveredDevices] = useState([]);
+  const [discovering, setDiscovering] = useState(false);
+  const [serverIps, setServerIps] = useState([]);
+  const [selectedServerIp, setSelectedServerIp] = useState(() => localStorage.getItem('yt_cast_server_ip') || '');
+
   // Playback control states
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -1587,8 +1596,149 @@ function PlayerView({
     }
   }, [video]);
 
+  // Casting Actions
+  const loadServerIps = async () => {
+    try {
+      const res = await fetch('./api/index.php?action=get_server_ips');
+      const data = await res.json();
+      setServerIps(Array.isArray(data) ? data : []);
+      if (Array.isArray(data) && data.length > 0 && !selectedServerIp) {
+        setSelectedServerIp(data[0]);
+        localStorage.setItem('yt_cast_server_ip', data[0]);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const discoverDevices = async () => {
+    setDiscovering(true);
+    setDiscoveredDevices([]);
+    try {
+      const res = await fetch('./api/index.php?action=cast_discover');
+      const data = await res.json();
+      setDiscoveredDevices(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+      showFlashNotification('Failed to discover casting devices.');
+    } finally {
+      setDiscovering(false);
+    }
+  };
+
+  const startCasting = async (device) => {
+    const isMp4 = video.video_path.toLowerCase().endsWith('.mp4');
+    if (!isMp4) {
+      showFlashNotification(`Casting only supports MP4 files. Skipping "${video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}".`);
+      if (activePlaylist && playlists.find(p => p.pl_id === activePlaylist)?.videos?.length > 1) {
+        handleNextVideo();
+      } else {
+        if (videoRef.current) videoRef.current.pause();
+      }
+      return;
+    }
+
+    const localHostIp = selectedServerIp || window.location.hostname;
+    const mediaUrl = `${window.location.protocol}//${localHostIp}${video.video_path}`;
+
+    try {
+      if (videoRef.current) {
+        videoRef.current.pause();
+        setIsPlaying(false);
+      }
+
+      const setRes = await fetch('./api/index.php?action=cast_control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          control_url: device.control_url,
+          action: 'set_uri',
+          media_url: mediaUrl
+        })
+      });
+      const setResult = await setRes.json();
+
+      if (setResult && setResult.status === 'success') {
+        await fetch('./api/index.php?action=cast_control', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            control_url: device.control_url,
+            action: 'play'
+          })
+        });
+
+        setCastDevice(device);
+        setIsPlaying(true);
+        showFlashNotification(`Casting to ${device.name}!`);
+      } else {
+        showFlashNotification('Failed to connect to TV. Make sure it is on.');
+      }
+    } catch (e) {
+      console.error(e);
+      showFlashNotification('Casting error occurred.');
+    }
+  };
+
+  const handleRemoteControl = async (action) => {
+    if (!castDevice) return;
+    try {
+      await fetch('./api/index.php?action=cast_control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          control_url: castDevice.control_url,
+          action: action
+        })
+      });
+      if (action === 'stop') {
+        setCastDevice(null);
+        setIsPlaying(false);
+        showFlashNotification('Stopped casting.');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const startModernCast = async () => {
+    if (!navigator.presentation) {
+      showFlashNotification('Native browser casting not supported by your browser.');
+      return;
+    }
+
+    const localHostIp = selectedServerIp || window.location.hostname;
+    const mediaUrl = `${window.location.protocol}//${localHostIp}${video.video_path}`;
+    
+    const request = new PresentationRequest([mediaUrl]);
+    try {
+      const connection = await request.start();
+      showFlashNotification('Casting session started!');
+      if (videoRef.current) {
+        videoRef.current.pause();
+        setIsPlaying(false);
+      }
+      connection.onclose = () => {
+        showFlashNotification('Casting session ended.');
+      };
+    } catch (e) {
+      console.log('Presentation API error:', e);
+      showFlashNotification('Native casting cancelled or no devices found.');
+    }
+  };
+
   // Video playback listeners
   const togglePlay = () => {
+    if (castDevice) {
+      if (isPlaying) {
+        handleRemoteControl('pause');
+        setIsPlaying(false);
+      } else {
+        handleRemoteControl('play');
+        setIsPlaying(true);
+      }
+      return;
+    }
     if (!videoRef.current) return;
     if (isPlaying) {
       videoRef.current.pause();
@@ -1800,6 +1950,13 @@ function PlayerView({
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+        return;
+      }
+      if (castDevice) {
+        if (e.code === 'Space') {
+          e.preventDefault();
+          togglePlay();
+        }
         return;
       }
       if (e.code === 'KeyT') {
@@ -2267,6 +2424,21 @@ function PlayerView({
           onBlur={() => setIsVideoFocused(false)}
           tabIndex={0}
         />
+        {castDevice && (
+          <div className="player-cast-active-overlay">
+            <Tv size={64} className="cast-active-icon" />
+            <div className="cast-active-title">Casting to {castDevice.name}</div>
+            <div className="cast-active-status">Playing: {video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}</div>
+            <div className="cast-active-controls">
+              <button className="cast-remote-btn" onClick={togglePlay}>
+                {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" />}
+              </button>
+              <button className="cast-remote-btn stop" onClick={() => handleRemoteControl('stop')}>
+                Disconnect
+              </button>
+            </div>
+          </div>
+        )}
 
 
 
@@ -2444,8 +2616,21 @@ function PlayerView({
                 </svg>
               </button>
               <button
+                className={`control-btn ${showCastMenu ? 'cast-active' : ''}`}
+                onClick={() => {
+                  setShowCastMenu(!showCastMenu);
+                  setShowSettings(false);
+                }}
+                title="Cast"
+              >
+                <Tv size={20} />
+              </button>
+              <button
                 className={`control-btn ${showSettings ? 'settings-active' : ''}`}
-                onClick={() => setShowSettings(!showSettings)}
+                onClick={() => {
+                  setShowSettings(!showSettings);
+                  setShowCastMenu(false);
+                }}
                 title="Settings"
               >
                 <Settings size={20} />
@@ -2456,6 +2641,106 @@ function PlayerView({
             </div>
           </div>
         </div>
+
+        {/* Cast Device Selector Dropdown */}
+        {showCastMenu && (
+          <div className="player-cast-dropdown">
+            {!castMode ? (
+              <div className="cast-menu-list">
+                <div className="cast-menu-header">Cast to Device</div>
+                <div
+                  className="cast-menu-item"
+                  onClick={() => {
+                    setCastMode('legacy');
+                    loadServerIps();
+                    discoverDevices();
+                  }}
+                >
+                  <span className="settings-item-left"><Tv size={16} /> Legacy Mode (DLNA / UPnP)</span>
+                </div>
+                <div
+                  className="cast-menu-item"
+                  onClick={() => {
+                    setCastMode('modern');
+                    startModernCast();
+                    setShowCastMenu(false);
+                  }}
+                >
+                  <span className="settings-item-left"><Tv size={16} /> Modern Mode (Google Cast / AirPlay)</span>
+                </div>
+              </div>
+            ) : castMode === 'legacy' ? (
+              <div className="cast-menu-list">
+                <div className="cast-menu-header" onClick={() => setCastMode(null)} style={{ cursor: 'pointer' }}>
+                  <span>&lt; Back to Protocol Selection</span>
+                </div>
+                
+                {/* Local IP Selector */}
+                <div className="cast-ip-config">
+                  <label>Server LAN IP Address:</label>
+                  <select
+                    value={selectedServerIp}
+                    onChange={(e) => {
+                      setSelectedServerIp(e.target.value);
+                      localStorage.setItem('yt_cast_server_ip', e.target.value);
+                    }}
+                    className="cast-ip-select"
+                  >
+                    {serverIps.map((ip, idx) => (
+                      <option key={idx} value={ip}>{ip}</option>
+                    ))}
+                    {serverIps.length === 0 && <option value="">Auto-Detecting...</option>}
+                  </select>
+                  <div style={{ fontSize: '10px', color: '#aaa', marginTop: '4px' }}>
+                    Select the local IP where your XAMPP server runs.
+                  </div>
+                </div>
+
+                <div className="cast-divider"></div>
+
+                <div className="cast-devices-section">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontWeight: 'bold', fontSize: '12px' }}>Renderers Found:</span>
+                    <button
+                      className="cast-refresh-btn"
+                      onClick={discoverDevices}
+                      disabled={discovering}
+                    >
+                      {discovering ? <Loader2 className="animate-spin" size={12} /> : 'Refresh'}
+                    </button>
+                  </div>
+
+                  {discovering ? (
+                    <div className="cast-status-text">Scanning network via SSDP...</div>
+                  ) : discoveredDevices.length === 0 ? (
+                    <div className="cast-status-text">No DLNA renderers discovered on local network.</div>
+                  ) : (
+                    discoveredDevices.map((device, idx) => (
+                      <div
+                        key={idx}
+                        className={`cast-device-row ${castDevice?.control_url === device.control_url ? 'active' : ''}`}
+                        onClick={() => {
+                          if (castDevice?.control_url === device.control_url) {
+                            handleRemoteControl('stop');
+                          } else {
+                            startCasting(device);
+                          }
+                          setShowCastMenu(false);
+                        }}
+                      >
+                        <Tv size={14} />
+                        <span>{device.name}</span>
+                        {castDevice?.control_url === device.control_url && (
+                          <span className="cast-connected-badge">Connected</span>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        )}
 
         {/* YouTube Style Settings Dropdown */}
         {showSettings && (

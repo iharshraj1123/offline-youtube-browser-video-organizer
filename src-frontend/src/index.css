@@ -3902,3 +3902,228 @@ body.mini-player-dragging * {
   border-radius: 6px;
   padding: 4px;
 }
+
+/* Cast Selector Dropdown */
+.player-cast-dropdown {
+  position: absolute;
+  bottom: 56px;
+  right: 48px;
+  background-color: rgba(28, 28, 28, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px;
+  min-width: 260px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  z-index: 200;
+  backdrop-filter: blur(12px);
+  color: #fff;
+  font-family: inherit;
+}
+
+.cast-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cast-menu-header {
+  font-weight: bold;
+  font-size: 14px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cast-menu-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.cast-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.cast-ip-config {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.cast-ip-config label {
+  font-size: 11px;
+  color: #aaa;
+  font-weight: 600;
+}
+
+.cast-ip-select {
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #fff;
+  padding: 6px;
+  font-size: 13px;
+  outline: none;
+}
+
+.cast-divider {
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin: 10px 0;
+}
+
+.cast-devices-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.cast-refresh-btn {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.cast-refresh-btn:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.cast-refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cast-status-text {
+  font-size: 12px;
+  color: #aaa;
+  text-align: center;
+  padding: 16px 0;
+}
+
+.cast-device-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 13px;
+}
+
+.cast-device-row:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.cast-device-row.active {
+  background-color: rgba(62, 166, 255, 0.15);
+  color: #3ea6ff;
+}
+
+.cast-connected-badge {
+  font-size: 10px;
+  background-color: #3ea6ff;
+  color: #0f0f0f;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: auto;
+  font-weight: bold;
+}
+
+/* Cast Active Overlay screen in player */
+.player-cast-active-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #0f0f0f;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: #fff;
+  font-family: inherit;
+}
+
+.cast-active-icon {
+  color: #3ea6ff;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+
+.cast-active-title {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.cast-active-status {
+  font-size: 14px;
+  color: #aaa;
+  max-width: 80%;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cast-active-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.cast-remote-btn {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.cast-remote-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.cast-remote-btn.stop {
+  border-radius: 20px;
+  width: auto;
+  height: 38px;
+  padding: 0 16px;
+  font-weight: bold;
+  font-size: 13px;
+  background-color: #cc0000;
+}
+
+.cast-remote-btn.stop:hover {
+  background-color: #ff0000;
+}

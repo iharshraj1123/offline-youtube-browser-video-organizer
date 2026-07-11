@@ -108,6 +108,15 @@ try {
         case 'edit_comment':
             handleEditComment($pdo);
             break;
+        case 'get_server_ips':
+            handleGetServerIps();
+            break;
+        case 'cast_discover':
+            handleCastDiscover();
+            break;
+        case 'cast_control':
+            handleCastControl();
+            break;
         case 'get_user_card':
             handleGetUserCard($pdo);
             break;
@@ -1868,3 +1877,211 @@ function handleUpdateProfile($pdo) {
     ]);
     exit;
 }
+
+// ----------------------------------------
+// Smart TV Casting (DLNA/UPnP) Helper Functions
+// ----------------------------------------
+
+function getLocalIPs() {
+    $ips = [];
+    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+        @exec('ipconfig', $output);
+        foreach ($output as $line) {
+            if (preg_match('/IPv4 Address[\.\s]+:\s*([0-9\.]+)/i', $line, $matches)) {
+                $ip = trim($matches[1]);
+                if ($ip !== '127.0.0.1' && !in_array($ip, $ips)) {
+                    $ips[] = $ip;
+                }
+            }
+        }
+    } else {
+        @exec('hostname -I', $output);
+        if (!empty($output)) {
+            $parts = explode(' ', trim($output[0]));
+            foreach ($parts as $ip) {
+                $ip = trim($ip);
+                if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) && $ip !== '127.0.0.1') {
+                    $ips[] = $ip;
+                }
+            }
+        }
+    }
+    if (empty($ips)) {
+        $ips[] = $_SERVER['SERVER_ADDR'] ?? gethostbyname(gethostname());
+    }
+    return array_values(array_filter($ips, function($ip) {
+        return !empty($ip) && $ip !== '127.0.0.1';
+    }));
+}
+
+function parseUPnPDescription($url) {
+    $ctx = stream_context_create([
+        'http' => ['timeout' => 1.5]
+    ]);
+    $xml = @file_get_contents($url, false, $ctx);
+    if (!$xml) return null;
+
+    $friendlyName = 'Unknown DLNA Device';
+    if (preg_match('/<friendlyName>(.*?)<\/friendlyName>/i', $xml, $m)) {
+        $friendlyName = trim($m[1]);
+    }
+
+    $parts = parse_url($url);
+    $baseUrl = $parts['scheme'] . '://' . $parts['host'] . (isset($parts['port']) ? ':' . $parts['port'] : '');
+
+    $controlUrl = '';
+    if (preg_match('/<serviceType>urn:schemas-upnp-org:service:AVTransport:[1-9]<\/serviceType>.*?<controlURL>(.*?)<\/controlURL>/is', $xml, $m)) {
+        $controlUrl = trim($m[1]);
+    } else {
+        if (preg_match('/<controlURL>(.*?)<\/controlURL>/i', $xml, $m)) {
+            $controlUrl = trim($m[1]);
+        }
+    }
+
+    if ($controlUrl) {
+        if (strpos($controlUrl, 'http') === 0) {
+            $fullControlUrl = $controlUrl;
+        } else {
+            $fullControlUrl = rtrim($baseUrl, '/') . '/' . ltrim($controlUrl, '/');
+        }
+        return [
+            'name' => $friendlyName,
+            'control_url' => $fullControlUrl
+        ];
+    }
+    return null;
+}
+
+function handleGetServerIps() {
+    echo json_encode(getLocalIPs());
+    exit;
+}
+
+function handleCastDiscover() {
+    $msg = "M-SEARCH * HTTP/1.1\r\n" .
+           "HOST: 239.255.255.250:1900\r\n" .
+           "MAN: \"ssdp:discover\"\r\n" .
+           "MX: 2\r\n" .
+           "ST: urn:schemas-upnp-org:device:MediaRenderer:1\r\n\r\n";
+
+    $socket = @stream_socket_server("udp://0.0.0.0:0", $errno, $errstr);
+    $devices = [];
+    $locations = [];
+
+    if ($socket) {
+        stream_set_timeout($socket, 1, 500000);
+        @stream_socket_sendto($socket, $msg, 0, '239.255.255.250:1900');
+
+        $start = microtime(true);
+        while ((microtime(true) - $start) < 1.5) {
+            $r = [$socket];
+            $w = null;
+            $e = null;
+            if (stream_select($r, $w, $e, 0, 500000)) {
+                $buf = @stream_socket_recvfrom($socket, 2048, 0, $peer);
+                if ($buf) {
+                    if (preg_match('/LOCATION:\s*(.*?)\r?\n/i', $buf, $m)) {
+                        $loc = trim($m[1]);
+                        if (!in_array($loc, $locations)) {
+                            $locations[] = $loc;
+                        }
+                    }
+                }
+            } else {
+                break;
+            }
+        }
+        @fclose($socket);
+    }
+
+    foreach ($locations as $loc) {
+        $dev = parseUPnPDescription($loc);
+        if ($dev) {
+            $devices[] = $dev;
+        }
+    }
+
+    echo json_encode($devices);
+    exit;
+}
+
+function sendSOAPRequest($controlUrl, $service, $action, $args) {
+    $xml = '<?xml version="1.0" encoding="utf-8"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <s:Body>
+    <u:' . $action . ' xmlns:u="' . $service . '">
+      <InstanceID>0</InstanceID>';
+    
+    foreach ($args as $key => $val) {
+        $xml .= '<' . $key . '>' . htmlspecialchars($val) . '</' . $key . '>';
+    }
+    
+    $xml .= '    </u:' . $action . '>
+  </s:Body>
+</s:Envelope>';
+
+    $headers = [
+        'Content-Type: text/xml; charset="utf-8"',
+        'SOAPACTION: "' . $service . '#' . $action . '"',
+        'Content-Length: ' . strlen($xml),
+        'Connection: close'
+    ];
+
+    $ch = curl_init($controlUrl);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $xml);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+    $res = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    return [
+        'status' => $code === 200 ? 'success' : 'error',
+        'code' => $code,
+        'response' => $res
+    ];
+}
+
+function handleCastControl() {
+    $rawData = file_get_contents('php://input');
+    $data = json_decode($rawData, true);
+
+    $controlUrl = $data['control_url'] ?? '';
+    $action = $data['action'] ?? '';
+    $mediaUrl = $data['media_url'] ?? '';
+
+    if (empty($controlUrl) || empty($action)) {
+        throw new Exception('Missing control parameters');
+    }
+
+    $service = 'urn:schemas-upnp-org:service:AVTransport:1';
+    $res = null;
+
+    switch ($action) {
+        case 'set_uri':
+            $res = sendSOAPRequest($controlUrl, $service, 'SetAVTransportURI', [
+                'CurrentURI' => $mediaUrl,
+                'CurrentURIMetaData' => ''
+            ]);
+            break;
+        case 'play':
+            $res = sendSOAPRequest($controlUrl, $service, 'Play', [
+                'Speed' => '1'
+            ]);
+            break;
+        case 'pause':
+            $res = sendSOAPRequest($controlUrl, $service, 'Pause', []);
+            break;
+        case 'stop':
+            $res = sendSOAPRequest($controlUrl, $service, 'Stop', []);
+            break;
+        default:
+            throw new Exception('Unsupported cast action');
+    }
+
+    echo json_encode($res);
+    exit;
+}
+
