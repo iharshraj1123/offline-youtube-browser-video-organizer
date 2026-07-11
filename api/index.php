@@ -2262,32 +2262,12 @@ function handleCastStream() {
         exit('Cannot open file');
     }
 
-    $lockDir = sys_get_temp_dir() . '/dlna_locks';
-    if (!is_dir($lockDir)) @mkdir($lockDir, 0777, true);
-    $lockFile = $lockDir . '/' . md5($filePath);
-    $clientIp = $_SERVER['REMOTE_ADDR'] ?? '';
-    $isDuplicate = false;
-    if (file_exists($lockFile)) {
-        $lockData = @unserialize(file_get_contents($lockFile));
-        if (is_array($lockData) && $lockData['ip'] === $clientIp && (time() - $lockData['time']) < 10) {
-            $isDuplicate = true;
-        }
-    }
-    if (!$isDuplicate) {
-        @file_put_contents($lockFile, serialize(['ip' => $clientIp, 'time' => time()]));
-    }
-
     header("Content-Type: video/mp4; DLNA.ORG_PN=AVC_MP4_HP_HD_24p");
     header("Accept-Ranges: bytes");
     header("contentFeatures.dlna.org: DLNA.ORG_PN=AVC_MP4_HP_HD_24p;DLNA.ORG_OP=03;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=8d700000000000000000000000000000");
     header("transferMode.dlna.org: Streaming");
     header("realTimeInfo.dlna.org: DLNA.ORG_TLAG=*");
     header("Connection: close");
-
-    if ($isDuplicate) {
-        fclose($fp);
-        exit;
-    }
 
     $start = 0;
     $end = $size - 1;
