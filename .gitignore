@@ -1,0 +1,22 @@
+# Dependency Directories
+node_modules/
+src-frontend/node_modules/
+
+# Local Dev/Build outputs
+dist/
+src-frontend/dist/
+
+# IDE and System Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+
+# Dynamic/User-Uploaded Media (ignore content, keep folders)
+Userdatabase/*
+!Userdatabase/.gitkeep
+uploads/*
+!uploads/.gitkeep
+thumbnails/*
+!thumbnails/.gitkeep

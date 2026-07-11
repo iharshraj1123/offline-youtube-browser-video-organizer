@@ -1,0 +1,30 @@
+# Enable sendfile for faster local file serving
+<IfModule mod_sendfile.c>
+    SendFile on
+</IfModule>
+
+# Increase timeouts for large local transfers
+<IfModule mod_core.c>
+    KeepAliveTimeout 30
+    Timeout 300
+</IfModule>
+
+# Ensure proper MIME types for video formats
+<IfModule mod_mime.c>
+    AddType video/mp4 .mp4 .m4v
+    AddType video/webm .webm
+    AddType video/ogg .ogv
+    AddType video/x-matroska .mkv
+</IfModule>
+
+# Add browser caching controls for media files
+<IfModule mod_headers.c>
+    <FilesMatch "\.(mp4|m4v|webm|mkv|ogv)$">
+        Header set Cache-Control "public, max-age=3600"
+    </FilesMatch>
+</IfModule>
+
+# Disable content negotiation for video files
+<IfModule mod_negotiation.c>
+    Options -MultiViews
+</IfModule>
