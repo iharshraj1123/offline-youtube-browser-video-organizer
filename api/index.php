@@ -2279,6 +2279,9 @@ function handleCastControl() {
                     '</item>' .
                     '</DIDL-Lite>';
 
+            // Stop any currently playing video first to clear UPnP state on older TV renderers
+            @sendSOAPRequest($controlUrl, $service, 'Stop', []);
+
             $res = sendSOAPRequest($controlUrl, $service, 'SetAVTransportURI', [
                 'CurrentURI' => $finalMediaUrl,
                 'CurrentURIMetaData' => $meta

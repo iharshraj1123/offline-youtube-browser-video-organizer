@@ -1670,6 +1670,9 @@ function PlayerView({
       const setResult = await setRes.json();
 
       if (setResult && setResult.status === 'success') {
+        // Wait a brief moment for the TV to transition and register the new URI
+        await new Promise(resolve => setTimeout(resolve, 800));
+
         await fetch('./api/index.php?action=cast_control', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2467,10 +2470,16 @@ function PlayerView({
                 <div className="cast-active-title">Casting to {castDevice.name}</div>
                 <div className="cast-active-status">Playing: {video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}</div>
                 <div className="cast-active-controls">
-                  <button className="cast-remote-btn" onClick={togglePlay}>
+                  <button className="cast-remote-btn" onClick={handlePrevVideo} title="Previous Video">
+                    <SkipBack size={24} fill="currentColor" />
+                  </button>
+                  <button className="cast-remote-btn" onClick={togglePlay} title={isPlaying ? "Pause" : "Play"}>
                     {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" />}
                   </button>
-                  <button className="cast-remote-btn stop" onClick={() => handleRemoteControl('stop')}>
+                  <button className="cast-remote-btn" onClick={handleNextVideo} title="Next Video">
+                    <SkipForward size={24} fill="currentColor" />
+                  </button>
+                  <button className="cast-remote-btn stop" onClick={() => handleRemoteControl('stop')} title="Disconnect">
                     Disconnect
                   </button>
                 </div>
