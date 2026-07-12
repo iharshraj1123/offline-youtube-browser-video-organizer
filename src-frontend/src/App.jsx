@@ -1431,6 +1431,7 @@ function PlayerView({
   const pinchRef = useRef({ active: false, startDist: 0, startZoom: 0 });
   const pinchOriginRef = useRef({ x: 50, y: 50 });
   const snappedToFillRef = useRef(false);
+  const targetOrientationRef = useRef('landscape');
 
   const handleMouseDown = (e) => {
     if (!isMiniPlayer) return;
@@ -1950,6 +1951,15 @@ function PlayerView({
         body: JSON.stringify({ vid_id: video.vid_id, duration: dur })
       });
     }
+
+    // Set target orientation from actual video dimensions
+    const v = videoRef.current;
+    targetOrientationRef.current = (v.videoHeight > v.videoWidth) ? 'portrait' : 'landscape';
+
+    // If already fullscreen on phone, lock to match
+    if (isFullscreen && isPhoneRef.current && screen.orientation?.lock) {
+      screen.orientation.lock(targetOrientationRef.current).catch(() => {});
+    }
   };
 
   const handleVolumeChange = (e) => {
@@ -2049,11 +2059,15 @@ function PlayerView({
         playerWrapperRef.current.requestFullscreen();
       }
       setIsFullscreen(true);
+      if (isPhoneRef.current && screen.orientation?.lock) {
+        screen.orientation.lock(targetOrientationRef.current).catch(() => {});
+      }
     } else {
       if (document.exitFullscreen) {
         document.exitFullscreen();
       }
       setIsFullscreen(false);
+      if (screen.orientation?.unlock) screen.orientation.unlock();
     }
   };
 
