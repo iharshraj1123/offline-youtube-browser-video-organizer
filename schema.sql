@@ -1,4 +1,4 @@
--- Database schema setup for YouTube-v2
+-- Database schema setup for YouTube
 -- Repository: offline-youtube-browser-video-organizer
 
 CREATE DATABASE IF NOT EXISTS `youtube-v2` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS `users` (
     `first_name` varchar(15) DEFAULT NULL,
     `last_name` varchar(15) DEFAULT NULL,
     `user_desc` varchar(2000) DEFAULT 'Hiii There its me !!! yeah you dont know me....',
-    `user_pic` varchar(200) DEFAULT '/youtube-v2/Userdatabase/ProfilePic/default1.jpg',
+    `user_pic` varchar(200) DEFAULT '/youtube/Userdatabase/ProfilePic/default1.jpg',
     `comment_votes` longtext DEFAULT NULL,
     `reply_votes` longtext DEFAULT NULL,
     `karma` int(11) NOT NULL DEFAULT 0,

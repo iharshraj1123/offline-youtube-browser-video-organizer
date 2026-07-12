@@ -1,5 +1,5 @@
 <?php
-// c:\xampp\htdocs\youtube-v2\api\scratch\list_tables.php
+// c:\laragon\www\youtube\api\scratch\list_tables.php
 
 try {
     $pdo = new PDO("mysql:host=localhost", "root", "");

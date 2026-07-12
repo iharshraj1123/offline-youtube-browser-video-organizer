@@ -1,4 +1,4 @@
-// c:\xampp\htdocs\youtube-v2\src-frontend\src\components\AuthModal.jsx
+// c:\laragon\www\youtube\src-frontend\src\components\AuthModal.jsx
 import React, { useState } from 'react';
 import { X, Loader2 } from 'lucide-react';
 

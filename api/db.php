@@ -1,5 +1,5 @@
 <?php
-// c:\xampp\htdocs\youtube-v2\api\db.php
+// c:\laragon\www\youtube\api\db.php
 //
 // Loads DB credentials from api/.env (gitignored).
 // To set up: copy api/.env.example to api/.env and fill in your credentials.

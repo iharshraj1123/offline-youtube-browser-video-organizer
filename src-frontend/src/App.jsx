@@ -1,4 +1,4 @@
-// c:\xampp\htdocs\youtube-v2\src-frontend\src\App.jsx
+// c:\laragon\www\youtube\src-frontend\src\App.jsx
 
 import React, { useState, useEffect, useRef } from 'react';
 import {

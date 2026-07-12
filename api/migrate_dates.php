@@ -1,5 +1,5 @@
 <?php
-// c:\xampp\htdocs\youtube-v2\api\migrate_dates.php
+// c:\laragon\www\youtube\api\migrate_dates.php
 
 ini_set('display_errors', 0);
 error_reporting(E_ALL);

@@ -1,4 +1,4 @@
-// c:\xampp\htdocs\youtube-v2\src-frontend\src\components\ProfileView.jsx
+// c:\laragon\www\youtube\src-frontend\src\components\ProfileView.jsx
 import React, { useState, useEffect } from 'react';
 import { User, Video, MessageSquare, Edit3, Settings, Calendar, Award, Play, Loader2, Save, X } from 'lucide-react';
 

@@ -1,4 +1,4 @@
-// c:\xampp\htdocs\youtube-v2\src-frontend\src\components\CommentsSection.jsx
+// c:\laragon\www\youtube\src-frontend\src\components\CommentsSection.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { ThumbsUp, ThumbsDown, MessageSquare, Trash2, Smile, Image, Play, ChevronDown, ChevronUp, Loader2, Paperclip, X, MoreVertical, Pencil, Share2 } from 'lucide-react';
 

@@ -1,5 +1,5 @@
 <?php
-// c:\xampp\htdocs\youtube-v2\api\index.php
+// c:\laragon\www\youtube\api\index.php
 
 // Disable error display in JSON response, but log them
 ini_set('display_errors', 0);
@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-// Dynamically determine the base directory path (e.g. "/youtube" or "/youtube-v2" or "")
+// Dynamically determine the base directory path (e.g. "/youtube" or "")
 $baseDir = str_replace('\\', '/', dirname(dirname($_SERVER['SCRIPT_NAME'] ?? '')));
 if ($baseDir === '/') {
     $baseDir = '';
@@ -395,7 +395,7 @@ function handleCrawl($pdo) {
     // Get cookie values for user session
     $uploader_id = $_COOKIE['loggedusernum'] ?? 1;
     $uploader_name = $_COOKIE['loggedusername'] ?? 'Admin';
-    $uploader_img = $_COOKIE['loggeduserpic'] ?? '/comment section/userdatabase/profilepic/defaulta.jpg';
+    $uploader_img = $_COOKIE['loggeduserpic'] ?? BASE_DIR . '/Userdatabase/profilepic/defaulta.jpg';
 
     // Query helper to check existing links
     $checkStmt = $pdo->prepare("SELECT vid_id FROM video_metadatas WHERE link = :link");
@@ -2087,7 +2087,7 @@ function resolveLocalFilePath($link) {
 
 function detectGpuEncoder($ffmpegPath) {
     $encoders = [];
-    @exec($ffmpegPath . ' -encoders 2>&1', $encoders, $ec);
+    exec($ffmpegPath . ' -encoders 2>&1', $encoders, $ec);
     $line = implode("\n", $encoders);
     if (strpos($line, 'h264_nvenc') !== false) return 'h264_nvenc';
     if (strpos($line, 'h264_qsv') !== false) return 'h264_qsv';
@@ -2139,105 +2139,142 @@ function checkAndTranscodeMedia($originalLink) {
     $cachedFile = $cacheDir . '/' . $fileHash . '.mp4';
     $cachedUrlPath = BASE_DIR . '/uploads/cast_cache/' . $fileHash . '.mp4';
 
-    if (file_exists($cachedFile)) {
+    if (file_exists($cachedFile) && filesize($cachedFile) > 0) {
         return $cachedUrlPath;
     }
 
-    // Check video codec
-    $videoCodec = '';
-    $vcmd = $ffprobePath . ' -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($localPath);
-    $voutput = [];
-    @exec($vcmd, $voutput, $vcode);
-    if ($vcode === 0 && !empty($voutput)) {
-        $videoCodec = trim($voutput[0]);
-    }
+    // Create a temp hardlink with ASCII-only name to bypass Windows escapeshellarg()
+    // corruption of special characters like !, %, and multi-byte Unicode
+    $tempLink = getTempHardlink($localPath);
+    $probePath = $tempLink ? $tempLink : $localPath;
 
-    // Check audio codec and channels
-    $audioCodec = '';
-    $audioChannels = 2;
-    $acmd = $ffprobePath . ' -v error -select_streams a:0 -show_entries stream=codec_name,channels -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($localPath);
-    $aoutput = [];
-    @exec($acmd, $aoutput, $acode);
-    if ($acode === 0 && !empty($aoutput)) {
-        $audioCodec = trim($aoutput[0]);
-        $audioChannels = isset($aoutput[1]) ? intval(trim($aoutput[1])) : 2;
-    }
+    $transcodeReturnCode = -1;
 
-    $ext = strtolower(pathinfo($localPath, PATHINFO_EXTENSION));
+    try {
+        // Check video codec
+        $videoCodec = '';
+        $vcmd = $ffprobePath . ' -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($probePath);
+        $voutput = [];
+        exec($vcmd, $voutput, $vcode);
+        if ($vcode !== 0 || empty($voutput)) {
+            error_log("[cast] ffprobe video codec detection failed for: $localPath (exit=$vcode)");
+        }
+        if ($vcode === 0 && !empty($voutput)) {
+            $videoCodec = trim($voutput[0]);
+        }
 
-    $needVideoTranscode = ($videoCodec !== 'h264');
-    $needAudioTranscode = (($audioCodec !== 'aac' && $audioCodec !== 'mp3') || $audioChannels > 2);
-    $needRemux = ($ext !== 'mp4');
+        // Check audio codec and channels
+        $audioCodec = '';
+        $audioChannels = 2;
+        $acmd = $ffprobePath . ' -v error -select_streams a:0 -show_entries stream=codec_name,channels -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($probePath);
+        $aoutput = [];
+        exec($acmd, $aoutput, $acode);
+        if ($acode !== 0 || empty($aoutput)) {
+            error_log("[cast] ffprobe audio detection failed for: $localPath (exit=$acode)");
+        }
+        if ($acode === 0 && !empty($aoutput)) {
+            $audioCodec = trim($aoutput[0]);
+            $audioChannels = isset($aoutput[1]) ? intval(trim($aoutput[1])) : 2;
+        }
 
-    if (!$needVideoTranscode && !$needAudioTranscode && !$needRemux) {
-        return null; // Fully compatible natively
-    }
+        $ext = strtolower(pathinfo($localPath, PATHINFO_EXTENSION));
 
-    evictCastCache(500 * 1024 * 1024);
+        $needVideoTranscode = ($videoCodec !== 'h264');
+        // Always re-encode audio for DLNA — TVs reject many AAC/MP3 variants and surround formats
+        $needAudioTranscode = true;
+        $needRemux = ($ext !== 'mp4');
 
-    if ($needVideoTranscode) {
-        $encoder = detectGpuEncoder($ffmpegPath);
-        $isGpu = ($encoder !== 'libx264');
+        if (!$needVideoTranscode && !$needAudioTranscode && !$needRemux) {
+            return null; // Fully compatible natively
+        }
 
-        $vcmd2 = $ffprobePath . ' -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 ' . escapeshellarg($localPath);
-        $vdims = [];
-        @exec($vcmd2, $vdims, $vdc);
-        $needScale = false;
-        if ($vdc === 0 && !empty($vdims)) {
-            $dims = explode(',', trim($vdims[0]));
-            $w = intval($dims[0] ?? 0);
-            $h = intval($dims[1] ?? 0);
-            if ($w > 1920 || $h > 1080) {
-                $needScale = true;
+        evictCastCache(500 * 1024 * 1024);
+
+        if ($needVideoTranscode) {
+            $encoder = detectGpuEncoder($ffmpegPath);
+            $isGpu = ($encoder !== 'libx264');
+
+            $vcmd2 = $ffprobePath . ' -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 ' . escapeshellarg($probePath);
+            $vdims = [];
+            exec($vcmd2, $vdims, $vdc);
+            $needScale = false;
+            if ($vdc === 0 && !empty($vdims)) {
+                $dims = explode(',', trim($vdims[0]));
+                $w = intval($dims[0] ?? 0);
+                $h = intval($dims[1] ?? 0);
+                if ($w > 1920 || $h > 1080) {
+                    $needScale = true;
+                }
             }
-        }
 
-        // Apply fast presets for detected GPU encoders
-        if ($encoder === 'h264_nvenc') {
-            $videoArgsGpu = '-c:v h264_nvenc -preset fast -rc vbr -cq:v 23 -b:v 8M -maxrate 10M -bufsize 16M';
-        } elseif ($encoder === 'h264_qsv') {
-            $videoArgsGpu = '-c:v h264_qsv -preset fast -b:v 8M -maxrate 10M -bufsize 16M';
-        } elseif ($encoder === 'h264_amf') {
-            $videoArgsGpu = '-c:v h264_amf -preset speed -b:v 8M -maxrate 10M -bufsize 16M';
-        } else {
-            $videoArgsGpu = '-c:v ' . $encoder . ' -b:v 8M -maxrate 10M -bufsize 16M';
-        }
-        $videoArgsCpu = '-c:v libx264 -preset ultrafast -crf 23 -pix_fmt yuv420p -b:v 8M -maxrate 10M -bufsize 16M';
-        $videoArgs = $isGpu ? $videoArgsGpu : $videoArgsCpu;
+            // Apply fast presets for detected GPU encoders
+            if ($encoder === 'h264_nvenc') {
+                $videoArgsGpu = '-c:v h264_nvenc -preset fast -rc vbr -cq:v 23 -b:v 8M -maxrate 10M -bufsize 16M';
+            } elseif ($encoder === 'h264_qsv') {
+                $videoArgsGpu = '-c:v h264_qsv -preset fast -b:v 8M -maxrate 10M -bufsize 16M';
+            } elseif ($encoder === 'h264_amf') {
+                $videoArgsGpu = '-c:v h264_amf -preset speed -b:v 8M -maxrate 10M -bufsize 16M';
+            } else {
+                $videoArgsGpu = '-c:v ' . $encoder . ' -b:v 8M -maxrate 10M -bufsize 16M';
+            }
+            $videoArgsCpu = '-c:v libx264 -preset ultrafast -crf 23 -pix_fmt yuv420p -b:v 8M -maxrate 10M -bufsize 16M';
+            $videoArgs = $isGpu ? $videoArgsGpu : $videoArgsCpu;
 
-        $scaleArg = $needScale ? ' -vf "scale=\'min(1920,iw)\':\'min(1080,ih)\':force_original_aspect_ratio=decrease"' : '';
+            $scaleArg = $needScale ? ' -vf "scale=\'min(1920,iw)\':\'min(1080,ih)\':force_original_aspect_ratio=decrease"' : '';
 
-        $transcodeCmd = $ffmpegPath . ' -y -threads 0 -i ' . escapeshellarg($localPath)
-            . ' ' . $videoArgs
-            . $scaleArg
-            . ' -r 30'
-            . ' -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart '
-            . escapeshellarg($cachedFile);
-
-        $transcodeOutput = [];
-        @exec($transcodeCmd, $transcodeOutput, $transcodeReturnCode);
-
-        if ($transcodeReturnCode !== 0 && $isGpu) {
-            @unlink($cachedFile);
-            $transcodeCmd = $ffmpegPath . ' -y -threads 0 -i ' . escapeshellarg($localPath)
-                . ' ' . $videoArgsCpu
+            $transcodeCmd = $ffmpegPath . ' -y -threads 0 -i ' . escapeshellarg($probePath)
+                . ' ' . $videoArgs
                 . $scaleArg
                 . ' -r 30'
                 . ' -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart '
                 . escapeshellarg($cachedFile);
+
             $transcodeOutput = [];
-            @exec($transcodeCmd, $transcodeOutput, $transcodeReturnCode);
+            exec($transcodeCmd, $transcodeOutput, $transcodeReturnCode);
+
+            if ($transcodeReturnCode !== 0) {
+                error_log("[cast] GPU transcode failed for: $localPath (encoder=$encoder)");
+                error_log("[cast] ffmpeg output: " . implode("\n", $transcodeOutput));
+            }
+
+            if ($transcodeReturnCode !== 0 && $isGpu) {
+                @unlink($cachedFile);
+                $transcodeCmd = $ffmpegPath . ' -y -threads 0 -i ' . escapeshellarg($probePath)
+                    . ' ' . $videoArgsCpu
+                    . $scaleArg
+                    . ' -r 30'
+                    . ' -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart '
+                    . escapeshellarg($cachedFile);
+                $transcodeOutput = [];
+                exec($transcodeCmd, $transcodeOutput, $transcodeReturnCode);
+
+                if ($transcodeReturnCode !== 0) {
+                    error_log("[cast] CPU fallback transcode failed for: $localPath");
+                    error_log("[cast] ffmpeg output: " . implode("\n", $transcodeOutput));
+                }
+            }
+        } else {
+            // Video is already H.264, no need to transcode video.
+            // Always re-encode audio to AAC for DLNA compatibility.
+            $transcodeCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($probePath)
+                . ' -c:v copy -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart '
+                . escapeshellarg($cachedFile);
+            $transcodeOutput = [];
+            exec($transcodeCmd, $transcodeOutput, $transcodeReturnCode);
+
+            if ($transcodeReturnCode !== 0) {
+                error_log("[cast] Audio remux failed for: $localPath");
+                error_log("[cast] ffmpeg output: " . implode("\n", $transcodeOutput));
+            }
         }
-    } else {
-        // Video is already H.264, no need to transcode video.
-        // We only remux the video stream (-c:v copy) and transcode audio if needed.
-        $audioArg = $needAudioTranscode ? '-c:a aac -ac 2 -ar 44100 -b:a 128k' : '-c:a copy';
-        $transcodeCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath) . ' -c:v copy ' . $audioArg . ' -movflags +faststart ' . escapeshellarg($cachedFile);
-        $transcodeOutput = [];
-        @exec($transcodeCmd, $transcodeOutput, $transcodeReturnCode);
+    } finally {
+        // Clean up temp hardlink
+        if ($tempLink && file_exists($tempLink)) {
+            @unlink($tempLink);
+        }
     }
 
-    if ($transcodeReturnCode === 0 && file_exists($cachedFile)) {
+    if ($transcodeReturnCode === 0 && file_exists($cachedFile) && filesize($cachedFile) > 0) {
         return $cachedUrlPath;
     }
 
@@ -2275,11 +2312,12 @@ function handleCastControl() {
                 $fileName = basename($cachedPath);
                 $finalMediaUrl = "http://" . $serverIp . $portSuffix . BASE_DIR . "/uploads/cast_cache/" . $fileName;
             } else {
-                $relativePath = str_replace('file:///', '', $videoLink);
-                $relativePath = rawurldecode($relativePath);
-                $workspaceRoot = str_replace('\\', '/', dirname(__DIR__) . '/');
-                $relativePathClean = str_replace($workspaceRoot, '', str_replace('\\', '/', $relativePath));
-                $finalMediaUrl = "http://" . $serverIp . $portSuffix . BASE_DIR . "/api/index.php?action=cast_stream&file=" . urlencode($relativePathClean);
+                // Transcoding failed or file missing — cannot safely cast
+                $localPath = resolveLocalFilePath($videoLink);
+                if (!file_exists($localPath)) {
+                    throw new Exception('Video file not found on disk');
+                }
+                throw new Exception('Transcoding failed — FFmpeg could not process this file. Check PHP error log for details.');
             }
 
             $title = $data['title'] ?? 'Video';
