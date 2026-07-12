@@ -95,6 +95,4 @@ Space: Pause, F: fullscreen, T : theatre mode, C: captions/subtitles
 
 0 (Numpad) = reverse (works in in-queue mode), 
 
-. (decimal,from numpad): deletes play history
-
 --------------------------------------------------
