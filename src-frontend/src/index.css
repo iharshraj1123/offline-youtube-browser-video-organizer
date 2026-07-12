@@ -777,13 +777,13 @@ button {
   background-color: #000;
   border-radius: 12px;
   overflow: hidden;
-  contain: paint;
 }
 
 .html5-video {
   width: 100%;
   height: 100%;
   display: block;
+  filter: brightness(0.999);
 }
 
 .player-controls-overlay {
