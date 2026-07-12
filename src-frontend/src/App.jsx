@@ -21,12 +21,6 @@ function getCookie(name) {
   return matches ? decodeURIComponent(matches[1]) : undefined;
 }
 
-// Phone detection: userAgentData (modern) with UA fallback
-function isPhone() {
-  if (navigator.userAgentData) return navigator.userAgentData.mobile;
-  return /Android|iPhone|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-}
-
 // Translate file:/// urls to relative /c:/ or /d:/ apache drives
 function translateVideoUrl(url) {
   if (!url) return '';
@@ -106,6 +100,10 @@ export default function App() {
   const [activePlaylist, setActivePlaylist] = useState(null);
   const [currentPlaylistIndex, setCurrentPlaylistIndex] = useState(-1);
   const [playlistView, setPlaylistView] = useState(null);
+
+  // Playback history for prev/next navigation
+  const playHistoryRef = useRef([]);
+  const historyIndexRef = useRef(-1);
 
   // Mobile UI States
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -187,6 +185,10 @@ export default function App() {
         if (updateUrl) {
           window.history.pushState(null, '', `?v=${videoId}`);
         }
+        // Push to playback history (truncate forward entries)
+        playHistoryRef.current = playHistoryRef.current.slice(0, historyIndexRef.current + 1);
+        playHistoryRef.current.push(data.vid_id);
+        historyIndexRef.current = playHistoryRef.current.length - 1;
         setPlayingVideo(data);
         setCurrentView('player');
       } else {
@@ -537,8 +539,15 @@ export default function App() {
   };
 
   // Load a video for playing
-  const handlePlayVideo = async (video, keepMiniPlayer = false) => {
+  const handlePlayVideo = async (video, keepMiniPlayer = false, skipHistory = false) => {
     const shouldKeepMini = keepMiniPlayer;
+
+    // Push to playback history (truncate forward entries)
+    if (!skipHistory) {
+      playHistoryRef.current = playHistoryRef.current.slice(0, historyIndexRef.current + 1);
+      playHistoryRef.current.push(video.vid_id);
+      historyIndexRef.current = playHistoryRef.current.length - 1;
+    }
 
     // Update browser history URL if NOT keeping in miniplayer
     if (!shouldKeepMini) {
@@ -907,10 +916,10 @@ export default function App() {
               video={playingVideo}
               onVideoDeleted={handleGoHome}
               allVideos={videos}
-              onPlayVideo={(video, pl, index, keepMiniPlayer) => {
+              onPlayVideo={(video, pl, index, keepMiniPlayer, skipHistory) => {
                 if (pl !== undefined) setActivePlaylist(pl);
                 if (index !== undefined) setCurrentPlaylistIndex(index);
-                handlePlayVideo(video, keepMiniPlayer);
+                handlePlayVideo(video, keepMiniPlayer, skipHistory);
               }}
               isMiniPlayer={currentView !== 'player'}
               onExpand={() => {
@@ -926,6 +935,8 @@ export default function App() {
               isSidebarCollapsed={isSidebarCollapsed}
               setIsSidebarCollapsed={setIsSidebarCollapsed}
               onPlayRandom={(keepMiniPlayer) => playRandomVideo(keepMiniPlayer)}
+              playHistoryRef={playHistoryRef}
+              historyIndexRef={historyIndexRef}
               playlists={playlists}
               activePlaylist={activePlaylist}
               setActivePlaylist={setActivePlaylist}
@@ -1342,7 +1353,7 @@ function PlayerView({
   playlists, activePlaylist, setActivePlaylist, currentPlaylistIndex, setCurrentPlaylistIndex,
   addVideoToPlaylist, removeVideoFromPlaylist, createPlaylist, updatePlaylistOrder,
   isSidebarCollapsed, setIsSidebarCollapsed, currentUser, onOpenAuth, onNavigateToProfile, showFlashNotification,
-  showNotification, notifKey
+  showNotification, notifKey, playHistoryRef, historyIndexRef
 }) {
   const [likes, setLikes] = useState(parseInt(video.likes) || 0);
   const [dislikes, setDislikes] = useState(parseInt(video.dislikes) || 0);
@@ -1382,7 +1393,7 @@ function PlayerView({
 
   // Force volume to 100% on mobile (one-time on mount)
   useEffect(() => {
-    if (isPhone()) {
+    if (window.matchMedia('(hover: none)').matches) {
       setVolume(1);
       localStorage.setItem('yt_volume', '1');
     }
@@ -1398,6 +1409,7 @@ function PlayerView({
   const [showStats, setShowStats] = useState(false);
   const [settingsSubmenu, setSettingsSubmenu] = useState('main'); // 'main' or 'speed'
   const [userActive, setUserActive] = useState(true);
+  const hideControlsTimeoutRef = useRef(null);
 
   // Draggable position state for miniplayer
   const [miniPlayerPos, setMiniPlayerPos] = useState({ x: 0, y: 0 });
@@ -1440,19 +1452,24 @@ function PlayerView({
 
   // Helper functions for previous and next video navigation (reused in both control bars)
   const handlePrevVideo = () => {
-    if (activePlaylist && (activePlaylist.video_ids || []).length > 0) {
-      const ids = activePlaylist.video_ids;
-      let prevIdx = currentPlaylistIndex - 1;
-      if (prevIdx < 0) prevIdx = ids.length - 1;
-      const prevVid = allVideos.find(v => v.vid_id === parseInt(ids[prevIdx]));
-      if (prevVid) onPlayVideo(prevVid, activePlaylist, prevIdx, isMiniPlayer);
-    } else {
-      const idx = allVideos.findIndex(v => v.vid_id === video.vid_id);
-      if (idx > 0) onPlayVideo(allVideos[idx - 1], undefined, undefined, isMiniPlayer);
+    if (historyIndexRef.current > 0) {
+      historyIndexRef.current -= 1;
+      const vidId = playHistoryRef.current[historyIndexRef.current];
+      const prevVid = allVideos.find(v => v.vid_id === vidId);
+      if (prevVid) onPlayVideo(prevVid, undefined, undefined, isMiniPlayer, true);
     }
   };
 
-  const handleNextVideo = () => {
+  const handleNextVideo = async () => {
+    // If there are forward entries in history, navigate forward
+    if (historyIndexRef.current < playHistoryRef.current.length - 1) {
+      historyIndexRef.current += 1;
+      const vidId = playHistoryRef.current[historyIndexRef.current];
+      const nextVid = allVideos.find(v => v.vid_id === vidId);
+      if (nextVid) onPlayVideo(nextVid, undefined, undefined, isMiniPlayer, true);
+      return;
+    }
+    // At end of history — generate new video (existing logic)
     if (activePlaylist && (activePlaylist.video_ids || []).length > 0) {
       const ids = activePlaylist.video_ids;
       let nextIdx = currentPlaylistIndex + 1;
@@ -2073,30 +2090,48 @@ function PlayerView({
   useEffect(() => {
     if (!isFullscreen) {
       setUserActive(true);
+      if (hideControlsTimeoutRef.current) {
+        clearTimeout(hideControlsTimeoutRef.current);
+        hideControlsTimeoutRef.current = null;
+      }
       return;
     }
-    let timeoutId;
+
+    const startHideTimer = () => {
+      if (hideControlsTimeoutRef.current) clearTimeout(hideControlsTimeoutRef.current);
+      hideControlsTimeoutRef.current = setTimeout(() => {
+        setUserActive(false);
+        hideControlsTimeoutRef.current = null;
+      }, 3000);
+    };
+
     const handleActivity = () => {
       setUserActive(true);
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        setUserActive(false);
-      }, 4000);
+      startHideTimer();
     };
 
     const wrapper = playerWrapperRef.current;
+    const isTouchDevice = window.matchMedia('(hover: none)').matches;
     if (wrapper) {
-      wrapper.addEventListener('mousemove', handleActivity);
+      if (isTouchDevice) {
+        wrapper.addEventListener('pointerdown', handleActivity);
+      } else {
+        wrapper.addEventListener('mousemove', handleActivity);
+      }
       wrapper.addEventListener('keydown', handleActivity);
     }
     handleActivity();
 
     return () => {
       if (wrapper) {
+        wrapper.removeEventListener('pointerdown', handleActivity);
         wrapper.removeEventListener('mousemove', handleActivity);
         wrapper.removeEventListener('keydown', handleActivity);
       }
-      clearTimeout(timeoutId);
+      if (hideControlsTimeoutRef.current) {
+        clearTimeout(hideControlsTimeoutRef.current);
+        hideControlsTimeoutRef.current = null;
+      }
     };
   }, [isFullscreen]);
 
@@ -2186,39 +2221,11 @@ function PlayerView({
       }
       if (e.keyCode === 80) { // Key P
         e.preventDefault();
-        if (activePlaylist && (activePlaylist.video_ids || []).length > 0) {
-          const ids = activePlaylist.video_ids;
-          let prevIdx = currentPlaylistIndex - 1;
-          if (prevIdx < 0) prevIdx = ids.length - 1;
-          const prevVid = allVideos.find(v => v.vid_id === parseInt(ids[prevIdx]));
-          if (prevVid) onPlayVideo(prevVid, activePlaylist, prevIdx);
-        } else {
-          const currentIndex = allVideos.findIndex(v => v.vid_id === video.vid_id);
-          if (currentIndex > 0) {
-            onPlayVideo(allVideos[currentIndex - 1]);
-          }
-        }
+        handlePrevVideo();
       }
       if (e.keyCode === 78) { // Key N
         e.preventDefault();
-        if (activePlaylist && (activePlaylist.video_ids || []).length > 0) {
-          const ids = activePlaylist.video_ids;
-          let nextIdx = currentPlaylistIndex + 1;
-          if (isRandom) {
-            nextIdx = Math.floor(Math.random() * ids.length);
-          } else if (nextIdx >= ids.length) {
-            nextIdx = 0;
-          }
-          const nextVid = allVideos.find(v => v.vid_id === parseInt(ids[nextIdx]));
-          if (nextVid) onPlayVideo(nextVid, activePlaylist, nextIdx);
-        } else if (isRandom) {
-          onPlayRandom();
-        } else {
-          const currentIndex = allVideos.findIndex(v => v.vid_id === video.vid_id);
-          if (currentIndex !== -1 && currentIndex < allVideos.length - 1) {
-            onPlayVideo(allVideos[currentIndex + 1]);
-          }
-        }
+        handleNextVideo();
       }
       if (e.code === 'Space') {
         e.preventDefault();
@@ -2285,34 +2292,17 @@ function PlayerView({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isPlaying, isMuted, isFullscreen, duration, playbackSpeed, allVideos, video, isVideoFocused, castDevice]);
+  }, [isPlaying, isMuted, isFullscreen, duration, playbackSpeed, allVideos, video, isVideoFocused, castDevice, handlePrevVideo, handleNextVideo]);
 
   const handleVideoEnded = () => {
     if (isLooping) return;
-    if (activePlaylist && (activePlaylist.video_ids || []).length > 0) {
-      const ids = activePlaylist.video_ids;
-      let nextIdx = currentPlaylistIndex + 1;
-      if (isRandom) {
-        nextIdx = Math.floor(Math.random() * ids.length);
-      } else if (nextIdx >= ids.length) {
-        nextIdx = 0; // wrap around
-      }
-      const nextVid = allVideos.find(v => v.vid_id === parseInt(ids[nextIdx]));
-      if (nextVid) {
-        onPlayVideo(nextVid, activePlaylist, nextIdx, isMiniPlayer);
-      }
-    } else if (isReverseAutoplay) {
+    if (isReverseAutoplay) {
       const currentIndex = allVideos.findIndex(v => v.vid_id === video.vid_id);
       if (currentIndex > 0) {
         onPlayVideo(allVideos[currentIndex - 1], undefined, undefined, isMiniPlayer);
       }
-    } else if (isRandom) {
-      onPlayRandom(isMiniPlayer);
     } else {
-      const currentIndex = allVideos.findIndex(v => v.vid_id === video.vid_id);
-      if (currentIndex !== -1 && currentIndex < allVideos.length - 1) {
-        onPlayVideo(allVideos[currentIndex + 1], undefined, undefined, isMiniPlayer);
-      }
+      handleNextVideo();
     }
   };
 
@@ -2927,6 +2917,7 @@ function PlayerView({
             </div>
 
             <div className="controls-group">
+              {!isFullscreen && (
               <button
                 className={`control-btn theater-mode ${isTheaterMode ? 'active' : ''}`}
                 onClick={() => {
@@ -2949,6 +2940,7 @@ function PlayerView({
                   <svg height="22" viewBox="0 0 24 24" width="22"><path d="M21.20 3.01L21 3H3L2.79 3.01C2.30 3.06 1.84 3.29 1.51 3.65C1.18 4.02 .99 4.50 1 5V19L1.01 19.20C1.05 19.66 1.26 20.08 1.58 20.41C1.91 20.73 2.33 20.94 2.79 20.99L3 21H21L21.20 20.98C21.66 20.94 22.08 20.73 22.41 20.41C22.73 20.08 22.94 19.66 22.99 19.20L23 19V5C23.00 4.50 22.81 4.02 22.48 3.65C22.15 3.29 21.69 3.06 21.20 3.01ZM3 15V5H21V15H3ZM7.87 6.72L7.79 6.79L4.58 10L7.79 13.20C7.88 13.30 7.99 13.37 8.11 13.43C8.23 13.48 8.37 13.51 8.50 13.51C8.63 13.51 8.76 13.48 8.89 13.43C9.01 13.38 9.12 13.31 9.21 13.21C9.31 13.12 9.38 13.01 9.43 12.89C9.48 12.76 9.51 12.63 9.51 12.50C9.51 12.37 9.48 12.23 9.43 12.11C9.37 11.99 9.30 11.88 9.20 11.79L7.41 10L9.20 8.20L9.27 8.13C9.42 7.93 9.50 7.69 9.48 7.45C9.47 7.20 9.36 6.97 9.19 6.80C9.02 6.63 8.79 6.52 8.54 6.51C8.30 6.49 8.06 6.57 7.87 6.72ZM14.79 6.79C14.60 6.98 14.50 7.23 14.50 7.5C14.50 7.76 14.60 8.01 14.79 8.20L16.58 10L14.79 11.79L14.72 11.86C14.57 12.06 14.49 12.30 14.50 12.54C14.51 12.79 14.62 13.02 14.79 13.20C14.97 13.37 15.20 13.48 15.45 13.49C15.69 13.50 15.93 13.42 16.13 13.27L16.20 13.20L19.41 10L16.20 6.79C16.01 6.60 15.76 6.50 15.5 6.50C15.23 6.50 14.98 6.60 14.79 6.79ZM3 19V17H21V19H3Z" fill="currentColor"/></svg>
                 )}
               </button>
+              )}
               <button
                 className={`control-btn ${showCastMenu ? 'cast-active' : ''}`}
                 onClick={() => {

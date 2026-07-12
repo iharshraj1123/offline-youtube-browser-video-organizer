@@ -84,9 +84,6 @@ button {
   transition: background-color var(--transition-speed);
 }
 
-.menu-toggle-btn:hover {
-  background-color: var(--hover-color);
-}
 
 .logo-container {
   display: flex;
@@ -152,9 +149,6 @@ button {
   color: var(--text-secondary);
 }
 
-.search-clear-btn:hover {
-  color: var(--text-color);
-}
 
 .search-submit-btn {
   background-color: #222;
@@ -164,9 +158,6 @@ button {
   transition: background-color var(--transition-speed);
 }
 
-.search-submit-btn:hover {
-  background-color: #2f2f2f;
-}
 
 .voice-search-btn {
   background-color: #181818;
@@ -178,9 +169,6 @@ button {
   transition: background-color var(--transition-speed);
 }
 
-.voice-search-btn:hover {
-  background-color: var(--hover-color);
-}
 
 .header-right {
   display: flex;
@@ -195,9 +183,6 @@ button {
   position: relative;
 }
 
-.header-icon-btn:hover {
-  background-color: var(--hover-color);
-}
 
 .user-avatar {
   width: 32px;
@@ -294,10 +279,6 @@ button {
   text-align: left;
 }
 
-.sidebar-item:hover {
-  background: rgba(255, 255, 255, 0.07);
-  color: #fff;
-}
 
 .sidebar-item:active {
   transform: scale(0.97);
@@ -423,9 +404,6 @@ button {
   font-weight: 500;
 }
 
-.category-pill:hover {
-  background-color: #3f3f3f;
-}
 
 .category-pill.active {
   background-color: var(--text-color);
@@ -460,9 +438,6 @@ button {
   transition: transform 0.2s;
 }
 
-.video-card:hover {
-  transform: translateY(-2px);
-}
 
 .thumbnail-container {
   position: relative;
@@ -644,9 +619,6 @@ button {
   transition: border-color var(--transition-speed);
 }
 
-.preset-card:hover {
-  border-color: var(--primary-color);
-}
 
 .preset-name {
   font-weight: 600;
@@ -675,9 +647,6 @@ button {
   transition: background-color var(--transition-speed);
 }
 
-.btn-primary:hover {
-  background-color: var(--primary-hover);
-}
 
 .crawler-form {
   display: flex;
@@ -861,10 +830,6 @@ button {
   transition: color var(--transition-speed), transform 0.1s;
 }
 
-.control-btn:hover {
-  color: var(--primary-color);
-  transform: scale(1.1);
-}
 
 .volume-container {
   display: flex;
@@ -983,9 +948,6 @@ button {
   transition: background-color var(--transition-speed);
 }
 
-.like-dislike-pill-group:hover {
-  background-color: rgba(255, 255, 255, 0.15);
-}
 
 .like-btn-pill,
 .dislike-btn-pill {
@@ -1001,11 +963,6 @@ button {
   gap: 8px;
   cursor: pointer;
   transition: background-color 0.2s;
-}
-
-.like-btn-pill:hover,
-.dislike-btn-pill:hover {
-  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .like-btn-pill.active {
@@ -1039,17 +996,11 @@ button {
   transition: background-color var(--transition-speed);
 }
 
-.action-pill-btn:hover {
-  background-color: rgba(255, 255, 255, 0.15);
-}
 
 .delete-pill-btn {
   color: #ff4d4d;
 }
 
-.delete-pill-btn:hover {
-  background-color: rgba(255, 77, 77, 0.15);
-}
 
 /* Description Card */
 .description-card {
@@ -1061,9 +1012,6 @@ button {
   transition: background-color 0.2s ease, max-height 0.3s ease;
 }
 
-.description-card:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-}
 
 .description-card.collapsed .description-content-area {
   max-height: 48px;
@@ -1089,9 +1037,6 @@ button {
   display: block;
 }
 
-.description-toggle-btn:hover {
-  text-decoration: underline;
-}
 
 .description-meta {
   font-weight: bold;
@@ -1206,9 +1151,6 @@ button {
   color: var(--text-secondary);
 }
 
-.modal-close:hover {
-  color: var(--text-color);
-}
 
 /* Responsiveness Settings */
 @media (max-width: 1200px) {
@@ -1396,9 +1338,6 @@ button {
   transition: background 0.2s;
 }
 
-.settings-menu-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
 
 .settings-menu-item.active {
   background-color: rgba(255, 0, 0, 0.15);
@@ -1473,9 +1412,6 @@ button {
   cursor: pointer;
 }
 
-.stats-header button:hover {
-  color: #fff;
-}
 
 .stats-body div {
   margin-bottom: 4px;
@@ -1629,6 +1565,24 @@ button {
   }
 }
 
+@media (max-width: 768px) {
+  .player-page-container,
+  .player-page-container.theater-layout {
+    padding: 0;
+  }
+
+  .player-main-col,
+  .player-sidebar-col,
+  .player-page-container.theater-layout .player-main-col,
+  .player-page-container.theater-layout .player-sidebar-col {
+    padding: 0 16px 16px 16px;
+  }
+
+  .video-detail-title {
+    font-size: 18px;
+  }
+}
+
 .player-notification-banner {
   position: fixed;
   top: 16px;
@@ -1697,7 +1651,6 @@ button {
   text-align: left;
 }
 
-.suggestion-item:hover,
 .suggestion-item.active {
   background-color: rgba(255, 255, 255, 0.1);
   color: #fff;
@@ -1725,9 +1678,6 @@ button {
   transition: color 0.15s;
 }
 
-.vid-timestamps:hover {
-  text-decoration: underline;
-}
 
 /* ===================== MINI PLAYER ===================== */
 .player-page-container.mini-player {
@@ -1834,10 +1784,6 @@ body.mini-player-dragging * {
   transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.mini-ctrl-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.1) translate3d(0, 0, 0);
-}
 
 .mini-ctrl-btn.play-pause-btn {
   background: #ff0000;
@@ -1845,11 +1791,6 @@ body.mini-player-dragging * {
   box-shadow: 0 4px 10px rgba(255, 0, 0, 0.4);
 }
 
-.mini-ctrl-btn.play-pause-btn:hover {
-  background: #ff3333;
-  transform: scale(1.15) translate3d(0, 0, 0);
-  box-shadow: 0 4px 15px rgba(255, 0, 0, 0.6);
-}
 
 .mini-ctrl-btn-secondary {
   background: rgba(0, 0, 0, 0.4);
@@ -1865,11 +1806,6 @@ body.mini-player-dragging * {
   transition: all 0.2s;
 }
 
-.mini-ctrl-btn-secondary:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.1);
-  transform: scale(1.05);
-}
 
 .player-page-container.mini-player .html5-video {
   max-height: 225px;
@@ -1952,9 +1888,6 @@ body.mini-player-dragging * {
   }
 }
 
-.mini-player-close-btn:hover {
-  background: rgba(255, 0, 0, 0.8) !important;
-}
 
 /* ==========================================================================
    AUTHENTICATION & PROFILE STYLES (Standalone AuthModal)
@@ -2013,10 +1946,6 @@ body.mini-player-dragging * {
   justify-content: center;
 }
 
-.modal-close-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-}
 
 .auth-tabs {
   display: flex;
@@ -2038,9 +1967,6 @@ body.mini-player-dragging * {
   margin-bottom: -2px;
 }
 
-.auth-tab-btn:hover {
-  color: #ddd;
-}
 
 .auth-tab-btn.active {
   color: var(--primary-color, #ff0000);
@@ -2133,9 +2059,6 @@ body.mini-player-dragging * {
   margin-top: 8px;
 }
 
-.auth-submit-btn:hover {
-  filter: brightness(0.9);
-}
 
 .auth-submit-btn:disabled {
   opacity: 0.6;
@@ -2228,10 +2151,6 @@ body.mini-player-dragging * {
   gap: 10px;
 }
 
-.user-menu-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
-}
 
 /* ==========================================================================
    NATIVE COMMENT SECTION STYLES
@@ -2270,9 +2189,6 @@ body.mini-player-dragging * {
   transition: transform 0.2s;
 }
 
-.comment-user-avatar:hover {
-  transform: scale(1.05);
-}
 
 .comment-textarea {
   flex: 1;
@@ -2320,10 +2236,6 @@ body.mini-player-dragging * {
   justify-content: center;
 }
 
-.emote-picker-trigger:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-}
 
 .emote-picker-popover {
   position: absolute;
@@ -2356,9 +2268,6 @@ body.mini-player-dragging * {
   justify-content: center;
 }
 
-.emote-picker-popover button:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
 
 .emote-picker-popover img {
   max-width: 28px;
@@ -2391,10 +2300,6 @@ body.mini-player-dragging * {
   transition: background 0.2s, color 0.2s;
 }
 
-.comment-cancel-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-}
 
 .comment-submit-btn {
   background: #3ea6ff;
@@ -2408,9 +2313,6 @@ body.mini-player-dragging * {
   transition: opacity 0.2s;
 }
 
-.comment-submit-btn:hover {
-  opacity: 0.9;
-}
 
 .comment-submit-btn:disabled {
   background: rgba(255, 255, 255, 0.1);
@@ -2446,9 +2348,6 @@ body.mini-player-dragging * {
   color: transparent;
 }
 
-.thread-collapse-line-btn:hover {
-  background: var(--primary-color, #ff0000);
-}
 
 .thread-collapse-line-btn svg {
   margin-top: 20px;
@@ -2458,9 +2357,6 @@ body.mini-player-dragging * {
   background: #0f0f0f;
 }
 
-.thread-collapse-line-btn:hover svg {
-  opacity: 1;
-}
 
 .comment-node {
   padding-bottom: 12px;
@@ -2493,9 +2389,6 @@ body.mini-player-dragging * {
   cursor: pointer;
 }
 
-.comment-author-name:hover {
-  text-decoration: underline;
-}
 
 .comment-user-karma {
   font-size: 11px;
@@ -2534,9 +2427,6 @@ body.mini-player-dragging * {
   cursor: pointer;
 }
 
-.reply-to-mention:hover {
-  text-decoration: underline;
-}
 
 .user-mention {
   color: #3ea6ff;
@@ -2544,9 +2434,6 @@ body.mini-player-dragging * {
   cursor: pointer;
 }
 
-.user-mention:hover {
-  text-decoration: underline;
-}
 
 /* Rich media embeds styling */
 .com_img {
@@ -2593,9 +2480,6 @@ body.mini-player-dragging * {
   gap: 4px;
 }
 
-.timestamp-seek:hover {
-  background: rgba(62, 166, 255, 0.2);
-}
 
 .timestamp-play-icon {
   font-size: 9px;
@@ -2634,10 +2518,6 @@ body.mini-player-dragging * {
   font-weight: 500;
 }
 
-.comment-action-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-}
 
 .comment-action-btn.active-upvote {
   color: #3ea6ff;
@@ -2647,10 +2527,6 @@ body.mini-player-dragging * {
   color: #f44336;
 }
 
-.comment-action-btn.delete-btn:hover {
-  background: rgba(244, 67, 54, 0.15);
-  color: #f44336;
-}
 
 .inline-reply-form {
   margin-top: 12px;
@@ -2710,9 +2586,6 @@ body.mini-player-dragging * {
   transition: background 0.2s;
 }
 
-.collapsed-expand-btn:hover {
-  background: rgba(62, 166, 255, 0.1);
-}
 
 .no-comments-fallback {
   text-align: center;
@@ -3067,9 +2940,6 @@ body.mini-player-dragging * {
   cursor: pointer;
 }
 
-.remove-preview-btn:hover {
-  background: rgba(0, 0, 0, 0.85);
-}
 
 .comment-attachment-display {
   margin-top: 8px;
@@ -3131,9 +3001,6 @@ body.mini-player-dragging * {
   transition: color 0.2s;
 }
 
-.icon-trigger-btn:hover {
-  color: white;
-}
 
 .file-upload-icon-trigger {
   position: relative;
@@ -3144,9 +3011,6 @@ body.mini-player-dragging * {
   transition: color 0.2s;
 }
 
-.file-upload-icon-trigger:hover {
-  color: white;
-}
 
 .file-upload-icon-trigger input[type="file"] {
   position: absolute;
@@ -3172,10 +3036,6 @@ body.mini-player-dragging * {
   transition: color 0.2s, background 0.2s;
 }
 
-.action-cancel-btn:hover {
-  color: white;
-  background: rgba(255, 255, 255, 0.05);
-}
 
 .action-submit-btn {
   background-color: #3ea6ff;
@@ -3187,9 +3047,6 @@ body.mini-player-dragging * {
   transition: opacity 0.2s;
 }
 
-.action-submit-btn:hover:not(:disabled) {
-  opacity: 0.9;
-}
 
 .action-submit-btn:disabled {
   opacity: 0.4;
@@ -3213,9 +3070,6 @@ body.mini-player-dragging * {
   transition: background 0.2s;
 }
 
-.accordion-toggle-btn:hover {
-  background: rgba(62, 166, 255, 0.1);
-}
 
 .accordion-content-panel {
   padding-left: 12px;
@@ -3295,9 +3149,6 @@ body.mini-player-dragging * {
   cursor: pointer;
 }
 
-.profile-avatar-wrapper:hover .edit-avatar-btn-overlay {
-  opacity: 1;
-}
 
 .profile-header-meta {
   flex: 1;
@@ -3362,9 +3213,6 @@ body.mini-player-dragging * {
   color: white;
 }
 
-.profile-action-btn.edit:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
 
 .profile-action-btn.cancel {
   background: rgba(244, 67, 54, 0.12);
@@ -3372,9 +3220,6 @@ body.mini-player-dragging * {
   color: #ef5350;
 }
 
-.profile-action-btn.cancel:hover {
-  background: rgba(244, 67, 54, 0.2);
-}
 
 .profile-tabs-nav {
   display: flex;
@@ -3396,9 +3241,6 @@ body.mini-player-dragging * {
   font-size: 14px;
 }
 
-.profile-tab-btn:hover {
-  color: white;
-}
 
 .profile-tab-btn.active {
   color: white;
@@ -3502,9 +3344,6 @@ body.mini-player-dragging * {
   transition: opacity 0.2s;
 }
 
-.save-settings-btn:hover {
-  opacity: 0.9;
-}
 
 .form-error-msg {
   color: #ef5350;
@@ -3586,9 +3425,6 @@ body.mini-player-dragging * {
   transition: transform 0.2s;
 }
 
-.profile-video-card:hover {
-  transform: translateY(-2px);
-}
 
 .profile-video-thumb-wrapper {
   position: relative;
@@ -3736,9 +3572,6 @@ body.mini-player-dragging * {
   cursor: pointer;
 }
 
-.timeline-video-link:hover {
-  text-decoration: underline;
-}
 
 .no-history-msg {
   color: #888;
@@ -3776,9 +3609,6 @@ body.mini-player-dragging * {
   transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
-.playlist-save-item:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-}
 
 .playlist-save-item:active {
   transform: scale(0.98);
@@ -3848,9 +3678,6 @@ body.mini-player-dragging * {
   transition: background-color 0.2s, color 0.2s;
 }
 
-.create-pl-btn:hover {
-  background-color: rgba(62, 166, 255, 0.1);
-}
 
 .create-pl-btn:disabled {
   color: #555;
@@ -3887,10 +3714,6 @@ body.mini-player-dragging * {
   opacity: 1;
 }
 
-.comment-more-menu-trigger:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #fff;
-}
 
 .comment-more-dropdown-overlay {
   position: absolute;
@@ -3924,18 +3747,11 @@ body.mini-player-dragging * {
   transition: background-color 0.15s;
 }
 
-.dropdown-menu-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #fff;
-}
 
 .dropdown-menu-item svg {
   color: #aaa;
 }
 
-.dropdown-menu-item:hover svg {
-  color: #fff;
-}
 
 /* Comment Inline Edit Box */
 .comment-inline-edit-box {
@@ -3987,19 +3803,12 @@ body.mini-player-dragging * {
   color: #aaa;
 }
 
-.comment-edit-cancel:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #fff;
-}
 
 .comment-edit-save {
   background-color: #3ea6ff;
   color: #0f0f0f;
 }
 
-.comment-edit-save:hover {
-  background-color: #65b8ff;
-}
 
 .comment-edit-save:disabled {
   background-color: rgba(255, 255, 255, 0.1);
@@ -4079,9 +3888,6 @@ body.mini-player-dragging * {
   font-weight: 500;
 }
 
-.cast-menu-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
 
 .cast-ip-config {
   display: flex;
@@ -4129,9 +3935,6 @@ body.mini-player-dragging * {
   transition: background-color 0.2s;
 }
 
-.cast-refresh-btn:hover:not(:disabled) {
-  background-color: rgba(255, 255, 255, 0.2);
-}
 
 .cast-refresh-btn:disabled {
   opacity: 0.5;
@@ -4156,9 +3959,6 @@ body.mini-player-dragging * {
   font-size: 13px;
 }
 
-.cast-device-row:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-}
 
 .cast-device-row.active {
   background-color: rgba(62, 166, 255, 0.15);
@@ -4251,10 +4051,6 @@ body.mini-player-dragging * {
   transition: background-color 0.2s, transform 0.1s;
 }
 
-.cast-remote-btn:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  transform: scale(1.05);
-}
 
 .cast-remote-btn.stop {
   border-radius: 20px;
@@ -4266,9 +4062,6 @@ body.mini-player-dragging * {
   background-color: #cc0000;
 }
 
-.cast-remote-btn.stop:hover {
-  background-color: #ff0000;
-}
 
 /* Transcode spinner and loader styles */
 .cast-transcode-loader {
@@ -4369,9 +4162,6 @@ body.mini-player-dragging * {
   transition: opacity 0.2s, background-color 0.2s;
 }
 
-.modal-btn:hover {
-  opacity: 0.9;
-}
 
 .modal-btn.confirm {
   background-color: #3ea6ff;
@@ -4383,6 +4173,250 @@ body.mini-player-dragging * {
   color: #fff;
 }
 
+
+/* Desktop-only hover effects: disabled on touch to prevent sticky hover */
+@media (hover: hover) and (pointer: fine) {
+.like-btn-pill:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.suggestion-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+.menu-toggle-btn:hover {
+  background-color: var(--hover-color);
+}
+.search-clear-btn:hover {
+  color: var(--text-color);
+}
+.search-submit-btn:hover {
+  background-color: #2f2f2f;
+}
+.voice-search-btn:hover {
+  background-color: var(--hover-color);
+}
+.header-icon-btn:hover {
+  background-color: var(--hover-color);
+}
+.sidebar-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+}
+.category-pill:hover {
+  background-color: #3f3f3f;
+}
+.video-card:hover {
+  transform: translateY(-2px);
+}
+.preset-card:hover {
+  border-color: var(--primary-color);
+}
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+.control-btn:hover {
+  color: var(--primary-color);
+  transform: scale(1.1);
+}
+.like-dislike-pill-group:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+.dislike-btn-pill:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.action-pill-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+.delete-pill-btn:hover {
+  background-color: rgba(255, 77, 77, 0.15);
+}
+.description-card:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+.description-toggle-btn:hover {
+  text-decoration: underline;
+}
+.modal-close:hover {
+  color: var(--text-color);
+}
+.settings-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.stats-header button:hover {
+  color: #fff;
+}
+.vid-timestamps:hover {
+  text-decoration: underline;
+}
+.mini-ctrl-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1) translate3d(0, 0, 0);
+}
+.mini-ctrl-btn.play-pause-btn:hover {
+  background: #ff3333;
+  transform: scale(1.15) translate3d(0, 0, 0);
+  box-shadow: 0 4px 15px rgba(255, 0, 0, 0.6);
+}
+.mini-ctrl-btn-secondary:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.05);
+}
+.mini-player-close-btn:hover {
+  background: rgba(255, 0, 0, 0.8) !important;
+}
+.modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+.auth-tab-btn:hover {
+  color: #ddd;
+}
+.auth-submit-btn:hover {
+  filter: brightness(0.9);
+}
+.user-menu-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+.comment-user-avatar:hover {
+  transform: scale(1.05);
+}
+.emote-picker-trigger:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+.emote-picker-popover button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.comment-cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+.comment-submit-btn:hover {
+  opacity: 0.9;
+}
+.thread-collapse-line-btn:hover {
+  background: var(--primary-color, #ff0000);
+}
+.thread-collapse-line-btn:hover svg {
+  opacity: 1;
+}
+.comment-author-name:hover {
+  text-decoration: underline;
+}
+.reply-to-mention:hover {
+  text-decoration: underline;
+}
+.user-mention:hover {
+  text-decoration: underline;
+}
+.timestamp-seek:hover {
+  background: rgba(62, 166, 255, 0.2);
+}
+.comment-action-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+.comment-action-btn.delete-btn:hover {
+  background: rgba(244, 67, 54, 0.15);
+  color: #f44336;
+}
+.collapsed-expand-btn:hover {
+  background: rgba(62, 166, 255, 0.1);
+}
+.remove-preview-btn:hover {
+  background: rgba(0, 0, 0, 0.85);
+}
+.icon-trigger-btn:hover {
+  color: white;
+}
+.file-upload-icon-trigger:hover {
+  color: white;
+}
+.action-cancel-btn:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.05);
+}
+.action-submit-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+.accordion-toggle-btn:hover {
+  background: rgba(62, 166, 255, 0.1);
+}
+.profile-avatar-wrapper:hover .edit-avatar-btn-overlay {
+  opacity: 1;
+}
+.profile-action-btn.edit:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.profile-action-btn.cancel:hover {
+  background: rgba(244, 67, 54, 0.2);
+}
+.profile-tab-btn:hover {
+  color: white;
+}
+.save-settings-btn:hover {
+  opacity: 0.9;
+}
+.profile-video-card:hover {
+  transform: translateY(-2px);
+}
+.timeline-video-link:hover {
+  text-decoration: underline;
+}
+.playlist-save-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+.create-pl-btn:hover {
+  background-color: rgba(62, 166, 255, 0.1);
+}
+.comment-more-menu-trigger:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+.dropdown-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+.dropdown-menu-item:hover svg {
+  color: #fff;
+}
+.comment-edit-cancel:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+.comment-edit-save:hover {
+  background-color: #65b8ff;
+}
+.cast-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.cast-refresh-btn:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+.cast-device-row:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+.cast-remote-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+.cast-remote-btn.stop:hover {
+  background-color: #ff0000;
+}
+.modal-btn:hover {
+  opacity: 0.9;
+}
 .modal-btn.cancel:hover {
   background-color: rgba(255, 255, 255, 0.2);
 }
+}
+
+/* Touch device: hide timeline hover preview */
+@media (hover: none) and (pointer: coarse) {
+  .timeline-hover-preview {
+    display: none !important;
+  }
+}
+
