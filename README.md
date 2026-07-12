@@ -1,4 +1,4 @@
-# Offline YouTube Browser & Video Organizer (YouTube-v2)
+# Offline YouTube Browser & Video Organizer
 
 <img width="1912" height="967" alt="image" src="https://github.com/user-attachments/assets/dac41d5a-d97a-417b-ac3e-a087c51e432f" />
 
@@ -6,93 +6,191 @@
 
 <img width="1910" height="917" alt="image" src="https://github.com/user-attachments/assets/c007a1d0-8bc3-4326-9b00-8bdb6e80309a" />
 
+A standalone offline video player, library indexer, and custom social space. Built with React, Vite, PHP, and MySQL. Scans local directories for video files, extracts rich metadata and thumbnail previews using FFmpeg, and presents them in a modern glassmorphic dark-theme YouTube-clone interface.
 
-A fast, standalone, and premium offline video player, library indexer, and custom social space. Built with React, Vite, PHP, and MySQL, this application scans local directories for video files, extracts rich technical metadata and thumbnail preview frames using FFmpeg, and presents them in a modern, glassmorphic dark-theme YouTube-clone interface.
+## Features
 
-## 🚀 Key Features
+### Player
+- Custom HTML5 video player with full controls (theater mode, speed 0.25x-2x, loop, volume persistence)
+- Double-click fast-forward/rewind (10s)
+- Floating mini-player with drag support (persists across navigation)
+- Keyboard shortcuts (see below)
+- DLNA / Chromecast casting with on-the-fly audio transcoding (H.264 passthrough, AAC re-encode)
+- Adaptive fullscreen orientation on phones (landscape default, portrait for vertical videos)
+- Phone pinch-to-zoom with snap-to-fill, haptic feedback
+- Playback history navigation (previous/next through watched videos)
+- Stats for nerds overlay (codec, resolution, bitrate, etc.)
 
-*   **Zero-Latency Custom HTML5 Player**: Fully custom controls, theater mode, double-click fast-forward, speed controls (0.25x - 2x), custom timeline hovers, and volume state persistence.
-*   **Debounced Autoplay Hover Previews**: Hovering over homepage video cards for `400ms` initiates a silent, looped, inline preview play of the video stream, with smooth overlay fade transitions.
-*   **Collapsible Nested Comments Section**: Fast, native comments and nested replies. Includes a plain-text emote parser (`:emote:`), timestamp seek links (e.g. `0:10` video seeking), user cards on hover, and reputation karma votes.
-*   **Media Attachments**: Users can attach local image, GIF, or video files (or external URLs) directly to their comments and replies.
-*   **Native Profiles & Channel Settings**: Customizable profile pages (`?page=profile&user=username`) featuring Joined Date, reputation score, bio descriptions, upload grids, and interactive comment history timelines. Account owners can upload avatars and customize channel names, descriptions, and passwords.
-*   **Batch Thumbnail Extraction**: Server-side FFmpeg bulk thumbnail generator that processes assets in small batches controlled by frontend recursion to avoid PHP timeout errors and CPU stutters.
-*   **Glassmorphic Modern Design**: Sleek typography, dark mode palettes, smooth micro-animations, custom-styled growing inputs, and floating mini-player.
+### Library
+- Auto-scans configured local directories for video files (.mp4, .webm, .mkv, .avi, .mov, etc.)
+- Batch thumbnail extraction via FFmpeg with progress tracking
+- Video metadata extraction (resolution, codec, bitrate, framerate, filesize)
+- Folder-based organization and navigation
+- Debounced hover preview (silent looped inline playback on card hover)
 
-## 🛠️ Technology Stack
+### Social
+- Collapsible nested comments with plain-text emote parser (`:emote:`)
+- Timestamp seek links in comments (click `0:10` to jump)
+- Media attachments on comments and replies (images, GIFs, video clips, URLs)
+- User profiles with avatars, bio, karma, upload grids, comment history
+- Reputation system with upvote/downvote voting
+- Playlists (create, reorder, add/remove videos)
 
-*   **Frontend**: React 18, Vite, Vanilla CSS (Custom Design System), Lucide Icons, Rolldown.
-*   **Backend**: PHP 7.4+ (PDO connection wrapper).
-*   **Database**: MySQL / MariaDB (utf8mb4 encoding).
-*   **Extractor**: FFmpeg / FFprobe.
+## Tech Stack
 
-## 💻 Installation & Setup
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 19, Vite 8, Vanilla CSS, Lucide Icons |
+| Backend | PHP 7.4+ (PDO) |
+| Database | MySQL / MariaDB (utf8mb4) |
+| Media | FFmpeg / FFprobe |
+| Server | Apache (.htaccess routing, MIME types, DLNA headers) |
 
-1.  **Environment Setup**: Install [Laragon](https://laragon.org/) (recommended for Windows) or [XAMPP](https://www.apachefriends.org/), or any local server stack with Apache, PHP 7.4+, and MySQL. Ensure **FFmpeg** is installed on your system and added to your system environment variables (`PATH`).
-2.  **Clone / Copy**: Extract this repository directly to your web server root folder (e.g., `C:\laragon\www\youtube\` for Laragon or `C:\xampp\htdocs\youtube-v2\` for XAMPP).
-3.  **Database Configuration**:
-    *   Create a MySQL database named `youtube-v2`.
-    *   Import the [schema.sql](file:///c:/laragon/www/youtube/schema.sql) file structure.
-    *   Configure your database host, username, and password in [api/db.php](file:///c:/laragon/www/youtube/api/db.php).
-4.  **Frontend Compilation**:
-    *   Open terminal in the frontend source directory:
-        ```bash
-        cd src-frontend
-        npm install
-        npm run build
-        ```
-    *   Vite compiles and outputs the production bundle directly to the parent directory (`../`), serving it via Apache.
-5.  **Run Application**:
-    *   Start Apache and MySQL from your server Control Panel (Laragon / XAMPP).
-    *   Visit `http://localhost/youtube/` or `http://youtube.test/` (if using Laragon), or `http://localhost/youtube-v2/` (if using XAMPP) in your browser.
+## Project Structure
 
-
-## Requirements :
-
-- A local server environment supporting PHP 7.4+ (such as Laragon or XAMPP). Legacy XAMPP/PHP versions are no longer strictly required.
-
-- Browser with local file access turned on (discussed below)
-
-- Patience. I was lazy so I didnt make a setup page where a lot of things could have been automated but it will take effort to make that.
-
-## HOW to Setup :
-
-1. Copy-paste all the folders (eg, youtube, chatbox, comment section) in your htdocs.
-2. Open your xampp, in Apache row click on config, then httpd.conf (first option)
-First search for "\<IfModule alias_module>"
-And add:
 ```
-    Alias "/d:" "D:/"
-    Alias "/c:" "C:/"
-```
-before "<\/IfModule>"
-
-Add these codes in bottom of httpd.conf:
-```
-<Directory "D:/">
-    Options Indexes FollowSymLinks Includes ExecCGI
-    AllowOverride All
-    Require all granted
-</Directory>
-<Directory "C:/">
-    Options Indexes FollowSymLinks Includes ExecCGI
-    AllowOverride All
-    Require all granted
-</Directory>
+youtube/
+├── api/
+│   ├── index.php          # Main API router (all endpoints)
+│   ├── db.php             # PDO database connection wrapper
+│   ├── .env.example       # Database credentials template
+│   └── utils/             # Helper functions
+├── src-frontend/
+│   ├── src/
+│   │   ├── App.jsx        # Main SPA (App + PlayerView components)
+│   │   └── index.css      # All styles (glassmorphic design system)
+│   └── vite.config.js     # Vite config (outputs to parent dir)
+├── assets/                # Compiled JS/CSS bundles (Vite output)
+├── thumbnails/            # FFmpeg-generated video thumbnails
+├── uploads/               # User-uploaded avatars and attachments
+├── Userdatabase/          # Default profile pictures
+├── schema.sql             # Full database schema
+├── index.html             # Vite entry point
+├── .htaccess              # Apache MIME types + DLNA headers
+└── favicon.ico
 ```
 
-3. First add the "userdata" database then "youtube" database from the files provided to your sql (simply copy paste it in sql section of your phpmyadmin)
+## Installation
 
-4. edit .env.example to .env and add your mysql account details to access DB
-   
-# **HOT KEYs** (the video must be focussed to use the ones below)
+### Prerequisites
+- **PHP 7.4+** with PDO MySQL extension
+- **MySQL 5.7+** or MariaDB 10.3+
+- **FFmpeg & FFprobe** installed and added to system `PATH`
+- **Node.js 18+** (for frontend build)
+- **Apache** with `mod_rewrite` enabled
 
-5 (from Numpad) :  focus video  (use this if video isnt focussed and you too lazy to move mouse)
+### Setup
 
-N: next video, P: previous video, L: Loop, R: Random/in-queue
+1. **Clone the repository** into your web server root:
+   ```bash
+   # Laragon: C:\laragon\www\youtube\
+   # XAMPP:   C:\xampp\htdocs\youtube\
+   git clone https://github.com/iharshraj1123/offline-youtube-browser-video-organizer.git youtube
+   ```
 
-Space: Pause, F: fullscreen, T : theatre mode, C: captions/subtitles
+2. **Configure Apache** to serve your video directories. Add to `httpd.conf`:
+   ```apache
+   Alias "/d:" "D:/"
+   Alias "/c:" "C:/"
 
-0 (Numpad) = reverse (works in in-queue mode), 
+   <Directory "D:/">
+       Options Indexes FollowSymLinks Includes ExecCGI
+       AllowOverride All
+       Require all granted
+   </Directory>
+   <Directory "C:/">
+       Options Indexes FollowSymLinks Includes ExecCGI
+       AllowOverride All
+       Require all granted
+   </Directory>
+   ```
 
---------------------------------------------------
+3. **Set up the database**:
+   ```bash
+   # Import the schema
+   mysql -u root -p < schema.sql
+   ```
+   This creates the `youtube-v2` database with all required tables.
+
+4. **Configure database credentials**:
+   ```bash
+   cp api/.env.example api/.env
+   ```
+   Edit `api/.env` with your MySQL credentials:
+   ```
+   DB_HOST=localhost
+   DB_USER=root
+   DB_PASS=
+   DB_NAME=youtube-v2
+   ```
+
+5. **Build the frontend**:
+   ```bash
+   cd src-frontend
+   npm install
+   npm run build
+   ```
+   Vite compiles and outputs the production bundle to the parent directory (`../`).
+
+6. **Start the server** and visit:
+   - Laragon: `http://youtube.test/`
+   - XAMPP: `http://localhost/youtube/`
+
+### Adding Videos
+
+Add your video directories to the database by calling the scan API, or place your video files in directories that Apache can serve. The app will index them and extract thumbnails automatically.
+
+## Keyboard Shortcuts
+
+> Video must be focused (press `Numpad 5` if not)
+
+| Key | Action |
+|-----|--------|
+| `Space` | Play / Pause |
+| `F` | Toggle fullscreen |
+| `T` | Toggle theater mode |
+| `N` | Next video |
+| `P` | Previous video |
+| `L` | Toggle loop |
+| `R` | Toggle random / in-queue play |
+| `Numpad 0` | Toggle reverse autoplay |
+| `C` | Toggle captions / subtitles |
+| `M` | Toggle mute |
+| `→` / `←` | Seek forward / backward 5s |
+| `↑` / `↓` | Volume up / down 5% |
+| `<` / `>` | Decrease / increase playback speed |
+| `Numpad 5` | Focus video element |
+
+## Database Schema
+
+| Table | Purpose |
+|-------|---------|
+| `video_metadatas` | Video info, FFmpeg metadata (codec, resolution, bitrate) |
+| `playlists` | User-created playlists with ordered video IDs |
+| `users` | Accounts, profiles, karma, avatars |
+| `comments` | Top-level comments with attachments |
+| `replies` | Nested replies (supports parent chains) |
+| `user_activity_votes` | Upvote/downvote tracking (unique per user+target) |
+| `chats` | Direct messaging between users |
+
+## API Endpoints
+
+All endpoints are served through `api/index.php?action=<action>`. Key actions:
+
+| Action | Method | Description |
+|--------|--------|-------------|
+| `scan_videos` | POST | Scan directory for video files |
+| `get_videos` | GET | List all indexed videos |
+| `get_video` | GET | Get single video metadata |
+| `update_duration` | POST | Save detected video duration |
+| `get_thumbnails` | POST | Batch generate thumbnails |
+| `get_comments` | GET | Fetch comments for a video |
+| `add_comment` | POST | Post a comment |
+| `add_reply` | POST | Post a reply |
+| `vote` | POST | Upvote/downvote comment or reply |
+| `cast_control` | POST | Control DLNA/cast playback |
+| `transcode` | POST | On-the-fly media transcoding for cast |
+
+## License
+
+[CC BY-NC-SA 4.0](LICENSE.md) - Creative Commons Attribution-NonCommercial-ShareAlike
