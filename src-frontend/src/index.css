@@ -1566,6 +1566,7 @@ button {
 }
 
 @media (max-width: 768px) {
+
   .player-page-container,
   .player-page-container.theater-layout {
     padding: 0;
@@ -2784,8 +2785,22 @@ body.mini-player-dragging * {
     height: 32px;
   }
 
+  .like-btn-pill,
+  .dislike-btn-pill {
+    padding: 0 12px;
+  }
+
+  .video-uploadername-div {
+    font-size: 12px;
+    margin-bottom: 2px;
+  }
+
+  .video-uploadername-div-below {
+    font-size: 8px;
+  }
+
   .action-pill-btn {
-    padding: 6px 8px;
+    padding: 6px 10px;
   }
 
   /* Settings dropdown mobile */
@@ -4176,241 +4191,312 @@ body.mini-player-dragging * {
 
 /* Desktop-only hover effects: disabled on touch to prevent sticky hover */
 @media (hover: hover) and (pointer: fine) {
-.like-btn-pill:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-.suggestion-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #fff;
-}
-.menu-toggle-btn:hover {
-  background-color: var(--hover-color);
-}
-.search-clear-btn:hover {
-  color: var(--text-color);
-}
-.search-submit-btn:hover {
-  background-color: #2f2f2f;
-}
-.voice-search-btn:hover {
-  background-color: var(--hover-color);
-}
-.header-icon-btn:hover {
-  background-color: var(--hover-color);
-}
-.sidebar-item:hover {
-  background: rgba(255, 255, 255, 0.07);
-  color: #fff;
-}
-.category-pill:hover {
-  background-color: #3f3f3f;
-}
-.video-card:hover {
-  transform: translateY(-2px);
-}
-.preset-card:hover {
-  border-color: var(--primary-color);
-}
-.btn-primary:hover {
-  background-color: var(--primary-hover);
-}
-.control-btn:hover {
-  color: var(--primary-color);
-  transform: scale(1.1);
-}
-.like-dislike-pill-group:hover {
-  background-color: rgba(255, 255, 255, 0.15);
-}
-.dislike-btn-pill:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-.action-pill-btn:hover {
-  background-color: rgba(255, 255, 255, 0.15);
-}
-.delete-pill-btn:hover {
-  background-color: rgba(255, 77, 77, 0.15);
-}
-.description-card:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-}
-.description-toggle-btn:hover {
-  text-decoration: underline;
-}
-.modal-close:hover {
-  color: var(--text-color);
-}
-.settings-menu-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-.stats-header button:hover {
-  color: #fff;
-}
-.vid-timestamps:hover {
-  text-decoration: underline;
-}
-.mini-ctrl-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.1) translate3d(0, 0, 0);
-}
-.mini-ctrl-btn.play-pause-btn:hover {
-  background: #ff3333;
-  transform: scale(1.15) translate3d(0, 0, 0);
-  box-shadow: 0 4px 15px rgba(255, 0, 0, 0.6);
-}
-.mini-ctrl-btn-secondary:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.1);
-  transform: scale(1.05);
-}
-.mini-player-close-btn:hover {
-  background: rgba(255, 0, 0, 0.8) !important;
-}
-.modal-close-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-}
-.auth-tab-btn:hover {
-  color: #ddd;
-}
-.auth-submit-btn:hover {
-  filter: brightness(0.9);
-}
-.user-menu-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
-}
-.comment-user-avatar:hover {
-  transform: scale(1.05);
-}
-.emote-picker-trigger:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-}
-.emote-picker-popover button:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-.comment-cancel-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-}
-.comment-submit-btn:hover {
-  opacity: 0.9;
-}
-.thread-collapse-line-btn:hover {
-  background: var(--primary-color, #ff0000);
-}
-.thread-collapse-line-btn:hover svg {
-  opacity: 1;
-}
-.comment-author-name:hover {
-  text-decoration: underline;
-}
-.reply-to-mention:hover {
-  text-decoration: underline;
-}
-.user-mention:hover {
-  text-decoration: underline;
-}
-.timestamp-seek:hover {
-  background: rgba(62, 166, 255, 0.2);
-}
-.comment-action-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-}
-.comment-action-btn.delete-btn:hover {
-  background: rgba(244, 67, 54, 0.15);
-  color: #f44336;
-}
-.collapsed-expand-btn:hover {
-  background: rgba(62, 166, 255, 0.1);
-}
-.remove-preview-btn:hover {
-  background: rgba(0, 0, 0, 0.85);
-}
-.icon-trigger-btn:hover {
-  color: white;
-}
-.file-upload-icon-trigger:hover {
-  color: white;
-}
-.action-cancel-btn:hover {
-  color: white;
-  background: rgba(255, 255, 255, 0.05);
-}
-.action-submit-btn:hover:not(:disabled) {
-  opacity: 0.9;
-}
-.accordion-toggle-btn:hover {
-  background: rgba(62, 166, 255, 0.1);
-}
-.profile-avatar-wrapper:hover .edit-avatar-btn-overlay {
-  opacity: 1;
-}
-.profile-action-btn.edit:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-.profile-action-btn.cancel:hover {
-  background: rgba(244, 67, 54, 0.2);
-}
-.profile-tab-btn:hover {
-  color: white;
-}
-.save-settings-btn:hover {
-  opacity: 0.9;
-}
-.profile-video-card:hover {
-  transform: translateY(-2px);
-}
-.timeline-video-link:hover {
-  text-decoration: underline;
-}
-.playlist-save-item:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-}
-.create-pl-btn:hover {
-  background-color: rgba(62, 166, 255, 0.1);
-}
-.comment-more-menu-trigger:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #fff;
-}
-.dropdown-menu-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #fff;
-}
-.dropdown-menu-item:hover svg {
-  color: #fff;
-}
-.comment-edit-cancel:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #fff;
-}
-.comment-edit-save:hover {
-  background-color: #65b8ff;
-}
-.cast-menu-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-.cast-refresh-btn:hover:not(:disabled) {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-.cast-device-row:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-}
-.cast-remote-btn:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  transform: scale(1.05);
-}
-.cast-remote-btn.stop:hover {
-  background-color: #ff0000;
-}
-.modal-btn:hover {
-  opacity: 0.9;
-}
-.modal-btn.cancel:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
+  .like-btn-pill:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .suggestion-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+
+  .menu-toggle-btn:hover {
+    background-color: var(--hover-color);
+  }
+
+  .search-clear-btn:hover {
+    color: var(--text-color);
+  }
+
+  .search-submit-btn:hover {
+    background-color: #2f2f2f;
+  }
+
+  .voice-search-btn:hover {
+    background-color: var(--hover-color);
+  }
+
+  .header-icon-btn:hover {
+    background-color: var(--hover-color);
+  }
+
+  .sidebar-item:hover {
+    background: rgba(255, 255, 255, 0.07);
+    color: #fff;
+  }
+
+  .category-pill:hover {
+    background-color: #3f3f3f;
+  }
+
+  .video-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .preset-card:hover {
+    border-color: var(--primary-color);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--primary-hover);
+  }
+
+  .control-btn:hover {
+    color: var(--primary-color);
+    transform: scale(1.1);
+  }
+
+  .like-dislike-pill-group:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .dislike-btn-pill:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .action-pill-btn:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .delete-pill-btn:hover {
+    background-color: rgba(255, 77, 77, 0.15);
+  }
+
+  .description-card:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .description-toggle-btn:hover {
+    text-decoration: underline;
+  }
+
+  .modal-close:hover {
+    color: var(--text-color);
+  }
+
+  .settings-menu-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .stats-header button:hover {
+    color: #fff;
+  }
+
+  .vid-timestamps:hover {
+    text-decoration: underline;
+  }
+
+  .mini-ctrl-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1) translate3d(0, 0, 0);
+  }
+
+  .mini-ctrl-btn.play-pause-btn:hover {
+    background: #ff3333;
+    transform: scale(1.15) translate3d(0, 0, 0);
+    box-shadow: 0 4px 15px rgba(255, 0, 0, 0.6);
+  }
+
+  .mini-ctrl-btn-secondary:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
+  }
+
+  .mini-player-close-btn:hover {
+    background: rgba(255, 0, 0, 0.8) !important;
+  }
+
+  .modal-close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+
+  .auth-tab-btn:hover {
+    color: #ddd;
+  }
+
+  .auth-submit-btn:hover {
+    filter: brightness(0.9);
+  }
+
+  .user-menu-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+  }
+
+  .comment-user-avatar:hover {
+    transform: scale(1.05);
+  }
+
+  .emote-picker-trigger:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+
+  .emote-picker-popover button:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .comment-cancel-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+
+  .comment-submit-btn:hover {
+    opacity: 0.9;
+  }
+
+  .thread-collapse-line-btn:hover {
+    background: var(--primary-color, #ff0000);
+  }
+
+  .thread-collapse-line-btn:hover svg {
+    opacity: 1;
+  }
+
+  .comment-author-name:hover {
+    text-decoration: underline;
+  }
+
+  .reply-to-mention:hover {
+    text-decoration: underline;
+  }
+
+  .user-mention:hover {
+    text-decoration: underline;
+  }
+
+  .timestamp-seek:hover {
+    background: rgba(62, 166, 255, 0.2);
+  }
+
+  .comment-action-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+  }
+
+  .comment-action-btn.delete-btn:hover {
+    background: rgba(244, 67, 54, 0.15);
+    color: #f44336;
+  }
+
+  .collapsed-expand-btn:hover {
+    background: rgba(62, 166, 255, 0.1);
+  }
+
+  .remove-preview-btn:hover {
+    background: rgba(0, 0, 0, 0.85);
+  }
+
+  .icon-trigger-btn:hover {
+    color: white;
+  }
+
+  .file-upload-icon-trigger:hover {
+    color: white;
+  }
+
+  .action-cancel-btn:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .action-submit-btn:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+
+  .accordion-toggle-btn:hover {
+    background: rgba(62, 166, 255, 0.1);
+  }
+
+  .profile-avatar-wrapper:hover .edit-avatar-btn-overlay {
+    opacity: 1;
+  }
+
+  .profile-action-btn.edit:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .profile-action-btn.cancel:hover {
+    background: rgba(244, 67, 54, 0.2);
+  }
+
+  .profile-tab-btn:hover {
+    color: white;
+  }
+
+  .save-settings-btn:hover {
+    opacity: 0.9;
+  }
+
+  .profile-video-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .timeline-video-link:hover {
+    text-decoration: underline;
+  }
+
+  .playlist-save-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .create-pl-btn:hover {
+    background-color: rgba(62, 166, 255, 0.1);
+  }
+
+  .comment-more-menu-trigger:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+
+  .dropdown-menu-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+
+  .dropdown-menu-item:hover svg {
+    color: #fff;
+  }
+
+  .comment-edit-cancel:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+
+  .comment-edit-save:hover {
+    background-color: #65b8ff;
+  }
+
+  .cast-menu-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .cast-refresh-btn:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .cast-device-row:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .cast-remote-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+  }
+
+  .cast-remote-btn.stop:hover {
+    background-color: #ff0000;
+  }
+
+  .modal-btn:hover {
+    opacity: 0.9;
+  }
+
+  .modal-btn.cancel:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
 }
 
 /* Touch device: hide timeline hover preview */
@@ -4419,4 +4505,3 @@ body.mini-player-dragging * {
     display: none !important;
   }
 }
-
