@@ -380,7 +380,6 @@ button {
   gap: 12px;
   overflow-x: auto;
   padding-bottom: 16px;
-  margin-bottom: 20px;
   scrollbar-width: none;
   /* Hide scrollbar */
 }
@@ -779,8 +778,14 @@ button {
   transition: height 0.1s;
 }
 
-.progress-bar-container:hover {
-  height: 8px;
+@media (hover: hover) and (pointer: fine) {
+  .progress-bar-container:hover {
+    height: 8px;
+  }
+
+  .progress-bar-container:hover .progress-bar-played::after {
+    transform: translateY(-50%) scale(1);
+  }
 }
 
 .progress-bar-played {
@@ -802,10 +807,6 @@ button {
   background-color: var(--primary-color);
   border-radius: 50%;
   transition: transform 0.1s;
-}
-
-.progress-bar-container:hover .progress-bar-played::after {
-  transform: translateY(-50%) scale(1);
 }
 
 .controls-row {
@@ -1434,10 +1435,6 @@ button {
   /* hit-area handles events */
 }
 
-.progress-bar-hit-area:hover .progress-bar-container {
-  height: 6px;
-}
-
 .progress-bar-played {
   height: 100%;
   background-color: var(--primary-color);
@@ -1462,8 +1459,14 @@ button {
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.6);
 }
 
-.progress-bar-hit-area:hover .progress-bar-knob {
-  opacity: 1;
+@media (hover: hover) and (pointer: fine) {
+  .progress-bar-hit-area:hover .progress-bar-container {
+    height: 6px;
+  }
+
+  .progress-bar-hit-area:hover .progress-bar-knob {
+    opacity: 1;
+  }
 }
 
 .timeline-hover-preview {
@@ -1858,6 +1861,28 @@ body.mini-player-dragging * {
 @media (max-width: 768px) {
   .d-mobile-only {
     display: flex !important;
+  }
+
+  .player-page-container.mini-player {
+    width: 220px;
+    bottom: 12px;
+    right: 12px;
+    border-radius: 12px;
+  }
+
+  .player-page-container.mini-player .html5-video {
+    max-height: 157px;
+    border-radius: 12px;
+  }
+
+  .mini-ctrl-btn {
+    width: 30px;
+    height: 30px;
+  }
+
+  .mini-ctrl-btn-secondary {
+    width: 26px;
+    height: 26px;
   }
 }
 
