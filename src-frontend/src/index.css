@@ -389,11 +389,6 @@ button {
   display: none;
 }
 
-.control-btn.theater-mode {
-  padding-top: 15px;
-  padding-bottom: 15px;
-}
-
 .category-pill {
   background-color: var(--hover-color);
   padding: 8px 16px;
@@ -817,6 +812,7 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 10px 0;
 }
 
 .controls-group {
@@ -2828,6 +2824,26 @@ body.mini-player-dragging * {
 
   .settings-item-left {
     gap: 8px;
+  }
+
+  .controls-row {
+    padding: 5px 0;
+  }
+
+  /* Stats for nerds mobile */
+  .stats-for-nerds-overlay {
+    width: calc(100vw - 32px);
+    max-width: 320px;
+    bottom: 56px;
+    right: 8px;
+    max-height: 130px;
+    overflow-y: auto;
+    padding: 12px;
+    font-size: 10px;
+  }
+
+  .stats-header {
+    font-size: 11px;
   }
 
   /* Cast dropdown mobile */

@@ -2052,11 +2052,11 @@ function PlayerView({
     };
   }, [isScrubbing, duration]);
 
-  const toggleFullscreen = () => {
+  const toggleFullscreen = async () => {
     if (!playerWrapperRef.current) return;
     if (!isFullscreen) {
       if (playerWrapperRef.current.requestFullscreen) {
-        playerWrapperRef.current.requestFullscreen();
+        await playerWrapperRef.current.requestFullscreen();
       }
       setIsFullscreen(true);
       if (isPhoneRef.current && screen.orientation?.lock) {
@@ -2136,6 +2136,16 @@ function PlayerView({
     const handleActivity = () => {
       setUserActive(true);
       startHideTimer();
+      // Re-lock orientation on user gesture (fixes Android auto-rotate override)
+      if (isPhoneRef.current && screen.orientation?.lock) {
+        const current = screen.orientation.type;
+        const target = targetOrientationRef.current;
+        const isWrong = (target === 'landscape' && current.startsWith('portrait'))
+          || (target === 'portrait' && current.startsWith('landscape'));
+        if (isWrong) {
+          screen.orientation.lock(target).catch(() => {});
+        }
+      }
     };
 
     const wrapper = playerWrapperRef.current;
@@ -2162,6 +2172,47 @@ function PlayerView({
       }
     };
   }, [isFullscreen]);
+
+  // Sync isFullscreen state + lock orientation after browser confirms fullscreen
+  useEffect(() => {
+    let relockTimer = null;
+
+    const handleFullscreenChange = () => {
+      const inFs = !!document.fullscreenElement;
+      setIsFullscreen(inFs);
+      if (inFs && isPhoneRef.current && screen.orientation?.lock) {
+        screen.orientation.lock(targetOrientationRef.current).catch(() => {});
+      } else if (!inFs && screen.orientation?.unlock) {
+        screen.orientation.unlock();
+        if (relockTimer) { clearTimeout(relockTimer); relockTimer = null; }
+      }
+    };
+
+    // Re-lock after OS overrides our orientation (Firefox auto-rotate)
+    const handleOrientationChange = () => {
+      if (!document.fullscreenElement || !isPhoneRef.current || !screen.orientation?.lock) return;
+      if (relockTimer) clearTimeout(relockTimer);
+      const tryLock = () => {
+        if (document.fullscreenElement && screen.orientation?.lock) {
+          screen.orientation.lock(targetOrientationRef.current).catch(() => {});
+        }
+      };
+      relockTimer = setTimeout(() => {
+        tryLock();
+        setTimeout(tryLock, 50);
+        setTimeout(tryLock, 100);
+        setTimeout(tryLock, 200);
+      }, 0);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    window.addEventListener('orientationchange', handleOrientationChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      window.removeEventListener('orientationchange', handleOrientationChange);
+      if (relockTimer) clearTimeout(relockTimer);
+    };
+  }, []);
 
   // Phone pinch-to-zoom: reset on fullscreen exit
   useEffect(() => {
