@@ -85,7 +85,7 @@ Add these codes in bottom of httpd.conf:
 
 4. edit .env.example to .env and add your mysql account details to access DB
    
-5. **HOT KEYs** (the video must be focussed to use the ones below)
+# **HOT KEYs** (the video must be focussed to use the ones below)
 
 5 (from Numpad) :  focus video  (use this if video isnt focussed and you too lazy to move mouse)
 
