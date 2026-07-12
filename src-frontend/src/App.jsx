@@ -21,6 +21,12 @@ function getCookie(name) {
   return matches ? decodeURIComponent(matches[1]) : undefined;
 }
 
+// Phone detection: userAgentData (modern) with UA fallback
+function isPhone() {
+  if (navigator.userAgentData) return navigator.userAgentData.mobile;
+  return /Android|iPhone|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
 // Translate file:/// urls to relative /c:/ or /d:/ apache drives
 function translateVideoUrl(url) {
   if (!url) return '';
@@ -105,6 +111,33 @@ export default function App() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [mobileSearchActive, setMobileSearchActive] = useState(false);
   const [isTheaterMode, setIsTheaterMode] = useState(() => localStorage.getItem('yt_theater_mode') === 'true');
+  const prevTheaterModeRef = useRef(null);
+  const isMobileRef = useRef(window.matchMedia('(max-width: 768px)').matches);
+
+  // Auto-theater mode on mobile
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+
+    if (mq.matches && prevTheaterModeRef.current === null) {
+      isMobileRef.current = true;
+      prevTheaterModeRef.current = isTheaterMode;
+      setIsTheaterMode(true);
+    }
+
+    const handler = (e) => {
+      const wasMobile = isMobileRef.current;
+      isMobileRef.current = e.matches;
+      if (e.matches && !wasMobile) {
+        prevTheaterModeRef.current = isTheaterMode;
+        setIsTheaterMode(true);
+      } else if (!e.matches && wasMobile && prevTheaterModeRef.current !== null) {
+        setIsTheaterMode(prevTheaterModeRef.current);
+        prevTheaterModeRef.current = null;
+      }
+    };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, [isTheaterMode]);
 
   // Search Suggestions states
   const [suggestions, setSuggestions] = useState([]);
@@ -590,7 +623,14 @@ export default function App() {
             <img
               src="./yt-logo.png"
               alt="YouTube"
+              className="logo-full"
               style={{ height: '24px', objectFit: 'contain', display: 'block' }}
+            />
+            <img
+              src="./yt-icon.png"
+              alt="YouTube"
+              className="logo-icon-only"
+              style={{ height: '24px', objectFit: 'contain', display: 'none' }}
             />
           </div>
         </div>
@@ -1340,6 +1380,14 @@ function PlayerView({
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // Force volume to 100% on mobile (one-time on mount)
+  useEffect(() => {
+    if (isPhone()) {
+      setVolume(1);
+      localStorage.setItem('yt_volume', '1');
+    }
+  }, []);
+
   // Custom video player wrapper ref
   const playerWrapperRef = useRef(null);
 
@@ -1482,6 +1530,7 @@ function PlayerView({
 
   // Theater and Reverse Autoplay states
   const [isReverseAutoplay, setIsReverseAutoplay] = useState(false);
+  const prevRandomRef = useRef(null);
 
 
   // Keep volumeRef in sync with the volume state so the keydown closure always reads the latest value
@@ -2643,6 +2692,7 @@ function PlayerView({
                   <button 
                     className={`cast-option-toggle-btn ${isRandom ? 'active' : ''}`}
                     onClick={() => {
+                      if (isReverseAutoplay) return;
                       const next = !isRandom;
                       setIsRandom(next);
                       localStorage.setItem('yt_random', String(next));
@@ -2655,13 +2705,14 @@ function PlayerView({
                       borderRadius: '20px',
                       padding: '8px 16px',
                       color: isRandom ? '#3ea6ff' : '#aaa',
-                      cursor: 'pointer',
+                      cursor: isReverseAutoplay ? 'not-allowed' : 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '8px',
                       fontSize: '13px',
                       fontWeight: '500',
-                      transition: 'all 0.2s'
+                      transition: 'all 0.2s',
+                      opacity: isReverseAutoplay ? 0.4 : 1
                     }}
                   >
                     <Shuffle size={16} /> Random
@@ -2698,6 +2749,14 @@ function PlayerView({
                     onClick={() => {
                       const next = !isReverseAutoplay;
                       setIsReverseAutoplay(next);
+                      if (next) {
+                        prevRandomRef.current = isRandom;
+                        setIsRandom(false);
+                      } else if (prevRandomRef.current !== null) {
+                        setIsRandom(prevRandomRef.current);
+                        localStorage.setItem('yt_random', String(prevRandomRef.current));
+                        prevRandomRef.current = null;
+                      }
                       showFlashNotification(`Reverse Mode: ${next ? 'ON' : 'OFF'}`);
                     }}
                     title="Toggle Reverse Autoplay"
@@ -3039,7 +3098,8 @@ function PlayerView({
                   </span>
                 </div>
 
-                <div className="settings-menu-item" onClick={() => {
+                <div className="settings-menu-item" style={isReverseAutoplay ? { opacity: 0.4, pointerEvents: 'none' } : {}} onClick={() => {
+                  if (isReverseAutoplay) return;
                   const next = !isRandom;
                   setIsRandom(next);
                   localStorage.setItem('yt_random', String(next));
@@ -3053,6 +3113,14 @@ function PlayerView({
                 <div className="settings-menu-item" onClick={() => {
                   const next = !isReverseAutoplay;
                   setIsReverseAutoplay(next);
+                  if (next) {
+                    prevRandomRef.current = isRandom;
+                    setIsRandom(false);
+                  } else if (prevRandomRef.current !== null) {
+                    setIsRandom(prevRandomRef.current);
+                    localStorage.setItem('yt_random', String(prevRandomRef.current));
+                    prevRandomRef.current = null;
+                  }
                   showFlashNotification(`Reverse Mode: ${next ? 'ON' : 'OFF'}`);
                 }}>
                   <span className="settings-item-left"><CornerUpLeft size={16} /> Reverse Mode</span>

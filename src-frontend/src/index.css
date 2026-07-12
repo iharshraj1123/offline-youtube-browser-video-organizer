@@ -489,6 +489,7 @@ button {
   border-radius: 4px;
   font-size: 12px;
   font-weight: 500;
+  z-index: 3;
 }
 
 .video-card-details {
@@ -1229,6 +1230,7 @@ button {
   }
 }
 
+/* Phone-specific styles */
 @media (max-width: 768px) {
   :root {
     --sidebar-width: 0px;
@@ -1263,7 +1265,6 @@ button {
 
   .header-center {
     display: none;
-    /* Hide search bar on mobile headers, use mobile search icon instead */
   }
 
   .header-center.mobile-active {
@@ -1278,7 +1279,6 @@ button {
     z-index: 150;
   }
 
-  /* Reset collapsed sidebar styles on mobile so the drawer is always expanded with text labels */
   .main-sidebar.collapsed {
     width: 240px !important;
   }
@@ -1297,6 +1297,26 @@ button {
     opacity: 1 !important;
     height: auto !important;
     padding: 4px 16px 6px !important;
+  }
+
+  .header-right {
+    gap: 5px;
+  }
+
+  .logo-full {
+    display: none !important;
+  }
+
+  .logo-icon-only {
+    display: block !important;
+  }
+
+  .volume-slider {
+    display: none;
+  }
+
+  .control-btn.theater-mode {
+    display: none;
   }
 }
 
@@ -1590,6 +1610,23 @@ button {
 
 .player-page-container.theater-layout .player-sidebar-col {
   padding: 0 24px 24px 0;
+}
+
+@media (max-width: 1200px) {
+  .player-page-container.theater-layout {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "player"
+      "main"
+      "sidebar";
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .player-page-container.theater-layout .player-main-col,
+  .player-page-container.theater-layout .player-sidebar-col {
+    padding: 0;
+  }
 }
 
 .player-notification-banner {
@@ -2862,6 +2899,100 @@ body.mini-player-dragging * {
 
   .user-card-tooltip {
     width: 220px;
+  }
+
+  .action-pill-btn span,
+  .like-btn-pill span,
+  .dislike-btn-pill span {
+    display: none;
+  }
+
+  .like-dislike-pill-group {
+    height: 32px;
+  }
+
+  .action-pill-btn {
+    padding: 6px 8px;
+  }
+
+  /* Settings dropdown mobile */
+  .player-settings-dropdown {
+    width: 210px;
+    bottom: 56px;
+    right: 8px;
+    max-height: 130px;
+    overflow-y: auto;
+  }
+
+  .settings-menu-item {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  .settings-menu-header {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+
+  .settings-item-right {
+    font-size: 11px;
+  }
+
+  .settings-item-left {
+    gap: 8px;
+  }
+
+  /* Cast dropdown mobile */
+  .player-cast-dropdown {
+    width: 240px;
+    min-width: 0;
+    bottom: 56px;
+    right: 8px;
+  }
+
+  .cast-menu-header {
+    font-size: 13px;
+  }
+
+  .cast-menu-item {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+
+  .cast-device-row {
+    font-size: 12px;
+  }
+
+  .cast-ip-config label {
+    font-size: 10px;
+  }
+
+  .cast-ip-select {
+    font-size: 12px;
+  }
+
+  .toggle-badge {
+    font-size: 9px;
+  }
+
+  /* Cast active overlay mobile */
+  .cast-active-title {
+    font-size: 16px;
+  }
+
+  .cast-active-status {
+    font-size: 12px;
+  }
+
+  .cast-remote-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .cast-remote-btn.stop {
+    font-size: 12px;
+    padding: 0 12px;
+    height: 34px;
   }
 }
 
