@@ -174,7 +174,7 @@ function cleanLegacyString($str) {
                     `first_name` varchar(15) DEFAULT NULL,
                     `last_name` varchar(15) DEFAULT NULL,
                     `user_desc` varchar(2000) DEFAULT 'Hiii There its me !!! yeah you dont know me....',
-                    `user_pic` varchar(200) DEFAULT '/youtube/Userdatabase/ProfilePic/default1.jpg',
+                    `user_pic` varchar(200) DEFAULT 'Userdatabase/ProfilePic/default1.jpg',
                     `comment_votes` longtext DEFAULT NULL,
                     `reply_votes` longtext DEFAULT NULL,
                     `karma` int(11) NOT NULL DEFAULT 0,
@@ -335,7 +335,7 @@ function cleanLegacyString($str) {
                                 ':link' => cleanLegacyString($row['link']),
                                 ':uploader_id' => $row['uploader_id'],
                                 ':uploader_name' => cleanLegacyString($row['uploader_name']),
-                                ':uploader_img' => str_replace('/comment section/', '/youtube/', cleanLegacyString($row['uploader_img'])),
+                                ':uploader_img' => str_replace('/comment section/', '', cleanLegacyString($row['uploader_img'])),
                                 ':likes' => $row['likes'],
                                 ':dislikes' => $row['dislikes'],
                                 ':duration' => $row['duration'],
@@ -387,7 +387,7 @@ function cleanLegacyString($str) {
                             ':first_name' => $u['first_name'],
                             ':last_name' => $u['last_name'],
                             ':user_desc' => $u['user_desc'],
-                            ':user_pic' => str_replace('/comment section/', '/youtube/', $u['user_pic'] ?? ''),
+                            ':user_pic' => str_replace('/comment section/', '', $u['user_pic'] ?? ''),
                             ':comment_votes' => $u['comment_votes'],
                             ':reply_votes' => $u['reply_votes']
                         ]);
@@ -411,7 +411,7 @@ function cleanLegacyString($str) {
                     ");
                     $pdo->beginTransaction();
                     foreach ($oldComments as $c) {
-                        $cleanComment = str_replace('/comment section/', '/youtube/', $c['comment'] ?? '');
+                        $cleanComment = str_replace('/comment section/', '', $c['comment'] ?? '');
                         $insertComment->execute([
                             ':com_id' => $c['com_id'],
                             ':com_page' => $c['com_page'],
@@ -445,7 +445,7 @@ function cleanLegacyString($str) {
                     ");
                     $pdo->beginTransaction();
                     foreach ($oldReplies as $r) {
-                        $cleanReply = str_replace('/comment section/', '/youtube/', $r['reply'] ?? '');
+                        $cleanReply = str_replace('/comment section/', '', $r['reply'] ?? '');
                         $insertReply->execute([
                             ':reply_id' => $r['reply_id'],
                             ':com_id' => $r['com_id'],
@@ -485,13 +485,13 @@ function cleanLegacyString($str) {
                             ':type' => $ch['type'],
                             ':chatted_to_id' => $ch['chatted_to_id'],
                             ':chat_to_name' => $ch['chat_to_name'],
-                            ':chat_to_img' => str_replace('/comment section/', '/youtube/', $ch['chat_to_img'] ?? ''),
+                            ':chat_to_img' => str_replace('/comment section/', '', $ch['chat_to_img'] ?? ''),
                             ':chatted_by_id' => $ch['chatted_by_id'],
                             ':chat_by_name' => $ch['chat_by_name'],
-                            ':chat_by_img' => str_replace('/comment section/', '/youtube/', $ch['chat_by_img'] ?? ''),
+                            ':chat_by_img' => str_replace('/comment section/', '', $ch['chat_by_img'] ?? ''),
                             ':chat_date' => $ch['chat_date'],
                             ':chat_time' => $ch['chat_time'],
-                            ':chat_text' => str_replace('/comment section/', '/youtube/', $ch['chat_text'] ?? ''),
+                            ':chat_text' => str_replace('/comment section/', '', $ch['chat_text'] ?? ''),
                             ':chat_edited' => $ch['chat_edited'],
                             ':chat_read' => $ch['chat_read']
                         ]);
@@ -516,7 +516,7 @@ function cleanLegacyString($str) {
                     INSERT INTO `youtube-v2`.`video_metadatas` 
                     (vid_id, vid_name, link, uploader_id, uploader_name, uploader_img, likes, dislikes, duration, views, tags, subtitles, description, comments) 
                     VALUES 
-                    (10, :vid_name, '', 0, 'system', '/youtube/Userdatabase/profilepic/defaulta.jpg', 0, 0, 0, 0, '', 'null', 'Playlist Seed Row', 0)
+                    (10, :vid_name, '', 0, 'system', 'Userdatabase/profilepic/defaulta.jpg', 0, 0, 0, 0, '', 'null', 'Playlist Seed Row', 0)
                 ";
                 $stmt = $pdo->prepare($insertRow10);
                 $stmt->execute([':vid_name' => $emptyPlaylist]);

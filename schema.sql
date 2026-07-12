@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS `users` (
     `first_name` varchar(15) DEFAULT NULL,
     `last_name` varchar(15) DEFAULT NULL,
     `user_desc` varchar(2000) DEFAULT 'Hiii There its me !!! yeah you dont know me....',
-    `user_pic` varchar(200) DEFAULT '/youtube/Userdatabase/ProfilePic/default1.jpg',
+    `user_pic` varchar(200) DEFAULT 'Userdatabase/ProfilePic/default1.jpg',
     `comment_votes` longtext DEFAULT NULL,
     `reply_votes` longtext DEFAULT NULL,
     `karma` int(11) NOT NULL DEFAULT 0,

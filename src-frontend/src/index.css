@@ -777,6 +777,7 @@ button {
   background-color: #000;
   border-radius: 12px;
   overflow: hidden;
+  contain: paint;
 }
 
 .html5-video {
