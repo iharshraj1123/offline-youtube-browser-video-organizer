@@ -83,11 +83,7 @@ Add these codes in bottom of httpd.conf:
 
 3. First add the "userdata" database then "youtube" database from the files provided to your sql (simply copy paste it in sql section of your phpmyadmin)
 
-4. Add an account to Mysql/phpmyadmin : {username = "admin"; password = "pwdpwd"; Priviledges : All (optional)}
-
-or run this SQL: 
-
-```GRANT ALL PRIVILEGES ON * . * TO 'admin'@'%' IDENTIFIED BY 'pwdpwd' WITH GRANT OPTION;```
+4. edit .env.example to .env and add your mysql account details to access DB
    
 5. **HOT KEYs** (the video must be focussed to use the ones below)
 
