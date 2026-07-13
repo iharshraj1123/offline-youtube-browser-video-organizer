@@ -1381,6 +1381,8 @@ function PlayerView({
   const [showCastMenu, setShowCastMenu] = useState(false);
   const [castMode, setCastMode] = useState(null); // 'select', 'legacy', 'modern'
   const prevCastModeRef = useRef(null);
+  const castDropdownRef = useRef(null);
+  const settingsDropdownRef = useRef(null);
   const [castDevice, setCastDevice] = useState(null);
   const [discoveredDevices, setDiscoveredDevices] = useState([]);
   const [discovering, setDiscovering] = useState(false);
@@ -1388,6 +1390,21 @@ function PlayerView({
   const [selectedServerIp, setSelectedServerIp] = useState(() => localStorage.getItem('yt_cast_server_ip') || '');
   const [isTranscoding, setIsTranscoding] = useState(false);
   const [pendingTranscodeDevice, setPendingTranscodeDevice] = useState(null);
+
+  // Close cast/settings menus on outside click
+  useEffect(() => {
+    if (!showCastMenu && !showSettings) return;
+    const handleClickOutside = (e) => {
+      if (castDropdownRef.current && !castDropdownRef.current.contains(e.target) && !e.target.closest('.control-btn')) {
+        setShowCastMenu(false);
+      }
+      if (settingsDropdownRef.current && !settingsDropdownRef.current.contains(e.target) && !e.target.closest('.control-btn')) {
+        setShowSettings(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showCastMenu, showSettings]);
 
   // Playback control states
   const videoRef = useRef(null);
@@ -3209,11 +3226,12 @@ function PlayerView({
         {/* Cast Device Selector Dropdown */}
         {showCastMenu && (
           <div className="player-cast-dropdown" ref={(el) => {
+            castDropdownRef.current = el;
             if (el && castMode === 'legacy' && prevCastModeRef.current !== 'legacy') {
               setTimeout(() => { el.scrollTop = el.scrollHeight; }, 50);
             }
             prevCastModeRef.current = castMode;
-          }}>
+          }} onClick={(e) => e.stopPropagation()}>
             {!castMode ? (
               <div className="cast-menu-list">
                 <div className="cast-menu-header">Cast to Device</div>
@@ -3315,7 +3333,7 @@ function PlayerView({
 
         {/* YouTube Style Settings Dropdown */}
         {showSettings && (
-          <div className="player-settings-dropdown">
+          <div className="player-settings-dropdown" ref={settingsDropdownRef} onClick={(e) => e.stopPropagation()}>
             {settingsSubmenu === 'main' ? (
               <div className="settings-menu-list">
                 <div className="settings-menu-item" onClick={() => setSettingsSubmenu('speed')}>
