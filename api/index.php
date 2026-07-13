@@ -445,12 +445,13 @@ function processSingleVideo($pdo, $file, $uploaderInfo, $ffmpegPath, $videoExten
     if (!in_array($ext, $videoExtensions)) return false;
     if (!file_exists($file)) return false;
 
-    if (preg_match('/^([a-zA-Z]):\/(.*)$/', $file, $matches)) {
+    $normalized = str_replace('\\', '/', $file);
+    if (preg_match('/^([a-zA-Z]):\/(.*)$/', $normalized, $matches)) {
         $drive = $matches[1];
         $rest = $matches[2];
         $link = "file:///" . strtoupper($drive) . ":/" . $rest;
     } else {
-        $link = "file:///" . str_replace('%', '%25', $file);
+        $link = "file:///" . str_replace('%', '%25', $normalized);
     }
 
     $checkStmt = $pdo->prepare("SELECT vid_id FROM video_metadatas WHERE link = :link");
@@ -596,12 +597,13 @@ function handleUploadFile($pdo) {
         if ($result === false) {
             $existsCheck = $pdo->prepare("SELECT vid_id FROM video_metadatas WHERE link = :link");
             $file = $filePath;
-            if (preg_match('/^([a-zA-Z]):\/(.*)$/', $file, $matches)) {
+            $normalized = str_replace('\\', '/', $file);
+            if (preg_match('/^([a-zA-Z]):\/(.*)$/', $normalized, $matches)) {
                 $drive = $matches[1];
                 $rest = $matches[2];
                 $link = "file:///" . strtoupper($drive) . ":/" . $rest;
             } else {
-                $link = "file:///" . str_replace('%', '%25', $file);
+                $link = "file:///" . str_replace('%', '%25', $normalized);
             }
             $existsCheck->execute([':link' => $link]);
             if ($existsCheck->fetch()) {
@@ -914,16 +916,16 @@ function generateServerThumbnail($ffmpegPath, $videoPath, $vidId) {
     $tempLink = getTempHardlink($videoPath);
     $inputPath = $tempLink ? $tempLink : $videoPath;
     
-    // Try to extract frame at 1 second
-    $cmd = "$ffmpegPath -y -ss 00:00:01 -i " . escapeshellarg($inputPath) . " -vframes 1 -q:v 2 " . escapeshellarg($outputPath);
+    // Try to extract frame at 6 seconds
+    $cmd = "$ffmpegPath -y -ss 00:00:06 -i " . escapeshellarg($inputPath) . " -vframes 1 -q:v 15 " . escapeshellarg($outputPath);
     
     $output = [];
     $returnVar = -1;
     @exec($cmd, $output, $returnVar);
     
-    // Fallback: if 1s seek failed (video may be shorter), try first frame
-    if ($returnVar !== 0) {
-        $cmd = "$ffmpegPath -y -i " . escapeshellarg($inputPath) . " -vframes 1 -q:v 2 " . escapeshellarg($outputPath);
+    // Fallback: if 6s seek failed or produced no output (e.g. video shorter than 6s), try first frame
+    if ($returnVar !== 0 || !file_exists($outputPath)) {
+        $cmd = "$ffmpegPath -y -i " . escapeshellarg($inputPath) . " -vframes 1 -q:v 15 " . escapeshellarg($outputPath);
         @exec($cmd, $output, $returnVar);
     }
     
@@ -2780,13 +2782,20 @@ function handleYtdlpDownload($pdo = null) {
 
     $outputTemplate = $outputDir . DIRECTORY_SEPARATOR . $filenameTemplate;
     $infoFile = $outputDir . DIRECTORY_SEPARATOR . '_yt_name_' . uniqid() . '.txt';
-    $cmd = $path . ' -f ' . escapeshellarg($format) . ' -o "' . $outputTemplate . '" --print-to-file filename "' . $infoFile . '" --no-playlist --ignore-errors --no-warnings --no-mtime --progress --newline ' . escapeshellarg($url) . ' 2>&1';
+    $extraArgs = $_POST['extra_args'] ?? '';
+    $cmd = $path . ' -f ' . escapeshellarg($format) . ' -o "' . $outputTemplate . '" --print-to-file filename "' . $infoFile . '" --no-playlist --ignore-errors --no-warnings --no-mtime --progress --newline ' . $extraArgs . ' ' . escapeshellarg($url) . ' 2>&1';
 
     header('Content-Type: text/event-stream');
     header('Cache-Control: no-cache');
     header('Connection: keep-alive');
     header('X-Accel-Buffering: no');
     @set_time_limit(0);
+
+    // Disable PHP output buffering so SSE events flush immediately
+    @ini_set('output_buffering', '0');
+    @ini_set('zlib.output_compression', 0);
+    while (@ob_get_level() > 0) { @ob_end_flush(); }
+    ob_implicit_flush(true);
 
     $descriptors = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
     $process = @proc_open($cmd, $descriptors, $pipes);

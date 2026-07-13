@@ -5133,6 +5133,41 @@ body.mini-player-dragging * {
 .fmt-size { color: var(--text-secondary); min-width: 60px; text-align: right; }
 .fmt-note { color: var(--text-secondary); font-size: 10px; }
 
+/* Per-video Quality Select */
+.quality-select-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.quality-select-sm {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-color);
+  font-size: 11px;
+  padding: 4px 22px 4px 8px;
+  font-family: var(--font-family);
+  cursor: pointer;
+  min-width: 110px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  background-size: 10px;
+  transition: border-color 0.15s;
+}
+
+.quality-select-sm:hover {
+  border-color: var(--primary-color);
+}
+
+.quality-select-sm:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
 /* Download Progress */
 .download-progress-section {
   margin-bottom: 16px;

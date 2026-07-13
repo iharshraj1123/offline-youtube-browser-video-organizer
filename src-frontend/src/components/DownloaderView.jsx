@@ -115,7 +115,7 @@ export function DownloaderView({ currentUser }) {
 
   const [quality, setQuality] = useState(QUALITY_PRESETS[0].value);
   const [codec, setCodec] = useState('');
-  const [container, setContainer] = useState('');
+  const [container, setContainer] = useState('mp4');
   const [audioFormat, setAudioFormat] = useState('best');
   const [subsEnabled, setSubsEnabled] = useState(false);
   const [subsLang, setSubsLang] = useState('en');
@@ -136,8 +136,6 @@ export function DownloaderView({ currentUser }) {
   const [downloadSpeed, setDownloadSpeed] = useState('');
   const [downloadEta, setDownloadEta] = useState('');
   const [downloadStatus, setDownloadStatus] = useState('');
-  const [history, setHistory] = useState([]);
-
   const [showPathSelector, setShowPathSelector] = useState(false);
   const pathSelectorRef = useRef(null);
   const urlInputRef = useRef(null);
@@ -146,10 +144,6 @@ export function DownloaderView({ currentUser }) {
 
   useEffect(() => {
     checkYtdlp();
-    const savedHistory = localStorage.getItem('yt_download_history');
-    if (savedHistory) {
-      try { setHistory(JSON.parse(savedHistory)); } catch {}
-    }
     const syncPresets = () => {
       const updated = getDirectoryPresets();
       setPresets(updated);
@@ -172,10 +166,6 @@ export function DownloaderView({ currentUser }) {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem('yt_download_history', JSON.stringify(history.slice(0, 50)));
-  }, [history]);
-
   const checkYtdlp = async () => {
     setYtdlpStatus(prev => ({ ...prev, checking: true }));
     try {
@@ -197,10 +187,31 @@ export function DownloaderView({ currentUser }) {
     setUpdating(false);
   };
 
+  const getAvailableQualities = (formats) => {
+    if (!formats || formats.length === 0) return [];
+    const hasVideo = formats.some(f => f.has_video);
+    const hasAudio = formats.some(f => f.has_audio);
+    const opts = [{ label: 'Best', value: 'bestvideo+bestaudio/best', height: 99999 }];
+    const seen = new Set();
+    const videoFormats = formats.filter(f => f.has_video && f.height)
+      .sort((a, b) => (b.height || 0) - (a.height || 0));
+    for (const f of videoFormats) {
+      const h = f.height;
+      if (seen.has(h)) continue;
+      seen.add(h);
+      const codec = f.vcodec?.split('.')[0] || '';
+      const label = `${h}p${codec ? ' (' + codec + ')' : ''}${f.filesize ? ' ' + formatBytes(f.filesize) : ''}`;
+      opts.push({ label, value: `bestvideo[height<=${h}]+bestaudio/best[height<=${h}]`, height: h });
+    }
+    if (hasAudio) opts.push({ label: 'Audio Only', value: 'bestaudio', height: 0 });
+    return opts;
+  };
+
   const autoSelectQuality = (formats) => {
     const hasVideo = formats.some(f => f.has_video);
     const hasAudio = formats.some(f => f.has_audio);
-    if (!hasVideo && hasAudio) setQuality('bestaudio');
+    if (!hasVideo && hasAudio) return 'bestaudio';
+    return 'bestvideo+bestaudio/best';
   };
 
   const getBestFormatForQuality = (formats) => {
@@ -240,6 +251,7 @@ export function DownloaderView({ currentUser }) {
       durationString: '',
       uploader: '',
       formats: [],
+      quality: quality,
       status: 'fetching',
       progress: 0, speed: '', eta: '', file: '', size: '', indexed: false, vid_id: null, error: '',
     };
@@ -259,6 +271,8 @@ export function DownloaderView({ currentUser }) {
         setError(data.error);
         setFetchedItems(prev => prev.map(item => item.id === tempItem.id ? { ...item, status: 'failed', error: data.error } : item));
       } else {
+        const avail = data.formats || [];
+        const itemQuality = avail.length > 0 ? autoSelectQuality(avail) : quality;
         setFetchedItems(prev => prev.map(item => item.id === tempItem.id ? {
           ...item,
           title: data.title || 'Unknown',
@@ -266,10 +280,10 @@ export function DownloaderView({ currentUser }) {
           duration: data.duration || 0,
           durationString: data.duration_string || '0:00',
           uploader: data.uploader || 'Unknown',
-          formats: data.formats || [],
+          formats: avail,
+          quality: itemQuality,
           status: 'ready',
         } : item));
-        if (data.formats && data.formats.length > 0) autoSelectQuality(data.formats);
       }
     } catch (e) {
       setError('Failed to fetch video information. Check the URL.');
@@ -304,7 +318,7 @@ export function DownloaderView({ currentUser }) {
       if (preset) destPath = preset.path;
     }
 
-    let formatArg = quality;
+    let formatArg = item.quality || quality;
     if (!formatArg.startsWith('best') && !formatArg.startsWith('bestvideo') && item.formats) {
       formatArg = getBestFormatForQuality(item.formats);
     }
@@ -364,25 +378,10 @@ export function DownloaderView({ currentUser }) {
                 setDownloadProgress(100);
                 setDownloadStatus('Completed!');
                 updateItem(item.id, { status: 'done', progress: 100, file: msg.file, size: msg.size_formatted, indexed: msg.indexed, vid_id: msg.vid_id });
-                const entry = {
-                  id: Date.now(),
-                  url: item.url,
-                  title: item.title,
-                  file: msg.file,
-                  size: msg.size_formatted,
-                  quality: quality,
-                  path: destPath,
-                  indexed: msg.indexed,
-                  vid_id: msg.vid_id,
-                  timestamp: new Date().toLocaleString(),
-                  success: true,
-                };
-                setHistory(prev => [entry, ...prev]);
               } else if (msg.type === 'error') {
                 setDownloadStatus('Error: ' + msg.message);
                 setError(msg.message);
                 updateItem(item.id, { status: 'failed', error: msg.message });
-                setHistory(prev => [{ id: Date.now(), url: item.url, title: item.title, timestamp: new Date().toLocaleString(), success: false, error: msg.message }, ...prev]);
               }
             } catch {}
           }
@@ -423,15 +422,6 @@ export function DownloaderView({ currentUser }) {
     if (e.key === 'Enter') handleFetchInfo();
   };
 
-  const clearHistory = () => {
-    setHistory([]);
-    localStorage.removeItem('yt_download_history');
-  };
-
-  const removeHistoryItem = (id) => {
-    setHistory(prev => prev.filter(h => h.id !== id));
-  };
-
   const getDestinationDisplay = () => {
     if (destinationPreset === 'Custom...') return customPath || 'Custom path...';
     const preset = presets.find(p => p.name === destinationPreset);
@@ -458,7 +448,10 @@ export function DownloaderView({ currentUser }) {
   const readyCount = fetchedItems.filter(f => f.status === 'ready').length;
   const doneCount = fetchedItems.filter(f => f.status === 'done').length;
   const failedCount = fetchedItems.filter(f => f.status === 'failed').length;
-  const isDownloading = queueActive || fetchedItems.some(f => f.status === 'downloading');
+  const downloadingCount = fetchedItems.filter(f => f.status === 'downloading').length;
+  const totalItems = fetchedItems.length;
+  const totalProgress = totalItems > 0 ? ((doneCount + failedCount) / totalItems) * 100 : 0;
+  const isDownloading = queueActive || downloadingCount > 0;
 
   return (
     <div className="downloader-view">
@@ -599,12 +592,22 @@ export function DownloaderView({ currentUser }) {
                 )}
 
                 {/* Action buttons */}
-                <div style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
+                <div style={{ display: 'flex', gap: '6px', marginTop: '4px', flexWrap: 'wrap', alignItems: 'center' }}>
                   {item.status === 'ready' && (
-                    <button className="btn-primary" style={{ padding: '4px 10px', fontSize: '11px' }}
-                      onClick={() => handleDownloadSingle(item)} disabled={isDownloading}>
-                      <Download size={12} /> Download
-                    </button>
+                    <>
+                      <div className="quality-select-wrapper">
+                        <select className="quality-select-sm" value={item.quality}
+                          onChange={(e) => updateItem(item.id, { quality: e.target.value })}>
+                          {getAvailableQualities(item.formats).map(p => (
+                            <option key={p.value} value={p.value}>{p.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <button className="btn-primary" style={{ padding: '4px 10px', fontSize: '11px' }}
+                        onClick={() => handleDownloadSingle(item)} disabled={isDownloading}>
+                        <Download size={12} /> Download
+                      </button>
+                    </>
                   )}
                   {item.formats && item.formats.length > 0 && (
                     <button className="advanced-toggle" style={{ padding: '4px 10px', fontSize: '11px', marginTop: 0, width: 'auto' }}
@@ -752,46 +755,19 @@ export function DownloaderView({ currentUser }) {
         </div>
       )}
 
-      {/* Global download progress for current download */}
-      {currentDownloadId && (
+      {/* Overall queue progress */}
+      {queueActive && (doneCount + failedCount + downloadingCount) > 0 && (
         <div className="download-progress-section" style={{ marginBottom: '16px' }}>
           <div className="progress-bar-container">
-            <div className="progress-bar" style={{ width: `${downloadProgress}%` }} />
+            <div className="progress-bar" style={{ width: `${totalProgress}%` }} />
           </div>
           <div className="progress-info">
-            <span className="progress-percent">{downloadProgress.toFixed(1)}%</span>
-            {downloadSpeed && <span className="progress-speed">{downloadSpeed}</span>}
-            {downloadEta && <span className="progress-eta">ETA: {downloadEta}</span>}
+            <span className="progress-percent">{totalProgress.toFixed(1)}%</span>
+            <span className="progress-speed">{doneCount} done{failedCount > 0 ? `, ${failedCount} failed` : ''}</span>
+            <span className="progress-eta">{readyCount + downloadingCount} remaining</span>
           </div>
-          <div className="progress-status">{downloadStatus}</div>
-        </div>
-      )}
-
-      {/* Download History */}
-      {history.length > 0 && (
-        <div className="download-history">
-          <div className="history-header">
-            <h3>Download History</h3>
-            <button className="btn-clear-history" onClick={clearHistory}><Trash2 size={14} /> Clear All</button>
-          </div>
-          <div className="history-list">
-            {history.map((item) => (
-              <div key={item.id} className={`history-item ${item.success ? 'success' : 'failed'}`}>
-                <div className="history-icon">
-                  {item.success ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
-                </div>
-                <div className="history-details">
-                  <span className="history-title">{item.title || item.url}</span>
-                  <span className="history-meta">
-                    {item.success ? `${item.file} • ${item.size}` : `Failed: ${item.error || 'Unknown error'}`}
-                    {item.indexed && <span className="indexed-badge">✓ Indexed</span>}
-                    {item.path && <span className="history-path" title={item.path}>{item.path}</span>}
-                  </span>
-                  <span className="history-time">{item.timestamp}</span>
-                </div>
-                <button className="btn-remove-history" onClick={() => removeHistoryItem(item.id)}><X size={14} /></button>
-              </div>
-            ))}
+          <div className="progress-status">
+            {(() => { const d = fetchedItems.find(f => f.status === 'downloading'); return d ? `Downloading: ${d.title}` : downloadStatus; })()}
           </div>
         </div>
       )}
