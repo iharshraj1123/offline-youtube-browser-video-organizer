@@ -1383,6 +1383,7 @@ function PlayerView({
   const prevCastModeRef = useRef(null);
   const castDropdownRef = useRef(null);
   const settingsDropdownRef = useRef(null);
+  const playlistQueueRef = useRef(null);
   const [castDevice, setCastDevice] = useState(null);
   const [discoveredDevices, setDiscoveredDevices] = useState([]);
   const [discovering, setDiscovering] = useState(false);
@@ -1405,6 +1406,17 @@ function PlayerView({
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
   }, [showCastMenu, showSettings]);
+
+  // Auto-scroll playlist queue to current video on change
+  useEffect(() => {
+    if (!playlistQueueRef.current || !activePlaylist) return;
+    const container = playlistQueueRef.current;
+    const currentEl = container.querySelector('[data-current="true"]');
+    if (currentEl) {
+      const itemTop = currentEl.offsetTop - container.offsetTop;
+      container.scrollTop = itemTop - container.clientHeight / 2 + currentEl.clientHeight / 2;
+    }
+  }, [video.vid_id, activePlaylist]);
 
   // Playback control states
   const videoRef = useRef(null);
@@ -3636,7 +3648,7 @@ function PlayerView({
                 </div>
 
                 {/* Scrollable Playlist Queue Video List */}
-                <div style={{ maxHeight: '380px', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+                <div ref={playlistQueueRef} style={{ maxHeight: '380px', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
                   {(activePlaylist.video_ids || []).map((id, idx) => {
                     const vid = allVideos.find(v => v.vid_id === parseInt(id));
                     if (!vid) return null;
@@ -3645,7 +3657,7 @@ function PlayerView({
                     return (
                       <div
                         key={vid.vid_id}
-                        ref={(el) => { if (el && isCurrent) el.scrollIntoView({ block: 'nearest' }); }}
+                        data-current={isCurrent ? 'true' : undefined}
                         draggable
                         onDragStart={(e) => handleDragStart(e, idx)}
                         onDragEnter={(e) => handleDragEnter(e, idx)}
