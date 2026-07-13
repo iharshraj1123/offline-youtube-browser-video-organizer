@@ -41,7 +41,9 @@ function getDirectoryPresets() {
 
 function cleanVideoUrl(rawUrl) {
   try {
-    const url = new URL(rawUrl.trim());
+    let s = rawUrl.trim();
+    if (!/^https?:\/\//i.test(s)) s = 'https://' + s;
+    const url = new URL(s);
     let host = url.hostname.replace(/^www\./, '').toLowerCase();
     if (host === 'youtube.com' || host === 'youtu.be') {
       let vid = '';
