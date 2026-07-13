@@ -383,8 +383,24 @@ export function DownloaderView({ currentUser }) {
   const handlePaste = async () => {
     try {
       const text = await navigator.clipboard.readText();
-      setUrl(text);
-    } catch {}
+      if (!text || !text.trim()) {
+        setError('Clipboard is empty');
+        return;
+      }
+      const trimmed = text.trim();
+      if (!/^https?:\/\/.+/.test(trimmed)) {
+        setError('Not a valid URL. Please copy a video link first.');
+        return;
+      }
+      setUrl(trimmed);
+      setError('');
+    } catch (e) {
+      if (e.name === 'NotAllowedError' || e.name === 'SecurityError') {
+        setError('Clipboard access denied. Press Ctrl+V to paste manually.');
+      } else {
+        setError('Could not read clipboard. Press Ctrl+V to paste manually.');
+      }
+    }
   };
 
   return (
