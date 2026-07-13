@@ -703,6 +703,12 @@ function handleDeleteVideo($pdo) {
     $stmt = $pdo->prepare("DELETE FROM video_metadatas WHERE vid_id = :id");
     $stmt->execute([':id' => $id]);
 
+    // Delete associated thumbnail
+    $thumbPath = dirname(__DIR__) . '/thumbnails/' . $id . '.jpg';
+    if (file_exists($thumbPath)) {
+        @unlink($thumbPath);
+    }
+
     // Update playlists table
     deleteFromPlaylistsTable($pdo, $id);
 
@@ -932,7 +938,10 @@ function handleGenerateMissingThumbnails($pdo) {
         throw new Exception('FFmpeg is not installed or available on this server.');
     }
 
-    $stmt = $pdo->query("SELECT vid_id, vid_name, link FROM video_metadatas");
+    // Audio-only formats that can never produce a video thumbnail
+    $audioExtensions = ['mp3', 'm4a', 'wav', 'flac', 'ogg', 'aac', 'wma', 'opus'];
+
+    $stmt = $pdo->query("SELECT vid_id, vid_name, link FROM video_metadatas ORDER BY vid_id");
     $allVideos = $stmt->fetchAll();
 
     $thumbDir = dirname(__DIR__) . '/thumbnails/';
@@ -942,8 +951,16 @@ function handleGenerateMissingThumbnails($pdo) {
 
     // Find all videos missing thumbnails on disk
     $missing = [];
+    $skipped = 0;
     foreach ($allVideos as $video) {
         if (empty($video['link']) || intval($video['vid_id']) === 10) continue;
+        
+        $ext = strtolower(pathinfo($video['vid_name'], PATHINFO_EXTENSION));
+        if (in_array($ext, $audioExtensions)) {
+            $skipped++;
+            continue;
+        }
+        
         $outputPath = $thumbDir . $video['vid_id'] . '.jpg';
         if (!file_exists($outputPath)) {
             $missing[] = $video;
@@ -960,7 +977,8 @@ function handleGenerateMissingThumbnails($pdo) {
             'generated' => 0,
             'failed' => 0,
             'remaining' => 0,
-            'total' => $totalCount
+            'total' => $totalCount,
+            'skipped_audio' => $skipped
         ]);
         exit;
     }
@@ -981,6 +999,18 @@ function handleGenerateMissingThumbnails($pdo) {
         $localPath = str_replace('file:///', '', $link);
         $localPath = str_replace('//', '/', $localPath);
         
+        // Skip if video file doesn't exist on disk
+        if (!file_exists($localPath)) {
+            $failed++;
+            $failedList[] = [
+                'id' => $id,
+                'name' => $name,
+                'path' => $localPath,
+                'reason' => 'file_not_found'
+            ];
+            continue;
+        }
+        
         $success = generateServerThumbnail($ffmpegPath, $localPath, $id);
 
         if ($success) {
@@ -990,7 +1020,8 @@ function handleGenerateMissingThumbnails($pdo) {
             $failedList[] = [
                 'id' => $id,
                 'name' => $name,
-                'path' => $localPath
+                'path' => $localPath,
+                'reason' => 'ffmpeg_error'
             ];
         }
     }
@@ -1002,6 +1033,7 @@ function handleGenerateMissingThumbnails($pdo) {
         'failed' => $failed,
         'remaining' => $remainingCount - count($batch),
         'total' => $totalCount,
+        'skipped_audio' => $skipped,
         'failed_list' => $failedList
     ]);
 }

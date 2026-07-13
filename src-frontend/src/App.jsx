@@ -3992,6 +3992,7 @@ function CrawlerView() {
     let remaining = 1;
     let totalGenerated = 0;
     let totalFailed = 0;
+    let totalSkipped = 0;
 
     try {
       while (remaining > 0) {
@@ -4009,17 +4010,19 @@ function CrawlerView() {
         remaining = data.remaining;
         totalGenerated += data.generated;
         totalFailed += data.failed;
+        if (data.skipped_audio) totalSkipped = data.skipped_audio;
 
         setLogs(prev => [
           ...prev,
-          { type: 'info', text: `Batch processed: ${data.batch_processed}. Generated: ${data.generated} new. Failed: ${data.failed}. Remaining: ${data.remaining} of ${data.total}` }
+          { type: 'info', text: `Batch processed: ${data.batch_processed}. Generated: ${data.generated} new. Failed: ${data.failed}. Remaining: ${data.remaining} of ${data.total}${data.skipped_audio > 0 ? ` (skipped ${data.skipped_audio} audio-only files)` : ''}` }
         ]);
 
         if (data.failed_list && data.failed_list.length > 0) {
           setLogs(prev => {
             const list = [...prev];
             data.failed_list.forEach(v => {
-              list.push({ type: 'error', text: `[ID: ${v.id}] ${v.name} failed (FFmpeg extraction error)` });
+              const reason = v.reason === 'file_not_found' ? 'File not found on disk' : 'FFmpeg extraction error';
+              list.push({ type: 'error', text: `[ID: ${v.id}] ${v.name} failed (${reason})` });
             });
             return list;
           });
@@ -4035,7 +4038,7 @@ function CrawlerView() {
 
       setLogs(prev => [
         ...prev,
-        { type: 'success', text: `Bulk thumbnail generation completed! Total new generated: ${totalGenerated}. Total failed: ${totalFailed}.` }
+        { type: 'success', text: `Bulk thumbnail generation completed! Generated: ${totalGenerated}. Failed: ${totalFailed}.${totalSkipped > 0 ? ` Skipped ${totalSkipped} audio-only files.` : ''}` }
       ]);
     } catch (e) {
       setLogs(prev => [
@@ -4258,7 +4261,7 @@ function CrawlerView() {
             )}
           </button>
 
-          {/* <button
+          <button
             className="btn-primary"
             onClick={handleGenerateMissingThumbnails}
             disabled={generatingThumbs || scanning}
@@ -4278,9 +4281,9 @@ function CrawlerView() {
                 <span>Extracting Thumbnails...</span>
               </>
             ) : (
-              <span>Bulk Generate Missing Thumbnails (FFmpeg)</span>
+              <span>Bulk Generate Missing Thumbnails if it got deleted (FFmpeg)</span>
             )}
-          </button> */}
+          </button>
         </div>
       </div>
 
