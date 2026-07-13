@@ -914,12 +914,18 @@ function generateServerThumbnail($ffmpegPath, $videoPath, $vidId) {
     $tempLink = getTempHardlink($videoPath);
     $inputPath = $tempLink ? $tempLink : $videoPath;
     
-    // Extract 1 frame at 6 seconds
-    $cmd = "$ffmpegPath -y -ss 00:00:06 -i " . escapeshellarg($inputPath) . " -vframes 1 -q:v 2 " . escapeshellarg($outputPath);
+    // Try to extract frame at 1 second
+    $cmd = "$ffmpegPath -y -ss 00:00:01 -i " . escapeshellarg($inputPath) . " -vframes 1 -q:v 2 " . escapeshellarg($outputPath);
     
     $output = [];
     $returnVar = -1;
     @exec($cmd, $output, $returnVar);
+    
+    // Fallback: if 1s seek failed (video may be shorter), try first frame
+    if ($returnVar !== 0) {
+        $cmd = "$ffmpegPath -y -i " . escapeshellarg($inputPath) . " -vframes 1 -q:v 2 " . escapeshellarg($outputPath);
+        @exec($cmd, $output, $returnVar);
+    }
     
     // Clean up temporary hardlink if created
     if ($tempLink && file_exists($tempLink)) {
