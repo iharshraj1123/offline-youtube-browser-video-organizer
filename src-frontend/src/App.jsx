@@ -2615,11 +2615,13 @@ function PlayerView({
     const idx = allVideos.findIndex(v => v.vid_id === video.vid_id);
     if (idx === -1) return allVideos.filter(v => v.vid_id !== video.vid_id);
 
-    const prev2 = idx < allVideos.length - 2 ? allVideos[idx + 2] : null;
     const prev = idx < allVideos.length - 1 ? allVideos[idx + 1] : null;
+    const prev2 = idx < allVideos.length - 2 ? allVideos[idx + 2] : null;
+    const prev3 = idx < allVideos.length - 3 ? allVideos[idx + 3] : null;
+    const prev4 = idx < allVideos.length - 4 ? allVideos[idx + 4] : null;
     const next = idx > 0 ? allVideos[idx - 1] : null;
     const next2 = idx > 1 ? allVideos[idx - 2] : null;
-    const excludeIds = new Set([video.vid_id, prev2?.vid_id, prev?.vid_id, next?.vid_id, next2?.vid_id].filter(Boolean));
+    const excludeIds = new Set([video.vid_id, prev?.vid_id, prev2?.vid_id, prev3?.vid_id, prev4?.vid_id, next?.vid_id, next2?.vid_id].filter(Boolean));
 
     let rest = [];
     if (isRandom) {
@@ -2629,7 +2631,7 @@ function PlayerView({
         [rest[i], rest[j]] = [rest[j], rest[i]];
       }
     } else if (isReverseAutoplay) {
-      for (let i = idx + 3; i < allVideos.length; i++) {
+      for (let i = idx + 5; i < allVideos.length; i++) {
         rest.push(allVideos[i]);
       }
     } else {
@@ -2638,7 +2640,7 @@ function PlayerView({
       }
     }
 
-    return [prev2, prev, next, next2, ...rest].filter(Boolean);
+    return [prev, prev2, prev3, prev4, next, next2, ...rest].filter(Boolean);
   }, [allVideos, video.vid_id, isRandom, isReverseAutoplay]);
 
   // Reset visible count when video changes
