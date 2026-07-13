@@ -10,46 +10,55 @@ class MetadataParser {
      * @return array Metadata array
      */
     public static function parse($filePath) {
-        // Basic fallback initializations
-        $stats = [
-            'duration' => 0,
-            'filesize' => @filesize($filePath) ?: 0,
-            'width' => null,
-            'height' => null,
-            'aspect_ratio' => null,
-            'bitrate' => null,
-            'framerate' => null,
-            'codec' => null,
-            'method' => 'none'
-        ];
+        $originalPath = $filePath;
+        $filePath = self::ensureAccessibleFile($filePath);
 
-        if (!file_exists($filePath)) {
+        try {
+            // Basic fallback initializations
+            $stats = [
+                'duration' => 0,
+                'filesize' => @filesize($filePath) ?: 0,
+                'width' => null,
+                'height' => null,
+                'aspect_ratio' => null,
+                'bitrate' => null,
+                'framerate' => null,
+                'codec' => null,
+                'method' => 'none'
+            ];
+
+            if (!file_exists($filePath)) {
+                return $stats;
+            }
+
+            // 1. Try FFprobe first (Industrial strength)
+            $ffprobePath = self::getFFprobePath();
+            if ($ffprobePath) {
+                $ffprobeStats = self::parseWithFFprobe($ffprobePath, $filePath);
+                if ($ffprobeStats) {
+                    $ffprobeStats['method'] = 'ffprobe';
+                    return array_merge($stats, $ffprobeStats);
+                }
+            }
+
+            // 2. Fallback to Pure-PHP Binary Parser (For MP4 files)
+            $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+            if ($ext === 'mp4') {
+                $phpStats = self::parseMp4Binary($filePath);
+                if ($phpStats) {
+                    $phpStats['method'] = 'pure-php';
+                    return array_merge($stats, $phpStats);
+                }
+            }
+
+            // 3. Fallback to basic
+            $stats['method'] = 'basic';
             return $stats;
-        }
-
-        // 1. Try FFprobe first (Industrial strength)
-        $ffprobePath = self::getFFprobePath();
-        if ($ffprobePath) {
-            $ffprobeStats = self::parseWithFFprobe($ffprobePath, $filePath);
-            if ($ffprobeStats) {
-                $ffprobeStats['method'] = 'ffprobe';
-                return array_merge($stats, $ffprobeStats);
+        } finally {
+            if ($filePath !== $originalPath) {
+                @unlink($filePath);
             }
         }
-
-        // 2. Fallback to Pure-PHP Binary Parser (For MP4 files)
-        $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
-        if ($ext === 'mp4') {
-            $phpStats = self::parseMp4Binary($filePath);
-            if ($phpStats) {
-                $phpStats['method'] = 'pure-php';
-                return array_merge($stats, $phpStats);
-            }
-        }
-
-        // 3. Fallback to basic calculations if we only have duration (e.g. from client updates later)
-        $stats['method'] = 'basic';
-        return $stats;
     }
 
     /**
@@ -288,5 +297,28 @@ class MetadataParser {
             return $tempPath;
         }
         return null;
+    }
+
+    /**
+     * On Windows, PHP's ANSI filesystem APIs (file_exists, filesize, etc.) cannot
+     * handle filenames with Unicode characters outside the system codepage.
+     * This falls back to COM Scripting.FileSystemObject (wide-char) to copy the
+     * file to an ASCII-only temp name. Returns the usable path (may be same as input).
+     */
+    private static function ensureAccessibleFile(&$path) {
+        if (@file_exists($path)) return $path;
+        if (!class_exists('COM', false)) return $path;
+        try {
+            $fso = new COM('Scripting.FileSystemObject');
+            if (!$fso->FileExists($path)) return $path;
+            $dir = dirname($path);
+            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+            if (!$ext) $ext = 'mp4';
+            $tempName = $dir . DIRECTORY_SEPARATOR . 'ytdlp_idx_' . uniqid() . '.' . $ext;
+            $fso->CopyFile($path, $tempName, true);
+            $path = $tempName;
+            return $tempName;
+        } catch (Exception $e) {}
+        return $path;
     }
 }
