@@ -25,14 +25,19 @@ function formatBytes(bytes) {
   return bytes + ' B';
 }
 
-const PRESET_PATHS = [
-  { label: 'Server Downloads', path: '' },
-  { label: 'Desktop', path: '__desktop__' },
-  { label: 'Downloads', path: '__downloads__' },
-  { label: 'Videos', path: '__videos__' },
-  { label: 'Music', path: '__music__' },
-  { label: 'Custom...', path: '__custom__' },
-];
+function getDirectoryPresets() {
+  const saved = localStorage.getItem('yt_crawler_presets');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch {}
+  }
+  return [
+    { name: 'Server Downloads', path: '' },
+    { name: 'Custom...', path: '__custom__' },
+  ];
+}
 
 const QUALITY_PRESETS = [
   { label: 'Best Video + Audio', value: 'best' },
@@ -85,7 +90,11 @@ export function DownloaderView({ currentUser }) {
   const [audioFormat, setAudioFormat] = useState('best');
   const [subsEnabled, setSubsEnabled] = useState(false);
   const [subsLang, setSubsLang] = useState('en');
-  const [destinationPreset, setDestinationPreset] = useState('Server Downloads');
+  const [presets, setPresets] = useState(() => getDirectoryPresets());
+  const [destinationPreset, setDestinationPreset] = useState(() => {
+    const p = getDirectoryPresets();
+    return p.length > 0 ? p[0].name : 'Server Downloads';
+  });
   const [customPath, setCustomPath] = useState('');
   const [filenameTemplate, setFilenameTemplate] = useState('%(title)s.%(ext)s');
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -111,6 +120,25 @@ export function DownloaderView({ currentUser }) {
     if (savedHistory) {
       try { setHistory(JSON.parse(savedHistory)); } catch {}
     }
+
+    const syncPresets = () => {
+      const updated = getDirectoryPresets();
+      setPresets(updated);
+      setDestinationPreset(prev => {
+        const stillExists = updated.some(p => p.name === prev);
+        return !stillExists && updated.length > 0 ? updated[0].name : prev;
+      });
+    };
+
+    window.addEventListener('storage', syncPresets);
+    window.addEventListener('presetsUpdated', syncPresets);
+    const interval = setInterval(syncPresets, 3000);
+
+    return () => {
+      window.removeEventListener('storage', syncPresets);
+      window.removeEventListener('presetsUpdated', syncPresets);
+      clearInterval(interval);
+    };
   }, []);
 
   useEffect(() => {
@@ -234,14 +262,12 @@ export function DownloaderView({ currentUser }) {
     setDownloadEta('');
     setDownloadStatus('Starting download...');
 
-    const destPreset = PRESET_PATHS.find(p => p.label === destinationPreset);
     let destPath = '';
-    if (destPreset) {
-      if (destPreset.path === '__custom__') {
-        destPath = customPath;
-      } else {
-        destPath = destPreset.path;
-      }
+    if (destinationPreset === 'Custom...') {
+      destPath = customPath;
+    } else {
+      const preset = presets.find(p => p.name === destinationPreset);
+      if (preset) destPath = preset.path;
     }
 
     let formatArg = quality;
@@ -351,9 +377,9 @@ export function DownloaderView({ currentUser }) {
   };
 
   const getDestinationDisplay = () => {
-    const preset = PRESET_PATHS.find(p => p.label === destinationPreset);
+    if (destinationPreset === 'Custom...') return customPath || 'Custom path...';
+    const preset = presets.find(p => p.name === destinationPreset);
     if (!preset) return destinationPreset;
-    if (preset.path === '__custom__') return customPath || 'Custom path...';
     if (!preset.path) return 'Server Downloads folder';
     return preset.path;
   };
@@ -528,15 +554,23 @@ export function DownloaderView({ currentUser }) {
                   <ChevronDown size={14} />
                   {showPathSelector && (
                     <div className="path-dropdown">
-                      {PRESET_PATHS.map(p => (
+                      {presets.map(p => (
                         <div
-                          key={p.label}
-                          className={`path-option ${destinationPreset === p.label ? 'active' : ''}`}
-                          onClick={() => { setDestinationPreset(p.label); setShowPathSelector(false); }}
+                          key={p.name}
+                          className={`path-option ${destinationPreset === p.name ? 'active' : ''}`}
+                          onClick={() => { setDestinationPreset(p.name); setShowPathSelector(false); }}
                         >
-                          {p.label}
+                          <span className="path-option-name">{p.name}</span>
+                          {p.path && <span className="path-option-path">{p.path}</span>}
                         </div>
                       ))}
+                      <div className="path-dropdown-divider" />
+                      <div
+                        className={`path-option ${destinationPreset === 'Custom...' ? 'active' : ''}`}
+                        onClick={() => { setDestinationPreset('Custom...'); setShowPathSelector(false); }}
+                      >
+                        Custom path...
+                      </div>
                     </div>
                   )}
                 </div>

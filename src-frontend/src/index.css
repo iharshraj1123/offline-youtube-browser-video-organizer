@@ -4988,10 +4988,22 @@ body.mini-player-dragging * {
   font-size: 13px;
   cursor: pointer;
   color: var(--text-color);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .path-option:hover { background: var(--hover-color); }
 .path-option.active { background: var(--hover-color); color: var(--primary-color); }
+
+.path-option-name { font-weight: 500; }
+.path-option-path { font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.path-dropdown-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 4px 0;
+}
 
 /* Advanced Toggle */
 .advanced-toggle {
