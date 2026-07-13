@@ -2617,7 +2617,7 @@ function handleYtdlpDownload() {
     if (!is_dir($outputDir)) mkdir($outputDir, 0777, true);
 
     $outputTemplate = $outputDir . DIRECTORY_SEPARATOR . $filenameTemplate;
-    $cmd = $path . ' -f ' . escapeshellarg($format) . ' -o ' . escapeshellarg($outputTemplate) . ' --no-playlist --ignore-errors --no-warnings --progress --newline ' . escapeshellarg($url) . ' 2>&1';
+    $cmd = $path . ' -f ' . escapeshellarg($format) . ' -o "' . $outputTemplate . '" --no-playlist --ignore-errors --no-warnings --progress --newline ' . escapeshellarg($url) . ' 2>&1';
 
     header('Content-Type: text/event-stream');
     header('Cache-Control: no-cache');
@@ -2630,11 +2630,19 @@ function handleYtdlpDownload() {
     if (!is_resource($process)) { echo "data: " . json_encode(['error' => 'Failed to start download']) . "\n\n"; flush(); exit; }
 
     fclose($pipes[0]);
+
+    $destinationFile = '';
+    $rawLines = '';
     while (!feof($pipes[1])) {
         $line = fgets($pipes[1]);
         if ($line === false) break;
         $line = trim($line);
-        if (preg_match('/\[download\]\s+(\d+\.?\d*)%/', $line, $m)) {
+
+        if (preg_match('/^\[download\]\s+Destination:\s+(.+)$/i', $line, $dm)) {
+            $destinationFile = trim($dm[1]);
+        } elseif (preg_match('/^\[download\]\s+(.+?)\s+has already been downloaded$/i', $line, $dm)) {
+            $destinationFile = trim($dm[1]);
+        } elseif (preg_match('/\[download\]\s+(\d+\.?\d*)%/', $line, $m)) {
             $speed = ''; $eta = '';
             if (preg_match('/at\s+([\d.]+\s*\w+B\/s)/', $line, $sm)) $speed = $sm[1];
             if (preg_match('/ETA\s+([\d:]+)/', $line, $em)) $eta = $em[1];
@@ -2643,20 +2651,21 @@ function handleYtdlpDownload() {
         } elseif (strpos($line, 'ERROR:') !== false) {
             echo "data: " . json_encode(['type' => 'error', 'message' => $line]) . "\n\n";
             flush();
+        } else {
+            $rawLines .= $line . "\n";
         }
     }
     fclose($pipes[1]); fclose($pipes[2]);
     $returnCode = proc_close($process);
 
-    $files = glob($outputDir . DIRECTORY_SEPARATOR . '*');
-    $downloadedFile = '';
-    if (count($files) > 0) { usort($files, fn($a, $b) => filemtime($b) - filemtime($a)); $downloadedFile = $files[0]; }
-
-    if ($returnCode === 0 && !empty($downloadedFile) && file_exists($downloadedFile)) {
-        $fs = filesize($downloadedFile);
-        echo "data: " . json_encode(['type' => 'done', 'file' => basename($downloadedFile), 'size_formatted' => $fs > 1048576 ? round($fs / 1048576, 2) . ' MB' : round($fs / 1024, 2) . ' KB']) . "\n\n";
+    if (!empty($destinationFile) && file_exists($destinationFile)) {
+        $fs = filesize($destinationFile);
+        echo "data: " . json_encode(['type' => 'done', 'file' => basename($destinationFile), 'size_formatted' => $fs > 1048576 ? round($fs / 1048576, 2) . ' MB' : round($fs / 1024, 2) . ' KB']) . "\n\n";
+    } elseif (!empty($destinationFile)) {
+        echo "data: " . json_encode(['type' => 'error', 'message' => 'File not found on disk: ' . $destinationFile]) . "\n\n";
     } else {
-        echo "data: " . json_encode(['type' => 'error', 'message' => 'Download failed with code ' . $returnCode]) . "\n\n";
+        $debug = !empty($rawLines) ? 'No Destination line found. Raw output: ' . substr($rawLines, 0, 2000) : 'No output from yt-dlp';
+        echo "data: " . json_encode(['type' => 'error', 'message' => 'Download failed with code ' . $returnCode . '. ' . $debug]) . "\n\n";
     }
     flush();
     exit;

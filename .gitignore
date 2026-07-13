@@ -23,3 +23,6 @@ thumbnails/*
 
 # Local scripts / testing
 testing/
+
+# yt-dlp downloads
+yt-dlp-downloads/*
