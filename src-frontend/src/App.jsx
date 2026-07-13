@@ -1,6 +1,6 @@
 // c:\laragon\www\youtube\src-frontend\src\App.jsx
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Menu, Search, Video, Compass, Folder, Newspaper,
   Tv, ListTodo, Bookmark, ChevronDown, ChevronLeft,
@@ -1380,6 +1380,7 @@ function PlayerView({
   // Casting States
   const [showCastMenu, setShowCastMenu] = useState(false);
   const [castMode, setCastMode] = useState(null); // 'select', 'legacy', 'modern'
+  const prevCastModeRef = useRef(null);
   const [castDevice, setCastDevice] = useState(null);
   const [discoveredDevices, setDiscoveredDevices] = useState([]);
   const [discovering, setDiscovering] = useState(false);
@@ -1563,6 +1564,8 @@ function PlayerView({
   // Theater and Reverse Autoplay states
   const [isReverseAutoplay, setIsReverseAutoplay] = useState(false);
   const prevRandomRef = useRef(null);
+  const [watchNextVisibleCount, setWatchNextVisibleCount] = useState(10);
+  const watchNextSentinelRef = useRef(null);
 
 
   // Keep volumeRef in sync with the volume state so the keydown closure always reads the latest value
@@ -1694,19 +1697,21 @@ function PlayerView({
       const data = await res.json();
       setServerIps(Array.isArray(data) ? data : []);
       if (Array.isArray(data) && data.length > 0 && !selectedServerIp) {
-        setSelectedServerIp(data[0]);
-        localStorage.setItem('yt_cast_server_ip', data[0]);
+        const lastIp = data[data.length - 1];
+        setSelectedServerIp(lastIp);
+        localStorage.setItem('yt_cast_server_ip', lastIp);
       }
     } catch (e) {
       console.error(e);
     }
   };
 
-  const discoverDevices = async () => {
+  const discoverDevices = async (ip) => {
+    const targetIp = ip || selectedServerIp;
     setDiscovering(true);
     setDiscoveredDevices([]);
     try {
-      const res = await fetch(`./api/index.php?action=cast_discover&server_ip=${encodeURIComponent(selectedServerIp)}`);
+      const res = await fetch(`./api/index.php?action=cast_discover&server_ip=${encodeURIComponent(targetIp)}`);
       const data = await res.json();
       setDiscoveredDevices(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -2575,10 +2580,55 @@ function PlayerView({
     }
   };
 
-  // Recommendations queue
-  const recommendations = allVideos
-    .filter(v => v.vid_id !== video.vid_id && v.vid_id !== 10)
-    .slice(0, 10);
+  // Smart "Watch Next" sidebar: [prev2, prev, next, next2, then rest]
+  // allVideos is in reverse order, so prev = idx+1, next = idx-1
+  const recommendations = useMemo(() => {
+    const idx = allVideos.findIndex(v => v.vid_id === video.vid_id);
+    if (idx === -1) return allVideos.filter(v => v.vid_id !== video.vid_id);
+
+    const prev2 = idx < allVideos.length - 2 ? allVideos[idx + 2] : null;
+    const prev = idx < allVideos.length - 1 ? allVideos[idx + 1] : null;
+    const next = idx > 0 ? allVideos[idx - 1] : null;
+    const next2 = idx > 1 ? allVideos[idx - 2] : null;
+    const excludeIds = new Set([video.vid_id, prev2?.vid_id, prev?.vid_id, next?.vid_id, next2?.vid_id].filter(Boolean));
+
+    let rest = [];
+    if (isRandom) {
+      rest = allVideos.filter(v => !excludeIds.has(v.vid_id));
+      for (let i = rest.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [rest[i], rest[j]] = [rest[j], rest[i]];
+      }
+    } else if (isReverseAutoplay) {
+      for (let i = idx + 3; i < allVideos.length; i++) {
+        rest.push(allVideos[i]);
+      }
+    } else {
+      for (let i = idx - 3; i >= 0; i--) {
+        rest.push(allVideos[i]);
+      }
+    }
+
+    return [prev2, prev, next, next2, ...rest].filter(Boolean);
+  }, [allVideos, video.vid_id, isRandom, isReverseAutoplay]);
+
+  // Reset visible count when video changes
+  useEffect(() => {
+    setWatchNextVisibleCount(10);
+  }, [video.vid_id]);
+
+  // Infinite scroll: load more when sentinel is visible
+  useEffect(() => {
+    const sentinel = watchNextSentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        setWatchNextVisibleCount(prev => prev + 10);
+      }
+    }, { threshold: 0.1 });
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [recommendations]);
 
   return (
     <div
@@ -3158,7 +3208,12 @@ function PlayerView({
 
         {/* Cast Device Selector Dropdown */}
         {showCastMenu && (
-          <div className="player-cast-dropdown">
+          <div className="player-cast-dropdown" ref={(el) => {
+            if (el && castMode === 'legacy' && prevCastModeRef.current !== 'legacy') {
+              setTimeout(() => { el.scrollTop = el.scrollHeight; }, 50);
+            }
+            prevCastModeRef.current = castMode;
+          }}>
             {!castMode ? (
               <div className="cast-menu-list">
                 <div className="cast-menu-header">Cast to Device</div>
@@ -3198,10 +3253,7 @@ function PlayerView({
                       const newIp = e.target.value;
                       setSelectedServerIp(newIp);
                       localStorage.setItem('yt_cast_server_ip', newIp);
-                      // Trigger discovery on the new interface
-                      setTimeout(() => {
-                        discoverDevices();
-                      }, 100);
+                      discoverDevices(newIp);
                     }}
                     className="cast-ip-select"
                   >
@@ -3211,7 +3263,7 @@ function PlayerView({
                     {serverIps.length === 0 && <option value="">Auto-Detecting...</option>}
                   </select>
                   <div style={{ fontSize: '10px', color: '#aaa', marginTop: '4px' }}>
-                    Select the local IP where your XAMPP server runs.
+                    Select the local IP where your server runs.
                   </div>
                 </div>
 
@@ -3645,9 +3697,12 @@ function PlayerView({
 
             <h2 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '4px' }}>Watch Next</h2>
 
-            {recommendations.map(vid => (
+            {recommendations.slice(0, watchNextVisibleCount).map(vid => (
               <SidebarVideoCard key={vid.vid_id} vid={vid} onPlayVideo={onPlayVideo} />
             ))}
+            {watchNextVisibleCount < recommendations.length && (
+              <div ref={watchNextSentinelRef} style={{ height: '1px' }} />
+            )}
           </div>
 
           {/* Metadata Editing Modal Overlay */}

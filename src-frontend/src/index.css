@@ -2877,23 +2877,59 @@ body.mini-player-dragging * {
     min-width: 0;
     bottom: 56px;
     right: 8px;
+    max-height: 130px;
+    overflow-y: auto;
+    padding: 8px;
+  }
+
+  .cast-menu-list {
+    gap: 4px;
   }
 
   .cast-menu-header {
-    font-size: 13px;
+    font-size: 12px;
+    padding-bottom: 4px;
+    gap: 6px;
   }
 
   .cast-menu-item {
     font-size: 12px;
-    padding: 8px 10px;
+    padding: 6px 8px;
+    gap: 6px;
   }
 
   .cast-device-row {
     font-size: 12px;
+    padding: 6px 8px;
+    gap: 6px;
+  }
+
+  .cast-divider {
+    margin: 6px 0;
+  }
+
+  .cast-status-text {
+    font-size: 11px;
+    padding: 10px 0;
+  }
+
+  .cast-ip-config {
+    gap: 2px;
+    margin-top: 4px;
   }
 
   .cast-ip-config label {
     font-size: 10px;
+  }
+
+  .cast-ip-select {
+    font-size: 12px;
+    padding: 4px;
+  }
+
+  .cast-refresh-btn {
+    font-size: 10px;
+    padding: 3px 6px;
   }
 
   .cast-ip-select {
@@ -4145,6 +4181,51 @@ body.mini-player-dragging * {
 
   100% {
     transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .player-cast-active-overlay {
+    overflow-y: auto;
+    padding: 16px;
+  }
+
+  .cast-active-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .cast-active-title {
+    font-size: 16px;
+  }
+
+  .cast-active-status {
+    font-size: 12px;
+  }
+
+  .cast-transcode-loader {
+    padding: 16px;
+  }
+
+  .cast-spinner {
+    width: 36px;
+    height: 36px;
+  }
+
+  .cast-active-controls {
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .cast-remote-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .cast-remote-btn.stop {
+    height: 32px;
+    padding: 0 12px;
+    font-size: 12px;
   }
 }
 
