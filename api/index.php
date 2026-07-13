@@ -550,41 +550,6 @@ function cleanSourceUrl($rawUrl) {
     return $rawUrl;
 }
 
-/**
- * Ensure a file path is accessible to PHP's ANSI-based filesystem functions.
- * On Windows, PHP's file_exists/filesize/etc. use ANSI APIs (CreateFileA) which
- * cannot handle filenames with Unicode characters outside the system codepage.
- * This falls back to COM Scripting.FileSystemObject (wide-char) to copy the
- * file to an ASCII-only temp name, then modifies $path to point to the copy.
- * Returns the usable path (same as $path if no copy was needed).
- * Call cleanupAccessibleFile() to remove the temp copy when done.
- */
-function ensureAccessibleFile(&$path) {
-    if (@file_exists($path)) return $path;
-    if (!class_exists('COM', false)) return $path;
-    try {
-        $fso = new COM('Scripting.FileSystemObject');
-        if (!$fso->FileExists($path)) return $path;
-        $dir = dirname($path);
-        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-        if (!$ext) $ext = 'mp4';
-        $tempName = $dir . DIRECTORY_SEPARATOR . 'ytdlp_idx_' . uniqid() . '.' . $ext;
-        $fso->CopyFile($path, $tempName, true);
-        $path = $tempName;
-        return $tempName;
-    } catch (Exception $e) {}
-    return $path;
-}
-
-/**
- * Remove a temp copy created by ensureAccessibleFile().
- */
-function cleanupAccessibleFile($original, $temp) {
-    if ($temp !== $original && @file_exists($temp)) {
-        @unlink($temp);
-    }
-}
-
 function handleUploadFile($pdo) {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new Exception('POST method required');
@@ -2776,7 +2741,8 @@ function handleYtdlpDownload($pdo = null) {
     if (!is_dir($outputDir)) mkdir($outputDir, 0777, true);
 
     $outputTemplate = $outputDir . DIRECTORY_SEPARATOR . $filenameTemplate;
-    $cmd = $path . ' -f ' . escapeshellarg($format) . ' -o "' . $outputTemplate . '" --no-playlist --ignore-errors --no-warnings --no-mtime --progress --newline ' . escapeshellarg($url) . ' 2>&1';
+    $infoFile = $outputDir . DIRECTORY_SEPARATOR . '_yt_name_' . uniqid() . '.txt';
+    $cmd = $path . ' -f ' . escapeshellarg($format) . ' -o "' . $outputTemplate . '" --print-to-file filename "' . $infoFile . '" --no-playlist --ignore-errors --no-warnings --no-mtime --progress --newline ' . escapeshellarg($url) . ' 2>&1';
 
     header('Content-Type: text/event-stream');
     header('Cache-Control: no-cache');
@@ -2817,9 +2783,27 @@ function handleYtdlpDownload($pdo = null) {
     fclose($pipes[1]); fclose($pipes[2]);
     $returnCode = proc_close($process);
 
-    $originalDestFile = $destinationFile;
-    if (!empty($destinationFile)) {
-        ensureAccessibleFile($destinationFile);
+    // Use --print-to-file output to get the correct filename (bypasses stdout encoding issues)
+    $correctFile = '';
+    if (file_exists($infoFile)) {
+        $readName = trim(file_get_contents($infoFile));
+        @unlink($infoFile);
+        if (!empty($readName)) {
+            $candidate = $outputDir . DIRECTORY_SEPARATOR . $readName;
+            if (file_exists($candidate)) $correctFile = $candidate;
+        }
+    }
+    if (!empty($correctFile)) {
+        $destinationFile = $correctFile;
+    } elseif (!empty($destinationFile) && !file_exists($destinationFile)) {
+        // Last-resort fallback: scan directory for newest file
+        $newest = ''; $newestTime = 0;
+        foreach (glob($outputDir . DIRECTORY_SEPARATOR . '*') ?: [] as $cand) {
+            if (basename($cand) === basename($infoFile)) continue;
+            $t = @filemtime($cand);
+            if ($t !== false && $t > $newestTime) { $newestTime = $t; $newest = $cand; }
+        }
+        if ($newest) $destinationFile = $newest;
     }
 
     if (!empty($destinationFile) && file_exists($destinationFile)) {
@@ -2836,15 +2820,12 @@ function handleYtdlpDownload($pdo = null) {
             $result = processSingleVideo($pdo, $destinationFile, $uploaderInfo, getFFmpegPath(), ['mp4', 'webm', 'mkv', 'avi'], $desc);
             if ($result !== false) { $indexed = true; $vidId = $result['id']; }
         }
-        echo "data: " . json_encode(['type' => 'done', 'file' => basename($originalDestFile), 'size_formatted' => $fs > 1048576 ? round($fs / 1048576, 2) . ' MB' : round($fs / 1024, 2) . ' KB', 'indexed' => $indexed, 'vid_id' => $vidId]) . "\n\n";
-    } elseif (!empty($originalDestFile)) {
-        echo "data: " . json_encode(['type' => 'error', 'message' => 'File not found on disk: ' . $originalDestFile]) . "\n\n";
+        echo "data: " . json_encode(['type' => 'done', 'file' => basename($destinationFile), 'size_formatted' => $fs > 1048576 ? round($fs / 1048576, 2) . ' MB' : round($fs / 1024, 2) . ' KB', 'indexed' => $indexed, 'vid_id' => $vidId]) . "\n\n";
+    } elseif (!empty($destinationFile)) {
+        echo "data: " . json_encode(['type' => 'error', 'message' => 'File not found on disk: ' . utf8_encode($destinationFile)]) . "\n\n";
     } else {
         $debug = !empty($rawLines) ? 'No Destination line found. Raw output: ' . substr($rawLines, 0, 2000) : 'No output from yt-dlp';
         echo "data: " . json_encode(['type' => 'error', 'message' => 'Download failed with code ' . $returnCode . '. ' . $debug]) . "\n\n";
-    }
-    if (!empty($originalDestFile) && $destinationFile !== $originalDestFile) {
-        @unlink($destinationFile);
     }
     flush();
     exit;
