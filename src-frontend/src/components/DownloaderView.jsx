@@ -131,13 +131,9 @@ export function DownloaderView({ currentUser }) {
     };
 
     window.addEventListener('storage', syncPresets);
-    window.addEventListener('presetsUpdated', syncPresets);
-    const interval = setInterval(syncPresets, 3000);
 
     return () => {
       window.removeEventListener('storage', syncPresets);
-      window.removeEventListener('presetsUpdated', syncPresets);
-      clearInterval(interval);
     };
   }, []);
 
@@ -548,7 +544,7 @@ export function DownloaderView({ currentUser }) {
 
               <div className="option-group" ref={pathSelectorRef}>
                 <label>Save to</label>
-                <div className="path-selector" onClick={() => setShowPathSelector(!showPathSelector)}>
+                <div className="path-selector" onClick={() => { setPresets(getDirectoryPresets()); setShowPathSelector(!showPathSelector); }}>
                   <Folder size={16} />
                   <span className="path-display">{getDestinationDisplay()}</span>
                   <ChevronDown size={14} />
