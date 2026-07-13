@@ -113,6 +113,8 @@ export function DownloaderView({ currentUser }) {
   // UI states
   const [showPathSelector, setShowPathSelector] = useState(false);
   const pathSelectorRef = useRef(null);
+  const urlInputRef = useRef(null);
+  const [pasteHint, setPasteHint] = useState('');
 
   useEffect(() => {
     checkYtdlp();
@@ -380,26 +382,41 @@ export function DownloaderView({ currentUser }) {
     return preset.path;
   };
 
+  const isValidUrl = (str) => {
+    if (!str) return false;
+    return /^https?:\/\/|^www\.|^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/.test(str);
+  };
+
+  const handleUrlInput = (text) => {
+    const trimmed = text.trim();
+    if (!trimmed) {
+      setError('Clipboard is empty');
+      return false;
+    }
+    if (!isValidUrl(trimmed)) {
+      setError('Not a valid URL. Copy a link like "youtube.com/watch?v=..." and try again.');
+      return false;
+    }
+    setUrl(trimmed);
+    setError('');
+    return true;
+  };
+
   const handlePaste = async () => {
     try {
       const text = await navigator.clipboard.readText();
-      if (!text || !text.trim()) {
-        setError('Clipboard is empty');
-        return;
-      }
-      const trimmed = text.trim();
-      if (!/^https?:\/\/.+/.test(trimmed)) {
-        setError('Not a valid URL. Please copy a video link first.');
-        return;
-      }
-      setUrl(trimmed);
-      setError('');
-    } catch (e) {
-      if (e.name === 'NotAllowedError' || e.name === 'SecurityError') {
-        setError('Clipboard access denied. Press Ctrl+V to paste manually.');
-      } else {
-        setError('Could not read clipboard. Press Ctrl+V to paste manually.');
-      }
+      handleUrlInput(text);
+    } catch {
+      setPasteHint('Press Ctrl+V to paste');
+      urlInputRef.current?.focus();
+      setTimeout(() => setPasteHint(''), 4000);
+    }
+  };
+
+  const handleInputPaste = (e) => {
+    const text = (e.clipboardData || window.clipboardData).getData('text');
+    if (text && handleUrlInput(text)) {
+      setPasteHint('');
     }
   };
 
@@ -441,12 +458,14 @@ export function DownloaderView({ currentUser }) {
         <div className="url-input-wrapper">
           <Link size={20} className="url-icon" />
           <input
+            ref={urlInputRef}
             type="text"
             className="url-input"
             placeholder="Paste video URL from YouTube or any supported site..."
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             onKeyDown={handleKeyDown}
+            onPaste={handleInputPaste}
             disabled={fetching || downloading}
           />
           {url && (
@@ -467,6 +486,12 @@ export function DownloaderView({ currentUser }) {
           {fetching ? 'Fetching...' : 'Fetch Info'}
         </button>
       </div>
+
+      {pasteHint && (
+        <div className="downloader-hint">
+          <AlertTriangle size={14} /> {pasteHint}
+        </div>
+      )}
 
       {error && (
         <div className="downloader-error">

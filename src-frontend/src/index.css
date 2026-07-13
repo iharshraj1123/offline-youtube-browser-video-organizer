@@ -4765,6 +4765,20 @@ body.mini-player-dragging * {
 .btn-fetch:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-fetch.loading { background: var(--primary-hover); }
 
+.downloader-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 8px;
+  color: #fbbf24;
+  font-size: 12px;
+  margin-bottom: 12px;
+  animation: fadeIn 0.2s ease;
+}
+
 .downloader-error {
   display: flex;
   align-items: center;
