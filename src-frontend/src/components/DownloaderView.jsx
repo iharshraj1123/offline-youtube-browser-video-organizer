@@ -382,30 +382,10 @@ export function DownloaderView({ currentUser }) {
     return preset.path;
   };
 
-  const isValidUrl = (str) => {
-    if (!str) return false;
-    return /^https?:\/\/|^www\.|^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/.test(str);
-  };
-
-  const handleUrlInput = (text) => {
-    const trimmed = text.trim();
-    if (!trimmed) {
-      setError('Clipboard is empty');
-      return false;
-    }
-    if (!isValidUrl(trimmed)) {
-      setError('Not a valid URL. Copy a link like "youtube.com/watch?v=..." and try again.');
-      return false;
-    }
-    setUrl(trimmed);
-    setError('');
-    return true;
-  };
-
   const handlePaste = async () => {
     try {
       const text = await navigator.clipboard.readText();
-      handleUrlInput(text);
+      if (text) { setUrl(text.trim()); setError(''); }
     } catch {
       setPasteHint('Press Ctrl+V to paste');
       urlInputRef.current?.focus();
@@ -415,9 +395,7 @@ export function DownloaderView({ currentUser }) {
 
   const handleInputPaste = (e) => {
     const text = (e.clipboardData || window.clipboardData).getData('text');
-    if (text && handleUrlInput(text)) {
-      setPasteHint('');
-    }
+    if (text) { setUrl(text.trim()); setError(''); setPasteHint(''); }
   };
 
   return (
