@@ -129,6 +129,7 @@ export function DownloaderView({ currentUser }) {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [throttle, setThrottle] = useState('');
   const [customArgs, setCustomArgs] = useState('');
+  const [autoIndex, setAutoIndex] = useState(true);
 
   const [queueActive, setQueueActive] = useState(false);
   const [currentDownloadId, setCurrentDownloadId] = useState(null);
@@ -252,6 +253,8 @@ export function DownloaderView({ currentUser }) {
       uploader: '',
       formats: [],
       quality: quality,
+      destinationPreset: null,
+      customPath: '',
       status: 'fetching',
       progress: 0, speed: '', eta: '', file: '', size: '', indexed: false, vid_id: null, error: '',
     };
@@ -311,10 +314,18 @@ export function DownloaderView({ currentUser }) {
     updateItem(item.id, { status: 'downloading', progress: 0, speed: '', eta: '', error: '' });
 
     let destPath = '';
-    if (destinationPreset === 'Custom...') {
-      destPath = customPath;
+    const itemDest = item.destinationPreset || 'default';
+    if (itemDest === 'default') {
+      if (destinationPreset === 'Custom...') {
+        destPath = customPath;
+      } else {
+        const preset = presets.find(p => p.name === destinationPreset);
+        if (preset) destPath = preset.path;
+      }
+    } else if (itemDest === 'Custom...') {
+      destPath = item.customPath;
     } else {
-      const preset = presets.find(p => p.name === destinationPreset);
+      const preset = presets.find(p => p.name === itemDest);
       if (preset) destPath = preset.path;
     }
 
@@ -338,6 +349,7 @@ export function DownloaderView({ currentUser }) {
       formData.append('destination', destPath);
       formData.append('filename', filenameTemplate);
       formData.append('extra_args', extraArgs);
+      formData.append('auto_index', autoIndex ? '1' : '0');
 
       const res = await fetch('./api/index.php?action=ytdlp_download', {
         method: 'POST',
@@ -430,7 +442,11 @@ export function DownloaderView({ currentUser }) {
     return preset.path;
   };
 
-  const handlePaste = () => {
+  const handlePaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) { setUrl(text.trim()); setError(''); setPasteHint(''); return; }
+    } catch {}
     setPasteHint('Press Ctrl+V to paste');
     urlInputRef.current?.focus();
     setTimeout(() => setPasteHint(''), 4000);
@@ -603,6 +619,24 @@ export function DownloaderView({ currentUser }) {
                           ))}
                         </select>
                       </div>
+                      <div className="item-path-wrapper">
+                        <select className="path-select-sm" value={item.destinationPreset || 'default'}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            updateItem(item.id, { destinationPreset: val === 'default' ? null : val });
+                          }}>
+                          <option value="default">Default Location</option>
+                          {presets.filter(p => p.name !== 'Custom...').map(p => (
+                            <option key={p.name} value={p.name}>{p.name}</option>
+                          ))}
+                          <option value="Custom...">Custom...</option>
+                        </select>
+                        {item.destinationPreset === 'Custom...' && (
+                          <input type="text" className="input-sm" value={item.customPath}
+                            onChange={(e) => updateItem(item.id, { customPath: e.target.value })}
+                            placeholder="Full path" />
+                        )}
+                      </div>
                       <button className="btn-primary" style={{ padding: '4px 10px', fontSize: '11px' }}
                         onClick={() => handleDownloadSingle(item)} disabled={isDownloading}>
                         <Download size={12} /> Download
@@ -681,6 +715,12 @@ export function DownloaderView({ currentUser }) {
               <select value={audioFormat} onChange={(e) => setAudioFormat(e.target.value)} disabled={isDownloading}>
                 {AUDIO_FORMATS.map(a => (<option key={a.value} value={a.value}>{a.label}</option>))}
               </select>
+            </div>
+            <div className="option-group">
+              <label className="checkbox-label" style={{ textTransform: 'none', letterSpacing: 'normal' }}>
+                <input type="checkbox" checked={autoIndex} onChange={(e) => setAutoIndex(e.target.checked)} disabled={isDownloading} />
+                Auto-index after download
+              </label>
             </div>
             <div className="option-group">
               <label>Subtitles</label>

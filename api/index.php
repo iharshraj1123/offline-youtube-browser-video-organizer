@@ -22,6 +22,12 @@ if ($baseDir === '/') {
 }
 define('BASE_DIR', $baseDir);
 
+function stripBaseDir($path) {
+    $clean = str_replace(BASE_DIR, '', $path);
+    $clean = ltrim($clean, '/');
+    return $clean;
+}
+
 require_once 'db.php';
 require_once 'utils/MetadataParser.php';
 
@@ -411,7 +417,7 @@ function handleCrawl($pdo) {
     $uploaderInfo = [
         'id' => $_COOKIE['loggedusernum'] ?? 1,
         'name' => $_COOKIE['loggedusername'] ?? 'Admin',
-        'img' => $_COOKIE['loggeduserpic'] ?? BASE_DIR . '/Userdatabase/profilepic/defaulta.jpg',
+        'img' => stripBaseDir($_COOKIE['loggeduserpic'] ?? BASE_DIR . '/Userdatabase/profilepic/defaulta.jpg'),
     ];
 
     $ffmpegPath = getFFmpegPath();
@@ -579,7 +585,7 @@ function handleUploadFile($pdo) {
     $uploaderInfo = [
         'id' => $_COOKIE['loggedusernum'] ?? 1,
         'name' => $_COOKIE['loggedusername'] ?? 'Admin',
-        'img' => $_COOKIE['loggeduserpic'] ?? BASE_DIR . '/Userdatabase/profilepic/defaulta.jpg',
+        'img' => stripBaseDir($_COOKIE['loggeduserpic'] ?? BASE_DIR . '/Userdatabase/profilepic/defaulta.jpg'),
     ];
 
     $ffmpegPath = getFFmpegPath();
@@ -1355,7 +1361,7 @@ function handleSignup($pdo) {
         $description = 'Hiii There its me !!! yeah you dont know me....';
     }
 
-    $profilePic = BASE_DIR . '/Userdatabase/ProfilePic/default' . rand(1, 10) . '.jpg';
+    $profilePic = stripBaseDir(BASE_DIR . '/Userdatabase/ProfilePic/default' . rand(1, 10) . '.jpg');
     if (isset($_FILES['profile_pic']) && $_FILES['profile_pic']['error'] === UPLOAD_ERR_OK) {
         $picName = $_FILES['profile_pic']['name'];
         $ext = strtolower(pathinfo($picName, PATHINFO_EXTENSION));
@@ -1368,7 +1374,7 @@ function handleSignup($pdo) {
         $newFileName = sanitizeFileName($username) . '_' . time() . '.' . $ext;
         $destPath = $destDir . '/' . $newFileName;
         if (move_uploaded_file($_FILES['profile_pic']['tmp_name'], $destPath)) {
-            $profilePic = BASE_DIR . '/Userdatabase/ProfilePic/' . $newFileName;
+            $profilePic = stripBaseDir(BASE_DIR . '/Userdatabase/ProfilePic/' . $newFileName);
         }
     }
 
@@ -1547,7 +1553,7 @@ function handleAddComment($pdo) {
         $newFileName = 'att_' . $currentUserNum . '_' . time() . '_' . rand(100, 999) . '.' . $ext;
         $destPath = $destDir . '/' . $newFileName;
         if (move_uploaded_file($file['tmp_name'], $destPath)) {
-            $attachmentUrl = BASE_DIR . '/uploads/comments/' . $newFileName;
+            $attachmentUrl = stripBaseDir(BASE_DIR . '/uploads/comments/' . $newFileName);
             if (in_array($ext, ['mp4', 'webm', 'ogg'])) {
                 $attachmentType = 'video';
             } elseif ($ext === 'gif') {
@@ -1920,7 +1926,7 @@ function handleGetEmotes() {
         if (in_array($ext, ['png', 'jpg', 'jpeg', 'gif'])) {
             $emotes[] = [
                 'name' => pathinfo($file, PATHINFO_FILENAME),
-                'url' => BASE_DIR . '/uploads/emogies/' . rawurlencode($file)
+                'url' => stripBaseDir(BASE_DIR . '/uploads/emogies/' . rawurlencode($file))
             ];
         }
     }
@@ -1989,7 +1995,7 @@ function handleUpdateProfile($pdo) {
         $newFileName = sanitizeFileName($username) . '_' . time() . '.' . $ext;
         $destPath = $destDir . '/' . $newFileName;
         if (move_uploaded_file($_FILES['profile_pic']['tmp_name'], $destPath)) {
-            $profilePic = BASE_DIR . '/Userdatabase/ProfilePic/' . $newFileName;
+            $profilePic = stripBaseDir(BASE_DIR . '/Userdatabase/ProfilePic/' . $newFileName);
         }
     }
 
@@ -2857,11 +2863,12 @@ function handleYtdlpDownload($pdo = null) {
         $fs = filesize($destinationFile);
         $indexed = false;
         $vidId = null;
-        if ($pdo) {
+        $autoIndex = ($_POST['auto_index'] ?? '1') === '1';
+        if ($pdo && $autoIndex) {
             $uploaderInfo = [
                 'id' => $_COOKIE['loggedusernum'] ?? 1,
                 'name' => $_COOKIE['loggedusername'] ?? 'Admin',
-                'img' => $_COOKIE['loggeduserpic'] ?? BASE_DIR . '/Userdatabase/profilepic/defaulta.jpg',
+                'img' => stripBaseDir($_COOKIE['loggeduserpic'] ?? BASE_DIR . '/Userdatabase/profilepic/defaulta.jpg'),
             ];
             $desc = !empty($cleanUrl) ? 'source: ' . $cleanUrl : 'Downloaded via yt-dlp.';
             $result = processSingleVideo($pdo, $destinationFile, $uploaderInfo, getFFmpegPath(), ['mp4', 'webm', 'mkv', 'avi'], $desc);
