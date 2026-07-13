@@ -3645,6 +3645,7 @@ function PlayerView({
                     return (
                       <div
                         key={vid.vid_id}
+                        ref={(el) => { if (el && isCurrent) el.scrollIntoView({ block: 'nearest' }); }}
                         draggable
                         onDragStart={(e) => handleDragStart(e, idx)}
                         onDragEnter={(e) => handleDragEnter(e, idx)}
