@@ -20,3 +20,6 @@ uploads/*
 !uploads/.gitkeep
 thumbnails/*
 !thumbnails/.gitkeep
+
+# Local scripts / testing
+testing/

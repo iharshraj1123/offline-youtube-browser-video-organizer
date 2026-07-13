@@ -1980,7 +1980,7 @@ function PlayerView({
 
     // If already fullscreen on phone, lock to match
     if (isFullscreen && isPhoneRef.current && screen.orientation?.lock) {
-      screen.orientation.lock(targetOrientationRef.current).catch(() => {});
+      screen.orientation.lock(targetOrientationRef.current).catch(() => { });
     }
   };
 
@@ -2082,7 +2082,7 @@ function PlayerView({
       }
       setIsFullscreen(true);
       if (isPhoneRef.current && screen.orientation?.lock) {
-        screen.orientation.lock(targetOrientationRef.current).catch(() => {});
+        screen.orientation.lock(targetOrientationRef.current).catch(() => { });
       }
     } else {
       if (document.exitFullscreen) {
@@ -2165,7 +2165,7 @@ function PlayerView({
         const isWrong = (target === 'landscape' && current.startsWith('portrait'))
           || (target === 'portrait' && current.startsWith('landscape'));
         if (isWrong) {
-          screen.orientation.lock(target).catch(() => {});
+          screen.orientation.lock(target).catch(() => { });
         }
       }
     };
@@ -2203,7 +2203,7 @@ function PlayerView({
       const inFs = !!document.fullscreenElement;
       setIsFullscreen(inFs);
       if (inFs && isPhoneRef.current && screen.orientation?.lock) {
-        screen.orientation.lock(targetOrientationRef.current).catch(() => {});
+        screen.orientation.lock(targetOrientationRef.current).catch(() => { });
       } else if (!inFs && screen.orientation?.unlock) {
         screen.orientation.unlock();
         if (relockTimer) { clearTimeout(relockTimer); relockTimer = null; }
@@ -2216,7 +2216,7 @@ function PlayerView({
       if (relockTimer) clearTimeout(relockTimer);
       const tryLock = () => {
         if (document.fullscreenElement && screen.orientation?.lock) {
-          screen.orientation.lock(targetOrientationRef.current).catch(() => {});
+          screen.orientation.lock(targetOrientationRef.current).catch(() => { });
         }
       };
       relockTimer = setTimeout(() => {
@@ -3042,7 +3042,7 @@ function PlayerView({
               <div><strong>Aspect Ratio:</strong> {video.aspect_ratio || '16:9'}</div>
               <div><strong>File Size:</strong> {video.filesize ? `${(video.filesize / (1024 * 1024)).toFixed(2)} MB` : 'Calculating...'}</div>
               <div><strong>Bitrate:</strong> {video.bitrate ? `${video.bitrate} kbps` : 'Calculating...'}</div>
-              <div><strong>Frame Rate:</strong> {video.framerate ? `${video.framerate} fps` : '30 fps'}</div>
+              <div><strong>Frame Rate:</strong> {video.framerate ? `${Math.round(video.framerate)} fps` : '30 fps'}</div>
               <div><strong>Codec:</strong> {video.codec || 'h264'}</div>
               <div style={{ wordBreak: 'break-all' }}><strong>Source:</strong> {video.link}</div>
             </div>
@@ -4063,7 +4063,7 @@ function CrawlerView() {
       </div>
 
       <div className="crawler-section">
-        <h2 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '12px' }}>Directory Presets</h2>
+        <h2 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '12px' }}>Select a Directory Preset</h2>
         <div className="crawler-presets">
           {presetFolders.map((preset) => (
             <div key={preset.name} className="preset-card">
@@ -4158,11 +4158,11 @@ function CrawlerView() {
                 <span>Scanning Directory...</span>
               </>
             ) : (
-              <span>Run Sync Crawler</span>
+              <span>Run Crawler in Folder</span>
             )}
           </button>
 
-          <button
+          {/* <button
             className="btn-primary"
             onClick={handleGenerateMissingThumbnails}
             disabled={generatingThumbs || scanning}
@@ -4184,31 +4184,7 @@ function CrawlerView() {
             ) : (
               <span>Bulk Generate Missing Thumbnails (FFmpeg)</span>
             )}
-          </button>
-
-          <button
-            className="btn-primary"
-            onClick={handleMigrateDates}
-            disabled={migratingDates || scanning}
-            style={{
-              marginTop: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              backgroundColor: '#4a3b2c',
-              color: '#fff'
-            }}
-          >
-            {migratingDates ? (
-              <>
-                <Loader2 className="animate-spin" size={18} />
-                <span>Migrating Dates...</span>
-              </>
-            ) : (
-              <span>Migrate Video File Modification Dates</span>
-            )}
-          </button>
+          </button> */}
         </div>
       </div>
 
