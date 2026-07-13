@@ -7,7 +7,7 @@ import {
   Play, Pause, Volume2, VolumeX, Maximize, Minimize,
   Settings, Trash2, Edit, RefreshCw, Plus, Check, Loader2,
   ThumbsUp, ThumbsDown, Info, Mic, Bell, CornerUpLeft,
-  Repeat, Shuffle, Download, SkipBack, SkipForward, ListMusic, X, RotateCcw, RotateCw, Cast
+  Repeat, Shuffle, Download, SkipBack, SkipForward, ListMusic, X, RotateCcw, RotateCw, Cast, Upload
 } from 'lucide-react';
 import { AuthModal } from './components/AuthModal';
 import { CommentsSection } from './components/CommentsSection';
@@ -4049,6 +4049,62 @@ function CrawlerView() {
 
 
 
+  const [uploadDir, setUploadDir] = useState('D:/Video songs');
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleBrowseFiles = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileInputChange = (e) => {
+    const files = Array.from(e.target.files || []);
+    setSelectedFiles(files.map(f => f.name));
+    e.target.value = '';
+  };
+
+  const handleRemoveFile = (name) => {
+    setSelectedFiles(prev => prev.filter(f => f !== name));
+  };
+
+  const handleUploadFiles = async () => {
+    if (!uploadDir.trim() || selectedFiles.length === 0) return;
+    setUploading(true);
+    setLogs(prev => [...prev, { type: 'info', text: `Processing ${selectedFiles.length} file(s) in: "${uploadDir}"...` }]);
+    try {
+      const res = await fetch('./api/index.php?action=upload_file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ directory: uploadDir, files: selectedFiles })
+      });
+      const data = await res.json();
+      if (data.error) {
+        setLogs(prev => [...prev, { type: 'error', text: `Upload failed: ${data.error}` }]);
+      } else {
+        setLogs(prev => [
+          ...prev,
+          { type: 'success', text: `Upload completed! Added ${data.added}, skipped ${data.skipped}.` }
+        ]);
+        if (data.new_videos && data.new_videos.length > 0) {
+          data.new_videos.forEach(v => {
+            setLogs(prev => [...prev, { type: 'success', text: `  + Added: ${v.name}` }]);
+          });
+        }
+        if (data.errors && data.errors.length > 0) {
+          data.errors.forEach(e => {
+            setLogs(prev => [...prev, { type: 'error', text: `  - Error: ${e}` }]);
+          });
+        }
+      }
+    } catch (e) {
+      setLogs(prev => [...prev, { type: 'error', text: `HTTP connection error: ${e.message}` }]);
+    } finally {
+      setUploading(false);
+      setSelectedFiles([]);
+    }
+  };
+
   const handleCrawl = async () => {
     setScanning(true);
     setLogs(prev => [
@@ -4225,6 +4281,64 @@ function CrawlerView() {
               <span>Bulk Generate Missing Thumbnails (FFmpeg)</span>
             )}
           </button> */}
+        </div>
+      </div>
+
+      <div className="crawler-section">
+        <h2 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '12px' }}>Upload Individual Files</h2>
+        <div className="crawler-form">
+          <div className="form-group">
+            <label className="form-label">Parent Directory Path</label>
+            <input
+              type="text"
+              value={uploadDir}
+              onChange={(e) => setUploadDir(e.target.value)}
+              className="form-input"
+              placeholder="e.g. D:/Video songs"
+            />
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+            <button className="btn-secondary" onClick={handleBrowseFiles} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Folder size={16} /> Browse Files
+            </button>
+            <input ref={fileInputRef} type="file" multiple accept="video/*" onChange={handleFileInputChange} style={{ display: 'none' }} />
+            {selectedFiles.length > 0 && (
+              <span style={{ fontSize: '13px', color: '#aaa' }}>{selectedFiles.length} file(s) selected</span>
+            )}
+          </div>
+
+          {selectedFiles.length > 0 && (
+            <div style={{ marginBottom: '12px', maxHeight: '180px', overflowY: 'auto', background: 'rgba(255,255,255,0.02)', borderRadius: '6px', padding: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+              {selectedFiles.map((fname) => (
+                <div key={fname} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 6px', fontSize: '13px', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                  <span>{fname}</span>
+                  <button onClick={() => handleRemoveFile(fname)} style={{ background: 'none', border: 'none', color: '#ff4444', cursor: 'pointer', padding: '2px' }} title="Remove">
+                    <X size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button
+            className="btn-primary"
+            onClick={handleUploadFiles}
+            disabled={uploading || selectedFiles.length === 0 || !uploadDir.trim()}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+          >
+            {uploading ? (
+              <>
+                <Loader2 className="animate-spin" size={18} />
+                <span>Processing...</span>
+              </>
+            ) : (
+              <>
+                <Upload size={16} />
+                <span>Upload Files</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
 

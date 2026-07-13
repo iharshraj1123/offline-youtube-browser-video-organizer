@@ -143,7 +143,10 @@ try {
             handleYtdlpInfo();
             break;
         case 'ytdlp_download':
-            handleYtdlpDownload();
+            handleYtdlpDownload($pdo);
+            break;
+        case 'upload_file':
+            handleUploadFile($pdo);
             break;
         default:
             header('HTTP/1.1 404 Not Found');
@@ -405,91 +408,21 @@ function handleCrawl($pdo) {
     $newVideosList = [];
 
     // Get cookie values for user session
-    $uploader_id = $_COOKIE['loggedusernum'] ?? 1;
-    $uploader_name = $_COOKIE['loggedusername'] ?? 'Admin';
-    $uploader_img = $_COOKIE['loggeduserpic'] ?? BASE_DIR . '/Userdatabase/profilepic/defaulta.jpg';
-
-    // Query helper to check existing links
-    $checkStmt = $pdo->prepare("SELECT vid_id FROM video_metadatas WHERE link = :link");
-
-    // Insert statement
-    $insertStmt = $pdo->prepare("
-        INSERT INTO video_metadatas 
-        (vid_name, link, uploader_id, uploader_name, uploader_img, likes, dislikes, duration, views, upload_date, upload_time, tags, subtitles, description, comments, filesize, width, height, aspect_ratio, bitrate, framerate, codec)
-        VALUES 
-        (:vid_name, :link, :uploader_id, :uploader_name, :uploader_img, 0, 0, :duration, 0, :upload_date, :upload_time, :tags, 'null', :description, 0, :filesize, :width, :height, :aspect_ratio, :bitrate, :framerate, :codec)
-    ");
+    $uploaderInfo = [
+        'id' => $_COOKIE['loggedusernum'] ?? 1,
+        'name' => $_COOKIE['loggedusername'] ?? 'Admin',
+        'img' => $_COOKIE['loggeduserpic'] ?? BASE_DIR . '/Userdatabase/profilepic/defaulta.jpg',
+    ];
 
     $ffmpegPath = getFFmpegPath();
     $newVidIds = [];
+    $videoExtensions = ['mp4', 'webm', 'mkv', 'avi'];
 
     foreach ($files as $file) {
-        // Construct the legacy file:/// link path
-        $driveLetter = '';
-        $restOfPath = '';
-        
-        // Check if path is of Windows format (e.g. D:/Video songs)
-        if (preg_match('/^([a-zA-Z]):\/(.*)$/', $file, $matches)) {
-            $drive = $matches[1];
-            $rest = $matches[2];
-            $link = "file:///" . strtoupper($drive) . ":/" . $rest;
-        } else {
-            $link = "file:///" . str_replace('%', '%25', $file);
-        }
-
-        // Check if exists
-        $checkStmt->execute([':link' => $link]);
-        if ($checkStmt->fetch()) {
-            $skipped++;
-            continue;
-        }
-
-        // Parse file metadata
-        $meta = MetadataParser::parse($file);
-
-        // Get file modification date for upload date/time
-        $mtime = filemtime($file);
-        $upload_date = date('Y-m-d', $mtime);
-        $upload_time = date('H:i:s', $mtime);
-
-        $filename = basename($file);
-
-        $params = [
-            ':vid_name' => $filename,
-            ':link' => $link,
-            ':uploader_id' => $uploader_id,
-            ':uploader_name' => $uploader_name,
-            ':uploader_img' => $uploader_img,
-            ':duration' => $meta['duration'],
-            ':upload_date' => $upload_date,
-            ':upload_time' => $upload_time,
-            ':tags' => '',
-            ':description' => 'Discovered via crawler.',
-            ':filesize' => $meta['filesize'],
-            ':width' => $meta['width'],
-            ':height' => $meta['height'],
-            ':aspect_ratio' => $meta['aspect_ratio'],
-            ':bitrate' => $meta['bitrate'],
-            ':framerate' => $meta['framerate'],
-            ':codec' => $meta['codec']
-        ];
-
-        $insertStmt->execute($params);
-        $newId = $pdo->lastInsertId();
-        $newVidIds[] = $newId;
-        
-        $thumbCreated = false;
-        if ($ffmpegPath) {
-            $thumbCreated = generateServerThumbnail($ffmpegPath, $file, $newId);
-        }
-
-        $newVideosList[] = [
-            'id' => $newId,
-            'name' => $filename,
-            'duration' => $meta['duration'],
-            'size' => $meta['filesize'],
-            'thumbnail_created' => $thumbCreated
-        ];
+        $result = processSingleVideo($pdo, $file, $uploaderInfo, $ffmpegPath, $videoExtensions, 'Discovered via crawler.');
+        if ($result === false) { $skipped++; continue; }
+        $newVidIds[] = $result['id'];
+        $newVideosList[] = $result;
         $added++;
     }
 
@@ -503,6 +436,195 @@ function handleCrawl($pdo) {
         'added' => $added,
         'skipped' => $skipped,
         'deleted' => $deletedCount,
+        'new_videos' => $newVideosList
+    ]);
+}
+
+function processSingleVideo($pdo, $file, $uploaderInfo, $ffmpegPath, $videoExtensions, $description) {
+    $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+    if (!in_array($ext, $videoExtensions)) return false;
+    if (!file_exists($file)) return false;
+
+    if (preg_match('/^([a-zA-Z]):\/(.*)$/', $file, $matches)) {
+        $drive = $matches[1];
+        $rest = $matches[2];
+        $link = "file:///" . strtoupper($drive) . ":/" . $rest;
+    } else {
+        $link = "file:///" . str_replace('%', '%25', $file);
+    }
+
+    $checkStmt = $pdo->prepare("SELECT vid_id FROM video_metadatas WHERE link = :link");
+    $checkStmt->execute([':link' => $link]);
+    if ($checkStmt->fetch()) return false;
+
+    $meta = MetadataParser::parse($file);
+    $mtime = filemtime($file);
+    $upload_date = date('Y-m-d', $mtime);
+    $upload_time = date('H:i:s', $mtime);
+    $filename = basename($file);
+
+    $insertStmt = $pdo->prepare("
+        INSERT INTO video_metadatas 
+        (vid_name, link, uploader_id, uploader_name, uploader_img, likes, dislikes, duration, views, upload_date, upload_time, tags, subtitles, description, comments, filesize, width, height, aspect_ratio, bitrate, framerate, codec)
+        VALUES 
+        (:vid_name, :link, :uploader_id, :uploader_name, :uploader_img, 0, 0, :duration, 0, :upload_date, :upload_time, :tags, 'null', :description, 0, :filesize, :width, :height, :aspect_ratio, :bitrate, :framerate, :codec)
+    ");
+
+    $insertStmt->execute([
+        ':vid_name' => $filename,
+        ':link' => $link,
+        ':uploader_id' => $uploaderInfo['id'],
+        ':uploader_name' => $uploaderInfo['name'],
+        ':uploader_img' => $uploaderInfo['img'],
+        ':duration' => $meta['duration'],
+        ':upload_date' => $upload_date,
+        ':upload_time' => $upload_time,
+        ':tags' => '',
+        ':description' => $description,
+        ':filesize' => $meta['filesize'],
+        ':width' => $meta['width'],
+        ':height' => $meta['height'],
+        ':aspect_ratio' => $meta['aspect_ratio'],
+        ':bitrate' => $meta['bitrate'],
+        ':framerate' => $meta['framerate'],
+        ':codec' => $meta['codec']
+    ]);
+
+    $newId = $pdo->lastInsertId();
+
+    $thumbCreated = false;
+    if ($ffmpegPath) {
+        $thumbCreated = generateServerThumbnail($ffmpegPath, $file, $newId);
+    }
+
+    return [
+        'id' => $newId,
+        'name' => $filename,
+        'duration' => $meta['duration'],
+        'size' => $meta['filesize'],
+        'thumbnail_created' => $thumbCreated
+    ];
+}
+
+function cleanSourceUrl($rawUrl) {
+    $rawUrl = trim($rawUrl);
+    if (empty($rawUrl)) return $rawUrl;
+    $parts = parse_url($rawUrl);
+    if (!$parts || !isset($parts['host'])) return $rawUrl;
+
+    $host = strtolower($parts['host']);
+    $host = preg_replace('/^www\./', '', $host);
+
+    // YouTube: extract video ID, strip everything else
+    if (in_array($host, ['youtube.com', 'youtu.be'])) {
+        $vid = '';
+        if ($host === 'youtu.be') {
+            $path = ltrim($parts['path'] ?? '', '/');
+            $vid = explode('/', $path)[0];
+        } else {
+            if (isset($parts['query'])) {
+                parse_str($parts['query'], $q);
+                $vid = $q['v'] ?? '';
+            }
+        }
+        if (!empty($vid) && preg_match('/^[a-zA-Z0-9_-]{11}$/', $vid)) {
+            return 'https://www.youtube.com/watch?v=' . $vid;
+        }
+    }
+
+    // For other sites, strip common tracking params
+    $trackingParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'fbclid', 'gclid', 'ref', 'source', 'si'];
+    if (isset($parts['query'])) {
+        parse_str($parts['query'], $q);
+        $cleanQ = array_diff_key($q, array_flip($trackingParams));
+        $newQuery = http_build_query($cleanQ);
+        $scheme = ($parts['scheme'] ?? 'https') . '://';
+        $hostPart = $parts['host'];
+        $pathPart = $parts['path'] ?? '';
+        $result = $scheme . $hostPart . $pathPart;
+        if (!empty($newQuery)) $result .= '?' . $newQuery;
+        if (isset($parts['fragment'])) $result .= '#' . $parts['fragment'];
+        return $result;
+    }
+
+    return $rawUrl;
+}
+
+function handleUploadFile($pdo) {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        throw new Exception('POST method required');
+    }
+
+    $rawData = file_get_contents('php://input');
+    $data = json_decode($rawData, true);
+
+    $directory = $data['directory'] ?? '';
+    $files = $data['files'] ?? [];
+
+    if (empty($directory)) {
+        throw new Exception('Directory path is required');
+    }
+    if (empty($files) || !is_array($files)) {
+        throw new Exception('At least one file is required');
+    }
+
+    $directory = str_replace('\\', '/', $directory);
+    $directory = rtrim($directory, '/') . '/';
+
+    if (!is_dir($directory)) {
+        throw new Exception("Directory does not exist: $directory");
+    }
+
+    $uploaderInfo = [
+        'id' => $_COOKIE['loggedusernum'] ?? 1,
+        'name' => $_COOKIE['loggedusername'] ?? 'Admin',
+        'img' => $_COOKIE['loggeduserpic'] ?? BASE_DIR . '/Userdatabase/profilepic/defaulta.jpg',
+    ];
+
+    $ffmpegPath = getFFmpegPath();
+    $videoExtensions = ['mp4', 'webm', 'mkv', 'avi'];
+    $added = 0;
+    $skipped = 0;
+    $errors = [];
+    $newVideosList = [];
+    $newVidIds = [];
+
+    foreach ($files as $filename) {
+        $filePath = $directory . $filename;
+
+        $result = processSingleVideo($pdo, $filePath, $uploaderInfo, $ffmpegPath, $videoExtensions, 'Uploaded via uploader.');
+        if ($result === false) {
+            $existsCheck = $pdo->prepare("SELECT vid_id FROM video_metadatas WHERE link = :link");
+            $file = $filePath;
+            if (preg_match('/^([a-zA-Z]):\/(.*)$/', $file, $matches)) {
+                $drive = $matches[1];
+                $rest = $matches[2];
+                $link = "file:///" . strtoupper($drive) . ":/" . $rest;
+            } else {
+                $link = "file:///" . str_replace('%', '%25', $file);
+            }
+            $existsCheck->execute([':link' => $link]);
+            if ($existsCheck->fetch()) {
+                $skipped++;
+            } else {
+                $errors[] = "Failed to process: $filename (file missing or unsupported format)";
+            }
+            continue;
+        }
+        $newVidIds[] = $result['id'];
+        $newVideosList[] = $result;
+        $added++;
+    }
+
+    if ($added > 0) {
+        updatePlaylistsTable($pdo, $newVidIds);
+    }
+
+    echo json_encode([
+        'success' => true,
+        'added' => $added,
+        'skipped' => $skipped,
+        'errors' => $errors,
         'new_videos' => $newVideosList
     ]);
 }
@@ -2603,8 +2725,10 @@ function handleYtdlpInfo() {
     exit;
 }
 
-function handleYtdlpDownload() {
+function handleYtdlpDownload($pdo = null) {
     $url = $_POST['url'] ?? '';
+    $sourceUrl = $_POST['source_url'] ?? $url;
+    $cleanUrl = cleanSourceUrl($sourceUrl);
     $format = $_POST['format'] ?? 'best';
     $destination = $_POST['destination'] ?? '';
     $filenameTemplate = $_POST['filename'] ?? '%(title)s.%(ext)s';
@@ -2617,7 +2741,7 @@ function handleYtdlpDownload() {
     if (!is_dir($outputDir)) mkdir($outputDir, 0777, true);
 
     $outputTemplate = $outputDir . DIRECTORY_SEPARATOR . $filenameTemplate;
-    $cmd = $path . ' -f ' . escapeshellarg($format) . ' -o "' . $outputTemplate . '" --no-playlist --ignore-errors --no-warnings --progress --newline ' . escapeshellarg($url) . ' 2>&1';
+    $cmd = $path . ' -f ' . escapeshellarg($format) . ' -o "' . $outputTemplate . '" --no-playlist --ignore-errors --no-warnings --no-mtime --progress --newline ' . escapeshellarg($url) . ' 2>&1';
 
     header('Content-Type: text/event-stream');
     header('Cache-Control: no-cache');
@@ -2660,7 +2784,19 @@ function handleYtdlpDownload() {
 
     if (!empty($destinationFile) && file_exists($destinationFile)) {
         $fs = filesize($destinationFile);
-        echo "data: " . json_encode(['type' => 'done', 'file' => basename($destinationFile), 'size_formatted' => $fs > 1048576 ? round($fs / 1048576, 2) . ' MB' : round($fs / 1024, 2) . ' KB']) . "\n\n";
+        $indexed = false;
+        $vidId = null;
+        if ($pdo) {
+            $uploaderInfo = [
+                'id' => $_COOKIE['loggedusernum'] ?? 1,
+                'name' => $_COOKIE['loggedusername'] ?? 'Admin',
+                'img' => $_COOKIE['loggeduserpic'] ?? BASE_DIR . '/Userdatabase/profilepic/defaulta.jpg',
+            ];
+            $desc = !empty($cleanUrl) ? 'source: ' . $cleanUrl : 'Downloaded via yt-dlp.';
+            $result = processSingleVideo($pdo, $destinationFile, $uploaderInfo, getFFmpegPath(), ['mp4', 'webm', 'mkv', 'avi'], $desc);
+            if ($result !== false) { $indexed = true; $vidId = $result['id']; }
+        }
+        echo "data: " . json_encode(['type' => 'done', 'file' => basename($destinationFile), 'size_formatted' => $fs > 1048576 ? round($fs / 1048576, 2) . ' MB' : round($fs / 1024, 2) . ' KB', 'indexed' => $indexed, 'vid_id' => $vidId]) . "\n\n";
     } elseif (!empty($destinationFile)) {
         echo "data: " . json_encode(['type' => 'error', 'message' => 'File not found on disk: ' . $destinationFile]) . "\n\n";
     } else {

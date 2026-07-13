@@ -641,6 +641,22 @@ button {
   transition: background-color var(--transition-speed);
 }
 
+.btn-secondary {
+  background-color: #383838;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--transition-speed);
+}
+
+.btn-secondary:hover {
+  background-color: #4a4a4a;
+}
+
 
 .crawler-form {
   display: flex;
@@ -5122,7 +5138,7 @@ body.mini-player-dragging * {
   margin-bottom: 16px;
 }
 
-.progress-bar-container {
+.downloader-view .progress-bar-container {
   height: 8px;
   background: var(--bg-color);
   border-radius: 4px;
@@ -5130,7 +5146,7 @@ body.mini-player-dragging * {
   margin-bottom: 8px;
 }
 
-.progress-bar {
+.downloader-view .progress-bar {
   height: 100%;
   background: linear-gradient(90deg, var(--primary-color), #ff6b6b);
   border-radius: 4px;
@@ -5260,6 +5276,29 @@ body.mini-player-dragging * {
 .history-meta {
   font-size: 11px;
   color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.indexed-badge {
+  font-size: 10px;
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.history-path {
+  font-size: 9px;
+  color: var(--border-color);
+  font-family: monospace;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .history-time {
