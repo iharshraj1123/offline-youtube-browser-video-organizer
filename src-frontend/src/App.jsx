@@ -12,6 +12,7 @@ import {
 import { AuthModal } from './components/AuthModal';
 import { CommentsSection } from './components/CommentsSection';
 import { ProfileView } from './components/ProfileView';
+import { DownloaderView } from './components/DownloaderView';
 
 // Cookie Helper
 function getCookie(name) {
@@ -236,6 +237,8 @@ export default function App() {
     } else if (page === 'profile' && userParam) {
       setProfileUsername(userParam);
       setCurrentView('profile');
+    } else if (page === 'downloader') {
+      setCurrentView('downloader');
     } else {
       setCurrentView('home');
     }
@@ -255,6 +258,9 @@ export default function App() {
       } else if (pg === 'profile' && usr) {
         setProfileUsername(usr);
         setCurrentView('profile');
+        setPlayingVideo(null);
+      } else if (pg === 'downloader') {
+        setCurrentView('downloader');
         setPlayingVideo(null);
       } else {
         setCurrentView('home');
@@ -606,6 +612,12 @@ export default function App() {
     setCurrentView('crawler');
   };
 
+  // Trigger downloader redirect
+  const handleGoToDownloader = () => {
+    window.history.pushState(null, '', '?page=downloader');
+    setCurrentView('downloader');
+  };
+
   // Trigger profile page redirect
   const handleGoToProfile = (username, updateUrl = true) => {
     setProfileUsername(username);
@@ -834,6 +846,15 @@ export default function App() {
               <span className="sidebar-item-icon"><Tv size={20} /></span>
               <span className="sidebar-item-label">Local Server</span>
             </a>
+
+            <button
+              className={`sidebar-item ${currentView === 'downloader' ? 'active' : ''}`}
+              onClick={() => { handleGoToDownloader(); setMobileSidebarOpen(false); }}
+              title="Download Videos"
+            >
+              <span className="sidebar-item-icon"><Download size={20} /></span>
+              <span className="sidebar-item-label">Download</span>
+            </button>
           </nav>
 
           <div className="sidebar-divider" />
@@ -997,6 +1018,10 @@ export default function App() {
               onPlayVideoId={(vidId) => fetchVideoAndPlay(vidId, true)}
               onUpdateUserSession={(updatedUser) => setUser(updatedUser)}
             />
+          )}
+
+          {currentView === 'downloader' && (
+            <DownloaderView currentUser={user} />
           )}
         </main>
       </div>

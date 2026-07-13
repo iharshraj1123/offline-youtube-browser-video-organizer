@@ -133,6 +133,18 @@ try {
         case 'get_emotes':
             handleGetEmotes();
             break;
+        case 'ytdlp_verify':
+            handleYtdlpVerify();
+            break;
+        case 'ytdlp_update':
+            handleYtdlpUpdate();
+            break;
+        case 'ytdlp_info':
+            handleYtdlpInfo();
+            break;
+        case 'ytdlp_download':
+            handleYtdlpDownload();
+            break;
         default:
             header('HTTP/1.1 404 Not Found');
             echo json_encode(['error' => 'Action not found']);
@@ -2482,6 +2494,171 @@ function handleCastStream() {
         readfile($filePath);
     }
 
+    exit;
+}
+
+// ----------------------------------------
+// yt-dlp Helper Functions
+// ----------------------------------------
+
+function getYtdlpPath() {
+    $localBin = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'yt-dlp.exe';
+    if (file_exists($localBin)) return '"' . $localBin . '"';
+    $output = []; $returnVar = -1;
+    @exec('where yt-dlp 2>NUL', $output, $returnVar);
+    if ($returnVar === 0 && !empty($output)) {
+        $foundPath = trim($output[0]);
+        if (file_exists($foundPath)) return '"' . $foundPath . '"';
+        return 'yt-dlp';
+    }
+    return null;
+}
+
+function handleYtdlpVerify() {
+    $path = getYtdlpPath();
+    if (!$path) {
+        echo json_encode(['installed' => false, 'version' => null, 'update_available' => false, 'error' => 'yt-dlp not found']);
+        exit;
+    }
+    $versionOutput = []; $returnVar = -1;
+    @exec("$path --version 2>NUL", $versionOutput, $returnVar);
+    $currentVersion = $returnVar === 0 ? trim($versionOutput[0] ?? '') : null;
+    $updateOutput = [];
+    @exec("$path -U 2>&1", $updateOutput, $returnVar);
+    $updateAvailable = false; $updateMessage = '';
+    foreach ($updateOutput as $line) {
+        if (stripos($line, 'update') !== false || stripos($line, 'already up to date') !== false) {
+            $updateMessage = trim($line);
+            if (stripos($line, 'already up to date') === false) $updateAvailable = true;
+        }
+    }
+    echo json_encode(['installed' => true, 'version' => $currentVersion, 'update_available' => $updateAvailable, 'update_message' => $updateMessage]);
+    exit;
+}
+
+function handleYtdlpUpdate() {
+    $path = getYtdlpPath();
+    if (!$path) { echo json_encode(['success' => false, 'error' => 'yt-dlp not found']); exit; }
+    $output = []; $returnVar = -1;
+    @exec("$path -U 2>&1", $output, $returnVar);
+    $versionOutput = [];
+    @exec("$path --version 2>NUL", $versionOutput, $returnVar);
+    echo json_encode(['success' => $returnVar === 0, 'version' => $returnVar === 0 ? trim($versionOutput[0] ?? '') : null, 'message' => implode("\n", $output)]);
+    exit;
+}
+
+function handleYtdlpInfo() {
+    $url = $_POST['url'] ?? $_GET['url'] ?? '';
+    if (empty($url)) { echo json_encode(['error' => 'No URL provided']); exit; }
+    $path = getYtdlpPath();
+    if (!$path) { echo json_encode(['error' => 'yt-dlp not found']); exit; }
+    $cmd = $path . ' --dump-json --no-download --ignore-errors ' . escapeshellarg($url) . ' 2>NUL';
+    $output = []; $returnVar = -1;
+    @exec($cmd, $output, $returnVar);
+    if ($returnVar !== 0 || empty($output)) { echo json_encode(['error' => 'Failed to fetch video info']); exit; }
+    $data = json_decode($output[0], true);
+    if (!$data) { echo json_encode(['error' => 'Failed to parse video information']); exit; }
+
+    $formats = [];
+    if (isset($data['formats']) && is_array($data['formats'])) {
+        foreach ($data['formats'] as $fmt) {
+            if (empty($fmt['vcodec']) && empty($fmt['acodec'])) continue;
+            if (isset($fmt['vcodec']) && $fmt['vcodec'] === 'none' && isset($fmt['acodec']) && $fmt['acodec'] === 'none') continue;
+            $formats[] = [
+                'format_id' => $fmt['format_id'] ?? '',
+                'ext' => $fmt['ext'] ?? 'unknown',
+                'width' => $fmt['width'] ?? null,
+                'height' => $fmt['height'] ?? null,
+                'vcodec' => $fmt['vcodec'] ?? 'none',
+                'acodec' => $fmt['acodec'] ?? 'none',
+                'filesize' => $fmt['filesize'] ?? $fmt['filesize_approx'] ?? null,
+                'fps' => $fmt['fps'] ?? null,
+                'format_note' => $fmt['format_note'] ?? '',
+                'has_audio' => !empty($fmt['acodec']) && $fmt['acodec'] !== 'none',
+                'has_video' => !empty($fmt['vcodec']) && $fmt['vcodec'] !== 'none',
+            ];
+        }
+    }
+
+    $thumbnail = $data['thumbnail'] ?? '';
+    if (isset($data['thumbnails']) && is_array($data['thumbnails'])) {
+        $best = null;
+        foreach ($data['thumbnails'] as $t) { if (!empty($t['url']) && (!$best || ($t['height'] ?? 0) > ($best['height'] ?? 0))) $best = $t; }
+        if ($best) $thumbnail = $best['url'];
+    }
+
+    echo json_encode([
+        'title' => $data['title'] ?? 'Unknown',
+        'description' => mb_substr($data['description'] ?? '', 0, 300),
+        'duration' => $data['duration'] ?? 0,
+        'duration_string' => $data['duration'] ? gmdate('H:i:s', $data['duration']) : '0:00',
+        'uploader' => $data['uploader'] ?? $data['channel'] ?? 'Unknown',
+        'view_count' => $data['view_count'] ?? 0,
+        'like_count' => $data['like_count'] ?? 0,
+        'thumbnail' => $thumbnail,
+        'formats' => $formats,
+        'extractor' => $data['extractor'] ?? 'generic',
+        'webpage_url' => $data['webpage_url'] ?? $url,
+    ]);
+    exit;
+}
+
+function handleYtdlpDownload() {
+    $url = $_POST['url'] ?? '';
+    $format = $_POST['format'] ?? 'best';
+    $destination = $_POST['destination'] ?? '';
+    $filenameTemplate = $_POST['filename'] ?? '%(title)s.%(ext)s';
+
+    if (empty($url)) { echo json_encode(['error' => 'No URL provided']); exit; }
+    $path = getYtdlpPath();
+    if (!$path) { echo json_encode(['error' => 'yt-dlp not found']); exit; }
+
+    $outputDir = (!empty($destination) && is_dir($destination)) ? rtrim($destination, '\\/') : (dirname(__DIR__) . DIRECTORY_SEPARATOR . 'yt-dlp-downloads');
+    if (!is_dir($outputDir)) mkdir($outputDir, 0777, true);
+
+    $outputTemplate = $outputDir . DIRECTORY_SEPARATOR . $filenameTemplate;
+    $cmd = $path . ' -f ' . escapeshellarg($format) . ' -o ' . escapeshellarg($outputTemplate) . ' --no-playlist --ignore-errors --no-warnings --progress --newline ' . escapeshellarg($url) . ' 2>&1';
+
+    header('Content-Type: text/event-stream');
+    header('Cache-Control: no-cache');
+    header('Connection: keep-alive');
+    header('X-Accel-Buffering: no');
+    @set_time_limit(0);
+
+    $descriptors = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
+    $process = @proc_open($cmd, $descriptors, $pipes);
+    if (!is_resource($process)) { echo "data: " . json_encode(['error' => 'Failed to start download']) . "\n\n"; flush(); exit; }
+
+    fclose($pipes[0]);
+    while (!feof($pipes[1])) {
+        $line = fgets($pipes[1]);
+        if ($line === false) break;
+        $line = trim($line);
+        if (preg_match('/\[download\]\s+(\d+\.?\d*)%/', $line, $m)) {
+            $speed = ''; $eta = '';
+            if (preg_match('/at\s+([\d.]+\s*\w+B\/s)/', $line, $sm)) $speed = $sm[1];
+            if (preg_match('/ETA\s+([\d:]+)/', $line, $em)) $eta = $em[1];
+            echo "data: " . json_encode(['type' => 'progress', 'percent' => (float)$m[1], 'speed' => $speed, 'eta' => $eta]) . "\n\n";
+            flush();
+        } elseif (strpos($line, 'ERROR:') !== false) {
+            echo "data: " . json_encode(['type' => 'error', 'message' => $line]) . "\n\n";
+            flush();
+        }
+    }
+    fclose($pipes[1]); fclose($pipes[2]);
+    $returnCode = proc_close($process);
+
+    $files = glob($outputDir . DIRECTORY_SEPARATOR . '*');
+    $downloadedFile = '';
+    if (count($files) > 0) { usort($files, fn($a, $b) => filemtime($b) - filemtime($a)); $downloadedFile = $files[0]; }
+
+    if ($returnCode === 0 && !empty($downloadedFile) && file_exists($downloadedFile)) {
+        $fs = filesize($downloadedFile);
+        echo "data: " . json_encode(['type' => 'done', 'file' => basename($downloadedFile), 'size_formatted' => $fs > 1048576 ? round($fs / 1048576, 2) . ' MB' : round($fs / 1024, 2) . ' KB']) . "\n\n";
+    } else {
+        echo "data: " . json_encode(['type' => 'error', 'message' => 'Download failed with code ' . $returnCode]) . "\n\n";
+    }
+    flush();
     exit;
 }
 
