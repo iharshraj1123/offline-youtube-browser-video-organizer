@@ -133,3 +133,9 @@ CREATE TABLE IF NOT EXISTS `chats` (
     `chat_read` text NOT NULL DEFAULT 'false',
     PRIMARY KEY (`chat_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `crawler_presets` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `preset_name` VARCHAR(100) NOT NULL,
+    `target_url` TEXT NOT NULL,
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

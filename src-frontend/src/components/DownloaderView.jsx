@@ -25,20 +25,6 @@ function formatBytes(bytes) {
   return bytes + ' B';
 }
 
-function getDirectoryPresets() {
-  const saved = localStorage.getItem('yt_crawler_presets');
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-    } catch {}
-  }
-  return [
-    { name: 'Server Downloads', path: '' },
-    { name: 'Custom...', path: '__custom__' },
-  ];
-}
-
 function cleanVideoUrl(rawUrl) {
   try {
     let s = rawUrl.trim();
@@ -66,7 +52,7 @@ function cleanVideoUrl(rawUrl) {
       const qs = params.toString();
       return url.origin + url.pathname + (qs ? '?' + qs : '') + (url.hash || '');
     }
-  } catch {}
+  } catch { }
   return rawUrl.trim();
 }
 
@@ -119,11 +105,11 @@ export function DownloaderView({ currentUser }) {
   const [audioFormat, setAudioFormat] = useState('best');
   const [subsEnabled, setSubsEnabled] = useState(false);
   const [subsLang, setSubsLang] = useState('en');
-  const [presets, setPresets] = useState(() => getDirectoryPresets());
-  const [destinationPreset, setDestinationPreset] = useState(() => {
-    const p = getDirectoryPresets();
-    return p.length > 0 ? p[0].name : 'Server Downloads';
-  });
+  const [presets, setPresets] = useState([
+    { name: 'Server Downloads', path: '' },
+    { name: 'Custom...', path: '__custom__' }
+  ]);
+  const [destinationPreset, setDestinationPreset] = useState();
   const [customPath, setCustomPath] = useState('');
   const [filenameTemplate, setFilenameTemplate] = useState('%(title)s.%(ext)s');
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -143,18 +129,42 @@ export function DownloaderView({ currentUser }) {
   const [pasteHint, setPasteHint] = useState('');
   const [expandedFormats, setExpandedFormats] = useState({});
 
+  const fetchDirectoryPresets = async () => {
+    try {
+      const res = await fetch('./api/index.php?action=get_presets');
+      const data = await res.json();
+
+      if (Array.isArray(data)) {
+        // Map DB columns to our frontend structure
+        const dbPresets = data.map(p => ({
+          id: p.id,
+          name: p.preset_name,
+          path: p.target_url
+        }));
+
+        // Sandwich the DB presets between the hardcoded fallback options
+        const updatedPresets = [
+          ...dbPresets,
+          { name: 'Server Downloads', path: '' },
+          { name: 'Custom...', path: '__custom__' }
+        ];
+
+        setPresets(updatedPresets);
+
+        // Ensure the currently selected preset is valid
+        setDestinationPreset(prev => {
+          const stillExists = updatedPresets.some(p => p.name === prev);
+          return !stillExists && updatedPresets.length > 0 ? updatedPresets[0].name : prev;
+        });
+      }
+    } catch (e) {
+      console.error('Failed to fetch presets:', e);
+    }
+  };
+
   useEffect(() => {
     checkYtdlp();
-    const syncPresets = () => {
-      const updated = getDirectoryPresets();
-      setPresets(updated);
-      setDestinationPreset(prev => {
-        const stillExists = updated.some(p => p.name === prev);
-        return !stillExists && updated.length > 0 ? updated[0].name : prev;
-      });
-    };
-    window.addEventListener('storage', syncPresets);
-    return () => window.removeEventListener('storage', syncPresets);
+    fetchDirectoryPresets();
   }, []);
 
   useEffect(() => {
@@ -184,7 +194,7 @@ export function DownloaderView({ currentUser }) {
       const res = await fetch('./api/index.php?action=ytdlp_update', { method: 'POST' });
       const data = await res.json();
       if (data.success) setYtdlpStatus(prev => ({ ...prev, version: data.version, updateAvailable: false }));
-    } catch {}
+    } catch { }
     setUpdating(false);
   };
 
@@ -395,7 +405,7 @@ export function DownloaderView({ currentUser }) {
                 setError(msg.message);
                 updateItem(item.id, { status: 'failed', error: msg.message });
               }
-            } catch {}
+            } catch { }
           }
         }
       }
@@ -446,7 +456,7 @@ export function DownloaderView({ currentUser }) {
     try {
       const text = await navigator.clipboard.readText();
       if (text) { setUrl(text.trim()); setError(''); setPasteHint(''); return; }
-    } catch {}
+    } catch { }
     setPasteHint('Press Ctrl+V to paste');
     urlInputRef.current?.focus();
     setTimeout(() => setPasteHint(''), 4000);
@@ -736,7 +746,7 @@ export function DownloaderView({ currentUser }) {
             </div>
             <div className="option-group" ref={pathSelectorRef}>
               <label>Save to</label>
-              <div className="path-selector" onClick={() => { setPresets(getDirectoryPresets()); setShowPathSelector(!showPathSelector); }}>
+              <div className="path-selector" onClick={() => { fetchDirectoryPresets(); setShowPathSelector(!showPathSelector); }}>
                 <Folder size={16} />
                 <span className="path-display">{getDestinationDisplay()}</span>
                 <ChevronDown size={14} />

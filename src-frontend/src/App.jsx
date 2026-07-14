@@ -4872,31 +4872,41 @@ function CrawlerView() {
   const [migratingDates, setMigratingDates] = useState(false);
 
   // Dynamic presets
-  const [presetFolders, setPresetFolders] = useState(() => {
-    const saved = localStorage.getItem('yt_crawler_presets');
-    if (saved) {
-      try { return JSON.parse(saved); } catch (e) { }
-    }
-    return [
-      { name: 'Downloads', path: 'C:/Users/ihars/Downloads' },
-      { name: 'Video Songs', path: 'D:/Video songs' },
-      { name: '0-Entertainment', path: 'D:/0-entertainment' },
-      { name: 'Desktop', path: 'C:/Users/ihars/Desktop' }
-    ];
-  });
+  const [presetFolders, setPresetFolders] = useState([]);
 
   const [newPresetName, setNewPresetName] = useState('');
   const [newPresetPath, setNewPresetPath] = useState('');
 
+  useEffect(() => {
+    fetch('./api/index.php?action=get_presets')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setPresetFolders(data.map(p => ({ name: p.preset_name, path: p.target_url })));
+        }
+      })
+      .catch(console.error);
+  }, []);
+
   const handleAddPreset = (e) => {
     e.preventDefault();
     if (!newPresetName.trim() || !newPresetPath.trim()) return;
-    const updated = [...presetFolders, { name: newPresetName.trim(), path: newPresetPath.trim() }];
-    setPresetFolders(updated);
-    localStorage.setItem('yt_crawler_presets', JSON.stringify(updated));
-    setNewPresetName('');
-    setNewPresetPath('');
-    setLogs(prev => [...prev, { type: 'success', text: `Added directory preset: "${newPresetName}"` }]);
+
+    fetch('./api/index.php?action=save_preset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ preset_name: newPresetName, target_url: newPresetPath })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setPresetFolders(prev => [...prev, { name: newPresetName, path: newPresetPath }]);
+          setNewPresetName('');
+          setNewPresetPath('');
+          setLogs(prev => [...prev, { type: 'success', text: `Added directory preset: "${newPresetName}"` }]);
+        }
+      })
+      .catch(err => console.error(err));
   };
 
   const handleRemovePreset = (name) => {

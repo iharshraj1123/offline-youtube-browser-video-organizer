@@ -226,6 +226,17 @@ try {
             handleFfmpegDownload();
             break;
 
+        // -- crawler presets
+        case 'get_presets':
+            handleGetPresets($pdo);
+            break;
+        case 'save_preset':
+            handleSavePreset($pdo);
+            break;
+        case 'delete_preset':
+            handleDeletePreset($pdo);
+            break;
+
         default:
             header('HTTP/1.1 404 Not Found');
             echo json_encode(['error' => 'Action not found']);
@@ -4859,3 +4870,39 @@ function removeDuplicateVttCues($vtt) {
     return implode("\n", $result);
 }
 
+function handleGetPresets($pdo) {
+    $stmt = $pdo->query("SELECT id, preset_name, target_url FROM crawler_presets ORDER BY id ASC");
+    $presets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    echo json_encode($presets);
+    exit;
+}
+
+function handleSavePreset($pdo) {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('POST method required');
+    $data = json_decode(file_get_contents('php://input'), true);
+    
+    $name = trim($data['preset_name'] ?? '');
+    $url = trim($data['target_url'] ?? '');
+
+    if ($name === '' || $url === '') throw new Exception('Preset name and target URL are required');
+
+    $stmt = $pdo->prepare("INSERT INTO crawler_presets (preset_name, target_url) VALUES (:name, :url)");
+    $stmt->execute([':name' => $name, ':url' => $url]);
+    
+    echo json_encode(['success' => true, 'id' => $pdo->lastInsertId()]);
+    exit;
+}
+
+function handleDeletePreset($pdo) {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('POST method required');
+    $data = json_decode(file_get_contents('php://input'), true);
+    $id = intval($data['id'] ?? 0);
+
+    if ($id <= 0) throw new Exception('Valid ID required');
+
+    $stmt = $pdo->prepare("DELETE FROM crawler_presets WHERE id = :id");
+    $stmt->execute([':id' => $id]);
+
+    echo json_encode(['success' => true]);
+    exit;
+}
