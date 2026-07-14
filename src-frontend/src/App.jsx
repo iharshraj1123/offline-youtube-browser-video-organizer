@@ -1423,7 +1423,7 @@ function PlayerView({
   const DEFAULT_SUB_PREFS = {
     fontFamily: 'Arial',
     customFont: '',
-    fontSize: 100,
+    fontSize: 150,
     fontColor: '#ffffff',
     bgColor: 'transparent',
     textShadow: '0 0 4px #000000',
@@ -2059,8 +2059,13 @@ function PlayerView({
     if (!track || !track.cues) return;
     for (let i = 0; i < track.cues.length; i++) {
       const cue = track.cues[i];
-      if (subPrefs.vPosition !== 'auto') cue.line = subPrefs.vPosition;
-      if (subPrefs.hPosition !== 'auto') cue.position = subPrefs.hPosition;
+      if (subPrefs.vPosition !== 'auto') {
+        cue.snapToLines = false;
+        cue.line = subPrefs.vPosition;
+      }
+      if (subPrefs.hPosition !== 'auto') {
+        cue.position = subPrefs.hPosition;
+      }
       cue.align = subPrefs.align;
     }
   };
@@ -2117,15 +2122,22 @@ function PlayerView({
   // Apply subtitle styles + cue positions on prefs change
   useEffect(() => { updateSubStyles(); applySubCuePositions(); }, [subPrefs]);
 
-  // Apply cue positions when video loads / track changes
+  // Apply cue positions when video loads / track changes (retry until cues are ready)
   useEffect(() => {
     const videoEl = videoRef.current;
     if (!videoEl) return;
+    let retries = [];
     const handler = () => {
-      setTimeout(applySubCuePositions, 100);
+      [100, 500, 1500].forEach(delay => {
+        const t = setTimeout(applySubCuePositions, delay);
+        retries.push(t);
+      });
     };
     videoEl.addEventListener('loadedmetadata', handler);
-    return () => videoEl.removeEventListener('loadedmetadata', handler);
+    return () => {
+      videoEl.removeEventListener('loadedmetadata', handler);
+      retries.forEach(clearTimeout);
+    };
   }, [video?.vid_id, subPrefs]);
 
   // Fetch subtitle info when video changes
