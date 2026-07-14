@@ -1966,10 +1966,12 @@ function PlayerView({
         return;
       }
 
+      const realWorldStartTime = Date.now();
+
       setPrepProgress({
         progressId: startData.progress_id,
         percent: 0, speed: '', eta: 0, elapsed: 0,
-        status: 'running', startTime: Date.now(),
+        status: 'running', startTime: realWorldStartTime,
       });
 
       const pollInterval = setInterval(async () => {
@@ -1981,12 +1983,14 @@ function PlayerView({
           });
           const progData = await progRes.json();
 
+          const actualElapsed = Math.floor((Date.now() - realWorldStartTime) / 1000);
+
           setPrepProgress(prev => ({
             ...prev,
             percent: progData.percent,
             speed: progData.speed,
             eta: progData.eta,
-            elapsed: progData.elapsed,
+            elapsed: actualElapsed,
             status: progData.status,
           }));
 
@@ -2168,10 +2172,12 @@ function PlayerView({
         return;
       }
 
+      const realWorldStartTime = Date.now();
+
       setPrepProgress({
         progressId: startData.progress_id,
         percent: 0, speed: '', eta: 0, elapsed: 0,
-        status: 'running', startTime: Date.now(),
+        status: 'running', startTime: realWorldStartTime,
         outputMp4: startData.output_mp4,
         publicMp4: startData.public_mp4,
         outputVtt: startData.output_vtt,
@@ -2190,12 +2196,14 @@ function PlayerView({
           });
           const progData = await progRes.json();
 
+          const actualElapsed = Math.floor((Date.now() - realWorldStartTime) / 1000);
+
           setPrepProgress(prev => ({
             ...prev,
             percent: progData.percent,
             speed: progData.speed,
             eta: progData.eta,
-            elapsed: progData.elapsed,
+            elapsed: actualElapsed, // Overrides jumping/slipping frame timing
             status: progData.status,
           }));
 
@@ -2413,7 +2421,7 @@ function PlayerView({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: video.vid_id, style: subPrefs }),
-      }).catch(() => {});
+      }).catch(() => { });
     }, 600);
     return () => { if (saveStyleTimerRef.current) clearTimeout(saveStyleTimerRef.current); };
   }, [subPrefs, video?.vid_id]);
@@ -2483,7 +2491,7 @@ function PlayerView({
       setSubAutoload(!!data.autoload);
       setSubActiveIdx(data.tracks?.length ? 0 : -1);
       if (!data.tracks?.length) setSubsActive(false);
-    } catch {}
+    } catch { }
   };
 
   const handleToggleAutoload = async () => {
@@ -2501,7 +2509,7 @@ function PlayerView({
       setSubAutoload(next);
       if (next && subtitleTracks.length > 0) { setSubsActive(true); if (subActiveIdx < 0) setSubActiveIdx(0); }
       if (!next) setSubsActive(false);
-    } catch {}
+    } catch { }
   };
 
   const startModernCast = async () => {
@@ -3922,7 +3930,7 @@ function PlayerView({
             onMouseMove={handleProgressMouseMove}
             onMouseLeave={handleProgressMouseLeave}
           >
-            <div className="progress-bar-container">
+            <div className="progress-timeline-container">
               <div
                 className="progress-bar-played"
                 style={{ width: `${(currentTime / (duration || 1)) * 100}%` }}

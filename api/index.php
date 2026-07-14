@@ -2371,17 +2371,29 @@ function evictCastCache($maxBytes) {
 }
 
 function execInBackground($cmd, $progressId) {
+    $batchFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $progressId . '.bat';
+    
+    // Reroute the crash log directly into your youtube/uploads folder
+    $logFile = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'ffmpeg_error.log';
+    
+    // Capture ALL output (stdout and stderr) to the log file
     $batchContent = '@echo off' . "\r\n"
         . 'title ffmpeg_' . $progressId . "\r\n"
-        . $cmd . "\r\n"
+        . $cmd . ' > "' . $logFile . '" 2>&1' . "\r\n"
+        . 'del "%~f0"' . "\r\n"
         . 'exit' . "\r\n";
-    $batchFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $progressId . '.bat';
+        
     file_put_contents($batchFile, $batchContent);
-    $descriptorspec = [0 => ['pipe', 'r'], 1 => ['file', 'NUL', 'a'], 2 => ['file', 'NUL', 'a']];
-    $proc = @proc_open('start /B "" ' . $batchFile, $descriptorspec, $pipes);
-    if (is_resource($proc)) {
-        proc_close($proc);
+    
+    if (class_exists('COM')) {
+        try {
+            $wsh = new COM('WScript.Shell');
+            $wsh->Run('cmd /C "' . $batchFile . '"', 0, false);
+            return;
+        } catch (Throwable $e) {}
     }
+    
+    pclose(popen('start /B "" "' . $batchFile . '"', 'r'));
 }
 
 function stopBackgroundProcess($progressId) {
@@ -2429,8 +2441,15 @@ function probeCastMedia($localPath) {
         if ($acode === 0 && !empty($aoutput)) {
             $parts = explode(',', trim($aoutput[0]));
             $audioCodec = trim($parts[0] ?? '');
-            $audioChannels = isset($parts[1]) ? intval(trim($parts[1])) : 2;
-            $audioSampleRate = isset($parts[2]) ? intval(trim($parts[2])) : 0;
+            
+            // Handle cases where ffprobe omits channels (e.g., Opus returning "opus,48000")
+            if (count($parts) === 2) {
+                $audioChannels = 2; // Assume stereo fallback
+                $audioSampleRate = intval(trim($parts[1]));
+            } else {
+                $audioChannels = isset($parts[1]) ? intval(trim($parts[1])) : 2;
+                $audioSampleRate = isset($parts[2]) ? intval(trim($parts[2])) : 0;
+            }
         }
 
         $ext = strtolower(pathinfo($localPath, PATHINFO_EXTENSION));
@@ -2537,8 +2556,15 @@ function checkAndTranscodeMedia($originalLink) {
         if ($acode === 0 && !empty($aoutput)) {
             $parts = explode(',', trim($aoutput[0]));
             $audioCodec = trim($parts[0] ?? '');
-            $audioChannels = isset($parts[1]) ? intval(trim($parts[1])) : 2;
-            $audioSampleRate = isset($parts[2]) ? intval(trim($parts[2])) : 0;
+            
+            // Handle cases where ffprobe omits channels (e.g., Opus returning "opus,48000")
+            if (count($parts) === 2) {
+                $audioChannels = 2; // Assume stereo fallback
+                $audioSampleRate = intval(trim($parts[1]));
+            } else {
+                $audioChannels = isset($parts[1]) ? intval(trim($parts[1])) : 2;
+                $audioSampleRate = isset($parts[2]) ? intval(trim($parts[2])) : 0;
+            }
         }
 
         $ext = strtolower(pathinfo($localPath, PATHINFO_EXTENSION));
@@ -2731,12 +2757,29 @@ function handleStartCastPrep() {
         $videoArgs = $isGpu ? $videoArgsGpu : $videoArgsCpu;
         $scaleArg = $needScale ? ' -vf "scale=\'min(1920,iw)\':\'min(1080,ih)\':force_original_aspect_ratio=decrease"' : '';
 
-        $cmd = $ffmpegPath . ' -y -threads 0 -progress ' . escapeshellarg($progressFile)
+        $scaleArg = $needScale ? ' -vf "scale=\'min(1920,iw)\':\'min(1080,ih)\':force_original_aspect_ratio=decrease"' : '';
+
+        // Pre-build CPU baseline fallback configuration
+        $cmdCpu = $ffmpegPath . ' -y -threads 0 -progress ' . escapeshellarg($progressFile)
             . ' -i ' . escapeshellarg($probePath)
-            . ' ' . $videoArgs . $scaleArg
+            . ' ' . $videoArgsCpu . $scaleArg
             . ' -r 30'
             . ' -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart '
             . escapeshellarg($cachedFile);
+
+        if ($needVideoTranscode && $isGpu) {
+            $cmdGpu = $ffmpegPath . ' -y -threads 0 -progress ' . escapeshellarg($progressFile)
+                . ' -i ' . escapeshellarg($probePath)
+                . ' ' . $videoArgsGpu . $scaleArg
+                . ' -r 30'
+                . ' -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart '
+                . escapeshellarg($cachedFile);
+            
+            // If GPU chain fails (returns non-zero), instantly invoke CPU execution sequence
+            $cmd = $cmdGpu . ' || ' . $cmdCpu;
+        } else {
+            $cmd = $cmdCpu;
+        }
     } else {
         $cmd = $ffmpegPath . ' -y -progress ' . escapeshellarg($progressFile)
             . ' -i ' . escapeshellarg($probePath)
@@ -2745,9 +2788,13 @@ function handleStartCastPrep() {
             . escapeshellarg($cachedFile);
     }
 
-    execInBackground($cmd, $progressId);
+    // Inject a cleanup command into the background script so the file 
+    // is deleted AFTER FFmpeg finishes, instead of PHP deleting it prematurely.
+    if ($tempLink) {
+        $cmd .= "\r\ndel \"" . $tempLink . "\" 2>NUL";
+    }
 
-    if ($tempLink && file_exists($tempLink)) @unlink($tempLink);
+    execInBackground($cmd, $progressId);
 
     echo json_encode([
         'progress_id' => $progressId,
@@ -2844,12 +2891,25 @@ function handleStartConvertPrep($pdo) {
         }
         if (!$isGpu) $videoArgs = '-c:v libx264 -preset ultrafast -crf 28 -pix_fmt yuv420p';
 
-        $cmd = $ffmpegPath . ' -y -threads 0 -progress ' . escapeshellarg($progressFile)
+        $cmdCpu = $ffmpegPath . ' -y -threads 0 -progress ' . escapeshellarg($progressFile)
             . ' -i ' . escapeshellarg($localPath)
             . ' -map 0:v:0 -map 0:' . $audioIndex
-            . ' ' . $videoArgs
+            . ' -c:v libx264 -preset ultrafast -crf 28 -pix_fmt yuv420p'
             . ' -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart -map_metadata -1 '
             . escapeshellarg($outputMp4);
+
+        if ($videoNeedsTranscode && isset($isGpu) && $isGpu) {
+            $cmdGpu = $ffmpegPath . ' -y -threads 0 -progress ' . escapeshellarg($progressFile)
+                . ' -i ' . escapeshellarg($localPath)
+                . ' -map 0:v:0 -map 0:' . $audioIndex
+                . ' ' . $videoArgs
+                . ' -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart -map_metadata -1 '
+                . escapeshellarg($outputMp4);
+                
+            $cmd = $cmdGpu . ' || ' . $cmdCpu;
+        } else {
+            $cmd = $cmdCpu;
+        }
     }
 
     execInBackground($cmd, $progressId);
@@ -2934,7 +2994,12 @@ function handleGetProgress() {
 
     // If progress=end not found but process may have ended (no batch file)
     if ($status === 'running' && !file_exists($batchFile)) {
-        $status = 'done';
+        // If the progress file doesn't exist or is completely empty, it crashed
+        if (!file_exists($progressFile) || filesize($progressFile) == 0) {
+            $status = 'error';
+        } else {
+            $status = 'done';
+        }
     }
 
     $elapsed = $outTimeUs > 0 ? round($outTimeUs / 1000000, 1) : 0;
@@ -3540,8 +3605,8 @@ function handleFfmpegVerify() {
     $audioEncoders = [];
     if ($encCode === 0) {
         $allText = implode("\n", $encOut);
-        // Format: " V....D libx264   ..." or " A....D aac   ..."
-        preg_match_all('/^\sV.{4}\s+([^\s]+)\s/m', $allText, $vMatches);
+        // Format: " V....D libx264   ..." or " A....D aac   ..." (type + 5 flag chars)
+        preg_match_all('/^\sV.{5}\s+([^\s]+)\s/m', $allText, $vMatches);
         foreach ($vMatches[1] as $enc) {
             $e = trim($enc);
             if (!empty($e)) {
@@ -3549,7 +3614,7 @@ function handleFfmpegVerify() {
                 $encoders[] = $e;
             }
         }
-        preg_match_all('/^\sA.{4}\s+([^\s]+)\s/m', $allText, $aMatches);
+        preg_match_all('/^\sA.{5}\s+([^\s]+)\s/m', $allText, $aMatches);
         foreach ($aMatches[1] as $enc) {
             $e = trim($enc);
             if (!empty($e)) {
