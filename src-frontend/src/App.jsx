@@ -2143,6 +2143,10 @@ function PlayerView({
   // Fetch subtitle info when video changes
   useEffect(() => {
     if (!video?.vid_id) { setSubtitleTracks([]); setSubsActive(false); setSubActiveIdx(-1); return; }
+    // Clear stale tracks immediately so no wrong <track> elements render during fetch
+    setSubtitleTracks([]);
+    setSubActiveIdx(-1);
+    setSubsActive(false);
     (async () => {
       try {
         const res = await fetch(`./api/index.php?action=detect_subtitle&id=${video.vid_id}`);
@@ -2154,7 +2158,7 @@ function PlayerView({
           setDetectedSubPath(data.auto_exists || null);
           setSubDirInput(data.candidate_dir || '');
           setSubNameInput(data.candidate_name || '');
-          setSubActiveIdx(tracks.length > 0 ? (subActiveIdx >= 0 ? subActiveIdx : 0) : -1);
+          setSubActiveIdx(tracks.length > 0 ? 0 : -1);
           setSubsActive(tracks.length > 0 && !!data.autoload);
           // Load per-video subtitle style (merge over localStorage defaults)
           subPrefsVidRef.current = video.vid_id;
@@ -3228,7 +3232,7 @@ function PlayerView({
           tabIndex={0}
         >
           {subtitleTracks.map((t, i) => (
-            <track key={'db-' + i + '-v' + subStyleVer} src={`./api/index.php?action=serve_subtitle&id=${video.vid_id}&lang=${t.lang}&_=${subStyleVer}`} kind="subtitles" srcLang={t.lang} label={t.label} default={i === 0 && subAutoload} />
+            <track key={'db-' + video.vid_id + '-' + i + '-v' + subStyleVer} src={`./api/index.php?action=serve_subtitle&id=${video.vid_id}&lang=${t.lang}&_=${subStyleVer}`} kind="subtitles" srcLang={t.lang} label={t.label} default={i === 0 && subAutoload} />
           ))}
           {cachedVideo?.vtt && (
             <track ref={subtitleTrackRef} src={cachedVideo.vtt} kind="subtitles" srcLang="und" label="Subtitles" default={subtitleTracks.length === 0} />
