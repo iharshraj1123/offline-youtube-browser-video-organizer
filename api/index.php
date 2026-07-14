@@ -23,9 +23,21 @@ if ($baseDir === '/') {
 define('BASE_DIR', $baseDir);
 
 function stripBaseDir($path) {
-    $clean = str_replace(BASE_DIR, '', $path);
-    $clean = ltrim($clean, '/');
-    return $clean;
+    // 1. Remove leading slashes and dots to normalize the incoming path
+    $clean = ltrim($path, './\\');
+    
+    // 2. Normalize the base directory (removes the leading slash, e.g., "youtube")
+    $baseDirName = ltrim(BASE_DIR, '/\\');
+    
+    if ($baseDirName !== '') {
+        // 3. Case-insensitive check: does the path start with "youtube/" or "YouTube/"?
+        if (stripos($clean, $baseDirName . '/') === 0) {
+            // If yes, chop off the base folder name and the slash
+            $clean = substr($clean, strlen($baseDirName) + 1);
+        }
+    }
+    
+    return ltrim($clean, '/\\');
 }
 
 require_once 'db.php';
