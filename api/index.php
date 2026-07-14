@@ -2401,13 +2401,13 @@ function checkAndTranscodeMedia($originalLink) {
 
             // Apply fast presets for detected GPU encoders
             if ($encoder === 'h264_nvenc') {
-                $videoArgsGpu = '-c:v h264_nvenc -preset fast -rc vbr -cq:v 23 -b:v 8M -maxrate 10M -bufsize 16M';
+                $videoArgsGpu = '-c:v h264_nvenc -pix_fmt yuv420p -preset fast -rc vbr -cq:v 23 -b:v 8M -maxrate 10M -bufsize 16M';
             } elseif ($encoder === 'h264_qsv') {
-                $videoArgsGpu = '-c:v h264_qsv -preset fast -b:v 8M -maxrate 10M -bufsize 16M';
+                $videoArgsGpu = '-c:v h264_qsv -pix_fmt yuv420p -preset fast -b:v 8M -maxrate 10M -bufsize 16M';
             } elseif ($encoder === 'h264_amf') {
-                $videoArgsGpu = '-c:v h264_amf -preset speed -b:v 8M -maxrate 10M -bufsize 16M';
+                $videoArgsGpu = '-c:v h264_amf -pix_fmt yuv420p -preset speed -b:v 8M -maxrate 10M -bufsize 16M';
             } else {
-                $videoArgsGpu = '-c:v ' . $encoder . ' -b:v 8M -maxrate 10M -bufsize 16M';
+                $videoArgsGpu = '-c:v ' . $encoder . ' -pix_fmt yuv420p -b:v 8M -maxrate 10M -bufsize 16M';
             }
             $videoArgsCpu = '-c:v libx264 -preset ultrafast -crf 23 -pix_fmt yuv420p -b:v 8M -maxrate 10M -bufsize 16M';
             $videoArgs = $isGpu ? $videoArgsGpu : $videoArgsCpu;
