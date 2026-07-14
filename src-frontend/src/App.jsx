@@ -7,12 +7,13 @@ import {
   Play, Pause, Volume2, VolumeX, Maximize, Minimize,
   Settings, Trash2, Edit, RefreshCw, Plus, Check, Loader2,
   ThumbsUp, ThumbsDown, Info, Mic, Bell, CornerUpLeft,
-  Repeat, Shuffle, Download, SkipBack, SkipForward, ListMusic, X, RotateCcw, RotateCw, Cast, Upload, Subtitles, AlertTriangle
+  Repeat, Shuffle, Download, SkipBack, SkipForward, ListMusic, X, RotateCcw, RotateCw, Cast, Upload, Subtitles, AlertTriangle, Wand2
 } from 'lucide-react';
 import { AuthModal } from './components/AuthModal';
 import { CommentsSection } from './components/CommentsSection';
 import { ProfileView } from './components/ProfileView';
 import { DownloaderView } from './components/DownloaderView';
+import { ConverterView } from './components/ConverterView';
 
 // Cookie Helper
 function getCookie(name) {
@@ -239,6 +240,8 @@ export default function App() {
       setCurrentView('profile');
     } else if (page === 'downloader') {
       setCurrentView('downloader');
+    } else if (page === 'converter') {
+      setCurrentView('converter');
     } else {
       setCurrentView('home');
     }
@@ -261,6 +264,9 @@ export default function App() {
         setPlayingVideo(null);
       } else if (pg === 'downloader') {
         setCurrentView('downloader');
+        setPlayingVideo(null);
+      } else if (pg === 'converter') {
+        setCurrentView('converter');
         setPlayingVideo(null);
       } else {
         setCurrentView('home');
@@ -618,6 +624,12 @@ export default function App() {
     setCurrentView('downloader');
   };
 
+  // Trigger converter redirect
+  const handleGoToConverter = () => {
+    window.history.pushState(null, '', '?page=converter');
+    setCurrentView('converter');
+  };
+
   // Trigger profile page redirect
   const handleGoToProfile = (username, updateUrl = true) => {
     setProfileUsername(username);
@@ -855,6 +867,15 @@ export default function App() {
               <span className="sidebar-item-icon"><Download size={20} /></span>
               <span className="sidebar-item-label">Download</span>
             </button>
+
+            <button
+              className={`sidebar-item ${currentView === 'converter' ? 'active' : ''}`}
+              onClick={() => { handleGoToConverter(); setMobileSidebarOpen(false); }}
+              title="Convert Media Files"
+            >
+              <span className="sidebar-item-icon"><Wand2 size={20} /></span>
+              <span className="sidebar-item-label">Converter</span>
+            </button>
           </nav>
 
           <div className="sidebar-divider" />
@@ -1022,6 +1043,10 @@ export default function App() {
 
           {currentView === 'downloader' && (
             <DownloaderView currentUser={user} />
+          )}
+
+          {currentView === 'converter' && (
+            <ConverterView />
           )}
         </main>
       </div>
@@ -1415,6 +1440,8 @@ function PlayerView({
   const [serverIps, setServerIps] = useState([]);
   const [selectedServerIp, setSelectedServerIp] = useState(() => localStorage.getItem('yt_cast_server_ip') || '');
   const [isTranscoding, setIsTranscoding] = useState(false);
+  const [castDiagnostics, setCastDiagnostics] = useState(null);
+  const [prepProgress, setPrepProgress] = useState(null);
   const [pendingTranscodeDevice, setPendingTranscodeDevice] = useState(null);
 
   // Subtitle states
@@ -1820,6 +1847,10 @@ function PlayerView({
   };
 
   const startCasting = (device) => {
+    if (cachedVideo?.mp4_path) {
+      executeCast(device);
+      return;
+    }
     const isMp4 = video.link && video.link.toLowerCase().endsWith('.mp4');
     if (!isMp4) {
       setPendingTranscodeDevice(device);
@@ -1828,63 +1859,164 @@ function PlayerView({
     executeCast(device);
   };
 
+  const formatDuration = (s) => {
+    if (s < 60) return `${Math.round(s)}s`;
+    const m = Math.floor(s / 60);
+    return `${m}m ${Math.round(s % 60)}s`;
+  };
+
+  const handleStopPrep = async () => {
+    if (prepProgress?.progressId) {
+      await fetch('./api/index.php?action=stop_prep', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ progress_id: prepProgress.progressId })
+      });
+    }
+    setIsTranscoding(false);
+    setIsConverting(false);
+    setPrepProgress(null);
+  };
+
   const executeCast = async (device) => {
     setPendingTranscodeDevice(null);
     setIsTranscoding(true);
+    setCastDiagnostics(null);
+    setPrepProgress(null);
 
-    const localHostIp = selectedServerIp || window.location.hostname;
-    const translatedPath = translateVideoUrl(video.link);
-    const encodedPath = translatedPath.split('/').map(seg => {
-      if (seg.match(/^[a-zA-Z]:$/)) return seg;
-      return encodeURIComponent(seg);
-    }).join('/');
+    const sourcePath = cachedVideo?.mp4_path || video.link;
 
-    const mediaUrl = `${window.location.protocol}//${localHostIp}${encodedPath}`;
+    const doUriAndPlay = async (preparedUrl) => {
+      try {
+        const localHostIp = selectedServerIp || window.location.hostname;
+        const sourceUrl = cachedVideo?.mp4 || translateVideoUrl(video.link);
 
-    try {
-      if (videoRef.current) {
-        videoRef.current.pause();
-        videoRef.current.currentTime = 0;
-        setIsPlaying(false);
-      }
-      setCurrentTime(0);
+        let mediaUrl;
+        if (cachedVideo?.mp4) {
+          const base = `${window.location.protocol}//${localHostIp}/`;
+          mediaUrl = new URL(cachedVideo.mp4, base).href;
+        } else {
+          const encodedPath = sourceUrl.split('/').map(seg => {
+            if (seg.match(/^[a-zA-Z]:$/)) return seg;
+            return encodeURIComponent(seg);
+          }).join('/');
+          mediaUrl = `${window.location.protocol}//${localHostIp}${encodedPath}`;
+        }
 
-      const setRes = await fetch(`./api/index.php?action=cast_control&server_ip=${encodeURIComponent(selectedServerIp)}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          control_url: device.control_url,
-          action: 'set_uri',
-          media_url: mediaUrl,
-          video_link: video.link,
-          title: video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')
-        })
-      });
-      const setResult = await setRes.json();
+        if (videoRef.current) {
+          videoRef.current.pause();
+          videoRef.current.currentTime = 0;
+          setIsPlaying(false);
+        }
+        setCurrentTime(0);
 
-      if (setResult && setResult.status === 'success') {
-        // Wait a brief moment for the TV to transition and register the new URI
-        await new Promise(resolve => setTimeout(resolve, 800));
-
-        await fetch('./api/index.php?action=cast_control', {
+        const setRes = await fetch(`./api/index.php?action=cast_control&server_ip=${encodeURIComponent(selectedServerIp)}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             control_url: device.control_url,
-            action: 'play'
+            action: 'set_uri',
+            media_url: mediaUrl,
+            video_link: sourcePath,
+            prepared_url: preparedUrl,
+            title: video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')
           })
         });
+        const setResult = await setRes.json();
 
-        setCastDevice(device);
-        setIsPlaying(true);
-        showFlashNotification(`Casting to ${device.name}!`);
-      } else {
-        showFlashNotification('Failed to connect to TV. Make sure it is on.');
+        if (setResult && setResult.status === 'success') {
+          await new Promise(resolve => setTimeout(resolve, 800));
+          await fetch('./api/index.php?action=cast_control', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              control_url: device.control_url,
+              action: 'play'
+            })
+          });
+          setCastDevice(device);
+          setIsPlaying(true);
+          showFlashNotification(`Casting to ${device.name}!`);
+        } else {
+          showFlashNotification('Failed to connect to TV. Make sure it is on.');
+        }
+      } catch (e) {
+        console.error(e);
+        showFlashNotification('Casting error occurred.');
+      } finally {
+        setIsTranscoding(false);
+        setPrepProgress(null);
       }
+    };
+
+    try {
+      const startRes = await fetch('./api/index.php?action=start_cast_prep', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ video_link: sourcePath })
+      });
+      const startData = await startRes.json();
+      if (startData.error) throw new Error(startData.error);
+
+      setCastDiagnostics(startData.diagnostics);
+
+      if (startData.cached) {
+        setPrepProgress({ cached: true, cachedUrl: startData.cached_url });
+        await doUriAndPlay(startData.cached_url);
+        return;
+      }
+
+      setPrepProgress({
+        progressId: startData.progress_id,
+        percent: 0, speed: '', eta: 0, elapsed: 0,
+        status: 'running', startTime: Date.now(),
+      });
+
+      const pollInterval = setInterval(async () => {
+        try {
+          const progRes = await fetch('./api/index.php?action=get_progress', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ progress_id: startData.progress_id })
+          });
+          const progData = await progRes.json();
+
+          setPrepProgress(prev => ({
+            ...prev,
+            percent: progData.percent,
+            speed: progData.speed,
+            eta: progData.eta,
+            elapsed: progData.elapsed,
+            status: progData.status,
+          }));
+
+          if (progData.status === 'done') {
+            clearInterval(pollInterval);
+            const finishRes = await fetch('./api/index.php?action=finish_cast_prep', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ progress_id: startData.progress_id, video_link: sourcePath })
+            });
+            const finishData = await finishRes.json();
+            if (finishData.error) throw new Error(finishData.error);
+            await doUriAndPlay(finishData.cached_url);
+          } else if (progData.status !== 'running') {
+            clearInterval(pollInterval);
+            showFlashNotification('Preparation failed.');
+            setIsTranscoding(false);
+            setPrepProgress(null);
+          }
+        } catch (e) {
+          clearInterval(pollInterval);
+          console.error(e);
+          showFlashNotification('Error checking progress.');
+          setIsTranscoding(false);
+          setPrepProgress(null);
+        }
+      }, 1000);
     } catch (e) {
       console.error(e);
-      showFlashNotification('Casting error occurred.');
-    } finally {
+      showFlashNotification('Failed to start preparation.');
       setIsTranscoding(false);
     }
   };
@@ -2001,8 +2133,8 @@ function PlayerView({
         const data = await res.json();
         if (data.error) { setConvertError(data.error); return; }
         setMkvStreams(data);
-        setSelectedAudioIdx(0);
-        setSelectedSubIdx(data.subtitle_streams?.length > 0 ? 0 : -1);
+        setSelectedAudioIdx(data.audio_streams?.[0]?.index ?? 0);
+        setSelectedSubIdx(data.subtitle_streams?.[0]?.index ?? -1);
         setShowMkvModal(true);
         setConvertError('');
       } catch { setConvertError('Failed to probe video'); }
@@ -2012,35 +2144,115 @@ function PlayerView({
   const handleConvertAndPlay = async () => {
     setIsConverting(true);
     setConvertError('');
+    setPrepProgress(null);
+
+    const fd = new URLSearchParams();
+    fd.append('id', video.vid_id);
+    fd.append('audio_index', selectedAudioIdx);
+    fd.append('subtitle_index', selectedSubIdx);
+
     try {
-      const fd = new URLSearchParams();
-      fd.append('id', video.vid_id);
-      fd.append('audio_index', selectedAudioIdx);
-      fd.append('subtitle_index', selectedSubIdx);
-      const res = await fetch('./api/index.php?action=convert_video', {
+      const startRes = await fetch('./api/index.php?action=start_convert_prep', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: fd.toString(),
       });
-      const data = await res.json();
-      if (data.error) { setConvertError(data.error); setIsConverting(false); return; }
-      setCachedVideo({ vidId: video.vid_id, mp4: data.mp4, vtt: data.vtt, audioIndex: selectedAudioIdx, subIndex: selectedSubIdx });
-      setShowMkvModal(false);
-      if (data.vtt) {
-        setSubsActive(true);
-        setSubActiveIdx(subtitleTracks.length);
-        setTimeout(() => {
-          const tt = videoRef.current?.textTracks;
-          if (!tt) return;
-          for (let i = 0; i < tt.length; i++)
-            tt[i].mode = i === subtitleTracks.length ? 'showing' : 'hidden';
-        }, 200);
-      } else {
-        setSubsActive(false);
-        setSubActiveIdx(-1);
+      const startData = await startRes.json();
+      if (startData.error) { setConvertError(startData.error); setIsConverting(false); return; }
+
+      setCastDiagnostics(startData.diagnostics);
+
+      if (!startData.progress_id) {
+        setConvertError('Failed to start conversion.');
+        setIsConverting(false);
+        return;
       }
+
+      setPrepProgress({
+        progressId: startData.progress_id,
+        percent: 0, speed: '', eta: 0, elapsed: 0,
+        status: 'running', startTime: Date.now(),
+        outputMp4: startData.output_mp4,
+        publicMp4: startData.public_mp4,
+        outputVtt: startData.output_vtt,
+        publicVtt: startData.public_vtt,
+        hasSubtitle: startData.has_subtitle,
+        subtitleIndex: startData.subtitle_index,
+        localPath: startData.local_path,
+      });
+
+      const pollInterval = setInterval(async () => {
+        try {
+          const progRes = await fetch('./api/index.php?action=get_progress', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ progress_id: startData.progress_id })
+          });
+          const progData = await progRes.json();
+
+          setPrepProgress(prev => ({
+            ...prev,
+            percent: progData.percent,
+            speed: progData.speed,
+            eta: progData.eta,
+            elapsed: progData.elapsed,
+            status: progData.status,
+          }));
+
+          if (progData.status === 'done') {
+            clearInterval(pollInterval);
+            const finishRes = await fetch('./api/index.php?action=finish_convert_prep', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                progress_id: startData.progress_id,
+                output_mp4: startData.output_mp4,
+                output_vtt: startData.output_vtt,
+                public_mp4: startData.public_mp4,
+                public_vtt: startData.public_vtt,
+                has_subtitle: startData.has_subtitle,
+                subtitle_index: startData.subtitle_index,
+                local_path: startData.local_path,
+              })
+            });
+            const finishData = await finishRes.json();
+            if (finishData.error) { setConvertError(finishData.error); setIsConverting(false); setPrepProgress(null); return; }
+
+            setCachedVideo({ vidId: video.vid_id, mp4: finishData.mp4, mp4_path: finishData.mp4_path, vtt: finishData.vtt, audioIndex: selectedAudioIdx, subIndex: selectedSubIdx });
+            setShowMkvModal(false);
+            if (finishData.vtt) {
+              setSubsActive(true);
+              setSubActiveIdx(subtitleTracks.length);
+              setTimeout(() => {
+                const tt = videoRef.current?.textTracks;
+                if (!tt) return;
+                for (let i = 0; i < tt.length; i++)
+                  tt[i].mode = i === subtitleTracks.length ? 'showing' : 'hidden';
+              }, 200);
+            } else {
+              setSubsActive(false);
+              setSubActiveIdx(-1);
+            }
+            setIsConverting(false);
+            setPrepProgress(null);
+          } else if (progData.status !== 'running') {
+            clearInterval(pollInterval);
+            setConvertError('Conversion failed.');
+            setIsConverting(false);
+            setPrepProgress(null);
+          }
+        } catch (e) {
+          clearInterval(pollInterval);
+          setConvertError('Progress check failed.');
+          setIsConverting(false);
+          setPrepProgress(null);
+        }
+      }, 1000);
+    } catch (e) {
+      setConvertError('Conversion failed to start.');
       setIsConverting(false);
-    } catch { setConvertError('Conversion failed'); setIsConverting(false); }
+      setPrepProgress(null);
+    }
   };
 
   const toggleSubtitles = () => {
@@ -2139,6 +2351,19 @@ function PlayerView({
       retries.forEach(clearTimeout);
     };
   }, [video?.vid_id, subPrefs]);
+
+  // Activate the correct TextTrack when subtitle state changes
+  useEffect(() => {
+    if (subActiveIdx < 0) return;
+    const t = setTimeout(() => {
+      const tt = videoRef.current?.textTracks;
+      if (!tt || subActiveIdx >= tt.length) return;
+      for (let i = 0; i < tt.length; i++) {
+        tt[i].mode = (i === subActiveIdx && subsActive) ? 'showing' : 'hidden';
+      }
+    }, 100);
+    return () => clearTimeout(t);
+  }, [subsActive, subActiveIdx, subtitleTracks]);
 
   // Fetch subtitle info when video changes
   useEffect(() => {
@@ -3232,20 +3457,71 @@ function PlayerView({
           tabIndex={0}
         >
           {subtitleTracks.map((t, i) => (
-            <track key={'db-' + video.vid_id + '-' + i + '-v' + subStyleVer} src={`./api/index.php?action=serve_subtitle&id=${video.vid_id}&lang=${t.lang}&_=${subStyleVer}`} kind="subtitles" srcLang={t.lang} label={t.label} default={i === 0 && subAutoload} />
+            <track key={'db-' + video.vid_id + '-' + i + '-v' + subStyleVer} src={`./api/index.php?action=serve_subtitle&id=${video.vid_id}&lang=${t.lang}&_=${subStyleVer}`} kind="subtitles" srcLang={t.lang} label={t.label} />
           ))}
           {cachedVideo?.vtt && (
-            <track ref={subtitleTrackRef} src={cachedVideo.vtt} kind="subtitles" srcLang="und" label="Subtitles" default={subtitleTracks.length === 0} />
+            <track ref={subtitleTrackRef} src={cachedVideo.vtt} kind="subtitles" srcLang="und" label="Subtitles" />
           )}
         </video>
         {(castDevice || isTranscoding) && (
           <div className="player-cast-active-overlay">
             {isTranscoding ? (
               <div className="cast-transcode-loader">
-                <div className="cast-spinner"></div>
-                <div className="cast-active-title" style={{ marginTop: '16px' }}>Preparing Media for TV...</div>
-                <div className="cast-active-status">Re-encoding video format for compatibility</div>
-                <span style={{ fontSize: '11px', color: '#aaa', marginTop: '8px' }}>This may take a moment depending on the video file size.</span>
+                {castDiagnostics && prepProgress?.cached ? (
+                  <>
+                    <Tv size={48} className="cast-active-icon" />
+                    <div className="cast-active-title" style={{ marginTop: '12px' }}>Already prepared — starting playback</div>
+                  </>
+                ) : (
+                  <>
+                    {prepProgress?.status === 'running' ? (
+                      <>
+                        <div className="cast-spinner"></div>
+                        <div className="cast-active-title" style={{ marginTop: '16px' }}>Preparing Media for TV...</div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="cast-spinner"></div>
+                        <div className="cast-active-title" style={{ marginTop: '16px' }}>Preparing Media for TV...</div>
+                        <div className="cast-active-status">Probing media format...</div>
+                      </>
+                    )}
+                    {castDiagnostics && (
+                      <div className="cast-diag-list" style={{ marginTop: '12px', textAlign: 'left', fontSize: '13px', lineHeight: '1.8' }}>
+                        <div style={{ color: castDiagnostics.container_ok ? '#4ade80' : '#fbbf24' }}>
+                          {castDiagnostics.container_ok ? '✓' : '⟳'} Container: {castDiagnostics.container.toUpperCase()}{!castDiagnostics.container_ok ? ' → MP4' : ''}
+                        </div>
+                        <div style={{ color: castDiagnostics.video_ok ? '#4ade80' : '#fbbf24' }}>
+                          {castDiagnostics.video_ok ? '✓' : '⟳'} Video: {castDiagnostics.video_codec?.toUpperCase()} {castDiagnostics.video_bit_depth}{!castDiagnostics.video_ok ? ' → H.264 8-bit' : ' — compatible'}
+                        </div>
+                        <div style={{ color: castDiagnostics.audio_ok ? '#4ade80' : '#fbbf24' }}>
+                          {castDiagnostics.audio_ok ? '✓' : '⟳'} Audio: {castDiagnostics.audio_codec?.toUpperCase()} {castDiagnostics.audio_channels === 1 ? 'Mono' : castDiagnostics.audio_channels === 2 ? 'Stereo' : (castDiagnostics.audio_channels - 1) + '.1'}{castDiagnostics.audio_sample_rate > 0 ? ' ' + (castDiagnostics.audio_sample_rate / 1000).toFixed(0) + 'kHz' : ''}{!castDiagnostics.audio_ok ? ' → AAC stereo' : ' — compatible'}
+                        </div>
+                      </div>
+                    )}
+                    {prepProgress?.status === 'running' && (
+                      <>
+                        <div className="cast-progress-bar-container" style={{ width: '80%', maxWidth: '300px', margin: '12px auto 8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', height: '6px', overflow: 'hidden' }}>
+                          <div className="cast-progress-bar-fill" style={{ width: `${prepProgress.percent}%`, background: 'var(--primary-color)', height: '100%', borderRadius: '4px', transition: 'width 0.3s ease' }} />
+                        </div>
+                        <div className="cast-progress-info" style={{ fontSize: '12px', color: '#aaa', marginBottom: '4px' }}>
+                          {prepProgress.percent.toFixed(0)}%{prepProgress.speed ? ` • ${prepProgress.speed}` : ''}
+                          {prepProgress.elapsed > 0 ? ` • ${formatDuration(prepProgress.elapsed)}` : ''}
+                          {prepProgress.eta > 0 ? ` • ETA ${formatDuration(prepProgress.eta)}` : ''}
+                        </div>
+                        <button onClick={handleStopPrep} style={{ background: 'rgba(255,50,50,0.2)', border: '1px solid rgba(255,50,50,0.4)', color: '#ff6b6b', borderRadius: '6px', padding: '6px 20px', cursor: 'pointer', fontSize: '13px', marginTop: '4px' }}>
+                          Cancel
+                        </button>
+                      </>
+                    )}
+                    {(!prepProgress || (prepProgress.status !== 'running' && !prepProgress.cached)) && castDiagnostics?.video_ok && castDiagnostics?.audio_ok && castDiagnostics?.container_ok && (
+                      <div style={{ color: '#94a3b8', marginTop: '8px', fontSize: '13px' }}>→ Copying file to cache (instant)</div>
+                    )}
+                    {(!prepProgress || (prepProgress.status !== 'running' && !prepProgress.cached)) && (!castDiagnostics?.video_ok || !castDiagnostics?.audio_ok || !castDiagnostics?.container_ok) && (
+                      <span style={{ fontSize: '11px', color: '#aaa', marginTop: '8px', display: 'block' }}>This may take a moment depending on the video file size.</span>
+                    )}
+                  </>
+                )}
               </div>
             ) : (
               <>
@@ -3677,7 +3953,7 @@ function PlayerView({
             {/* Hidden video element for frame extraction */}
             <video
               ref={previewVideoRef}
-              src={showHoverPreview ? translateVideoUrl(video.link) : ''}
+              src={showHoverPreview ? (cachedVideo?.mp4 || translateVideoUrl(video.link)) : ''}
               style={{ display: 'none' }}
               muted
               preload="metadata"
@@ -4110,7 +4386,10 @@ function PlayerView({
 
             {!mkvStreams.copy_safe && (
               <p className="mkv-warning">
-                <AlertTriangle size={14} /> Video codec ({mkvStreams.video_codec}) is not directly compatible with MP4. A full transcode will be performed. This may take some time.
+                <AlertTriangle size={14} /> {mkvStreams.video_pix_fmt && String(mkvStreams.video_pix_fmt).match(/10|12/)
+                  ? `Video uses 10-bit color depth (${mkvStreams.video_codec}) which is not supported by browsers. A full transcode to standard 8-bit will be performed.`
+                  : `Video codec (${mkvStreams.video_codec}) is not directly compatible with MP4. A full transcode will be performed.`
+                } This may take some time.
               </p>
             )}
 
@@ -4132,9 +4411,39 @@ function PlayerView({
       {isConverting && (
         <div className="convert-overlay">
           <div className="convert-loader">
-            <div className="convert-spinner"></div>
-            <div className="convert-title">Converting video for playback...</div>
-            <div className="convert-status">Remuxing MKV to MP4 with selected audio{subtitleTrackRef.current ? ' and subtitles' : ''}</div>
+            {prepProgress?.status === 'running' ? (
+              <>
+                <div className="convert-spinner"></div>
+                <div className="convert-title">Converting video for playback...</div>
+                {castDiagnostics && (
+                  <div style={{ fontSize: '12px', color: '#94a3b8', margin: '8px 0', lineHeight: '1.6' }}>
+                    <div style={{ color: castDiagnostics.video_ok ? '#4ade80' : '#fbbf24' }}>
+                      {castDiagnostics.video_ok ? '✓' : '⟳'} Video: {castDiagnostics.video_codec?.toUpperCase()}{!castDiagnostics.video_ok ? ' → H.264 8-bit' : ''}
+                    </div>
+                    <div style={{ color: castDiagnostics.audio_ok ? '#4ade80' : '#fbbf24' }}>
+                      {castDiagnostics.audio_ok ? '✓' : '⟳'} Audio: {castDiagnostics.audio_codec?.toUpperCase()}{!castDiagnostics.audio_ok ? ' → AAC stereo' : ''}
+                    </div>
+                  </div>
+                )}
+                <div className="cast-progress-bar-container" style={{ width: '80%', maxWidth: '300px', margin: '12px auto 8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', height: '6px', overflow: 'hidden' }}>
+                  <div className="cast-progress-bar-fill" style={{ width: `${prepProgress.percent}%`, background: 'var(--primary-color)', height: '100%', borderRadius: '4px', transition: 'width 0.3s ease' }} />
+                </div>
+                <div style={{ fontSize: '12px', color: '#aaa', marginBottom: '8px' }}>
+                  {prepProgress.percent.toFixed(0)}%{prepProgress.speed ? ` • ${prepProgress.speed}` : ''}
+                  {prepProgress.elapsed > 0 ? ` • ${formatDuration(prepProgress.elapsed)}` : ''}
+                  {prepProgress.eta > 0 ? ` • ETA ${formatDuration(prepProgress.eta)}` : ''}
+                </div>
+                <button onClick={handleStopPrep} style={{ background: 'rgba(255,50,50,0.2)', border: '1px solid rgba(255,50,50,0.4)', color: '#ff6b6b', borderRadius: '6px', padding: '6px 20px', cursor: 'pointer', fontSize: '13px', marginTop: '4px' }}>
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="convert-spinner"></div>
+                <div className="convert-title">Converting video for playback...</div>
+                <div className="convert-status">Remuxing MKV to MP4 with selected audio{subtitleTrackRef.current ? ' and subtitles' : ''}</div>
+              </>
+            )}
           </div>
         </div>
       )}

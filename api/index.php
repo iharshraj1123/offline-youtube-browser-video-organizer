@@ -136,6 +136,27 @@ try {
         case 'get_server_ips':
             handleGetServerIps();
             break;
+        case 'start_cast_prep':
+            handleStartCastPrep();
+            break;
+        case 'start_convert_prep':
+            handleStartConvertPrep($pdo);
+            break;
+        case 'get_progress':
+            handleGetProgress();
+            break;
+        case 'stop_prep':
+            handleStopPrep();
+            break;
+        case 'finish_cast_prep':
+            handleFinishCastPrep();
+            break;
+        case 'finish_convert_prep':
+            handleFinishConvertPrep();
+            break;
+        case 'cast_probe':
+            handleCastProbe();
+            break;
         case 'cast_discover':
             handleCastDiscover();
             break;
@@ -190,6 +211,21 @@ try {
         case 'save_subtitle_style':
             handleSaveSubtitleStyle($pdo);
             break;
+
+        // ---- FFmpeg Converter ----
+        case 'ffmpeg_verify':
+            handleFfmpegVerify();
+            break;
+        case 'ffmpeg_info':
+            handleFfmpegInfo();
+            break;
+        case 'ffmpeg_convert':
+            handleFfmpegConvert();
+            break;
+        case 'ffmpeg_download':
+            handleFfmpegDownload();
+            break;
+
         default:
             header('HTTP/1.1 404 Not Found');
             echo json_encode(['error' => 'Action not found']);
@@ -2334,6 +2370,115 @@ function evictCastCache($maxBytes) {
     }
 }
 
+function execInBackground($cmd, $progressId) {
+    $batchContent = '@echo off' . "\r\n"
+        . 'title ffmpeg_' . $progressId . "\r\n"
+        . $cmd . "\r\n"
+        . 'exit' . "\r\n";
+    $batchFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $progressId . '.bat';
+    file_put_contents($batchFile, $batchContent);
+    $descriptorspec = [0 => ['pipe', 'r'], 1 => ['file', 'NUL', 'a'], 2 => ['file', 'NUL', 'a']];
+    $proc = @proc_open('start /B "" ' . $batchFile, $descriptorspec, $pipes);
+    if (is_resource($proc)) {
+        proc_close($proc);
+    }
+}
+
+function stopBackgroundProcess($progressId) {
+    exec('taskkill /F /FI "WINDOWTITLE eq ffmpeg_' . $progressId . '" 2> NUL', $out, $code);
+    @unlink(sys_get_temp_dir() . DIRECTORY_SEPARATOR . $progressId . '.bat');
+    @unlink(sys_get_temp_dir() . DIRECTORY_SEPARATOR . $progressId . '.txt');
+    @unlink(sys_get_temp_dir() . DIRECTORY_SEPARATOR . $progressId . '.dur');
+}
+
+function getDurationUs($localPath) {
+    $ffprobePath = str_replace('"', '', getFFmpegPath());
+    $ffprobePath = str_replace('ffmpeg.exe', 'ffprobe.exe', $ffprobePath);
+    $durOut = [];
+    exec($ffprobePath . ' -v error -show_entries format=duration -of csv=p=0 ' . escapeshellarg($localPath), $durOut, $durCode);
+    if ($durCode === 0 && !empty($durOut[0])) {
+        return intval(floatval(trim($durOut[0])) * 1000000);
+    }
+    return 0;
+}
+
+function probeCastMedia($localPath) {
+    $ffmpegPath = getFFmpegPath();
+    if (!$ffmpegPath) return ['error' => 'FFmpeg not found'];
+    $ffprobePath = str_replace('ffmpeg.exe', 'ffprobe.exe', $ffmpegPath);
+
+    $tempLink = getTempHardlink($localPath);
+    $probePath = $tempLink ? $tempLink : $localPath;
+
+    try {
+        $vcmd = $ffprobePath . ' -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($probePath);
+        $voutput = []; $vcode = -1;
+        exec($vcmd, $voutput, $vcode);
+        $videoCodec = ($vcode === 0 && !empty($voutput)) ? trim($voutput[0]) : 'unknown';
+
+        $pixCmd = $ffprobePath . ' -v error -select_streams v:0 -show_entries stream=pix_fmt -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($probePath);
+        $pixOut = []; $pixCode = -1;
+        exec($pixCmd, $pixOut, $pixCode);
+        $pixFmt = ($pixCode === 0 && !empty($pixOut[0])) ? trim($pixOut[0]) : '';
+        $is10bit = preg_match('/p1[0-9]|1[0-9](le|be)/', $pixFmt);
+
+        $acmd = $ffprobePath . ' -v error -select_streams a:0 -show_entries stream=codec_name,channels,sample_rate -of csv=p=0 ' . escapeshellarg($probePath);
+        $aoutput = []; $acode = -1;
+        exec($acmd, $aoutput, $acode);
+        $audioCodec = ''; $audioChannels = 2; $audioSampleRate = 0;
+        if ($acode === 0 && !empty($aoutput)) {
+            $parts = explode(',', trim($aoutput[0]));
+            $audioCodec = trim($parts[0] ?? '');
+            $audioChannels = isset($parts[1]) ? intval(trim($parts[1])) : 2;
+            $audioSampleRate = isset($parts[2]) ? intval(trim($parts[2])) : 0;
+        }
+
+        $ext = strtolower(pathinfo($localPath, PATHINFO_EXTENSION));
+
+        $needVideoTranscode = ($videoCodec !== 'h264' || $is10bit);
+        $needAudioTranscode = !($audioCodec === 'aac' && $audioChannels <= 2 && $audioSampleRate > 0 && $audioSampleRate <= 48000);
+
+        $cacheDir = __DIR__ . '/../uploads/cast_cache';
+        if (!file_exists($cacheDir)) @mkdir($cacheDir, 0777, true);
+        $fileHash = md5($localPath);
+        $cachedFile = $cacheDir . '/' . $fileHash . '.mp4';
+        $isCached = file_exists($cachedFile) && filesize($cachedFile) > 0;
+
+        return [
+            'cached' => $isCached,
+            'video_codec' => $videoCodec,
+            'video_bit_depth' => $is10bit ? '10-bit' : '8-bit',
+            'video_ok' => !$needVideoTranscode,
+            'audio_codec' => $audioCodec,
+            'audio_channels' => $audioChannels,
+            'audio_sample_rate' => $audioSampleRate,
+            'audio_ok' => !$needAudioTranscode,
+            'container' => $ext,
+            'container_ok' => ($ext === 'mp4'),
+        ];
+    } finally {
+        if ($tempLink && file_exists($tempLink)) @unlink($tempLink);
+    }
+}
+
+function handleCastProbe() {
+    $rawData = file_get_contents('php://input');
+    $data = json_decode($rawData, true);
+    $videoLink = $data['video_link'] ?? '';
+
+    if (empty($videoLink)) {
+        throw new Exception('Missing video_link parameter');
+    }
+
+    $localPath = resolveLocalFilePath($videoLink);
+    if (!file_exists($localPath)) {
+        throw new Exception('Video file not found on disk');
+    }
+
+    echo json_encode(probeCastMedia($localPath));
+    exit;
+}
+
 function checkAndTranscodeMedia($originalLink) {
     $localPath = resolveLocalFilePath($originalLink);
     if (!file_exists($localPath)) {
@@ -2379,29 +2524,39 @@ function checkAndTranscodeMedia($originalLink) {
             $videoCodec = trim($voutput[0]);
         }
 
-        // Check audio codec and channels
+        // Check audio codec, channels, and sample rate
         $audioCodec = '';
         $audioChannels = 2;
-        $acmd = $ffprobePath . ' -v error -select_streams a:0 -show_entries stream=codec_name,channels -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($probePath);
+        $audioSampleRate = 0;
+        $acmd = $ffprobePath . ' -v error -select_streams a:0 -show_entries stream=codec_name,channels,sample_rate -of csv=p=0 ' . escapeshellarg($probePath);
         $aoutput = [];
         exec($acmd, $aoutput, $acode);
         if ($acode !== 0 || empty($aoutput)) {
             error_log("[cast] ffprobe audio detection failed for: $localPath (exit=$acode)");
         }
         if ($acode === 0 && !empty($aoutput)) {
-            $audioCodec = trim($aoutput[0]);
-            $audioChannels = isset($aoutput[1]) ? intval(trim($aoutput[1])) : 2;
+            $parts = explode(',', trim($aoutput[0]));
+            $audioCodec = trim($parts[0] ?? '');
+            $audioChannels = isset($parts[1]) ? intval(trim($parts[1])) : 2;
+            $audioSampleRate = isset($parts[2]) ? intval(trim($parts[2])) : 0;
         }
 
         $ext = strtolower(pathinfo($localPath, PATHINFO_EXTENSION));
 
         $needVideoTranscode = ($videoCodec !== 'h264');
-        // Always re-encode audio for DLNA — TVs reject many AAC/MP3 variants and surround formats
-        $needAudioTranscode = true;
+        // DLNA-safe audio: AAC stereo ≤48kHz. TVs reject surround, high-sample-rate, or exotic codecs.
+        $needAudioTranscode = !($audioCodec === 'aac' && $audioChannels <= 2 && $audioSampleRate > 0 && $audioSampleRate <= 48000);
         $needRemux = ($ext !== 'mp4');
 
         if (!$needVideoTranscode && !$needAudioTranscode && !$needRemux) {
-            return null; // Fully compatible natively
+            evictCastCache(500 * 1024 * 1024);
+            if (!file_exists($cachedFile)) {
+                @copy($localPath, $cachedFile);
+            }
+            if (file_exists($cachedFile) && filesize($cachedFile) > 0) {
+                return $cachedUrlPath;
+            }
+            return null; // Fallback — couldn't cache
         }
 
         evictCastCache(500 * 1024 * 1024);
@@ -2497,6 +2652,401 @@ function checkAndTranscodeMedia($originalLink) {
     return null;
 }
 
+function handleStartCastPrep() {
+    $rawData = file_get_contents('php://input');
+    $data = json_decode($rawData, true);
+    $videoLink = $data['video_link'] ?? '';
+    if (empty($videoLink)) throw new Exception('Missing video_link');
+
+    $localPath = resolveLocalFilePath($videoLink);
+    if (!file_exists($localPath)) throw new Exception('Video file not found');
+
+    $ffmpegPath = getFFmpegPath();
+    if (!$ffmpegPath) throw new Exception('FFmpeg not found');
+
+    $cacheDir = __DIR__ . '/../uploads/cast_cache';
+    if (!file_exists($cacheDir)) @mkdir($cacheDir, 0777, true);
+
+    $fileHash = md5($localPath);
+    $cachedFile = $cacheDir . '/' . $fileHash . '.mp4';
+    $cachedUrl = BASE_DIR . '/uploads/cast_cache/' . $fileHash . '.mp4';
+
+    // Already cached — instant
+    if (file_exists($cachedFile) && filesize($cachedFile) > 0) {
+        echo json_encode([
+            'progress_id' => null,
+            'cached' => true,
+            'cached_url' => $cachedUrl,
+            'diagnostics' => probeCastMedia($localPath),
+        ]);
+        exit;
+    }
+
+    $diagnostics = probeCastMedia($localPath);
+    if (isset($diagnostics['error'])) throw new Exception($diagnostics['error']);
+
+    // Get duration for percentage calc
+    $durationUs = getDurationUs($localPath);
+
+    $progressId = uniqid('cast_', true);
+    $progressFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $progressId . '.txt';
+    file_put_contents(sys_get_temp_dir() . DIRECTORY_SEPARATOR . $progressId . '.dur', $durationUs);
+
+    $tempLink = getTempHardlink($localPath);
+    $probePath = $tempLink ? $tempLink : $localPath;
+
+    evictCastCache(500 * 1024 * 1024);
+
+    // Build ffmpeg command (replicating checkAndTranscodeMedia logic)
+    $needVideoTranscode = !$diagnostics['video_ok'];
+    $needAudioTranscode = !$diagnostics['audio_ok'];
+    $needRemux = !$diagnostics['container_ok'];
+
+    if ($needVideoTranscode) {
+        $encoder = detectGpuEncoder($ffmpegPath);
+        $isGpu = ($encoder !== 'libx264');
+
+        $vcmd2 = $ffprobePath = str_replace('ffmpeg.exe', 'ffprobe.exe', str_replace('"', '', $ffmpegPath));
+        $vcmd2 .= ' -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 ' . escapeshellarg($probePath);
+        $vdims = []; $vdc = -1;
+        exec($vcmd2, $vdims, $vdc);
+        $needScale = false;
+        if ($vdc === 0 && !empty($vdims)) {
+            $dims = explode(',', trim($vdims[0]));
+            $w = intval($dims[0] ?? 0);
+            $h = intval($dims[1] ?? 0);
+            if ($w > 1920 || $h > 1080) $needScale = true;
+        }
+
+        if ($encoder === 'h264_nvenc') {
+            $videoArgsGpu = '-c:v h264_nvenc -pix_fmt yuv420p -preset fast -rc vbr -cq:v 23 -b:v 8M -maxrate 10M -bufsize 16M';
+        } elseif ($encoder === 'h264_qsv') {
+            $videoArgsGpu = '-c:v h264_qsv -pix_fmt yuv420p -preset fast -b:v 8M -maxrate 10M -bufsize 16M';
+        } elseif ($encoder === 'h264_amf') {
+            $videoArgsGpu = '-c:v h264_amf -pix_fmt yuv420p -preset speed -b:v 8M -maxrate 10M -bufsize 16M';
+        } else {
+            $videoArgsGpu = '-c:v ' . $encoder . ' -pix_fmt yuv420p -b:v 8M -maxrate 10M -bufsize 16M';
+        }
+        $videoArgsCpu = '-c:v libx264 -preset ultrafast -crf 23 -pix_fmt yuv420p -b:v 8M -maxrate 10M -bufsize 16M';
+        $videoArgs = $isGpu ? $videoArgsGpu : $videoArgsCpu;
+        $scaleArg = $needScale ? ' -vf "scale=\'min(1920,iw)\':\'min(1080,ih)\':force_original_aspect_ratio=decrease"' : '';
+
+        $cmd = $ffmpegPath . ' -y -threads 0 -progress ' . escapeshellarg($progressFile)
+            . ' -i ' . escapeshellarg($probePath)
+            . ' ' . $videoArgs . $scaleArg
+            . ' -r 30'
+            . ' -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart '
+            . escapeshellarg($cachedFile);
+    } else {
+        $cmd = $ffmpegPath . ' -y -progress ' . escapeshellarg($progressFile)
+            . ' -i ' . escapeshellarg($probePath)
+            . ($needAudioTranscode || $needRemux ? ' -c:v copy -c:a aac -ac 2 -ar 44100 -b:a 128k' : ' -c:v copy -c:a copy')
+            . ' -movflags +faststart '
+            . escapeshellarg($cachedFile);
+    }
+
+    execInBackground($cmd, $progressId);
+
+    if ($tempLink && file_exists($tempLink)) @unlink($tempLink);
+
+    echo json_encode([
+        'progress_id' => $progressId,
+        'cached' => false,
+        'diagnostics' => $diagnostics,
+    ]);
+    exit;
+}
+
+function handleStartConvertPrep($pdo) {
+    $id = intval($_POST['id'] ?? 0);
+    $audioIndex = intval($_POST['audio_index'] ?? 0);
+    $subtitleIndex = intval($_POST['subtitle_index'] ?? -1);
+    if (!$id) throw new Exception('Missing video id');
+
+    $stmt = $pdo->prepare("SELECT link, vid_name FROM video_metadatas WHERE vid_id = :id");
+    $stmt->execute([':id' => $id]);
+    $row = $stmt->fetch();
+    if (!$row) throw new Exception('Video not found');
+
+    $localPath = resolveLocalFilePath($row['link']);
+    if (!file_exists($localPath)) throw new Exception('Video file not found');
+
+    $ffmpegPath = getFFmpegPath();
+    if (!$ffmpegPath) throw new Exception('FFmpeg not found');
+    $ffprobePath = str_replace('ffmpeg.exe', 'ffprobe.exe', str_replace('"', '', $ffmpegPath));
+
+    $cacheDir = __DIR__ . '/../uploads/video_cache';
+    if (!file_exists($cacheDir)) @mkdir($cacheDir, 0777, true);
+    foreach (glob($cacheDir . DIRECTORY_SEPARATOR . '*') ?: [] as $f) { @unlink($f); }
+
+    $suffix = uniqid();
+    $outputMp4 = $cacheDir . DIRECTORY_SEPARATOR . "output_{$suffix}.mp4";
+    $outputVtt = $cacheDir . DIRECTORY_SEPARATOR . "subtitles_{$suffix}.vtt";
+    $publicMp4 = "./uploads/video_cache/output_{$suffix}.mp4";
+    $publicVtt = "./uploads/video_cache/subtitles_{$suffix}.vtt";
+
+    // Probe stage decisions
+    $videoNeedsTranscode = false;
+    $audioNeedsTranscode = false;
+
+    $pixCmd = $ffprobePath . ' -v error -select_streams v:0 -show_entries stream=pix_fmt -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($localPath);
+    $pixOut = []; $pixCode = -1;
+    exec($pixCmd, $pixOut, $pixCode);
+    if ($pixCode === 0 && !empty($pixOut[0])) {
+        $pixFmt = trim($pixOut[0]);
+        if (preg_match('/p1[0-9]|1[0-9](le|be)/', $pixFmt)) $videoNeedsTranscode = true;
+    }
+
+    $acCmd = $ffprobePath . ' -v error -select_streams a -show_entries stream=index,codec_name -of csv=p=0 ' . escapeshellarg($localPath);
+    $acOut = []; $acCode = -1;
+    exec($acCmd, $acOut, $acCode);
+    if ($acCode === 0) {
+        foreach ($acOut as $line) {
+            $parts = explode(',', trim($line));
+            $idx = intval($parts[0] ?? -1);
+            $codec = $parts[1] ?? '';
+            if ($idx === $audioIndex) {
+                if (!in_array($codec, ['aac', 'mp3', 'ac3', 'eac3'])) $audioNeedsTranscode = true;
+                break;
+            }
+        }
+    }
+
+    $durationUs = getDurationUs($localPath);
+    $progressId = uniqid('conv_', true);
+    $progressFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $progressId . '.txt';
+    file_put_contents(sys_get_temp_dir() . DIRECTORY_SEPARATOR . $progressId . '.dur', $durationUs);
+
+    // Build command based on stage
+    if (!$videoNeedsTranscode && !$audioNeedsTranscode) {
+        $cmd = $ffmpegPath . ' -y -progress ' . escapeshellarg($progressFile)
+            . ' -i ' . escapeshellarg($localPath)
+            . ' -map 0:v:0 -map 0:' . $audioIndex
+            . ' -c:v copy -c:a copy -movflags +faststart -map_metadata -1 '
+            . escapeshellarg($outputMp4);
+    } elseif (!$videoNeedsTranscode) {
+        $cmd = $ffmpegPath . ' -y -progress ' . escapeshellarg($progressFile)
+            . ' -i ' . escapeshellarg($localPath)
+            . ' -map 0:v:0 -map 0:' . $audioIndex
+            . ' -c:v copy -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart -map_metadata -1 '
+            . escapeshellarg($outputMp4);
+    } else {
+        $encoder = detectGpuEncoder($ffmpegPath);
+        $isGpu = ($encoder !== 'libx264');
+        if ($encoder === 'h264_nvenc') {
+            $videoArgs = '-c:v h264_nvenc -pix_fmt yuv420p -preset p1 -rc constqp -qp 28';
+        } elseif ($encoder === 'h264_qsv') {
+            $videoArgs = '-c:v h264_qsv -pix_fmt yuv420p -preset veryfast';
+        } elseif ($encoder === 'h264_amf') {
+            $videoArgs = '-c:v h264_amf -pix_fmt yuv420p -preset speed';
+        } else {
+            $videoArgs = '-c:v libx264 -preset ultrafast -crf 28 -pix_fmt yuv420p';
+        }
+        if (!$isGpu) $videoArgs = '-c:v libx264 -preset ultrafast -crf 28 -pix_fmt yuv420p';
+
+        $cmd = $ffmpegPath . ' -y -threads 0 -progress ' . escapeshellarg($progressFile)
+            . ' -i ' . escapeshellarg($localPath)
+            . ' -map 0:v:0 -map 0:' . $audioIndex
+            . ' ' . $videoArgs
+            . ' -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart -map_metadata -1 '
+            . escapeshellarg($outputMp4);
+    }
+
+    execInBackground($cmd, $progressId);
+
+    echo json_encode([
+        'progress_id' => $progressId,
+        'local_path' => $localPath,
+        'output_mp4' => $outputMp4,
+        'public_mp4' => $publicMp4,
+        'output_vtt' => $outputVtt,
+        'public_vtt' => $publicVtt,
+        'has_subtitle' => ($subtitleIndex >= 0),
+        'subtitle_index' => $subtitleIndex,
+        'diagnostics' => [
+            'video_ok' => !$videoNeedsTranscode,
+            'audio_ok' => !$audioNeedsTranscode,
+            'container' => strtolower(pathinfo($localPath, PATHINFO_EXTENSION)),
+            'container_ok' => false,
+        ],
+    ]);
+    exit;
+}
+
+function handleGetProgress() {
+    $rawData = file_get_contents('php://input');
+    $data = json_decode($rawData, true);
+    $progressId = $data['progress_id'] ?? '';
+    if (empty($progressId)) throw new Exception('Missing progress_id');
+
+    $progressFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $progressId . '.txt';
+    $durFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $progressId . '.dur';
+    $batchFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $progressId . '.bat';
+
+    $durationUs = intval(@file_get_contents($durFile) ?: 0);
+    $outTimeUs = 0;
+    $speed = '';
+    $fps = '';
+    $status = 'running';
+
+    if (!file_exists($progressFile)) {
+        // No progress file yet — ffmpeg may still be starting
+        // Check if process is still alive by checking if batch file is being used
+        if (!file_exists($batchFile)) {
+            $status = 'error';
+        }
+        echo json_encode(['percent' => 0, 'speed' => '', 'fps' => '', 'status' => $status, 'elapsed' => 0, 'eta' => 0]);
+        exit;
+    }
+
+    $lines = @file($progressFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    if ($lines === false) {
+        echo json_encode(['percent' => 0, 'speed' => '', 'fps' => '', 'status' => 'error', 'elapsed' => 0, 'eta' => 0]);
+        exit;
+    }
+
+    foreach (array_reverse($lines) as $line) {
+        if (preg_match('/^out_time_us=(\d+)$/', $line, $m)) {
+            $outTimeUs = intval($m[1]);
+            break;
+        }
+    }
+    foreach (array_reverse($lines) as $line) {
+        if (preg_match('/^speed=([\d.]+)x$/', $line, $m)) {
+            $speed = $m[1] . 'x';
+            break;
+        }
+    }
+    foreach (array_reverse($lines) as $line) {
+        if (preg_match('/^fps=([\d.]+)$/', $line, $m)) {
+            $fps = $m[1];
+            break;
+        }
+    }
+
+    // Check if ended
+    foreach (array_reverse($lines) as $line) {
+        if (trim($line) === 'progress=end') {
+            $status = 'done';
+            break;
+        }
+    }
+
+    // If progress=end not found but process may have ended (no batch file)
+    if ($status === 'running' && !file_exists($batchFile)) {
+        $status = 'done';
+    }
+
+    $elapsed = $outTimeUs > 0 ? round($outTimeUs / 1000000, 1) : 0;
+
+    $percent = 0;
+    $eta = 0;
+    if ($durationUs > 0 && $outTimeUs > 0) {
+        $percent = min(round($outTimeUs / $durationUs * 100, 1), 99.9);
+        if (preg_match('/^([\d.]+)/', $speed, $sm) && floatval($sm[1]) > 0) {
+            $remainingUs = $durationUs - $outTimeUs;
+            $eta = round($remainingUs / ($outTimeUs / $elapsed) / 1000000);
+        }
+    }
+
+    echo json_encode([
+        'percent' => $percent,
+        'speed' => $speed,
+        'fps' => $fps,
+        'status' => $status,
+        'elapsed' => $elapsed,
+        'eta' => max(0, $eta),
+    ]);
+    exit;
+}
+
+function handleStopPrep() {
+    $rawData = file_get_contents('php://input');
+    $data = json_decode($rawData, true);
+    $progressId = $data['progress_id'] ?? '';
+    if (empty($progressId)) throw new Exception('Missing progress_id');
+
+    stopBackgroundProcess($progressId);
+    echo json_encode(['status' => 'stopped']);
+    exit;
+}
+
+function handleFinishCastPrep() {
+    $rawData = file_get_contents('php://input');
+    $data = json_decode($rawData, true);
+    $videoLink = $data['video_link'] ?? '';
+    $progressId = $data['progress_id'] ?? '';
+    if (empty($videoLink)) throw new Exception('Missing video_link');
+
+    $localPath = resolveLocalFilePath($videoLink);
+    $cacheDir = __DIR__ . '/../uploads/cast_cache';
+    $fileHash = md5($localPath);
+    $cachedFile = $cacheDir . '/' . $fileHash . '.mp4';
+    $cachedUrl = BASE_DIR . '/uploads/cast_cache/' . $fileHash . '.mp4';
+
+    // Clean up temp files
+    if ($progressId) {
+        @unlink(sys_get_temp_dir() . DIRECTORY_SEPARATOR . $progressId . '.txt');
+        @unlink(sys_get_temp_dir() . DIRECTORY_SEPARATOR . $progressId . '.dur');
+        @unlink(sys_get_temp_dir() . DIRECTORY_SEPARATOR . $progressId . '.bat');
+    }
+
+    if (!file_exists($cachedFile) || filesize($cachedFile) <= 0) {
+        throw new Exception('Cast preparation produced no output');
+    }
+
+    echo json_encode([
+        'cached_url' => $cachedUrl,
+        'cached' => true,
+        'diagnostics' => probeCastMedia($localPath),
+    ]);
+    exit;
+}
+
+function handleFinishConvertPrep() {
+    $rawData = file_get_contents('php://input');
+    $data = json_decode($rawData, true);
+    $progressId = $data['progress_id'] ?? '';
+    $outputMp4 = $data['output_mp4'] ?? '';
+    $outputVtt = $data['output_vtt'] ?? '';
+    $publicMp4 = $data['public_mp4'] ?? '';
+    $publicVtt = $data['public_vtt'] ?? '';
+    $hasSubtitle = !empty($data['has_subtitle']);
+    $subtitleIndex = intval($data['subtitle_index'] ?? -1);
+    $localPath = $data['local_path'] ?? '';
+
+    if ($progressId) {
+        @unlink(sys_get_temp_dir() . DIRECTORY_SEPARATOR . $progressId . '.txt');
+        @unlink(sys_get_temp_dir() . DIRECTORY_SEPARATOR . $progressId . '.dur');
+        @unlink(sys_get_temp_dir() . DIRECTORY_SEPARATOR . $progressId . '.bat');
+    }
+
+    if (!file_exists($outputMp4) || filesize($outputMp4) <= 0) {
+        throw new Exception('Conversion produced no output');
+    }
+
+    // Extract subtitle if requested
+    $hasVtt = false;
+    if ($hasSubtitle && $subtitleIndex >= 0 && !empty($localPath)) {
+        $ffmpegPath = getFFmpegPath();
+        if ($ffmpegPath) {
+            $subCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath)
+                . ' -map 0:' . $subtitleIndex
+                . ' -c:s webvtt ' . escapeshellarg($outputVtt);
+            $subOut = []; $subCode = -1;
+            exec($subCmd . ' 2>&1', $subOut, $subCode);
+            $hasVtt = ($subCode === 0 && file_exists($outputVtt) && filesize($outputVtt) > 0);
+        }
+    }
+
+    echo json_encode([
+        'mp4' => $publicMp4,
+        'mp4_path' => $outputMp4,
+        'vtt' => $hasVtt ? $publicVtt : null,
+    ]);
+    exit;
+}
+
 function handleCastControl() {
     $rawData = file_get_contents('php://input');
     $data = json_decode($rawData, true);
@@ -2523,17 +3073,33 @@ function handleCastControl() {
 
             $finalMediaUrl = '';
 
-            $cachedPath = checkAndTranscodeMedia($videoLink);
-            if ($cachedPath !== null) {
-                $fileName = basename($cachedPath);
+            $preparedUrl = $data['prepared_url'] ?? '';
+            if ($preparedUrl) {
+                $fileName = basename($preparedUrl);
                 $finalMediaUrl = "http://" . $serverIp . $portSuffix . BASE_DIR . "/uploads/cast_cache/" . $fileName;
             } else {
-                // Transcoding failed or file missing — cannot safely cast
-                $localPath = resolveLocalFilePath($videoLink);
-                if (!file_exists($localPath)) {
-                    throw new Exception('Video file not found on disk');
+                $cachedPath = checkAndTranscodeMedia($videoLink);
+                if ($cachedPath !== null) {
+                    $fileName = basename($cachedPath);
+                    $finalMediaUrl = "http://" . $serverIp . $portSuffix . BASE_DIR . "/uploads/cast_cache/" . $fileName;
+                } else {
+                    $localPath = resolveLocalFilePath($videoLink);
+                    if (!file_exists($localPath)) {
+                        throw new Exception('Video file not found on disk');
+                    }
+                    $fileHash = md5($localPath);
+                    $fallbackCache = __DIR__ . '/../uploads/cast_cache/' . $fileHash . '.mp4';
+                    if (!file_exists($fallbackCache)) {
+                        if (!@link($localPath, $fallbackCache) && !@copy($localPath, $fallbackCache)) {
+                            throw new Exception('Transcoding failed — could not prepare video for casting.');
+                        }
+                    }
+                    if (file_exists($fallbackCache) && filesize($fallbackCache) > 0) {
+                        $finalMediaUrl = "http://" . $serverIp . $portSuffix . BASE_DIR . "/uploads/cast_cache/" . $fileHash . '.mp4';
+                    } else {
+                        throw new Exception('Transcoding failed — could not prepare video for casting.');
+                    }
                 }
-                throw new Exception('Transcoding failed — FFmpeg could not process this file. Check PHP error log for details.');
             }
 
             $title = $data['title'] ?? 'Video';
@@ -2921,6 +3487,670 @@ function handleYtdlpDownload($pdo = null) {
     exit;
 }
 
+// ============================================================
+// FFmpeg Converter Handlers
+// ============================================================
+
+function handleFfmpegVerify() {
+    $result = [
+        'installed' => false,
+        'ffmpeg_version' => null,
+        'ffprobe_version' => null,
+        'encoders' => [],
+        'hwaccels' => [],
+        'formats' => [],
+    ];
+
+    $ffmpegPath = getFFmpegPath();
+    if (!$ffmpegPath) {
+        echo json_encode($result);
+        exit;
+    }
+
+    // Get ffmpeg version (extract compact version string)
+    exec($ffmpegPath . ' -version 2>&1', $out, $code);
+    if ($code === 0 && !empty($out)) {
+        $result['installed'] = true;
+        $firstLine = $out[0];
+        // "ffmpeg version N-xxx" or "ffmpeg version x.y"
+        if (preg_match('/ffmpeg\s+version\s+([\w\.\-]+)/i', $firstLine, $m)) {
+            $result['ffmpeg_version'] = $m[1];
+        } else {
+            $result['ffmpeg_version'] = substr($firstLine, 0, 60);
+        }
+    }
+
+    // Get ffprobe version
+    $ffprobePath = str_replace('"', '', $ffmpegPath);
+    $ffprobePath = str_replace('ffmpeg.exe', 'ffprobe.exe', $ffprobePath);
+    exec($ffprobePath . ' -version 2>&1', $out2, $code2);
+    if ($code2 === 0 && !empty($out2)) {
+        $firstLine2 = $out2[0];
+        if (preg_match('/ffprobe\s+version\s+([\w\.\-]+)/i', $firstLine2, $m)) {
+            $result['ffprobe_version'] = $m[1];
+        } else {
+            $result['ffprobe_version'] = substr($firstLine2, 0, 60);
+        }
+    }
+
+    // Get available encoders
+    exec($ffmpegPath . ' -encoders 2>&1', $encOut, $encCode);
+    $encoders = [];
+    $videoEncoders = [];
+    $audioEncoders = [];
+    if ($encCode === 0) {
+        $allText = implode("\n", $encOut);
+        // Format: " V....D libx264   ..." or " A....D aac   ..."
+        preg_match_all('/^\sV.{4}\s+([^\s]+)\s/m', $allText, $vMatches);
+        foreach ($vMatches[1] as $enc) {
+            $e = trim($enc);
+            if (!empty($e)) {
+                $videoEncoders[] = $e;
+                $encoders[] = $e;
+            }
+        }
+        preg_match_all('/^\sA.{4}\s+([^\s]+)\s/m', $allText, $aMatches);
+        foreach ($aMatches[1] as $enc) {
+            $e = trim($enc);
+            if (!empty($e)) {
+                $audioEncoders[] = $e;
+                $encoders[] = $e;
+            }
+        }
+    }
+    $result['encoders'] = $encoders;
+    $result['video_encoders'] = $videoEncoders;
+    $result['audio_encoders'] = $audioEncoders;
+
+    // Get available HW acceleration methods
+    exec($ffmpegPath . ' -hwaccels 2>&1', $hwOut, $hwCode);
+    if ($hwCode === 0) {
+        $hwMethods = [];
+        foreach ($hwOut as $line) {
+            $t = trim($line);
+            if (!empty($t) && preg_match('/^[a-z][a-z0-9]+$/i', $t)) {
+                $hwMethods[] = $t;
+            }
+        }
+        $result['hwaccels'] = $hwMethods;
+    }
+
+    // Get supported output formats (containers)
+    exec($ffmpegPath . ' -formats 2>&1', $fmtOut, $fmtCode);
+    if ($fmtCode === 0) {
+        $formats = [];
+        $allText = implode("\n", $fmtOut);
+        preg_match_all('/^\s{2}[DE]?\s+(\S+)\s+/m', $allText, $fmtMatches);
+        foreach ($fmtMatches[1] as $fmt) {
+            if (!empty($fmt)) $formats[] = $fmt;
+        }
+        $result['formats'] = $formats;
+    }
+
+    echo json_encode($result);
+    exit;
+}
+
+function handleFfmpegInfo() {
+    $input = '';
+
+    // Check for uploaded file
+    if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
+        $tmpDir = dirname(__DIR__) . '/uploads/ffmpeg_temp';
+        if (!is_dir($tmpDir)) mkdir($tmpDir, 0777, true);
+        $input = $tmpDir . '/' . uniqid('upload_') . '_' . basename($_FILES['file']['name']);
+        move_uploaded_file($_FILES['file']['tmp_name'], $input);
+    } elseif (!empty($_POST['path'])) {
+        $input = $_POST['path'];
+        if (!file_exists($input)) {
+            echo json_encode(['error' => 'File not found']);
+            exit;
+        }
+    } else {
+        echo json_encode(['error' => 'No file provided']);
+        exit;
+    }
+
+    $ffmpegPath = getFFmpegPath();
+    if (!$ffmpegPath) {
+        echo json_encode(['error' => 'FFmpeg not found']);
+        exit;
+    }
+
+    $ffprobePath = str_replace('"', '', $ffmpegPath);
+    $ffprobePath = str_replace('ffmpeg.exe', 'ffprobe.exe', $ffprobePath);
+
+    // Check if input is a remote URL — download first
+    $downloaded = false;
+    if (preg_match('#^https?://#i', $input)) {
+        $tmpDir = dirname(__DIR__) . '/uploads/ffmpeg_temp';
+        if (!is_dir($tmpDir)) mkdir($tmpDir, 0777, true);
+        $ext = 'mp4';
+        $parsed = parse_url($input);
+        $pathParts = pathinfo($parsed['path'] ?? '');
+        if (isset($pathParts['extension']) && !empty($pathParts['extension'])) {
+            $ext = $pathParts['extension'];
+        }
+        $dlPath = $tmpDir . '/' . uniqid('remote_') . '.' . $ext;
+        exec('curl -sL -o ' . escapeshellarg($dlPath) . ' --connect-timeout 10 --max-time 120 ' . escapeshellarg($input) . ' 2>&1', $dlOut, $dlCode);
+        if ($dlCode === 0 && file_exists($dlPath) && filesize($dlPath) > 0) {
+            $input = $dlPath;
+            $downloaded = true;
+        } else {
+            echo json_encode(['error' => 'Failed to download remote file']);
+            if (file_exists($dlPath)) @unlink($dlPath);
+            exit;
+        }
+    }
+
+    $tempLink = getTempHardlink($input);
+    $probePath = $tempLink ? $tempLink : $input;
+
+    $cmd = $ffprobePath . ' -v quiet -print_format json -show_format -show_streams -show_chapters ' . escapeshellarg($probePath) . ' 2>&1';
+    $output = [];
+    $code = -1;
+    exec($cmd, $output, $code);
+
+    if ($tempLink && file_exists($tempLink)) @unlink($tempLink);
+
+    if ($code !== 0 || empty($output)) {
+        $json = json_decode(implode('', $output), true);
+        if (!$json) {
+            echo json_encode(['error' => 'Failed to probe file. Make sure it is a valid media file.', 'cmd' => $cmd]);
+            exit;
+        }
+    }
+
+    $json = json_decode(implode('', $output), true);
+
+    $result = [];
+
+    // General format info
+    if (isset($json['format'])) {
+        $f = $json['format'];
+        $result['filename'] = basename($input);
+        $result['size'] = intval($f['size'] ?? 0);
+        $result['duration'] = floatval($f['duration'] ?? 0);
+        $result['bit_rate'] = intval($f['bit_rate'] ?? 0);
+        $result['format_name'] = $f['format_name'] ?? '';
+        $result['format_long'] = $f['format_long_name'] ?? '';
+    }
+
+    // Streams
+    $result['streams'] = [];
+    if (isset($json['streams'])) {
+        foreach ($json['streams'] as $stream) {
+            $type = $stream['codec_type'] ?? 'unknown';
+            $info = [
+                'index' => intval($stream['index'] ?? 0),
+                'codec' => $stream['codec_name'] ?? '',
+                'codec_long' => $stream['codec_long_name'] ?? '',
+                'type' => $type,
+            ];
+
+            if ($type === 'video') {
+                $info['width'] = intval($stream['width'] ?? 0);
+                $info['height'] = intval($stream['height'] ?? 0);
+                if ($info['width'] > 0 && $info['height'] > 0) {
+                    $g = function($a, $b) use (&$g) { return ($b == 0) ? $a : $g($b, $a % $b); };
+                    $d = $g($info['width'], $info['height']);
+                    $info['aspect_ratio'] = ($info['width'] / $d) . ':' . ($info['height'] / $d);
+                    $info['display_aspect_ratio'] = $stream['display_aspect_ratio'] ?? $info['aspect_ratio'];
+                }
+                $info['pix_fmt'] = $stream['pix_fmt'] ?? '';
+                if (isset($stream['avg_frame_rate'])) {
+                    $parts = explode('/', $stream['avg_frame_rate']);
+                    if (count($parts) === 2 && floatval($parts[1]) > 0) {
+                        $info['fps'] = round(floatval($parts[0]) / floatval($parts[1]), 3);
+                    }
+                }
+                $info['bitrate'] = intval($stream['bit_rate'] ?? 0);
+                $info['color_space'] = $stream['color_space'] ?? '';
+                $info['color_transfer'] = $stream['color_transfer'] ?? '';
+                $info['color_primaries'] = $stream['color_primaries'] ?? '';
+                $info['color_range'] = $stream['color_range'] ?? '';
+                $info['chroma_location'] = $stream['chroma_location'] ?? '';
+                $info['field_order'] = $stream['field_order'] ?? 'progressive';
+                $info['bits_per_raw_sample'] = intval($stream['bits_per_raw_sample'] ?? 8);
+                $info['profile'] = $stream['profile'] ?? '';
+                $info['level'] = intval($stream['level'] ?? 0);
+                $info['has_b_frames'] = intval($stream['has_b_frames'] ?? 0);
+                $info['refs'] = intval($stream['refs'] ?? 0);
+                $info['codec_tag'] = $stream['codec_tag_string'] ?? '';
+            } elseif ($type === 'audio') {
+                $info['sample_rate'] = intval($stream['sample_rate'] ?? 0);
+                $info['channels'] = intval($stream['channels'] ?? 0);
+                $info['channel_layout'] = $stream['channel_layout'] ?? '';
+                $info['bitrate'] = intval($stream['bit_rate'] ?? 0);
+                $info['language'] = $stream['tags']['language'] ?? '';
+                $info['title'] = $stream['tags']['title'] ?? '';
+                $info['profile'] = $stream['profile'] ?? '';
+            } elseif ($type === 'subtitle') {
+                $info['language'] = $stream['tags']['language'] ?? '';
+                $info['title'] = $stream['tags']['title'] ?? '';
+                $info['codec_tag'] = $stream['codec_tag_string'] ?? '';
+            }
+
+            $result['streams'][] = $info;
+        }
+    }
+
+    // Chapters
+    $result['chapters'] = [];
+    if (isset($json['chapters'])) {
+        foreach ($json['chapters'] as $ch) {
+            $result['chapters'][] = [
+                'id' => intval($ch['id'] ?? 0),
+                'start' => floatval($ch['start_time'] ?? 0),
+                'end' => floatval($ch['end_time'] ?? 0),
+                'title' => $ch['tags']['title'] ?? '',
+            ];
+        }
+    }
+
+    $result['_temp_cleanup'] = $downloaded ? $input : null;
+
+    echo json_encode($result);
+    exit;
+}
+
+function handleFfmpegConvert() {
+    $inputPath = $_POST['input'] ?? '';
+    $rawOpts = $_POST['options'] ?? '{}';
+    $opts = json_decode($rawOpts, true) ?: [];
+
+    if (empty($inputPath)) {
+        echo "data: " . json_encode(['type' => 'error', 'message' => 'No input file provided']) . "\n\n";
+        flush();
+        exit;
+    }
+
+    $ffmpegPath = getFFmpegPath();
+    if (!$ffmpegPath) {
+        echo "data: " . json_encode(['type' => 'error', 'message' => 'FFmpeg not found']) . "\n\n";
+        flush();
+        exit;
+    }
+
+    // Determine output container
+    $container = $opts['container'] ?? 'mp4';
+    $container = preg_replace('/[^a-zA-Z0-9]/', '', $container);
+    if (empty($container)) $container = 'mp4';
+
+    // Create temp directory
+    $tmpDir = dirname(__DIR__) . '/uploads/ffmpeg_temp';
+    if (!is_dir($tmpDir)) mkdir($tmpDir, 0777, true);
+
+    $token = bin2hex(random_bytes(16));
+    $outputFilename = pathinfo(basename($inputPath), PATHINFO_FILENAME) . '_converted.' . $container;
+    $outputPath = $tmpDir . '/' . $token . '_' . $outputFilename;
+
+    // Get input duration for progress percentage
+    $duration = 0;
+    $ffprobePath = str_replace('"', '', $ffmpegPath);
+    $ffprobePath = str_replace('ffmpeg.exe', 'ffprobe.exe', $ffprobePath);
+    $tempLink = getTempHardlink($inputPath);
+    $probePath = $tempLink ? $tempLink : $inputPath;
+    $durCmd = $ffprobePath . ' -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($probePath) . ' 2>&1';
+    exec($durCmd, $durOut, $durCode);
+    if ($tempLink && file_exists($tempLink)) @unlink($tempLink);
+    if ($durCode === 0 && !empty($durOut) && is_numeric($durOut[0])) {
+        $duration = floatval($durOut[0]);
+    }
+
+    // Convert input path for usage in command (handle Unicode)
+    $tempLink2 = getTempHardlink($inputPath);
+    $cmdInput = $tempLink2 ? $tempLink2 : $inputPath;
+
+    // Build ffmpeg command
+    $videoCodec = $opts['video_codec'] ?? 'copy';
+    $audioCodec = $opts['audio_codec'] ?? 'copy';
+
+    // Map friendly codec names to ffmpeg codec names
+    $codecMap = [
+        'h264' => 'libx264', 'h265' => 'libx265', 'hevc' => 'libx265',
+        'vp9' => 'libvpx-vp9', 'av1' => 'libaom-av1', 'mpeg4' => 'mpeg4',
+        'vp8' => 'libvpx', 'aac' => 'aac', 'mp3' => 'libmp3lame',
+        'opus' => 'libopus', 'flac' => 'flac', 'wav' => 'pcm_s16le',
+        'ac3' => 'ac3', 'eac3' => 'eac3', 'copy' => 'copy',
+    ];
+
+    $cmd = $ffmpegPath . ' -y -progress pipe:1';
+
+    // Hardware acceleration
+    if (!empty($opts['hwaccel']) && $opts['hwaccel'] !== 'none') {
+        $cmd .= ' -hwaccel ' . escapeshellarg($opts['hwaccel']);
+    }
+
+    $cmd .= ' -i ' . escapeshellarg($cmdInput);
+
+    // Video options
+    if ($videoCodec === 'copy') {
+        $cmd .= ' -c:v copy';
+    } else {
+        $ffVideoCodec = $codecMap[$videoCodec] ?? $videoCodec;
+        $cmd .= ' -c:v ' . $ffVideoCodec;
+
+        if (isset($opts['crf']) && $opts['crf'] !== '') {
+            $crf = intval($opts['crf']);
+            // VP9/AV1 use different CRF ranges
+            if (in_array($videoCodec, ['vp9', 'av1'])) {
+                $cmd .= ' -crf ' . max(0, min(63, $crf));
+            } else {
+                $cmd .= ' -crf ' . max(0, min(51, $crf));
+            }
+        }
+
+        if (!empty($opts['video_bitrate'])) {
+            $cmd .= ' -b:v ' . escapeshellarg($opts['video_bitrate']);
+        }
+
+        if (!empty($opts['resolution']) && $opts['resolution'] !== 'original') {
+            // Parse resolution: "1920:1080" or "1280x720" or just "720" (height)
+            if (is_numeric($opts['resolution'])) {
+                $cmd .= ' -vf scale=-1:' . intval($opts['resolution']);
+            } elseif (strpos($opts['resolution'], 'x') !== false || strpos($opts['resolution'], ':') !== false) {
+                $res = str_replace(['x', 'X'], ':', $opts['resolution']);
+                $cmd .= ' -vf scale=' . $res;
+            }
+        }
+
+        if (!empty($opts['framerate']) && $opts['framerate'] !== 'original') {
+            $cmd .= ' -r ' . escapeshellarg($opts['framerate']);
+        }
+
+        if (!empty($opts['preset'])) {
+            $cmd .= ' -preset ' . escapeshellarg($opts['preset']);
+        }
+
+        if (!empty($opts['tune'])) {
+            $cmd .= ' -tune ' . escapeshellarg($opts['tune']);
+        }
+
+        if (!empty($opts['profile'])) {
+            $cmd .= ' -profile:v ' . escapeshellarg($opts['profile']);
+        }
+
+        if (!empty($opts['pix_fmt'])) {
+            $cmd .= ' -pix_fmt ' . escapeshellarg($opts['pix_fmt']);
+        }
+    }
+
+    // Audio options
+    if ($audioCodec === 'copy') {
+        $cmd .= ' -c:a copy';
+    } else {
+        $ffAudioCodec = $codecMap[$audioCodec] ?? $audioCodec;
+        $cmd .= ' -c:a ' . $ffAudioCodec;
+
+        if (!empty($opts['audio_bitrate']) && $opts['audio_bitrate'] !== 'auto') {
+            $cmd .= ' -b:a ' . escapeshellarg($opts['audio_bitrate']);
+        }
+
+        if (!empty($opts['sample_rate']) && $opts['sample_rate'] !== 'original') {
+            $cmd .= ' -ar ' . intval($opts['sample_rate']);
+        }
+
+        if (!empty($opts['channels']) && $opts['channels'] !== 'original') {
+            $chMap = ['mono' => 1, 'stereo' => 2, '5.1' => 6, '7.1' => 8];
+            $ch = $chMap[$opts['channels']] ?? intval($opts['channels']);
+            if ($ch > 0) $cmd .= ' -ac ' . $ch;
+        }
+    }
+
+    // Subtitle handling
+    if (!empty($opts['subtitle_mode']) && $opts['subtitle_mode'] === 'burn') {
+        $subStream = intval($opts['subtitle_stream'] ?? 0);
+        $cmd .= ' -vf subtitles=' . escapeshellarg($cmdInput) . ':stream_index=' . $subStream;
+    } elseif (!empty($opts['subtitle_mode']) && $opts['subtitle_mode'] === 'copy') {
+        $cmd .= ' -c:s copy';
+    }
+
+    // Deinterlace
+    if (!empty($opts['deinterlace'])) {
+        $cmd .= ' -vf yadif';
+        // If resolution is also set, we need to handle filter chain
+        if (!empty($opts['resolution']) && $opts['resolution'] !== 'original' && $opts['subtitle_mode'] !== 'burn') {
+            if (is_numeric($opts['resolution'])) {
+                $cmd = str_replace(' -vf yadif', ' -vf "yadif,scale=-1:' . intval($opts['resolution']) . '"', $cmd);
+            } else {
+                $res = str_replace(['x', 'X'], ':', $opts['resolution']);
+                $cmd = str_replace(' -vf yadif', ' -vf "yadif,scale=' . $res . '"', $cmd);
+            }
+        }
+    }
+
+    // Trim
+    if (!empty($opts['start_time'])) {
+        $cmd .= ' -ss ' . escapeshellarg($opts['start_time']);
+    }
+    if (!empty($opts['duration'])) {
+        $cmd .= ' -t ' . escapeshellarg($opts['duration']);
+    }
+
+    // Volume normalization
+    if (!empty($opts['volume']) && $opts['volume'] !== '0' && $opts['volume'] !== 'original') {
+        $vol = floatval($opts['volume']);
+        if ($vol !== 0) {
+            $cmd .= ' -af volume=' . $vol . 'dB';
+        }
+    }
+
+    // Two-pass
+    $twoPass = !empty($opts['two_pass']);
+
+    // Advanced options
+    if (!empty($opts['threads']) && intval($opts['threads']) > 0) {
+        $cmd .= ' -threads ' . intval($opts['threads']);
+    }
+
+    // Metadata
+    if (!empty($opts['metadata_preserve'])) {
+        $cmd .= ' -map_metadata 0';
+    } else {
+        $cmd .= ' -map_metadata -1';
+    }
+
+    // Faststart for MP4
+    if ($container === 'mp4') {
+        $cmd .= ' -movflags +faststart';
+    }
+
+    // Custom args
+    if (!empty($opts['custom_args'])) {
+        $cmd .= ' ' . $opts['custom_args'];
+    }
+
+    $cmd .= ' ' . escapeshellarg($outputPath) . ' 2>&1';
+
+    // SSE headers
+    header('Content-Type: text/event-stream');
+    header('Cache-Control: no-cache');
+    header('Connection: keep-alive');
+    header('X-Accel-Buffering: no');
+    @set_time_limit(0);
+    @ini_set('output_buffering', '0');
+    @ini_set('zlib.output_compression', 0);
+    while (@ob_get_level() > 0) { @ob_end_flush(); }
+    ob_implicit_flush(true);
+
+    // Initial status
+    echo "data: " . json_encode(['type' => 'info', 'message' => 'Starting conversion...']) . "\n\n";
+    flush();
+
+    // For two-pass
+    if ($twoPass && $videoCodec !== 'copy') {
+        $pass1Cmd = $cmd;
+        $pass1Cmd = str_replace(' ' . escapeshellarg($outputPath), ' -pass 1 -f null NUL', $pass1Cmd);
+        $pass1Cmd .= ' 2>&1';
+        echo "data: " . json_encode(['type' => 'info', 'message' => 'Running first pass (2-pass encoding)...']) . "\n\n";
+        flush();
+        $proc1 = @proc_open($pass1Cmd, [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes1);
+        if (is_resource($proc1)) {
+            fclose($pipes1[0]);
+            $log1 = stream_get_contents($pipes1[1]) . stream_get_contents($pipes1[2]);
+            fclose($pipes1[1]); fclose($pipes1[2]);
+            proc_close($proc1);
+        }
+        $cmd = str_replace(' -c:v ', ' -c:v -pass 2 ', $cmd);
+        // Remove -movflags if present (not needed in pass 2 command in the same way)
+    }
+
+    $descriptors = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
+    $process = @proc_open($cmd, $descriptors, $pipes);
+
+    if (!is_resource($process)) {
+        if ($tempLink2 && file_exists($tempLink2)) @unlink($tempLink2);
+        echo "data: " . json_encode(['type' => 'error', 'message' => 'Failed to start FFmpeg process']) . "\n\n";
+        flush();
+        exit;
+    }
+
+    fclose($pipes[0]);
+    $stderrOutput = '';
+    $startTime = time();
+    $lastOutTimeUs = 0;
+
+    // Parse progress from stdout (-progress pipe:1)
+    $progressData = [];
+    while (!feof($pipes[1])) {
+        $line = fgets($pipes[1]);
+        if ($line === false) break;
+        $line = trim($line);
+
+        if (strpos($line, '=') !== false) {
+            list($key, $value) = explode('=', $line, 2);
+            $key = trim($key);
+            $value = trim($value);
+            $progressData[$key] = $value;
+
+            if ($key === 'progress') {
+                if ($value === 'end') {
+                    echo "data: " . json_encode(['type' => 'complete']) . "\n\n";
+                    flush();
+                    break;
+                }
+
+                $outTimeUs = intval($progressData['out_time_us'] ?? 0);
+                $fps = $progressData['fps'] ?? '';
+                $speed = $progressData['speed'] ?? '';
+                $bitrate = $progressData['bitrate'] ?? '';
+
+                $percent = 0;
+                $eta = 0;
+                $elapsed = $outTimeUs > 0 ? round($outTimeUs / 1000000, 1) : 0;
+
+                if ($duration > 0 && $outTimeUs > 0) {
+                    $percent = min(round($outTimeUs / ($duration * 1000000) * 100, 1), 99.9);
+                    $lastOutTimeUs = $outTimeUs;
+                    $elapsedSec = max(1, time() - $startTime);
+                    if ($elapsedSec > 0) {
+                        $rate = $outTimeUs / $elapsedSec / 1000000;
+                        if ($rate > 0) {
+                            $remaining = $duration - ($outTimeUs / 1000000);
+                            $eta = round($remaining / $rate);
+                        }
+                    }
+                } else if ($outTimeUs > 0) {
+                    // No duration known, just show elapsed time
+                    $elapsed = round($outTimeUs / 1000000, 1);
+                }
+
+                echo "data: " . json_encode([
+                    'type' => 'progress',
+                    'percent' => $percent,
+                    'time' => gmdate('H:i:s', floor($outTimeUs / 1000000)),
+                    'fps' => $fps,
+                    'speed' => $speed,
+                    'bitrate' => $bitrate,
+                    'eta' => $eta,
+                    'elapsed' => $elapsed,
+                ]) . "\n\n";
+                flush();
+
+                $progressData = [];
+            }
+        }
+    }
+
+    // Get any remaining stderr output
+    $stderrOutput .= stream_get_contents($pipes[2]);
+    fclose($pipes[1]);
+    fclose($pipes[2]);
+    $returnCode = proc_close($process);
+
+    // Clean up temp hardlink
+    if ($tempLink2 && file_exists($tempLink2)) @unlink($tempLink2);
+
+    if ($returnCode === 0 && file_exists($outputPath) && filesize($outputPath) > 0) {
+        $fs = filesize($outputPath);
+        echo "data: " . json_encode([
+            'type' => 'done',
+            'download_token' => $token,
+            'filename' => $outputFilename,
+            'size' => $fs,
+            'size_formatted' => $fs > 1048576
+                ? round($fs / 1048576, 2) . ' MB'
+                : round($fs / 1024, 2) . ' KB',
+            'output_path' => $outputPath,
+        ]) . "\n\n";
+    } elseif (file_exists($outputPath) && filesize($outputPath) === 0) {
+        @unlink($outputPath);
+        echo "data: " . json_encode(['type' => 'error', 'message' => 'Output file is empty. FFmpeg may have failed.']) . "\n\n";
+    } else {
+        // Try to extract error from stderr
+        $errMsg = !empty($stderrOutput) ? substr(trim($stderrOutput), -500) : 'Unknown error (return code: ' . $returnCode . ')';
+        echo "data: " . json_encode(['type' => 'error', 'message' => 'Conversion failed: ' . $errMsg]) . "\n\n";
+    }
+    flush();
+    exit;
+}
+
+function handleFfmpegDownload() {
+    $token = $_GET['token'] ?? '';
+    if (empty($token) || strlen($token) !== 32) {
+        header('HTTP/1.1 400 Bad Request');
+        echo json_encode(['error' => 'Invalid token']);
+        exit;
+    }
+
+    $tmpDir = dirname(__DIR__) . '/uploads/ffmpeg_temp';
+    $files = glob($tmpDir . '/' . $token . '_*');
+    if (empty($files)) {
+        header('HTTP/1.1 404 Not Found');
+        echo json_encode(['error' => 'File not found or expired']);
+        exit;
+    }
+
+    $filePath = $files[0];
+    $filename = basename($filePath);
+    // Remove token prefix for display
+    $displayName = preg_replace('/^[a-f0-9]{32}_/', '', $filename);
+    $fs = filesize($filePath);
+
+    header('Content-Description: File Transfer');
+    header('Content-Type: application/octet-stream');
+    header('Content-Disposition: attachment; filename="' . $displayName . '"');
+    header('Content-Length: ' . $fs);
+    header('Cache-Control: no-cache');
+    header('X-Accel-Buffering: no');
+
+    @set_time_limit(0);
+    $fp = @fopen($filePath, 'rb');
+    if ($fp) {
+        while (!feof($fp)) {
+            echo fread($fp, 8192);
+            flush();
+        }
+        fclose($fp);
+    }
+
+    // Clean up the temp file after serving
+    @unlink($filePath);
+
+    exit;
+}
+
 function handleProbeVideo($pdo) {
     $id = intval($_GET['id'] ?? $_POST['id'] ?? 0);
     if (!$id) throw new Exception('Missing video id');
@@ -2946,6 +4176,7 @@ function handleProbeVideo($pdo) {
     if (!$ffprobeResult || !isset($ffprobeResult['streams'])) throw new Exception('Invalid ffprobe output');
 
     $videoCodec = '';
+    $videoPixFmt = '';
     $container = strtolower(pathinfo($localPath, PATHINFO_EXTENSION));
     $audioStreams = [];
     $subtitleStreams = [];
@@ -2960,6 +4191,7 @@ function handleProbeVideo($pdo) {
 
         if ($codecType === 'video') {
             $videoCodec = $codec;
+            if (empty($videoPixFmt)) $videoPixFmt = $stream['pix_fmt'] ?? '';
         } elseif ($codecType === 'audio') {
             $audioStreams[] = [
                 'index' => $index,
@@ -2983,7 +4215,9 @@ function handleProbeVideo($pdo) {
     echo json_encode([
         'video_codec' => $videoCodec,
         'container' => $container,
-        'copy_safe' => in_array($videoCodec, ['h264', 'hevc', 'h265']),
+        'copy_safe' => in_array($videoCodec, ['h264', 'hevc', 'h265'])
+            && !preg_match('/p1[0-9]|1[0-9](le|be)/', $videoPixFmt),
+        'video_pix_fmt' => $videoPixFmt,
         'audio_streams' => $audioStreams,
         'subtitle_streams' => $subtitleStreams,
     ]);
@@ -3009,49 +4243,138 @@ function handleConvertVideo($pdo) {
     $cacheDir = __DIR__ . '/../uploads/video_cache';
     if (!file_exists($cacheDir)) @mkdir($cacheDir, 0777, true);
 
-    // Clear old cache
+    // Best-effort cleanup of old cache (may fail if files are locked)
     foreach (glob($cacheDir . DIRECTORY_SEPARATOR . '*') ?: [] as $f) {
         @unlink($f);
     }
 
-    $outputMp4 = $cacheDir . DIRECTORY_SEPARATOR . 'output.mp4';
-    $outputVtt = $cacheDir . DIRECTORY_SEPARATOR . 'subtitles.vtt';
-    $publicMp4 = './uploads/video_cache/output.mp4';
-    $publicVtt = './uploads/video_cache/subtitles.vtt';
+    // Use unique filenames so locked old files don't block new conversions
+    $suffix = uniqid();
+    $outputMp4 = $cacheDir . DIRECTORY_SEPARATOR . "output_{$suffix}.mp4";
+    $outputVtt = $cacheDir . DIRECTORY_SEPARATOR . "subtitles_{$suffix}.vtt";
+    $publicMp4 = "./uploads/video_cache/output_{$suffix}.mp4";
+    $publicVtt = "./uploads/video_cache/subtitles_{$suffix}.vtt";
 
-    // Remux MKV → MP4 with selected audio
-    $remuxCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath)
-        . ' -map 0:v:0 -map 0:a:' . $audioIndex
-        . ' -c:v copy -c:a copy -movflags +faststart'
-        . ' -map_metadata -1'
-        . ' ' . escapeshellarg($outputMp4);
+    // Probe to decide which tier of processing is needed
+    $videoNeedsTranscode = false;
+    $audioNeedsTranscode = false;
+    $ffprobePath = str_replace('"', '', $ffmpegPath);
+    $ffprobePath = str_replace('ffmpeg.exe', 'ffprobe.exe', $ffprobePath);
+
+    // Check video: high bit depth (10-bit+) requires re-encode
+    $pixCmd = $ffprobePath . ' -v error -select_streams v:0 -show_entries stream=pix_fmt -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($localPath);
+    $pixOut = []; $pixCode = -1;
+    exec($pixCmd, $pixOut, $pixCode);
+    if ($pixCode === 0 && !empty($pixOut[0])) {
+        $pixFmt = trim($pixOut[0]);
+        if (preg_match('/p1[0-9]|1[0-9](le|be)/', $pixFmt)) {
+            $videoNeedsTranscode = true;
+        }
+    }
+
+    // Check audio: non-AAC/MP3/AC3 codecs need re-encode for browser playback in MP4
+    $acCmd = $ffprobePath . ' -v error -select_streams a -show_entries stream=index,codec_name -of csv=p=0 ' . escapeshellarg($localPath);
+    $acOut = []; $acCode = -1;
+    exec($acCmd, $acOut, $acCode);
+    if ($acCode === 0) {
+        $audioCodec = '';
+        foreach ($acOut as $line) {
+            $parts = explode(',', trim($line));
+            $idx = intval($parts[0] ?? -1);
+            $codec = $parts[1] ?? '';
+            if ($idx === $audioIndex) { $audioCodec = $codec; break; }
+        }
+        if (!in_array($audioCodec, ['aac', 'mp3', 'ac3', 'eac3'])) {
+            $audioNeedsTranscode = true;
+        }
+    }
 
     $remuxOutput = [];
     $remuxCode = -1;
-    exec($remuxCmd . ' 2>&1', $remuxOutput, $remuxCode);
 
-    if ($remuxCode !== 0) {
-        // Fallback: transcode video to h264 + aac
+    // ---------- Stage 1: Copy both (remux) ----------
+    if (!$videoNeedsTranscode && !$audioNeedsTranscode) {
         $remuxCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath)
-            . ' -map 0:v:0 -map 0:a:' . $audioIndex
-            . ' -c:v libx264 -preset ultrafast -crf 23 -pix_fmt yuv420p'
-            . ' -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart'
+            . ' -map 0:v:0 -map 0:' . $audioIndex
+            . ' -c:v copy -c:a copy -movflags +faststart'
+            . ' -map_metadata -1'
+            . ' ' . escapeshellarg($outputMp4);
+        exec($remuxCmd . ' 2>&1', $remuxOutput, $remuxCode);
+    }
+
+    // ---------- Stage 2: Copy video + re-encode audio only ----------
+    if ($remuxCode !== 0 && !$videoNeedsTranscode) {
+        $remuxCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath)
+            . ' -map 0:v:0 -map 0:' . $audioIndex
+            . ' -c:v copy'
+            . ' -c:a aac -ac 2 -ar 44100 -b:a 128k'
+            . ' -movflags +faststart'
             . ' -map_metadata -1'
             . ' ' . escapeshellarg($outputMp4);
         $remuxOutput = [];
         $remuxCode = -1;
         exec($remuxCmd . ' 2>&1', $remuxOutput, $remuxCode);
+    }
+
+    // ---------- Stage 3: Full transcode (video + audio) ----------
+    if ($remuxCode !== 0) {
+        $encoder = detectGpuEncoder($ffmpegPath);
+        $isGpu = ($encoder !== 'libx264');
+
+        if ($encoder === 'h264_nvenc') {
+            $videoArgsGpu = '-c:v h264_nvenc -pix_fmt yuv420p -preset p1 -rc constqp -qp 28';
+        } elseif ($encoder === 'h264_qsv') {
+            $videoArgsGpu = '-c:v h264_qsv -pix_fmt yuv420p -preset veryfast';
+        } elseif ($encoder === 'h264_amf') {
+            $videoArgsGpu = '-c:v h264_amf -pix_fmt yuv420p -preset speed';
+        } else {
+            $videoArgsGpu = '';
+        }
+        $videoArgsCpu = '-c:v libx264 -preset ultrafast -crf 28 -pix_fmt yuv420p';
+        $videoArgs = $isGpu ? $videoArgsGpu : $videoArgsCpu;
+
+        $transcodeCmd = $ffmpegPath . ' -y -threads 0 -i ' . escapeshellarg($localPath)
+            . ' -map 0:v:0 -map 0:' . $audioIndex
+            . ' ' . $videoArgs
+            . ' -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart'
+            . ' -map_metadata -1'
+            . ' ' . escapeshellarg($outputMp4);
+        $remuxOutput = [];
+        $remuxCode = -1;
+        exec($transcodeCmd . ' 2>&1', $remuxOutput, $remuxCode);
+
+        if ($remuxCode !== 0) {
+            error_log("[convert] GPU transcode failed for: " . $row['link'] . " (encoder=$encoder)");
+        }
+
+        // GPU → CPU fallback
+        if ($remuxCode !== 0 && $isGpu) {
+            @unlink($outputMp4);
+            $transcodeCmd = $ffmpegPath . ' -y -threads 0 -i ' . escapeshellarg($localPath)
+                . ' -map 0:v:0 -map 0:' . $audioIndex
+                . ' ' . $videoArgsCpu
+                . ' -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart'
+                . ' -map_metadata -1'
+                . ' ' . escapeshellarg($outputMp4);
+            $remuxOutput = [];
+            $remuxCode = -1;
+            exec($transcodeCmd . ' 2>&1', $remuxOutput, $remuxCode);
+
+            if ($remuxCode !== 0) {
+                error_log("[convert] CPU fallback transcode failed for: " . $row['link']);
+            }
+        }
 
         if ($remuxCode !== 0) {
             throw new Exception('Conversion failed: ' . implode("\n", array_slice($remuxOutput, -5)));
         }
     }
 
-    // Extract subtitle if requested
+    // Extract subtitle if requested (use global stream index)
     $hasVtt = false;
     if ($subtitleIndex >= 0) {
         $subCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath)
-            . ' -map 0:s:' . $subtitleIndex
+            . ' -map 0:' . $subtitleIndex
             . ' -c:s webvtt'
             . ' ' . escapeshellarg($outputVtt);
         $subOutput = [];
@@ -3062,6 +4385,7 @@ function handleConvertVideo($pdo) {
 
     echo json_encode([
         'mp4' => $publicMp4,
+        'mp4_path' => $outputMp4,
         'vtt' => $hasVtt ? $publicVtt : null,
     ]);
     exit;
