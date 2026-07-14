@@ -166,6 +166,30 @@ try {
         case 'upload_file':
             handleUploadFile($pdo);
             break;
+        case 'probe_video':
+            handleProbeVideo($pdo);
+            break;
+        case 'convert_video':
+            handleConvertVideo($pdo);
+            break;
+        case 'detect_subtitle':
+            handleDetectSubtitle($pdo);
+            break;
+        case 'save_subtitle':
+            handleSaveSubtitle($pdo);
+            break;
+        case 'remove_subtitle':
+            handleRemoveSubtitle($pdo);
+            break;
+        case 'set_autoload':
+            handleSetAutoload($pdo);
+            break;
+        case 'serve_subtitle':
+            handleServeSubtitle($pdo);
+            break;
+        case 'save_subtitle_style':
+            handleSaveSubtitleStyle($pdo);
+            break;
         default:
             header('HTTP/1.1 404 Not Found');
             echo json_encode(['error' => 'Action not found']);
@@ -2895,5 +2919,554 @@ function handleYtdlpDownload($pdo = null) {
     }
     flush();
     exit;
+}
+
+function handleProbeVideo($pdo) {
+    $id = intval($_GET['id'] ?? $_POST['id'] ?? 0);
+    if (!$id) throw new Exception('Missing video id');
+
+    $stmt = $pdo->prepare("SELECT link FROM video_metadatas WHERE vid_id = :id");
+    $stmt->execute([':id' => $id]);
+    $row = $stmt->fetch();
+    if (!$row) throw new Exception('Video not found');
+
+    $localPath = resolveLocalFilePath($row['link']);
+    if (!file_exists($localPath)) throw new Exception('Video file not found on disk');
+
+    $ffprobePath = str_replace('"', '', getFFmpegPath());
+    $ffprobePath = str_replace('ffmpeg.exe', 'ffprobe.exe', $ffprobePath);
+
+    $cmd = $ffprobePath . ' -v error -print_format json -show_streams ' . escapeshellarg($localPath);
+    $output = [];
+    $code = -1;
+    exec($cmd, $output, $code);
+    if ($code !== 0) throw new Exception('Failed to probe video file');
+
+    $ffprobeResult = json_decode(implode("\n", $output), true);
+    if (!$ffprobeResult || !isset($ffprobeResult['streams'])) throw new Exception('Invalid ffprobe output');
+
+    $videoCodec = '';
+    $container = strtolower(pathinfo($localPath, PATHINFO_EXTENSION));
+    $audioStreams = [];
+    $subtitleStreams = [];
+
+    foreach ($ffprobeResult['streams'] as $stream) {
+        $codecType = $stream['codec_type'] ?? '';
+        $index = $stream['index'] ?? 0;
+        $codec = $stream['codec_name'] ?? '';
+        $tags = $stream['tags'] ?? [];
+        $language = $tags['language'] ?? 'und';
+        $title = $tags['title'] ?? '';
+
+        if ($codecType === 'video') {
+            $videoCodec = $codec;
+        } elseif ($codecType === 'audio') {
+            $audioStreams[] = [
+                'index' => $index,
+                'codec' => $codec,
+                'language' => $language,
+                'channels' => intval($stream['channels'] ?? 0),
+                'title' => $title,
+            ];
+        } elseif ($codecType === 'subtitle') {
+            $isBitmap = in_array($codec, ['hdmv_pgs_subtitle', 'dvd_subtitle', 'dvb_subtitle', 'xsub']);
+            $subtitleStreams[] = [
+                'index' => $index,
+                'codec' => $codec,
+                'language' => $language,
+                'title' => $title,
+                'type' => $isBitmap ? 'bitmap' : 'text',
+            ];
+        }
+    }
+
+    echo json_encode([
+        'video_codec' => $videoCodec,
+        'container' => $container,
+        'copy_safe' => in_array($videoCodec, ['h264', 'hevc', 'h265']),
+        'audio_streams' => $audioStreams,
+        'subtitle_streams' => $subtitleStreams,
+    ]);
+    exit;
+}
+
+function handleConvertVideo($pdo) {
+    $id = intval($_POST['id'] ?? 0);
+    $audioIndex = intval($_POST['audio_index'] ?? 0);
+    $subtitleIndex = intval($_POST['subtitle_index'] ?? -1);
+    if (!$id) throw new Exception('Missing video id');
+
+    $stmt = $pdo->prepare("SELECT link, vid_name FROM video_metadatas WHERE vid_id = :id");
+    $stmt->execute([':id' => $id]);
+    $row = $stmt->fetch();
+    if (!$row) throw new Exception('Video not found');
+
+    $localPath = resolveLocalFilePath($row['link']);
+    if (!file_exists($localPath)) throw new Exception('Video file not found on disk');
+
+    $ffmpegPath = getFFmpegPath();
+
+    $cacheDir = __DIR__ . '/../uploads/video_cache';
+    if (!file_exists($cacheDir)) @mkdir($cacheDir, 0777, true);
+
+    // Clear old cache
+    foreach (glob($cacheDir . DIRECTORY_SEPARATOR . '*') ?: [] as $f) {
+        @unlink($f);
+    }
+
+    $outputMp4 = $cacheDir . DIRECTORY_SEPARATOR . 'output.mp4';
+    $outputVtt = $cacheDir . DIRECTORY_SEPARATOR . 'subtitles.vtt';
+    $publicMp4 = './uploads/video_cache/output.mp4';
+    $publicVtt = './uploads/video_cache/subtitles.vtt';
+
+    // Remux MKV → MP4 with selected audio
+    $remuxCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath)
+        . ' -map 0:v:0 -map 0:a:' . $audioIndex
+        . ' -c:v copy -c:a copy -movflags +faststart'
+        . ' -map_metadata -1'
+        . ' ' . escapeshellarg($outputMp4);
+
+    $remuxOutput = [];
+    $remuxCode = -1;
+    exec($remuxCmd . ' 2>&1', $remuxOutput, $remuxCode);
+
+    if ($remuxCode !== 0) {
+        // Fallback: transcode video to h264 + aac
+        $remuxCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath)
+            . ' -map 0:v:0 -map 0:a:' . $audioIndex
+            . ' -c:v libx264 -preset ultrafast -crf 23 -pix_fmt yuv420p'
+            . ' -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart'
+            . ' -map_metadata -1'
+            . ' ' . escapeshellarg($outputMp4);
+        $remuxOutput = [];
+        $remuxCode = -1;
+        exec($remuxCmd . ' 2>&1', $remuxOutput, $remuxCode);
+
+        if ($remuxCode !== 0) {
+            throw new Exception('Conversion failed: ' . implode("\n", array_slice($remuxOutput, -5)));
+        }
+    }
+
+    // Extract subtitle if requested
+    $hasVtt = false;
+    if ($subtitleIndex >= 0) {
+        $subCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath)
+            . ' -map 0:s:' . $subtitleIndex
+            . ' -c:s webvtt'
+            . ' ' . escapeshellarg($outputVtt);
+        $subOutput = [];
+        $subCode = -1;
+        exec($subCmd . ' 2>&1', $subOutput, $subCode);
+        $hasVtt = ($subCode === 0 && file_exists($outputVtt) && filesize($outputVtt) > 0);
+    }
+
+    echo json_encode([
+        'mp4' => $publicMp4,
+        'vtt' => $hasVtt ? $publicVtt : null,
+    ]);
+    exit;
+}
+
+// ----------------------------------------
+// Subtitle Management
+// ----------------------------------------
+
+function handleDetectSubtitle($pdo) {
+    $id = intval($_GET['id'] ?? 0);
+    if (!$id) throw new Exception('Missing video id');
+
+    $stmt = $pdo->prepare("SELECT link FROM video_metadatas WHERE vid_id = :id");
+    $stmt->execute([':id' => $id]);
+    $row = $stmt->fetch();
+    if (!$row) throw new Exception('Video not found');
+
+    $localPath = resolveLocalFilePath($row['link']);
+    $candidateDir = null;
+    $candidateName = null;
+    $autoExists = null;
+    if ($localPath && file_exists($localPath)) {
+        $candidateDir = dirname($localPath);
+        $base = pathinfo($localPath, PATHINFO_FILENAME);
+        $candidateName = $base;
+        foreach (['.vtt', '.srt'] as $ext) {
+            $candidate = $candidateDir . DIRECTORY_SEPARATOR . $base . $ext;
+            if (file_exists($candidate)) {
+                $autoExists = $candidate;
+                break;
+            }
+        }
+    }
+
+    // Decode current subtitle data from DB
+    $stmt2 = $pdo->prepare("SELECT subtitles FROM video_metadatas WHERE vid_id = :id");
+    $stmt2->execute([':id' => $id]);
+    $row2 = $stmt2->fetch();
+    $subtitles = json_decode($row2['subtitles'] ?? 'null', true);
+    if (!is_array($subtitles)) {
+        $subtitles = ['autoload' => false, 'tracks' => [], 'style' => null];
+    } else {
+        $subtitles = migrateLegacySubtitles($subtitles);
+    }
+
+    echo json_encode([
+        'candidate_dir' => $candidateDir,
+        'candidate_name' => $candidateName,
+        'auto_exists' => $autoExists,
+        'tracks' => $subtitles['tracks'] ?? [],
+        'autoload' => $subtitles['autoload'] ?? false,
+        'style' => $subtitles['style'] ?? null,
+    ]);
+    exit;
+}
+
+function migrateLegacySubtitles($subtitles) {
+    if (!is_array($subtitles) || isset($subtitles['tracks'])) return $subtitles;
+    if (!isset($subtitles['subs']) || !is_array($subtitles['subs'])) {
+        return ['autoload' => false, 'tracks' => []];
+    }
+    $tracks = [];
+    foreach ($subtitles['subs'] as $lang => $subData) {
+        $path = $subData['url'] ?? '';
+        if ($path && $path !== 'url1' && $path !== 'url2') {
+            $loc = $subtitles['loc'] ?? '';
+            if ($loc && strpos($path, '/') !== 0 && strpos($path, ':') === false) {
+                $path = rtrim($loc, '/') . '/' . $path;
+            }
+        }
+        $tracks[] = [
+            'lang' => $lang,
+            'label' => strtoupper($lang),
+            'path' => $path,
+        ];
+    }
+    return [
+        'autoload' => !empty($subtitles['autosubs']),
+        'tracks' => $tracks,
+        'style' => $subtitles['style'] ?? null,
+    ];
+}
+
+function handleSaveSubtitle($pdo) {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        throw new Exception('POST method required');
+    }
+
+    $id = intval($_POST['id'] ?? 0);
+    $lang = trim($_POST['lang'] ?? '');
+    $label = trim($_POST['label'] ?? '');
+    $mode = $_POST['mode'] ?? 'path';
+    if (!$id) throw new Exception('Missing video id');
+    if (empty($lang)) throw new Exception('Language code is required');
+    if (empty($label)) throw new Exception('Label is required');
+
+    // Fetch current subtitles JSON
+    $stmt = $pdo->prepare("SELECT subtitles FROM video_metadatas WHERE vid_id = :id");
+    $stmt->execute([':id' => $id]);
+    $row = $stmt->fetch();
+    if (!$row) throw new Exception('Video not found');
+
+    $subtitles = json_decode($row['subtitles'] ?? 'null', true);
+    $subtitles = migrateLegacySubtitles($subtitles);
+
+    $path = '';
+
+    if ($mode === 'upload') {
+        // Upload mode
+        if (!isset($_FILES['subtitle_file']) || $_FILES['subtitle_file']['error'] !== UPLOAD_ERR_OK) {
+            throw new Exception('Subtitle file upload failed');
+        }
+        $uploadDir = __DIR__ . '/../uploads/subtitles';
+        if (!file_exists($uploadDir)) @mkdir($uploadDir, 0777, true);
+
+        $tmpPath = $_FILES['subtitle_file']['tmp_name'];
+        $origName = $_FILES['subtitle_file']['name'];
+        $origExt = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
+        if (!in_array($origExt, ['vtt', 'srt'])) {
+            throw new Exception('Only .vtt and .srt files are accepted');
+        }
+
+        $safeLabel = preg_replace('/[^a-zA-Z0-9_-]/', '_', $label);
+        $destName = $id . '.' . $lang . '.' . $safeLabel . '.vtt';
+        $destPath = $uploadDir . DIRECTORY_SEPARATOR . $destName;
+
+        if ($origExt === 'srt') {
+            $srtContent = file_get_contents($tmpPath);
+            $vttContent = "WEBVTT\n\n" . preg_replace('/^(\d+)\s*$/m', '', $srtContent);
+            $vttContent = preg_replace(
+                '/^(\d{2}:\d{2}:\d{2}),(\d{3}) --> (\d{2}:\d{2}:\d{2}),(\d{3})/m',
+                '$1.$2 --> $3.$4',
+                $vttContent
+            );
+            file_put_contents($destPath, $vttContent);
+        } else {
+            move_uploaded_file($tmpPath, $destPath);
+        }
+
+        $path = realpath($destPath);
+        if ($path === false) throw new Exception('Failed to resolve uploaded file path');
+    } else {
+        // Path mode
+        $path = trim($_POST['path'] ?? '');
+        if (empty($path)) throw new Exception('Subtitle file path is required');
+        if (!file_exists($path)) throw new Exception('Subtitle file does not exist: ' . $path);
+        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        if (!in_array($ext, ['vtt', 'srt'])) {
+            throw new Exception('Only .vtt and .srt files are accepted');
+        }
+    }
+
+    // Replace by label, or append
+    $tracks = $subtitles['tracks'];
+    $found = false;
+    foreach ($tracks as &$track) {
+        if ($track['label'] === $label) {
+            $track['lang'] = $lang;
+            $track['path'] = $path;
+            $found = true;
+            break;
+        }
+    }
+    unset($track);
+    if (!$found) {
+        $tracks[] = ['lang' => $lang, 'label' => $label, 'path' => $path];
+    }
+    $subtitles['tracks'] = $tracks;
+
+    $json = json_encode($subtitles);
+    $updateStmt = $pdo->prepare("UPDATE video_metadatas SET subtitles = :subs WHERE vid_id = :id");
+    $updateStmt->execute([':subs' => $json, ':id' => $id]);
+
+    echo json_encode(['success' => true, 'tracks' => $tracks, 'autoload' => $subtitles['autoload']]);
+    exit;
+}
+
+function handleRemoveSubtitle($pdo) {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        throw new Exception('POST method required');
+    }
+
+    $id = intval($_POST['id'] ?? 0);
+    $label = trim($_POST['label'] ?? '');
+    if (!$id) throw new Exception('Missing video id');
+    if (empty($label)) throw new Exception('Label is required');
+
+    $stmt = $pdo->prepare("SELECT subtitles FROM video_metadatas WHERE vid_id = :id");
+    $stmt->execute([':id' => $id]);
+    $row = $stmt->fetch();
+    if (!$row) throw new Exception('Video not found');
+
+    $subtitles = json_decode($row['subtitles'] ?? 'null', true);
+    $subtitles = migrateLegacySubtitles($subtitles);
+
+    $tracks = $subtitles['tracks'];
+    $removedPath = null;
+    $newTracks = [];
+    foreach ($tracks as $track) {
+        if ($track['label'] === $label) {
+            $removedPath = $track['path'] ?? null;
+        } else {
+            $newTracks[] = $track;
+        }
+    }
+    $subtitles['tracks'] = $newTracks;
+    if (empty($newTracks)) {
+        $subtitles['autoload'] = false;
+    }
+
+    // Delete uploaded file if it was in our uploads directory
+    if ($removedPath) {
+        $realPath = realpath($removedPath);
+        $uploadsDir = realpath(__DIR__ . '/../uploads/subtitles');
+        if ($realPath && $uploadsDir && strpos($realPath, $uploadsDir) === 0 && file_exists($realPath)) {
+            @unlink($realPath);
+        }
+    }
+
+    $json = json_encode($subtitles);
+    $updateStmt = $pdo->prepare("UPDATE video_metadatas SET subtitles = :subs WHERE vid_id = :id");
+    $updateStmt->execute([':subs' => $json, ':id' => $id]);
+
+    echo json_encode(['success' => true, 'tracks' => $newTracks, 'autoload' => $subtitles['autoload']]);
+    exit;
+}
+
+function handleSetAutoload($pdo) {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        throw new Exception('POST method required');
+    }
+
+    $id = intval($_POST['id'] ?? 0);
+    $autoload = !empty($_POST['autoload']);
+    if (!$id) throw new Exception('Missing video id');
+
+    $stmt = $pdo->prepare("SELECT subtitles FROM video_metadatas WHERE vid_id = :id");
+    $stmt->execute([':id' => $id]);
+    $row = $stmt->fetch();
+    if (!$row) throw new Exception('Video not found');
+
+    $subtitles = json_decode($row['subtitles'] ?? 'null', true);
+    $subtitles = migrateLegacySubtitles($subtitles);
+
+    $subtitles['autoload'] = $autoload;
+    $json = json_encode($subtitles);
+    $updateStmt = $pdo->prepare("UPDATE video_metadatas SET subtitles = :subs WHERE vid_id = :id");
+    $updateStmt->execute([':subs' => $json, ':id' => $id]);
+
+    echo json_encode(['success' => true, 'autoload' => $autoload]);
+    exit;
+}
+
+function handleSaveSubtitleStyle($pdo) {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        throw new Exception('POST method required');
+    }
+
+    $rawData = file_get_contents('php://input');
+    $data = json_decode($rawData, true);
+    if (!$data || !isset($data['style'])) throw new Exception('Missing style data');
+    $id = intval($data['id'] ?? 0);
+    if (!$id) throw new Exception('Missing video id');
+    $style = $data['style'];
+
+    $stmt = $pdo->prepare("SELECT subtitles FROM video_metadatas WHERE vid_id = :id");
+    $stmt->execute([':id' => $id]);
+    $row = $stmt->fetch();
+    if (!$row) throw new Exception('Video not found');
+
+    $subtitles = json_decode($row['subtitles'] ?? 'null', true);
+    if (!is_array($subtitles)) {
+        $subtitles = ['autoload' => false, 'tracks' => []];
+    } else {
+        $subtitles = migrateLegacySubtitles($subtitles);
+    }
+
+    $subtitles['style'] = $style;
+    $json = json_encode($subtitles);
+    $updateStmt = $pdo->prepare("UPDATE video_metadatas SET subtitles = :subs WHERE vid_id = :id");
+    $updateStmt->execute([':subs' => $json, ':id' => $id]);
+
+    echo json_encode(['success' => true]);
+    exit;
+}
+
+function handleServeSubtitle($pdo) {
+    $id = intval($_GET['id'] ?? 0);
+    $lang = trim($_GET['lang'] ?? '');
+    if (!$id || empty($lang)) throw new Exception('Missing video id or language');
+
+    $stmt = $pdo->prepare("SELECT subtitles FROM video_metadatas WHERE vid_id = :id");
+    $stmt->execute([':id' => $id]);
+    $row = $stmt->fetch();
+    if (!$row) throw new Exception('Video not found');
+
+    $subtitles = json_decode($row['subtitles'] ?? 'null', true);
+    if (!is_array($subtitles) || !isset($subtitles['tracks'])) {
+        header('HTTP/1.1 404 Not Found');
+        echo 'No subtitles available';
+        exit;
+    }
+
+    $path = null;
+    foreach ($subtitles['tracks'] as $track) {
+        if ($track['lang'] === $lang && !empty($track['path'])) {
+            $path = $track['path'];
+            break;
+        }
+    }
+
+    if (!$path || !file_exists($path)) {
+        header('HTTP/1.1 404 Not Found');
+        echo 'Subtitle file not found';
+        exit;
+    }
+
+    $delDouble = !empty($subtitles['style']['delDouble']);
+
+    $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+    if ($ext === 'srt') {
+        $srtContent = file_get_contents($path);
+        $vttContent = "WEBVTT\n\n" . preg_replace('/^(\d+)\s*$/m', '', $srtContent);
+        $vttContent = preg_replace(
+            '/^(\d{2}:\d{2}:\d{2}),(\d{3}) --> (\d{2}:\d{2}:\d{2}),(\d{3})/m',
+            '$1.$2 --> $3.$4',
+            $vttContent
+        );
+    } else {
+        $vttContent = file_get_contents($path);
+    }
+
+    if ($delDouble) {
+        $vttContent = removeDuplicateVttCues($vttContent);
+    }
+
+    header('Content-Type: text/vtt; charset=utf-8');
+    header('Content-Disposition: inline; filename="subtitles.vtt"');
+    header('Cache-Control: ' . ($delDouble ? 'no-cache' : 'public, max-age=3600'));
+    echo $vttContent;
+    exit;
+}
+
+function removeDuplicateVttCues($vtt) {
+    $lines = preg_split('/\r?\n/', $vtt);
+    $result = [];
+    $prevText = '';
+    $inCue = false;
+    $currentCueLines = [];
+    $currentTiming = '';
+    foreach ($lines as $line) {
+        $trimmed = trim($line);
+        if (preg_match('/^(\d{2}:)?\d{2}:\d{2}[.,]\d{3}\s*-->\s*(\d{2}:)?\d{2}:\d{2}[.,]\d{3}/', $trimmed)) {
+            // Flush previous cue (blank if duplicate)
+            if ($currentTiming !== '') {
+                $result[] = $currentTiming;
+                if (!empty($currentCueLines)) {
+                    $cueText = implode("\n", $currentCueLines);
+                    $plain = strtolower(strip_tags($cueText));
+                    if ($plain !== $prevText) {
+                        foreach ($currentCueLines as $cl) $result[] = $cl;
+                        $prevText = $plain;
+                    }
+                }
+                $result[] = '';
+            }
+            $currentTiming = $trimmed;
+            $currentCueLines = [];
+            $inCue = true;
+        } elseif ($inCue) {
+            if ($trimmed === '') {
+                // End of cue — blank if duplicate
+                $result[] = $currentTiming;
+                if (!empty($currentCueLines)) {
+                    $cueText = implode("\n", $currentCueLines);
+                    $plain = strtolower(strip_tags($cueText));
+                    if ($plain !== $prevText) {
+                        foreach ($currentCueLines as $cl) $result[] = $cl;
+                        $prevText = $plain;
+                    }
+                }
+                $result[] = '';
+                $currentTiming = '';
+                $currentCueLines = [];
+                $inCue = false;
+            } else {
+                $currentCueLines[] = $line;
+            }
+        } else {
+            $result[] = $line;
+        }
+    }
+    // Last cue
+    if ($currentTiming !== '') {
+        $result[] = $currentTiming;
+        if (!empty($currentCueLines)) {
+            $cueText = implode("\n", $currentCueLines);
+            $plain = strtolower(strip_tags($cueText));
+            if ($plain !== $prevText) {
+                foreach ($currentCueLines as $cl) $result[] = $cl;
+            }
+        }
+        $result[] = '';
+    }
+    return implode("\n", $result);
 }
 

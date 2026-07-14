@@ -7,7 +7,7 @@ import {
   Play, Pause, Volume2, VolumeX, Maximize, Minimize,
   Settings, Trash2, Edit, RefreshCw, Plus, Check, Loader2,
   ThumbsUp, ThumbsDown, Info, Mic, Bell, CornerUpLeft,
-  Repeat, Shuffle, Download, SkipBack, SkipForward, ListMusic, X, RotateCcw, RotateCw, Cast, Upload
+  Repeat, Shuffle, Download, SkipBack, SkipForward, ListMusic, X, RotateCcw, RotateCw, Cast, Upload, Subtitles, AlertTriangle
 } from 'lucide-react';
 import { AuthModal } from './components/AuthModal';
 import { CommentsSection } from './components/CommentsSection';
@@ -1417,6 +1417,49 @@ function PlayerView({
   const [isTranscoding, setIsTranscoding] = useState(false);
   const [pendingTranscodeDevice, setPendingTranscodeDevice] = useState(null);
 
+  // Subtitle states
+  const subtitleStyleRef = useRef(null);
+  const subtitleTrackRef = useRef(null);
+  const DEFAULT_SUB_PREFS = {
+    fontFamily: 'Arial',
+    customFont: '',
+    fontSize: 100,
+    fontColor: '#ffffff',
+    bgColor: 'transparent',
+    textShadow: '0 0 4px #000000',
+    vPosition: 'auto',
+    hPosition: 'auto',
+    align: 'center',
+    delDouble: false,
+  };
+  const [subPrefs, setSubPrefs] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('yt_sub_prefs')) || DEFAULT_SUB_PREFS; }
+    catch { return DEFAULT_SUB_PREFS; }
+  });
+  const subPrefsVidRef = useRef(null);
+  const [subsActive, setSubsActive] = useState(false);
+  const [mkvStreams, setMkvStreams] = useState(null);
+  const [showMkvModal, setShowMkvModal] = useState(false);
+  const [selectedAudioIdx, setSelectedAudioIdx] = useState(0);
+  const [selectedSubIdx, setSelectedSubIdx] = useState(-1);
+  const [isConverting, setIsConverting] = useState(false);
+  const [convertError, setConvertError] = useState('');
+  const [cachedVideo, setCachedVideo] = useState(null);
+  const [showSubSettings, setShowSubSettings] = useState(false);
+
+  // Subtitle management state
+  const [subtitleTracks, setSubtitleTracks] = useState([]);
+  const [subAutoload, setSubAutoload] = useState(false);
+  const [detectedSubPath, setDetectedSubPath] = useState(null);
+  const [subAddMode, setSubAddMode] = useState('path');
+  const [subDirInput, setSubDirInput] = useState('');
+  const [subNameInput, setSubNameInput] = useState('');
+  const [subLang, setSubLang] = useState('en');
+  const [subLabel, setSubLabel] = useState('');
+  const [subSaving, setSubSaving] = useState(false);
+  const [subActiveIdx, setSubActiveIdx] = useState(-1);
+  const [subStyleVer, setSubStyleVer] = useState(0);
+
   // Close cast/settings menus on outside click
   useEffect(() => {
     if (!showCastMenu && !showSettings) return;
@@ -1939,6 +1982,270 @@ function PlayerView({
     }
     prevVideoIdRef.current = video.vid_id;
   }, [video.vid_id, castDevice]);
+
+  // Probe MKV for audio/subtitle streams on video change
+  useEffect(() => {
+    if (!video?.link) return;
+    const isMkv = video.link.toLowerCase().endsWith('.mkv');
+    if (!isMkv) {
+      setShowMkvModal(false);
+      setCachedVideo(null);
+      setMkvStreams(null);
+      return;
+    }
+    // If already cached for this vid_id, skip modal and use cache directly
+    if (cachedVideo?.vidId === video.vid_id) { setShowMkvModal(false); return; }
+    (async () => {
+      try {
+        const res = await fetch(`./api/index.php?action=probe_video&id=${video.vid_id}`);
+        const data = await res.json();
+        if (data.error) { setConvertError(data.error); return; }
+        setMkvStreams(data);
+        setSelectedAudioIdx(0);
+        setSelectedSubIdx(data.subtitle_streams?.length > 0 ? 0 : -1);
+        setShowMkvModal(true);
+        setConvertError('');
+      } catch { setConvertError('Failed to probe video'); }
+    })();
+  }, [video?.vid_id]);
+
+  const handleConvertAndPlay = async () => {
+    setIsConverting(true);
+    setConvertError('');
+    try {
+      const fd = new URLSearchParams();
+      fd.append('id', video.vid_id);
+      fd.append('audio_index', selectedAudioIdx);
+      fd.append('subtitle_index', selectedSubIdx);
+      const res = await fetch('./api/index.php?action=convert_video', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: fd.toString(),
+      });
+      const data = await res.json();
+      if (data.error) { setConvertError(data.error); setIsConverting(false); return; }
+      setCachedVideo({ vidId: video.vid_id, mp4: data.mp4, vtt: data.vtt, audioIndex: selectedAudioIdx, subIndex: selectedSubIdx });
+      setShowMkvModal(false);
+      // Reset subtitle track state
+      setSubsActive(!!data.vtt);
+      setIsConverting(false);
+    } catch { setConvertError('Conversion failed'); setIsConverting(false); }
+  };
+
+  const toggleSubtitles = () => {
+    const tracks = videoRef.current?.textTracks;
+    if (!tracks || tracks.length === 0) return;
+    const idx = subActiveIdx >= 0 && subActiveIdx < tracks.length ? subActiveIdx : 0;
+    const target = tracks[idx];
+    if (!target) return;
+    target.mode = target.mode === 'showing' ? 'hidden' : 'showing';
+    setSubsActive(target.mode === 'showing');
+  };
+
+  const applySubCuePositions = () => {
+    const idx = subActiveIdx >= 0 ? subActiveIdx : 0;
+    const track = videoRef.current?.textTracks?.[idx];
+    if (!track || !track.cues) return;
+    for (let i = 0; i < track.cues.length; i++) {
+      const cue = track.cues[i];
+      if (subPrefs.vPosition !== 'auto') cue.line = subPrefs.vPosition;
+      if (subPrefs.hPosition !== 'auto') cue.position = subPrefs.hPosition;
+      cue.align = subPrefs.align;
+    }
+  };
+
+  const updateSubStyles = () => {
+    let styleEl = document.getElementById('yt-subtitle-styles');
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = 'yt-subtitle-styles';
+      document.head.appendChild(styleEl);
+    }
+
+    // Resolve font family: custom Google Font or standard
+    let fontFamily = subPrefs.fontFamily;
+    let fontFallback = ', Arial, sans-serif';
+    if (subPrefs.fontFamily === '__CUSTOM__' && subPrefs.customFont) {
+      fontFamily = "'" + subPrefs.customFont + "'";
+      fontFallback = ', "Noto Sans", Arial, sans-serif';
+      // Inject Google Fonts link if not already present
+      const fontId = 'yt-gfont-' + subPrefs.customFont.replace(/\s+/g, '');
+      if (!document.getElementById(fontId)) {
+        const link = document.createElement('link');
+        link.id = fontId;
+        link.rel = 'stylesheet';
+        link.href = 'https://fonts.googleapis.com/css2?family=' + encodeURIComponent(subPrefs.customFont) + ':wght@400;700&display=swap';
+        document.head.appendChild(link);
+      }
+    } else if (subPrefs.fontFamily === '__CUSTOM__') {
+      fontFamily = 'Arial';
+    }
+
+    const rootVars = `
+      --sub-font-family: ${fontFamily}${fontFallback};
+      --sub-font-size: ${subPrefs.fontSize}%;
+      --sub-font-color: ${subPrefs.fontColor};
+      --sub-bg-color: ${subPrefs.bgColor};
+      --sub-text-shadow: ${subPrefs.textShadow};
+    `;
+    const bgRule = subPrefs.bgColor === 'transparent'
+      ? 'background-color: transparent;'
+      : `background-color: ${subPrefs.bgColor};`;
+    styleEl.textContent = `
+      :root { ${rootVars} }
+      video.html5-video::cue {
+        font-family: var(--sub-font-family) !important;
+        font-size: var(--sub-font-size) !important;
+        color: var(--sub-font-color) !important;
+        ${bgRule}
+        text-shadow: var(--sub-text-shadow) !important;
+      }
+    `;
+  };
+
+  // Apply subtitle styles + cue positions on prefs change
+  useEffect(() => { updateSubStyles(); applySubCuePositions(); }, [subPrefs]);
+
+  // Apply cue positions when video loads / track changes
+  useEffect(() => {
+    const videoEl = videoRef.current;
+    if (!videoEl) return;
+    const handler = () => {
+      setTimeout(applySubCuePositions, 100);
+    };
+    videoEl.addEventListener('loadedmetadata', handler);
+    return () => videoEl.removeEventListener('loadedmetadata', handler);
+  }, [video?.vid_id, subPrefs]);
+
+  // Fetch subtitle info when video changes
+  useEffect(() => {
+    if (!video?.vid_id) return;
+    (async () => {
+      try {
+        const res = await fetch(`./api/index.php?action=detect_subtitle&id=${video.vid_id}`);
+        const data = await res.json();
+        if (data && !data.error) {
+          const tracks = data.tracks || [];
+          setSubtitleTracks(tracks);
+          setSubAutoload(!!data.autoload);
+          setDetectedSubPath(data.auto_exists || null);
+          setSubDirInput(data.candidate_dir || '');
+          setSubNameInput(data.candidate_name || '');
+          if (tracks.length > 0 && subActiveIdx < 0) setSubActiveIdx(0);
+          if (tracks.length > 0 && data.autoload) {
+            setSubsActive(true);
+            if (subActiveIdx < 0) setSubActiveIdx(0);
+          }
+          // Load per-video subtitle style (merge over localStorage defaults)
+          subPrefsVidRef.current = video.vid_id;
+          const defaults = JSON.parse(localStorage.getItem('yt_sub_prefs')) || DEFAULT_SUB_PREFS;
+          setSubPrefs(data.style && typeof data.style === 'object' ? { ...defaults, ...data.style } : defaults);
+        }
+      } catch {}
+    })();
+  }, [video?.vid_id]);
+
+  // Debounced save subtitle style to backend on change
+  const saveStyleTimerRef = useRef(null);
+  useEffect(() => {
+    if (!video?.vid_id) return;
+    if (subPrefsVidRef.current !== video.vid_id) return; // skip if style not loaded yet
+    if (saveStyleTimerRef.current) clearTimeout(saveStyleTimerRef.current);
+    saveStyleTimerRef.current = setTimeout(() => {
+      fetch('./api/index.php?action=save_subtitle_style', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: video.vid_id, style: subPrefs }),
+      }).catch(() => {});
+    }, 600);
+    return () => { if (saveStyleTimerRef.current) clearTimeout(saveStyleTimerRef.current); };
+  }, [subPrefs, video?.vid_id]);
+
+  const handleAddSubtitle = async () => {
+    if (!video?.vid_id) return;
+    const newLabel = subLabel.trim() || subLang;
+    const existing = subtitleTracks.find(t => t.label === newLabel);
+    if (existing) {
+      if (!confirm(`Replace existing "${existing.label}" subtitle?`)) { setSubSaving(false); return; }
+    }
+    setSubSaving(true);
+    let fileInput = null;
+    try {
+      const fd = new FormData();
+      fd.append('id', video.vid_id);
+      fd.append('lang', subLang);
+      fd.append('label', newLabel);
+      fd.append('mode', subAddMode);
+      if (subAddMode === 'path') {
+        const name = subNameInput.replace(/\.(vtt|srt)$/i, '') + '.vtt';
+        const fullPath = subDirInput.replace(/[/\\]+$/, '') + '\\' + name;
+        fd.append('path', fullPath);
+      } else {
+        fileInput = document.getElementById('subtitle-file-input');
+        if (!fileInput?.files?.[0]) { alert('Please select a file'); setSubSaving(false); return; }
+        fd.append('subtitle_file', fileInput.files[0]);
+      }
+      const res = await fetch('./api/index.php?action=save_subtitle', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (data.error) { alert(data.error); setSubSaving(false); return; }
+      setSubtitleTracks(data.tracks || []);
+      setSubAutoload(!!data.autoload);
+      setSubLabel('');
+      if (fileInput) fileInput.value = '';
+    } catch (e) { alert('Failed to save subtitle'); }
+    setSubSaving(false);
+  };
+
+  const handleTrackSelect = (idx) => {
+    const tracks = videoRef.current?.textTracks;
+    if (!tracks || tracks.length === 0) return;
+    const isAlreadyActive = subActiveIdx === idx && subsActive;
+    for (let i = 0; i < tracks.length; i++) {
+      tracks[i].mode = i === idx && !isAlreadyActive ? 'showing' : 'hidden';
+    }
+    setSubActiveIdx(isAlreadyActive ? -1 : idx);
+    setSubsActive(!isAlreadyActive);
+  };
+
+  const handleRemoveSubtitle = async (label) => {
+    if (!video?.vid_id) return;
+    const track = subtitleTracks.find(t => t.label === label);
+    if (!confirm(`Remove "${track?.label || label}" subtitle?`)) return;
+    try {
+      const fd = new URLSearchParams();
+      fd.append('id', video.vid_id);
+      fd.append('label', label);
+      const res = await fetch('./api/index.php?action=remove_subtitle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: fd.toString(),
+      });
+      const data = await res.json();
+      if (data.error) { alert(data.error); return; }
+      setSubtitleTracks(data.tracks || []);
+      setSubAutoload(!!data.autoload);
+      setSubActiveIdx(data.tracks?.length ? 0 : -1);
+      if (!data.tracks?.length) setSubsActive(false);
+    } catch {}
+  };
+
+  const handleToggleAutoload = async () => {
+    if (!video?.vid_id) return;
+    const next = !subAutoload;
+    try {
+      const fd = new URLSearchParams();
+      fd.append('id', video.vid_id);
+      fd.append('autoload', next ? '1' : '0');
+      await fetch('./api/index.php?action=set_autoload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: fd.toString(),
+      });
+      setSubAutoload(next);
+      if (next && subtitleTracks.length > 0) { setSubsActive(true); if (subActiveIdx < 0) setSubActiveIdx(0); }
+      if (!next) setSubsActive(false);
+    } catch {}
+  };
 
   const startModernCast = async () => {
     if (!navigator.presentation) {
@@ -2852,8 +3159,9 @@ function PlayerView({
         )}
         <video
           ref={videoRef}
-          src={translateVideoUrl(video.link)}
+          src={cachedVideo?.mp4 || translateVideoUrl(video.link)}
           className="html5-video"
+          crossOrigin="anonymous"
           style={(() => {
             if (!isFullscreen || !isPhoneRef.current) return {};
             const v = videoRef.current;
@@ -2890,7 +3198,14 @@ function PlayerView({
           onFocus={() => setIsVideoFocused(true)}
           onBlur={() => setIsVideoFocused(false)}
           tabIndex={0}
-        />
+        >
+          {subtitleTracks.map((t, i) => (
+            <track key={'db-' + i + '-v' + subStyleVer} src={`./api/index.php?action=serve_subtitle&id=${video.vid_id}&lang=${t.lang}&_=${subStyleVer}`} kind="subtitles" srcLang={t.lang} label={t.label} default={i === 0 && subAutoload} />
+          ))}
+          {cachedVideo?.vtt && (
+            <track ref={subtitleTrackRef} src={cachedVideo.vtt} kind="subtitles" srcLang="und" label="Subtitles" default={subtitleTracks.length === 0} />
+          )}
+        </video>
         {(castDevice || isTranscoding) && (
           <div className="player-cast-active-overlay">
             {isTranscoding ? (
@@ -3088,6 +3403,207 @@ function PlayerView({
           </div>
         )}
 
+        {/* Subtitle Settings Panel */}
+        {showSubSettings && (
+          <div className="sub-settings-backdrop" onClick={() => setShowSubSettings(false)}>
+            <div className="sub-settings-panel" onClick={(e) => e.stopPropagation()}>
+              <div className="sub-settings-header">
+                <span>Subtitle Settings</span>
+                <button onClick={() => setShowSubSettings(false)}>&times;</button>
+              </div>
+              <div className="sub-settings-body" onWheel={(e) => e.stopPropagation()}>
+
+                {/* ── Auto-load Toggle ── */}
+                <label className="sub-settings-label sub-auto-load-row">
+                  <input type="checkbox" checked={subAutoload} onChange={handleToggleAutoload} />
+                  <span>Auto-load subtitles for this video</span>
+                </label>
+
+                {/* ── Track List ── */}
+                {subtitleTracks.length > 0 && (
+                  <div className="sub-settings-section">
+                    <div className="sub-section-title">Attached Subtitles</div>
+                    <div className="sub-track-list">
+                      {subtitleTracks.map((t, i) => {
+                        const isActive = subActiveIdx === i && subsActive;
+                        return (
+                          <div key={i} className={`sub-track-item ${isActive ? 'active' : ''}`}>
+                            <div className="sub-track-info" onClick={() => handleTrackSelect(i)} title="Toggle this subtitle">
+                              <span className="sub-track-lang">{t.lang.toUpperCase()}</span>
+                              <span className="sub-track-label">{t.label}</span>
+                              <span className="sub-track-path" title={t.path}>{t.path?.split('\\').pop()?.split('/').pop() || ''}</span>
+                            </div>
+                            <button className="sub-remove-btn" onClick={() => handleRemoveSubtitle(t.label)} title="Remove">&times;</button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Add Subtitle ── */}
+                <div className="sub-settings-section">
+                  <div className="sub-section-title">Add Subtitle</div>
+                  <div className="sub-add-row">
+                    <label className="sub-add-label">
+                      Language
+                      <select value={subLang} onChange={(e) => setSubLang(e.target.value)}>
+                        <option value="en">English</option>
+                        <option value="ja">Japanese</option>
+                        <option value="ko">Korean</option>
+                        <option value="zh">Chinese</option>
+                        <option value="hi">Hindi</option>
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                        <option value="de">German</option>
+                        <option value="it">Italian</option>
+                        <option value="pt">Portuguese</option>
+                        <option value="ru">Russian</option>
+                        <option value="ar">Arabic</option>
+                        <option value="th">Thai</option>
+                        <option value="vi">Vietnamese</option>
+                        <option value="id">Indonesian</option>
+                        <option value="ms">Malay</option>
+                        <option value="tl">Filipino</option>
+                        <option value="und">Unknown</option>
+                      </select>
+                    </label>
+                    <label className="sub-add-label">
+                      Label
+                      <input type="text" value={subLabel} onChange={(e) => setSubLabel(e.target.value)} placeholder="English" className="sub-inp" />
+                    </label>
+                  </div>
+
+                  {/* Mode selector */}
+                  <div className="sub-mode-selector">
+                    <label className={`sub-mode-option ${subAddMode === 'path' ? 'active' : ''}`}>
+                      <input type="radio" name="subAddMode" value="path" checked={subAddMode === 'path'} onChange={() => setSubAddMode('path')} />
+                      File path
+                    </label>
+                    <label className={`sub-mode-option ${subAddMode === 'upload' ? 'active' : ''}`}>
+                      <input type="radio" name="subAddMode" value="upload" checked={subAddMode === 'upload'} onChange={() => setSubAddMode('upload')} />
+                      Upload
+                    </label>
+                  </div>
+
+                  {subAddMode === 'path' ? (
+                    <div className="sub-add-path-rows">
+                      <label className="sub-add-field">
+                        <span className="sub-field-label">Directory</span>
+                        <input type="text" value={subDirInput} onChange={(e) => setSubDirInput(e.target.value)} placeholder="D:/videos" className="sub-inp" />
+                      </label>
+                      <label className="sub-add-field">
+                        <span className="sub-field-label">File name</span>
+                        <div className="sub-name-suffix-row">
+                          <input type="text" value={subNameInput} onChange={(e) => setSubNameInput(e.target.value)} placeholder="my video" className="sub-inp" />
+                          <span className="sub-ext-suffix">.vtt</span>
+                        </div>
+                      </label>
+                      <button className="sub-add-btn" onClick={handleAddSubtitle} disabled={subSaving || !subDirInput || !subNameInput}>
+                        {subSaving ? 'Saving...' : 'Add'}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="sub-add-file-row">
+                      <input type="file" id="subtitle-file-input" accept=".vtt,.srt" className="sub-file-inp" />
+                      <button className="sub-add-btn" onClick={handleAddSubtitle} disabled={subSaving}>
+                        {subSaving ? 'Saving...' : 'Upload'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Divider ── */}
+                <div className="sub-settings-divider"></div>
+
+                {/* ── Subtitle Style ── */}
+                <div className="sub-section-title">Subtitle Style</div>
+                <label className="sub-settings-label">
+                  Font Family
+                  <select value={subPrefs.fontFamily === '__CUSTOM__' ? '__CUSTOM__' : subPrefs.fontFamily} onChange={(e) => setSubPrefs(p => { const n = { ...p, fontFamily: e.target.value }; return n; })}>
+                    <option value="Arial">Arial</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="Verdana">Verdana</option>
+                    <option value="'Courier New', monospace">Courier New</option>
+                    <option value="'Times New Roman', serif">Times New Roman</option>
+                    <option value="Tahoma">Tahoma</option>
+                    <option value="__CUSTOM__">Custom Google Font...</option>
+                  </select>
+                  {subPrefs.fontFamily === '__CUSTOM__' && (
+                    <div className="sub-custom-font-row" style={{ marginTop: 6 }}>
+                      <input type="text" value={subPrefs.customFont} onChange={(e) => setSubPrefs(p => { const n = { ...p, customFont: e.target.value }; return n; })} placeholder="e.g. Noto Sans JP" className="sub-inp" />
+                    </div>
+                  )}
+                </label>
+                <label className="sub-settings-label">
+                  Font Size
+                  <div className="sub-range-row">
+                    <input type="range" min="50" max="200" value={subPrefs.fontSize}
+                      onChange={(e) => setSubPrefs(p => { const n = { ...p, fontSize: parseInt(e.target.value) }; return n; })} />
+                    <span className="sub-range-val">{subPrefs.fontSize}%</span>
+                  </div>
+                </label>
+                <label className="sub-settings-label">
+                  Font Color
+                  <input type="color" value={subPrefs.fontColor}
+                    onChange={(e) => setSubPrefs(p => { const n = { ...p, fontColor: e.target.value }; return n; })} />
+                </label>
+                <label className="sub-settings-label">
+                  Background
+                  <select value={subPrefs.bgColor} onChange={(e) => setSubPrefs(p => { const n = { ...p, bgColor: e.target.value }; return n; })}>
+                    <option value="transparent">None</option>
+                    <option value="rgba(0,0,0,0.5)">Black 50%</option>
+                    <option value="rgba(0,0,0,0.75)">Black 75%</option>
+                    <option value="rgba(0,0,0,0.9)">Black 90%</option>
+                  </select>
+                </label>
+                <label className="sub-settings-label">
+                  Text Shadow
+                  <select value={subPrefs.textShadow} onChange={(e) => setSubPrefs(p => { const n = { ...p, textShadow: e.target.value }; return n; })}>
+                    <option value="none">None</option>
+                    <option value="0 0 2px #000000">Light</option>
+                    <option value="0 0 4px #000000">Normal</option>
+                    <option value="0 0 6px #000000">Heavy</option>
+                  </select>
+                </label>
+                <label className="sub-settings-label">
+                  Vertical Position
+                  <div className="sub-range-row">
+                    <input type="range" min="0" max="100" value={subPrefs.vPosition === 'auto' ? 90 : subPrefs.vPosition}
+                      onChange={(e) => setSubPrefs(p => { const n = { ...p, vPosition: parseInt(e.target.value) }; return n; })} />
+                    <span className="sub-range-val">{subPrefs.vPosition === 'auto' ? 'Auto' : `${subPrefs.vPosition}%`}</span>
+                  </div>
+                  <button className="sub-reset-btn" onClick={() => setSubPrefs(p => { const n = { ...p, vPosition: 'auto' }; return n; })}>Reset</button>
+                </label>
+                <label className="sub-settings-label">
+                  Horizontal Position
+                  <div className="sub-range-row">
+                    <input type="range" min="0" max="100" value={subPrefs.hPosition === 'auto' ? 50 : subPrefs.hPosition}
+                      onChange={(e) => setSubPrefs(p => { const n = { ...p, hPosition: parseInt(e.target.value) }; return n; })} />
+                    <span className="sub-range-val">{subPrefs.hPosition === 'auto' ? 'Auto' : `${subPrefs.hPosition}%`}</span>
+                  </div>
+                  <button className="sub-reset-btn" onClick={() => setSubPrefs(p => { const n = { ...p, hPosition: 'auto' }; return n; })}>Reset</button>
+                </label>
+                <label className="sub-settings-label">
+                  Alignment
+                  <select value={subPrefs.align} onChange={(e) => setSubPrefs(p => { const n = { ...p, align: e.target.value }; return n; })}>
+                    <option value="start">Left</option>
+                    <option value="center">Center</option>
+                    <option value="end">Right</option>
+                  </select>
+                </label>
+                <label className="sub-settings-label sub-auto-load-row">
+                  <input type="checkbox" checked={!!subPrefs.delDouble} onChange={(e) => { setSubPrefs(p => { const n = { ...p, delDouble: e.target.checked }; return n; }); setSubStyleVer(v => v + 1); }} />
+                  <span>Remove duplicate subtitle cues</span>
+                </label>
+                <button className="sub-reset-all-btn" onClick={() => { setSubPrefs(DEFAULT_SUB_PREFS); setSubStyleVer(v => v + 1); }}>
+                  Reset to Defaults
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Controls Overlay */}
         <div className="player-controls-overlay">
           {/* Progress Slider with Hover Preview & Dragging */}
@@ -3245,6 +3761,24 @@ function PlayerView({
               >
                 <Cast size={20} />
               </button>
+              {cachedVideo && mkvStreams && (
+                <button
+                  className="control-btn"
+                  onClick={() => setShowMkvModal(true)}
+                  title="Change audio / subtitles"
+                >
+                  <ListMusic size={18} />
+                </button>
+              )}
+              {(subtitleTracks.length > 0 || cachedVideo?.vtt) && (
+                <button
+                  className={`control-btn ${subsActive ? 'cc-active' : ''}`}
+                  onClick={toggleSubtitles}
+                  title="Subtitles"
+                >
+                  <Subtitles size={20} />
+                </button>
+              )}
               <button
                 className={`control-btn ${showSettings ? 'settings-active' : ''}`}
                 onClick={() => {
@@ -3375,6 +3909,13 @@ function PlayerView({
           <div className="player-settings-dropdown" ref={settingsDropdownRef} onClick={(e) => e.stopPropagation()}>
             {settingsSubmenu === 'main' ? (
               <div className="settings-menu-list">
+                <div className="settings-menu-item" onClick={() => { setShowSubSettings(!showSubSettings); setShowSettings(false); }}>
+                  <span className="settings-item-left"><Subtitles size={16} /> Subtitles</span>
+                  <span className={`settings-item-right toggle-badge ${subsActive ? 'active' : ''}`}>
+                    {subsActive ? 'ON' : 'OFF'}
+                  </span>
+                </div>
+
                 <div className="settings-menu-item" onClick={() => setSettingsSubmenu('speed')}>
                   <span className="settings-item-left"><RefreshCw size={16} /> Playback Speed</span>
                   <span className="settings-item-right">{playbackSpeed === 1 ? 'Normal' : `${playbackSpeed}x`} &gt;</span>
@@ -3496,6 +4037,72 @@ function PlayerView({
                 Skip Video
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MKV Stream Selector Modal */}
+      {showMkvModal && mkvStreams && (
+        <div className="mkv-modal-backdrop">
+          <div className="mkv-modal">
+            <h3>Select Audio & Subtitles</h3>
+            <p className="modal-desc">
+              This video is in MKV format. Choose which audio track and subtitles to use for playback.
+            </p>
+
+            <div className="mkv-select-group">
+              <label>Audio Track</label>
+              <select value={selectedAudioIdx} onChange={(e) => setSelectedAudioIdx(parseInt(e.target.value))}>
+                {mkvStreams.audio_streams?.map((s, i) => (
+                  <option key={i} value={s.index}>
+                    {s.language.toUpperCase()} {s.channels > 0 ? `• ${s.channels === 1 ? 'Mono' : s.channels === 2 ? 'Stereo' : `${s.channels}ch`}` : ''}{s.title ? ` • ${s.title}` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="mkv-select-group">
+              <label>Subtitles</label>
+              <select value={selectedSubIdx} onChange={(e) => setSelectedSubIdx(parseInt(e.target.value))}>
+                <option value="-1">None</option>
+                {mkvStreams.subtitle_streams?.map((s, i) => (
+                  <option key={i} value={s.index} disabled={s.type === 'bitmap'}>
+                    {s.language.toUpperCase()}{s.title ? ` • ${s.title}` : ''}{s.type === 'bitmap' ? ' • Unsupported' : ''}
+                  </option>
+                ))}
+              </select>
+              {mkvStreams.subtitle_streams?.some(s => s.type === 'bitmap') && (
+                <span className="mkv-hint">Image-based subtitles (PGS) are not supported in the browser.</span>
+              )}
+            </div>
+
+            {!mkvStreams.copy_safe && (
+              <p className="mkv-warning">
+                <AlertTriangle size={14} /> Video codec ({mkvStreams.video_codec}) is not directly compatible with MP4. A full transcode will be performed. This may take some time.
+              </p>
+            )}
+
+            {convertError && <p className="mkv-error">{convertError}</p>}
+
+            <div className="modal-actions">
+              <button className="modal-btn confirm" onClick={handleConvertAndPlay} disabled={isConverting}>
+                {isConverting ? 'Preparing...' : '▶ Play'}
+              </button>
+              <button className="modal-btn cancel" onClick={() => { setShowMkvModal(false); setCachedVideo(null); }}>
+                Play Original
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Converting Overlay */}
+      {isConverting && (
+        <div className="convert-overlay">
+          <div className="convert-loader">
+            <div className="convert-spinner"></div>
+            <div className="convert-title">Converting video for playback...</div>
+            <div className="convert-status">Remuxing MKV to MP4 with selected audio{subtitleTrackRef.current ? ' and subtitles' : ''}</div>
           </div>
         </div>
       )}
