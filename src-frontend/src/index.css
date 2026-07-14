@@ -2900,6 +2900,14 @@ body.mini-player-dragging * {
     font-size: 12px;
   }
 
+  .cast-active-time-meter {
+    margin-top: 0;
+  }
+
+  .cast-active-status {
+    display: none;
+  }
+
   .cast-remote-btn {
     width: 40px;
     height: 40px;
@@ -5639,5 +5647,11 @@ body.mini-player-dragging * {
 
   .format-legend {
     display: none;
+  }
+
+  .video-player-wrapper {
+    position: sticky;
+    top: var(--header-height);
+    z-index: 10;
   }
 }
