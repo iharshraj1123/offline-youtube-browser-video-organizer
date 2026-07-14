@@ -2026,8 +2026,19 @@ function PlayerView({
       if (data.error) { setConvertError(data.error); setIsConverting(false); return; }
       setCachedVideo({ vidId: video.vid_id, mp4: data.mp4, vtt: data.vtt, audioIndex: selectedAudioIdx, subIndex: selectedSubIdx });
       setShowMkvModal(false);
-      // Reset subtitle track state
-      setSubsActive(!!data.vtt);
+      if (data.vtt) {
+        setSubsActive(true);
+        setSubActiveIdx(subtitleTracks.length);
+        setTimeout(() => {
+          const tt = videoRef.current?.textTracks;
+          if (!tt) return;
+          for (let i = 0; i < tt.length; i++)
+            tt[i].mode = i === subtitleTracks.length ? 'showing' : 'hidden';
+        }, 200);
+      } else {
+        setSubsActive(false);
+        setSubActiveIdx(-1);
+      }
       setIsConverting(false);
     } catch { setConvertError('Conversion failed'); setIsConverting(false); }
   };
@@ -2119,7 +2130,7 @@ function PlayerView({
 
   // Fetch subtitle info when video changes
   useEffect(() => {
-    if (!video?.vid_id) return;
+    if (!video?.vid_id) { setSubtitleTracks([]); setSubsActive(false); setSubActiveIdx(-1); return; }
     (async () => {
       try {
         const res = await fetch(`./api/index.php?action=detect_subtitle&id=${video.vid_id}`);
@@ -2131,17 +2142,22 @@ function PlayerView({
           setDetectedSubPath(data.auto_exists || null);
           setSubDirInput(data.candidate_dir || '');
           setSubNameInput(data.candidate_name || '');
-          if (tracks.length > 0 && subActiveIdx < 0) setSubActiveIdx(0);
-          if (tracks.length > 0 && data.autoload) {
-            setSubsActive(true);
-            if (subActiveIdx < 0) setSubActiveIdx(0);
-          }
+          setSubActiveIdx(tracks.length > 0 ? (subActiveIdx >= 0 ? subActiveIdx : 0) : -1);
+          setSubsActive(tracks.length > 0 && !!data.autoload);
           // Load per-video subtitle style (merge over localStorage defaults)
           subPrefsVidRef.current = video.vid_id;
           const defaults = JSON.parse(localStorage.getItem('yt_sub_prefs')) || DEFAULT_SUB_PREFS;
           setSubPrefs(data.style && typeof data.style === 'object' ? { ...defaults, ...data.style } : defaults);
+        } else {
+          setSubtitleTracks([]);
+          setSubsActive(false);
+          setSubActiveIdx(-1);
         }
-      } catch {}
+      } catch {
+        setSubtitleTracks([]);
+        setSubsActive(false);
+        setSubActiveIdx(-1);
+      }
     })();
   }, [video?.vid_id]);
 
