@@ -14,8 +14,8 @@ Thumbs.db
 *.log
 
 # Dynamic/User-Uploaded Media (ignore content, keep folders)
-Userdatabase/*
-!Userdatabase/.gitkeep
+Userdatabase/ProfilePic/*
+!Userdatabase/ProfilePic/defaulta.jpg
 uploads/*
 !uploads/.gitkeep
 thumbnails/*
