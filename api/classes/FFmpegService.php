@@ -2,6 +2,7 @@
 // api/classes/FFmpegService.php
 
 class FFmpegService {
+    private static $baseDir;
     private static $codecMap = [
         'h264' => 'libx264', 'h265' => 'libx265', 'hevc' => 'libx265',
         'vp9' => 'libvpx-vp9', 'av1' => 'libaom-av1', 'mpeg4' => 'mpeg4',
@@ -10,8 +11,19 @@ class FFmpegService {
         'ac3' => 'ac3', 'eac3' => 'eac3', 'copy' => 'copy',
     ];
 
+    private static function getBaseDir() {
+        if (self::$baseDir === null) {
+            self::$baseDir = dirname(__DIR__, 2);
+        }
+        return self::$baseDir;
+    }
+
+    private static function getTempDir() {
+        return self::getBaseDir() . '/uploads/ffmpeg_temp';
+    }
+
     public static function getFFmpegPath() {
-        $localBin = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'ffmpeg.exe';
+        $localBin = self::getBaseDir() . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'ffmpeg.exe';
         if (file_exists($localBin)) return '"' . $localBin . '"';
         $standardPaths = [
             'C:\\ffmpeg\\bin\\ffmpeg.exe', 'C:\\ffmpeg\\ffmpeg.exe',
@@ -38,8 +50,19 @@ class FFmpegService {
         return str_replace('ffmpeg.exe', 'ffprobe.exe', $p);
     }
 
+    public static function forceDelete($path) {
+        if (!file_exists($path)) return true;
+        $result = @unlink($path);
+        if ($result) return true;
+        if (DIRECTORY_SEPARATOR === '\\') {
+            @exec('del /F /Q ' . escapeshellarg($path) . ' 2>NUL', $o, $code);
+            return !file_exists($path);
+        }
+        return false;
+    }
+
     public static function getTempHardlink($sourcePath) {
-        $tmpDir = dirname(__DIR__) . '/uploads/ffmpeg_temp';
+        $tmpDir = self::getTempDir();
         if (!is_dir($tmpDir)) @mkdir($tmpDir, 0777, true);
         $safeName = preg_replace('/[^\x20-\x7A]/', '_', basename($sourcePath));
         if (empty($safeName)) $safeName = 'input_' . uniqid();
@@ -124,7 +147,7 @@ class FFmpegService {
 
         $downloaded = false;
         if (preg_match('#^https?://#i', $input)) {
-            $tmpDir = dirname(__DIR__) . '/uploads/ffmpeg_temp';
+            $tmpDir = self::getTempDir();
             if (!is_dir($tmpDir)) @mkdir($tmpDir, 0777, true);
             $ext = 'mp4';
             $parsed = parse_url($input);
@@ -138,7 +161,7 @@ class FFmpegService {
                 $input = $dlPath;
                 $downloaded = true;
             } else {
-                if (file_exists($dlPath)) @unlink($dlPath);
+                if (file_exists($dlPath)) self::forceDelete($dlPath);
                 return ['error' => 'Failed to download remote file'];
             }
         }
@@ -148,7 +171,7 @@ class FFmpegService {
         $cmd = $ffprobe . ' -v quiet -print_format json -show_format -show_streams -show_chapters ' . escapeshellarg($probePath) . ' 2>&1';
         $output = []; $code = -1;
         exec($cmd, $output, $code);
-        if ($tempLink && file_exists($tempLink)) @unlink($tempLink);
+        if ($tempLink && file_exists($tempLink)) self::forceDelete($tempLink);
         if ($code !== 0 || empty($output)) {
             return ['error' => 'Failed to probe file. Make sure it is a valid media file.'];
         }
@@ -240,7 +263,7 @@ class FFmpegService {
             $probePath = $tempLink ? $tempLink : $inputPath;
             $cmd = $ffmpegPath . ' -i ' . escapeshellarg($probePath) . ' -vf "select=gt(scene\\,0.4),showinfo" -f null - 2>&1';
             exec($cmd, $out, $code);
-            if ($tempLink && file_exists($tempLink)) @unlink($tempLink);
+            if ($tempLink && file_exists($tempLink)) self::forceDelete($tempLink);
 
             $scenes = [];
             foreach ($out as $line) {
@@ -257,14 +280,33 @@ class FFmpegService {
         return ['error' => 'Unknown analysis type'];
     }
 
+    public static function getOutputDir() {
+        $dir = self::getBaseDir() . '/uploads/ffmpeg_output';
+        if (!is_dir($dir)) @mkdir($dir, 0777, true);
+        return $dir;
+    }
+
     public static function cleanup() {
-        $tmpDir = dirname(__DIR__) . '/uploads/ffmpeg_temp';
-        if (!is_dir($tmpDir)) return;
-        $files = glob($tmpDir . '/*');
-        foreach ($files as $f) {
-            $base = basename($f);
-            if (preg_match('/^[a-f0-9]{32}_/', $base)) continue;
-            @unlink($f);
+        $tmpDir = self::getTempDir();
+        if (is_dir($tmpDir)) {
+            $files = @scandir($tmpDir);
+            if (is_array($files)) {
+                foreach ($files as $f) {
+                    if ($f === '.' || $f === '..') continue;
+                    self::forceDelete($tmpDir . '/' . $f);
+                }
+            }
+        }
+        $outDir = self::getOutputDir();
+        if (is_dir($outDir)) {
+            $files = @scandir($outDir);
+            if (is_array($files)) {
+                foreach ($files as $f) {
+                    if ($f === '.' || $f === '..') continue;
+                    $path = $outDir . '/' . $f;
+                    if (filemtime($path) < time() - 86400) self::forceDelete($path);
+                }
+            }
         }
     }
 
@@ -359,12 +401,11 @@ class FFmpegService {
         $container = preg_replace('/[^a-zA-Z0-9]/', '', $opts['container'] ?? 'mp4');
         if (empty($container)) $container = 'mp4';
 
-        $tmpDir = dirname(__DIR__) . '/uploads/ffmpeg_temp';
-        if (!is_dir($tmpDir)) @mkdir($tmpDir, 0777, true);
+        $outDir = self::getOutputDir();
 
         $token = bin2hex(random_bytes(16));
         $outputFilename = pathinfo(basename($inputPath), PATHINFO_FILENAME) . '_converted.' . $container;
-        $outputPath = $tmpDir . '/' . $token . '_' . $outputFilename;
+        $outputPath = $outDir . '/' . $token . '_' . $outputFilename;
 
         // Get duration
         $ffprobe = self::getFFprobePath();
@@ -374,7 +415,7 @@ class FFmpegService {
             $probePath = $tempLink ? $tempLink : $inputPath;
             $durCmd = $ffprobe . ' -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($probePath) . ' 2>&1';
             exec($durCmd, $durOut, $durCode);
-            if ($tempLink && file_exists($tempLink)) @unlink($tempLink);
+            if ($tempLink && file_exists($tempLink)) self::forceDelete($tempLink);
             if ($durCode === 0 && !empty($durOut) && is_numeric($durOut[0])) {
                 $duration = floatval($durOut[0]);
             }
@@ -388,7 +429,7 @@ class FFmpegService {
         $watermarkImage = null;
         if (!empty($opts['watermark_type']) && $opts['watermark_type'] === 'image') {
             if (isset($_FILES['watermark_image']) && $_FILES['watermark_image']['error'] === UPLOAD_ERR_OK) {
-                $tmpDir2 = dirname(__DIR__) . '/uploads/ffmpeg_temp';
+                $tmpDir2 = self::getTempDir();
                 if (!is_dir($tmpDir2)) @mkdir($tmpDir2, 0777, true);
                 $wmPath = $tmpDir2 . '/' . uniqid('wm_') . '_' . basename($_FILES['watermark_image']['name']);
                 move_uploaded_file($_FILES['watermark_image']['tmp_name'], $wmPath);
@@ -576,7 +617,7 @@ class FFmpegService {
         $process = @proc_open($cmd, $descriptors, $pipes);
 
         if (!is_resource($process)) {
-            if ($tempLink2 && file_exists($tempLink2)) @unlink($tempLink2);
+            if ($tempLink2 && file_exists($tempLink2)) self::forceDelete($tempLink2);
             echo "data: " . json_encode(['type' => 'error', 'message' => 'Failed to start FFmpeg process']) . "\n\n";
             flush(); exit;
         }
@@ -628,7 +669,7 @@ class FFmpegService {
         $stderrOutput .= stream_get_contents($pipes[2]);
         fclose($pipes[1]); fclose($pipes[2]);
         $returnCode = proc_close($process);
-        if ($tempLink2 && file_exists($tempLink2)) @unlink($tempLink2);
+        if ($tempLink2 && file_exists($tempLink2)) self::forceDelete($tempLink2);
 
         if ($returnCode === 0 && file_exists($outputPath) && filesize($outputPath) > 0) {
             $fs = filesize($outputPath);
@@ -641,7 +682,7 @@ class FFmpegService {
                 'output_path' => $outputPath,
             ]) . "\n\n";
         } elseif (file_exists($outputPath) && filesize($outputPath) === 0) {
-            @unlink($outputPath);
+            self::forceDelete($outputPath);
             echo "data: " . json_encode(['type' => 'error', 'message' => 'Output file is empty. FFmpeg may have failed.']) . "\n\n";
         } else {
             $errMsg = !empty($stderrOutput) ? substr(trim($stderrOutput), -500) : 'Unknown error (return code: ' . $returnCode . ')';
@@ -656,8 +697,12 @@ class FFmpegService {
             echo json_encode(['error' => 'Invalid token']);
             exit;
         }
-        $tmpDir = dirname(__DIR__) . '/uploads/ffmpeg_temp';
-        $files = glob($tmpDir . '/' . $token . '_*');
+        $outDir = self::getOutputDir();
+        $files = glob($outDir . '/' . $token . '_*');
+        if (empty($files)) {
+            $tmpDir = self::getTempDir();
+            $files = glob($tmpDir . '/' . $token . '_*');
+        }
         if (empty($files)) {
             header('HTTP/1.1 404 Not Found');
             echo json_encode(['error' => 'File not found or expired']);
@@ -678,7 +723,7 @@ class FFmpegService {
             while (!feof($fp)) { echo fread($fp, 8192); flush(); }
             fclose($fp);
         }
-        @unlink($filePath);
+        self::forceDelete($filePath);
         exit;
     }
 
@@ -695,12 +740,11 @@ class FFmpegService {
 
         $container = preg_replace('/[^a-zA-Z0-9]/', '', $opts['container'] ?? 'mp4');
         if (empty($container)) $container = 'mp4';
-        $tmpDir = dirname(__DIR__) . '/uploads/ffmpeg_temp';
-        if (!is_dir($tmpDir)) @mkdir($tmpDir, 0777, true);
+        $outDir = self::getOutputDir();
 
         $token = bin2hex(random_bytes(16));
         $outputFilename = 'concat_output.' . $container;
-        $outputPath = $tmpDir . '/' . $token . '_' . $outputFilename;
+        $outputPath = $outDir . '/' . $token . '_' . $outputFilename;
 
         // Create concat demuxer file
         $concatFile = $tmpDir . '/' . uniqid('concat_') . '.txt';
@@ -759,7 +803,7 @@ class FFmpegService {
         $descriptors = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
         $process = @proc_open($cmd, $descriptors, $pipes);
         if (!is_resource($process)) {
-            @unlink($concatFile);
+            self::forceDelete($concatFile);
             echo "data: " . json_encode(['type' => 'error', 'message' => 'Failed to start FFmpeg']) . "\n\n";
             flush(); exit;
         }
@@ -779,7 +823,7 @@ class FFmpegService {
         $stderr .= stream_get_contents($pipes[2]);
         fclose($pipes[1]); fclose($pipes[2]);
         $rc = proc_close($process);
-        @unlink($concatFile);
+        self::forceDelete($concatFile);
 
         if ($rc === 0 && file_exists($outputPath) && filesize($outputPath) > 0) {
             $fs = filesize($outputPath);
@@ -857,7 +901,7 @@ class FFmpegService {
             }
         }
 
-        if ($tempLink && file_exists($tempLink)) @unlink($tempLink);
+        if ($tempLink && file_exists($tempLink)) self::forceDelete($tempLink);
         echo "data: " . json_encode(['type' => 'done', 'results' => $results]) . "\n\n";
         flush(); exit;
     }

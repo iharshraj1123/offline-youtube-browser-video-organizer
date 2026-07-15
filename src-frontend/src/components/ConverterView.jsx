@@ -3,7 +3,7 @@ import {
   Wand2, FileVideo, Upload, X, Loader2, CheckCircle, AlertCircle,
   RefreshCw, Download, Folder, Clock, Video, Music, Film,
   Settings, HelpCircle, Play, Image, Disc, Radio, Timer, Subtitles,
-  Scissors, Copy, Check, Save, Trash2, List, FileUp,
+  Scissors, Copy, Check, Save, Trash2, List,
   Palette, Gauge, RotateCw, FlipHorizontal, FlipVertical, Type, Sun,
   BarChart3, Merge, Split, GripVertical
 } from 'lucide-react';
@@ -30,6 +30,29 @@ function formatBitrate(bps) {
   if (bps > 1000000) return (bps / 1000000).toFixed(1) + ' Mb/s';
   if (bps > 1000) return (bps / 1000).toFixed(0) + ' kb/s';
   return bps + ' b/s';
+}
+
+function parseTimeToSeconds(str) {
+  if (!str || typeof str !== 'string') return 0;
+  str = str.trim();
+  if (/^\d+(\.\d+)?$/.test(str)) return parseFloat(str);
+  const parts = str.split(':');
+  if (parts.length === 3) return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseFloat(parts[2] || '0');
+  if (parts.length === 2) return parseInt(parts[0]) * 60 + parseFloat(parts[1] || '0');
+  return 0;
+}
+
+function secondsToTimeStr(sec) {
+  if (!sec || sec <= 0 || isNaN(sec)) return '';
+  const neg = sec < 0;
+  if (neg) sec = -sec;
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = (sec % 60);
+  const ms = Math.round(s * 1000);
+  const rem = neg ? '-' : '';
+  if (h > 0) return rem + `${h}:${String(m).padStart(2, '0')}:${String(Math.floor(s)).padStart(2, '0')}.${String(ms % 1000).padStart(3, '0')}`;
+  return rem + `${m}:${String(Math.floor(s)).padStart(2, '0')}.${String(ms % 1000).padStart(3, '0')}`;
 }
 
 // ---- Constants ----
@@ -361,6 +384,8 @@ function reducer(state, action) {
       return { ...state, queue: state.queue.filter((_, i) => i !== action.payload) };
     case 'CLEAR_QUEUE':
       return { ...state, queue: [] };
+    case 'REORDER_QUEUE':
+      return { ...state, queue: action.payload };
     case 'UPDATE_QUEUE_ITEM':
       return { ...state, queue: state.queue.map((item, i) => i === action.payload.index ? { ...item, ...action.payload.data } : item) };
     case 'SET_COMMAND_COPIED':
@@ -375,7 +400,6 @@ function reducer(state, action) {
 export function ConverterView() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const fileInputRef = useRef(null);
-  const batchInputRef = useRef(null);
   const dropZoneRef = useRef(null);
   const abortRef = useRef(null);
   const [presetName, setPresetName] = React.useState('');
@@ -394,6 +418,12 @@ export function ConverterView() {
   const [splitSegments, setSplitSegments] = React.useState([{ start: '', end: '', label: 'segment_1' }]);
   const [splitConverting, setSplitConverting] = React.useState(false);
   const [splitResults, setSplitResults] = React.useState([]);
+  const [trimDrag, setTrimDrag] = React.useState(null);
+  const [cropDrag, setCropDrag] = React.useState(null);
+  const [cropLockAspect, setCropLockAspect] = React.useState(false);
+  const [playerTime, setPlayerTime] = React.useState(0);
+  const [playerPlaying, setPlayerPlaying] = React.useState(false);
+  const playerSeeking = useRef(false);
 
   const { ffmpegStatus, filePath, selectedFile, mediaInfo, loadingInfo, fileError, settings, converting, convertProgress, convertTime, convertFps, convertSpeed, convertBitrate, convertEta, convertStatus, convertLog, convertDone, queue } = state;
 
@@ -419,6 +449,147 @@ export function ConverterView() {
     localStorage.setItem(STORAGE_PRESETS_KEY, JSON.stringify(updated));
   };
 
+  // ---- Keyboard shortcuts ----
+  const handleConvertRef = useRef(null);
+
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.ctrlKey && e.key === 'o') {
+        e.preventDefault();
+        fileInputRef.current?.click();
+      }
+      if (e.ctrlKey && e.key === 'Enter') {
+        e.preventDefault();
+        if (mediaInfo && !converting && !convertDone) {
+          handleConvertRef.current?.();
+        }
+      }
+      if (e.key === 'Escape' && converting) {
+        abortRef.current?.abort();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [mediaInfo, converting, convertDone]);
+
+  // ---- Queue drag-to-reorder ----
+  const [dragIndex, setDragIndex] = React.useState(null);
+
+  const handleQueueDragStart = (idx) => (e) => {
+    setDragIndex(idx);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(idx));
+  };
+
+  const handleQueueDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleQueueDrop = (targetIdx) => (e) => {
+    e.preventDefault();
+    if (dragIndex === null || dragIndex === targetIdx) return;
+    const items = [...queue];
+    const [moved] = items.splice(dragIndex, 1);
+    items.splice(targetIdx, 0, moved);
+    dispatch({ type: 'REORDER_QUEUE', payload: items });
+    setDragIndex(null);
+  };
+
+  // ---- Preset export/import ----
+  const presetInputRef = useRef(null);
+
+  const handlePresetExport = () => {
+    const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'converter-preset.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handlePresetImport = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const parsed = JSON.parse(ev.target.result);
+        dispatch({ type: 'APPLY_PRESET', payload: parsed });
+      } catch {}
+    };
+    reader.readAsText(file);
+    if (presetInputRef.current) presetInputRef.current.value = '';
+  };
+
+  // ---- Convert history ----
+  const HISTORY_KEY = 'converter_history';
+  const [history, setHistory] = React.useState(() => {
+    try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+    catch { return []; }
+  });
+  const historyRef = useRef(history);
+  historyRef.current = history;
+
+  useEffect(() => {
+    if (convertDone && mediaInfo) {
+      const entry = {
+        filename: convertDone.filename,
+        size: convertDone.size_formatted,
+        container: settings.container,
+        videoCodec: settings.videoCodec,
+        audioCodec: settings.audioCodec,
+        timestamp: new Date().toLocaleString(),
+        duration: mediaInfo.duration,
+      };
+      const updated = [entry, ...historyRef.current.filter(h => h.filename !== entry.filename)].slice(0, 20);
+      setHistory(updated);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
+    }
+  }, [convertDone]);
+
+  // ---- Video preview ----
+  const videoRef = useRef(null);
+  const [videoSrc, setVideoSrc] = React.useState(null);
+
+  useEffect(() => {
+    if (selectedFile) {
+      const url = URL.createObjectURL(selectedFile);
+      setVideoSrc(url);
+      return () => URL.revokeObjectURL(url);
+    }
+    setVideoSrc(null);
+  }, [selectedFile]);
+
+  const getPreviewStyle = () => {
+    const s = settings;
+    const fl = [];
+    if (s.colorBrightness !== 0) fl.push(`brightness(${1 + s.colorBrightness})`);
+    if (Math.abs(s.colorContrast - 1) > 0.01) fl.push(`contrast(${s.colorContrast})`);
+    if (Math.abs(s.colorSaturation - 1) > 0.01) fl.push(`saturate(${s.colorSaturation})`);
+    const tr = [];
+    if (s.rotate === '90cw') tr.push('rotate(90deg)');
+    else if (s.rotate === '90ccw') tr.push('rotate(-90deg)');
+    else if (s.rotate === '180') tr.push('rotate(180deg)');
+    if (s.hflip) tr.push('scaleX(-1)');
+    if (s.vflip) tr.push('scaleY(-1)');
+    return {
+      filter: fl.length ? fl.join(' ') : 'none',
+      transform: tr.length ? tr.join(' ') : 'none',
+    };
+  };
+
+  const watermarkPosMap = {
+    nw: { top: '12px', left: '12px' }, ne: { top: '12px', right: '12px' },
+    sw: { bottom: '12px', left: '12px' }, se: { bottom: '12px', right: '12px' },
+    center: { top: '50%', left: '50%', transform: 'translate(-50%,-50%)' },
+  };
+
+  // ---- Tab navigation ----
+  const [activeTab, setActiveTab] = React.useState('format');
+  const [showAdvanced, setShowAdvanced] = React.useState(false);
+
   useEffect(() => {
     checkFfmpeg();
   }, []);
@@ -443,7 +614,12 @@ export function ConverterView() {
   };
 
   const cleanupTemp = async () => {
-    try { await fetch('./api/index.php?action=ffmpeg_cleanup'); } catch {}
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const res = await fetch('./api/index.php?action=ffmpeg_cleanup');
+        if (res.ok) return;
+      } catch {}
+    }
   };
 
   const loadFileInfo = async (path, file) => {
@@ -514,14 +690,6 @@ export function ConverterView() {
   };
 
   const handleDragOver = (e) => { e.preventDefault(); e.stopPropagation(); };
-
-  const handleBatchSelect = async (e) => {
-    const files = Array.from(e.target.files || []);
-    for (const file of files) {
-      const fileData = { file, name: file.name, size: file.size, status: 'pending', progress: 0, error: '' };
-      dispatch({ type: 'ADD_TO_QUEUE', payload: fileData });
-    }
-  };
 
   const videoStreams = mediaInfo?.streams?.filter(s => s.type === 'video') || [];
   const audioStreams = mediaInfo?.streams?.filter(s => s.type === 'audio') || [];
@@ -658,6 +826,7 @@ export function ConverterView() {
 
     dispatch({ type: 'SET_CONVERTING', payload: false });
   };
+  handleConvertRef.current = handleConvert;
 
   const handleDownload = (token, filename) => {
     const a = document.createElement('a');
@@ -678,6 +847,8 @@ export function ConverterView() {
     setTargetSize('');
     setTargetSizeResult(null);
     setScenes(null);
+    setTrimDrag(null);
+    setCropDrag(null);
     dispatch({ type: 'SET_FILE', payload: null });
     dispatch({ type: 'SET_MEDIA_INFO', payload: null });
     dispatch({ type: 'SET_FILE_PATH', payload: '' });
@@ -714,6 +885,155 @@ export function ConverterView() {
       estimatedAudioSize: Math.round(audioBitrate * durationSec / 8 / 1024 / 1024 * 10) / 10,
     });
   };
+
+  // ---------- Trim timeline drag handlers ----------
+  const trimDuration = mediaInfo?.duration || 0;
+
+  const handleTrimMouseDown = (e, handle) => {
+    e.preventDefault();
+    const rect = e.currentTarget.closest('.trim-timeline')?.getBoundingClientRect();
+    if (!rect) return;
+    const startSec = parseTimeToSeconds(settings.startTime);
+    const durSec = parseTimeToSeconds(settings.duration);
+    const endSec = durSec > 0 ? Math.min(startSec + durSec, trimDuration) : trimDuration;
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = handle === 'start' ? startSec : endSec;
+    }
+    setTrimDrag({
+      handle,
+      startSec,
+      durSec,
+      endSec,
+      rect,
+    });
+  };
+
+  React.useEffect(() => {
+    if (!trimDrag) return;
+    const onMove = (e) => {
+      const { handle, startSec, durSec, endSec, rect } = trimDrag;
+      const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      const pos = pct * trimDuration;
+      if (handle === 'start') {
+        const newStart = Math.max(0, Math.min(pos, endSec - 0.001));
+        updateSetting('startTime', secondsToTimeStr(newStart));
+        const newDur = endSec - newStart;
+        updateSetting('duration', newDur > 0.001 ? secondsToTimeStr(newDur) : '');
+        if (videoRef.current) videoRef.current.currentTime = newStart;
+      } else {
+        const newEnd = Math.max(startSec + 0.001, Math.min(pos, trimDuration));
+        const newDur = newEnd - startSec;
+        updateSetting('duration', newDur > 0.001 ? secondsToTimeStr(newDur) : '');
+        if (videoRef.current) videoRef.current.currentTime = newEnd;
+      }
+    };
+    const onUp = () => setTrimDrag(null);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    return () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+  }, [trimDrag, trimDuration]);
+
+  // Constrain video playback within trim range
+  React.useEffect(() => {
+    const vid = videoRef.current;
+    if (!vid) return;
+    const startSec = parseTimeToSeconds(settings.startTime);
+    const durSec = parseTimeToSeconds(settings.duration);
+    const hasTrim = startSec > 0 || durSec > 0;
+    if (!hasTrim) return;
+    const endSec = durSec > 0 ? Math.min(startSec + durSec, trimDuration) : trimDuration;
+    const onTimeUpdate = () => {
+      if (trimDrag) return;
+      if (vid.currentTime < startSec) {
+        vid.currentTime = startSec;
+      } else if (vid.currentTime > endSec) {
+        vid.currentTime = endSec;
+        vid.pause();
+      }
+    };
+    vid.addEventListener('timeupdate', onTimeUpdate);
+    return () => vid.removeEventListener('timeupdate', onTimeUpdate);
+  }, [settings.startTime, settings.duration, trimDuration, trimDrag]);
+
+  // ---------- Crop overlay drag handlers ----------
+  const hasCrop = parseInt(settings.cropW) > 0 && parseInt(settings.cropH) > 0;
+
+  const handleCropMouseDown = (e, mode) => {
+    if (!videoRef.current) return;
+    const rect = videoRef.current.getBoundingClientRect();
+    const vw = videoRef.current.videoWidth || rect.width;
+    const vh = videoRef.current.videoHeight || rect.height;
+    const sx = vw / rect.width;
+    const sy = vh / rect.height;
+    let cw = parseInt(settings.cropW) || 0;
+    let ch = parseInt(settings.cropH) || 0;
+    let cx = parseInt(settings.cropX) || 0;
+    let cy = parseInt(settings.cropY) || 0;
+    if (cw === 0 && ch === 0) {
+      cw = Math.round(vw * 0.75);
+      ch = Math.round(vh * 0.75);
+      cx = Math.round((vw - cw) / 2);
+      cy = Math.round((vh - ch) / 2);
+      updateSetting('cropX', String(cx));
+      updateSetting('cropY', String(cy));
+      updateSetting('cropW', String(cw));
+      updateSetting('cropH', String(ch));
+    }
+    setCropDrag({
+      mode,
+      startX: e.clientX,
+      startY: e.clientY,
+      cropX: cx, cropY: cy, cropW: cw, cropH: ch,
+      sx, sy, vw, vh,
+    });
+  };
+
+  React.useEffect(() => {
+    if (!cropDrag) return;
+    const onMove = (e) => {
+      const { mode, startX, startY, cropX, cropY, cropW, cropH, sx, sy, vw, vh } = cropDrag;
+      const dx = (e.clientX - startX) * sx;
+      const dy = (e.clientY - startY) * sy;
+      let nx = cropX, ny = cropY, nw = cropW, nh = cropH;
+      if (mode === 'move') {
+        nx = Math.max(0, Math.min(vw - cropW, cropX + dx));
+        ny = Math.max(0, Math.min(vh - cropH, cropY + dy));
+      } else if (mode === 'se') {
+        nw = Math.max(16, Math.min(vw - cropX, cropW + dx));
+        nh = Math.max(16, Math.min(vh - cropY, cropH + dy));
+        if (cropLockAspect) { const ar = cropW / cropH; nw = Math.max(16, Math.min(vw - cropX, cropW + dx)); nh = nw / ar; }
+      } else if (mode === 'sw') {
+        const maxW = cropX + cropW;
+        nw = Math.max(16, Math.min(maxW, cropW - dx));
+        nh = Math.max(16, Math.min(vh - cropY, cropH + dy));
+        if (cropLockAspect) { const ar = cropW / cropH; nw = Math.max(16, Math.min(maxW, cropW - dx)); nh = nw / ar; }
+        nx = cropX + (cropW - nw);
+      } else if (mode === 'ne') {
+        nw = Math.max(16, Math.min(vw - cropX, cropW + dx));
+        const maxH = cropY + cropH;
+        nh = Math.max(16, Math.min(maxH, cropH - dy));
+        if (cropLockAspect) { const ar = cropW / cropH; nw = Math.max(16, Math.min(vw - cropX, cropW + dx)); nh = nw / ar; }
+        ny = cropY + (cropH - nh);
+      } else if (mode === 'nw') {
+        const maxW = cropX + cropW;
+        const maxH = cropY + cropH;
+        nw = Math.max(16, Math.min(maxW, cropW - dx));
+        nh = Math.max(16, Math.min(maxH, cropH - dy));
+        if (cropLockAspect) { const ar = cropW / cropH; nw = Math.max(16, Math.min(maxW, cropW - dx)); nh = nw / ar; }
+        nx = cropX + (cropW - nw);
+        ny = cropY + (cropH - nh);
+      }
+      updateSetting('cropX', String(Math.round(nx)));
+      updateSetting('cropY', String(Math.round(ny)));
+      updateSetting('cropW', String(Math.round(nw)));
+      updateSetting('cropH', String(Math.round(nh)));
+    };
+    const onUp = () => setCropDrag(null);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    return () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+  }, [cropDrag, cropLockAspect]);
 
   const detectScenes = async () => {
     if (!mediaInfo && !selectedFile && !filePath) return;
@@ -1081,8 +1401,7 @@ export function ConverterView() {
           <><AlertCircle size={16} /> FFmpeg not found
             <span className="ffmpeg-install-hint">Install FFmpeg from <a href="https://ffmpeg.org" target="_blank" rel="noopener">ffmpeg.org</a></span>
           </>
-        )}
-      </div>
+          )}
 
       {/* File Selection */}
       {!mediaInfo && !loadingInfo && !fileError && (
@@ -1106,18 +1425,9 @@ export function ConverterView() {
             <button className="btn-fetch" onClick={handlePathSubmit} disabled={!filePath.trim()}>
               <FileVideo size={16} /> Load File
             </button>
-          </div>
-
-          {/* Batch Queue Drop Area */}
-          <div className="batch-queue-area">
-            <div className="batch-drop-zone" onClick={() => batchInputRef.current?.click()}>
-              <FileUp size={20} />
-              <span>Drop multiple files here or click to batch add</span>
-              <input ref={batchInputRef} type="file" accept="video/*,audio/*,image/gif" multiple style={{ display: 'none' }} onChange={handleBatchSelect} />
             </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Loading */}
       {loadingInfo && (
@@ -1176,32 +1486,273 @@ export function ConverterView() {
         </div>
       )}
 
-      {/* Quick Presets */}
-      {mediaInfo && !loadingInfo && !convertDone && (
-        <div className="quick-presets-bar">
-          <div className="quick-presets-inner">
-            <label className="quick-presets-label"><Wand2 size={16} /> Quick Preset:</label>
-            <select className="quick-presets-select" defaultValue="" onChange={(e) => { if (e.target.value) handleQuickPreset(e.target.value); }}>
-              <option value="" disabled>Choose a preset...</option>
-              {Object.entries(QUICK_PRESETS).map(([key, preset]) => (
-                <option key={key} value={key}>{preset.label}</option>
-              ))}
-            </select>
+      {/* Video Preview */}
+      {mediaInfo && !loadingInfo && (
+        <div className="preview-section">
+          <div className="preview-inner">
+            <div className="preview-player-wrap">
+            {videoSrc ? (
+              <>
+                <video ref={videoRef} className="preview-video" src={videoSrc}
+                  onClick={() => { const v = videoRef.current; if (!v) return; if (v.paused) v.play(); else v.pause(); }}
+                  onTimeUpdate={() => { if (!playerSeeking.current) setPlayerTime(videoRef.current?.currentTime || 0); }}
+                  onPlay={() => setPlayerPlaying(true)} onPause={() => setPlayerPlaying(false)}
+                  onLoadedMetadata={() => { setPlayerTime(0); setPlayerPlaying(false); }}
+                  style={getPreviewStyle()}>
+                  Your browser does not support video playback.
+                </video>
+                {settings.watermarkType === 'text' && settings.watermarkText && (
+                  <div className="preview-watermark" style={{ ...watermarkPosMap[settings.watermarkPosition] || watermarkPosMap.se, opacity: settings.watermarkOpacity, color: settings.watermarkColor, fontSize: `${settings.watermarkFontSize}px` }}>
+                    {settings.watermarkText}
+                  </div>
+                )}
+                {videoSrc && (() => {
+                  const rect = videoRef.current?.getBoundingClientRect();
+                  const vw = videoRef.current?.videoWidth || rect?.width || 1;
+                  const vh = videoRef.current?.videoHeight || rect?.height || 1;
+                  const dw = rect?.width || 320;
+                  const dh = rect?.height || 240;
+                  const hasCrop = parseInt(settings.cropW) > 0 && parseInt(settings.cropH) > 0;
+                  const cx = hasCrop ? (parseInt(settings.cropX) || 0) / vw * 100 : 0;
+                  const cy = hasCrop ? (parseInt(settings.cropY) || 0) / vh * 100 : 0;
+                  const cw = hasCrop ? (parseInt(settings.cropW) || 0) / vw * 100 : 100;
+                  const ch = hasCrop ? (parseInt(settings.cropH) || 0) / vh * 100 : 100;
+                  const cxEnd = cx + cw;
+                  const cyEnd = cy + ch;
+                  return (
+                    <div className="crop-overlay" style={{ zIndex: 5 }}>
+                      {hasCrop && (
+                        <>
+                          <div className="crop-mask" style={{ top: '0', left: '0', right: '0', height: `${cy}%` }} />
+                          <div className="crop-mask" style={{ top: `${cyEnd}%`, left: '0', right: '0', bottom: '0' }} />
+                          <div className="crop-mask" style={{ top: `${cy}%`, left: '0', width: `${cx}%`, height: `${ch}%` }} />
+                          <div className="crop-mask" style={{ top: `${cy}%`, right: '0', width: `${100 - cxEnd}%`, height: `${ch}%` }} />
+                          <div className="crop-stats">{Math.round(parseInt(settings.cropW) || 0)}×{Math.round(parseInt(settings.cropH) || 0)} · ({parseInt(settings.cropX) || 0},{parseInt(settings.cropY) || 0}) · {(() => {
+                            const w = parseInt(settings.cropW) || 1;
+                            const h = parseInt(settings.cropH) || 1;
+                            const g = (a, b) => b ? g(b, a % b) : a;
+                            const d = g(w, h);
+                            return `${w / d}:${h / d}`;
+                          })()}</div>
+                        </>
+                      )}
+                      {hasCrop && (
+                        <div className="crop-hole" style={{ left: `${cx}%`, top: `${cy}%`, width: `${cw}%`, height: `${ch}%` }} onMouseDown={(e) => { e.stopPropagation(); handleCropMouseDown(e, 'move'); }} />
+                      )}
+                      <div className={`crop-border${hasCrop ? '' : ' crop-border-inert'}`} style={{ left: `${cx}%`, top: `${cy}%`, width: `${cw}%`, height: `${ch}%` }} />
+                      <div className="crop-handle" style={{ cursor: 'nw-resize', left: `${cx}%`, top: `${cy}%` }} onMouseDown={(e) => { e.stopPropagation(); handleCropMouseDown(e, 'nw'); }} />
+                      <div className="crop-handle" style={{ cursor: 'ne-resize', left: `${cxEnd}%`, top: `${cy}%` }} onMouseDown={(e) => { e.stopPropagation(); handleCropMouseDown(e, 'ne'); }} />
+                      <div className="crop-handle" style={{ cursor: 'sw-resize', left: `${cx}%`, top: `${cyEnd}%` }} onMouseDown={(e) => { e.stopPropagation(); handleCropMouseDown(e, 'sw'); }} />
+                      <div className="crop-handle" style={{ cursor: 'se-resize', left: `${cxEnd}%`, top: `${cyEnd}%` }} onMouseDown={(e) => { e.stopPropagation(); handleCropMouseDown(e, 'se'); }} />
+                    </div>
+                  );
+                })()}
+              </>
+            ) : (
+              <div className="preview-placeholder">
+                <FileVideo size={32} />
+                <span>{mediaInfo.filename}</span>
+              </div>
+            )}
+            </div>
           </div>
-          {Object.keys(savedPresets).length > 0 && (
-            <div className="quick-presets-inner">
-              <label className="quick-presets-label"><Save size={16} /> Saved:</label>
-              <select className="quick-presets-select" defaultValue="" onChange={(e) => { if (e.target.value) handleApplySavedPreset(e.target.value); }}>
-                <option value="" disabled>Load saved preset...</option>
+          {/* Custom player controls */}
+          {videoSrc && (
+            <div className="player-controls" onClick={(e) => e.stopPropagation()}>
+              <button className="pc-btn" onClick={() => { const v = videoRef.current; if (!v) return; if (v.paused) v.play(); else v.pause(); }} title={playerPlaying ? 'Pause' : 'Play'}>
+                {playerPlaying ? <span className="pc-icon">⏸</span> : <span className="pc-icon">▶</span>}
+              </button>
+              <span className="pc-time">{secondsToTimeStr(playerTime) || '0:00.000'}</span>
+              <div className="pc-progress" onMouseDown={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+                const rawT = pct * trimDuration;
+                const startSec = parseTimeToSeconds(settings.startTime);
+                const durSec = parseTimeToSeconds(settings.duration);
+                const endSec = durSec > 0 ? Math.min(startSec + durSec, trimDuration) : trimDuration;
+                const t = Math.max(startSec, Math.min(durSec > 0 ? endSec : trimDuration, rawT));
+                playerSeeking.current = true;
+                if (videoRef.current) videoRef.current.currentTime = t;
+                setPlayerTime(t);
+                const onMove = (e2) => {
+                  const r = e.currentTarget.getBoundingClientRect();
+                  const p = Math.max(0, Math.min(1, (e2.clientX - r.left) / r.width));
+                  const ntRaw = p * trimDuration;
+                  const nt = Math.max(startSec, Math.min(durSec > 0 ? endSec : trimDuration, ntRaw));
+                  if (videoRef.current) videoRef.current.currentTime = nt;
+                  setPlayerTime(nt);
+                };
+                const onUp = () => { playerSeeking.current = false; document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+                document.addEventListener('mousemove', onMove);
+                document.addEventListener('mouseup', onUp);
+              }}>
+                {(() => {
+                  const startSec = parseTimeToSeconds(settings.startTime);
+                  const durSec = parseTimeToSeconds(settings.duration);
+                  const endSec = durSec > 0 ? Math.min(startSec + durSec, trimDuration) : trimDuration;
+                  const hasTrim = startSec > 0 || durSec > 0;
+                  const dur = videoRef.current?.duration || trimDuration;
+                  const pct = dur ? (playerTime / dur) * 100 : 0;
+                  return (
+                    <>
+                      <div className="pc-progress-track" />
+                      {hasTrim && <div className="pc-progress-outside" style={{ left: '0', width: `${(startSec / dur) * 100}%` }} />}
+                      <div className="pc-progress-fill" style={{ left: `${(startSec / dur) * 100}%`, width: `${((endSec - startSec) / dur) * 100}%` }} />
+                      {hasTrim && <div className="pc-progress-outside" style={{ left: `${(endSec / dur) * 100}%`, width: `${((dur - endSec) / dur) * 100}%` }} />}
+                      <div className="pc-progress-thumb" style={{ left: `${pct}%` }} />
+                    </>
+                  );
+                })()}
+              </div>
+              <span className="pc-time">{secondsToTimeStr(trimDuration)}</span>
+              <button className="pc-btn pc-vol-btn" onClick={() => { const v = videoRef.current; if (!v) return; v.muted = !v.muted; }}>
+                <span className="pc-icon">{videoRef.current?.muted || videoRef.current?.volume === 0 ? '🔇' : videoRef.current?.volume < 0.5 ? '🔉' : '🔊'}</span>
+              </button>
+              <input type="range" className="pc-vol-slider" min="0" max="1" step="0.05" defaultValue={1}
+                onChange={(e) => { const v = videoRef.current; if (v) { v.volume = parseFloat(e.target.value); v.muted = false; } }} />
+            </div>
+          )}
+          {/* Trim Timeline */}
+          {videoSrc && trimDuration > 0 && (
+            <div className="trim-timeline" onMouseDown={(e) => {
+              if (e.target.closest('.trim-handle')) return;
+              const rect = e.currentTarget.getBoundingClientRect();
+              const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+              const pos = pct * trimDuration;
+              if (videoRef.current) videoRef.current.currentTime = pos;
+            }}>
+              <div className="trim-track">
+                <div className="trim-track-bg" />
+                {(() => {
+                  const startSec = parseTimeToSeconds(settings.startTime);
+                  const durSec = parseTimeToSeconds(settings.duration);
+                  const endSec = durSec > 0 ? Math.min(startSec + durSec, trimDuration) : trimDuration;
+                  const sp = (startSec / trimDuration) * 100;
+                  const ep = (endSec / trimDuration) * 100;
+                  return (
+                    <>
+                      <div className="trim-range" style={{ left: `${sp}%`, width: `${ep - sp}%` }} />
+                      <div className="trim-handle trim-handle-start" style={{ left: `${sp}%` }}
+                        onMouseDown={(e) => handleTrimMouseDown(e, 'start')}>
+                        <span className="trim-label">{secondsToTimeStr(startSec) || '0:00.000'}</span>
+                      </div>
+                      <div className="trim-handle trim-handle-end" style={{ left: `${ep}%` }}
+                        onMouseDown={(e) => handleTrimMouseDown(e, 'end')}>
+                        <span className="trim-label">{secondsToTimeStr(endSec) || secondsToTimeStr(trimDuration)}</span>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+          )}
+          {/* Trim & Crop settings */}
+          {videoSrc && (
+            <div className="trim-crop-bar">
+              <div className="tcb-row">
+                <div className="tcb-field">
+                  <span className="tcb-label">Start</span>
+                  <input type="text" className="tcb-input" value={settings.startTime}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      updateSetting('startTime', v);
+                      const s = parseTimeToSeconds(v);
+                      const d = parseTimeToSeconds(settings.duration);
+                      if (s > 0 && d > 0) {
+                        const maxEnd = trimDuration;
+                        const end = Math.min(s + d, maxEnd);
+                        const newD = end - s;
+                        updateSetting('duration', newD > 0.001 ? secondsToTimeStr(newD) : '');
+                      }
+                    }} placeholder="0:00.000" />
+                </div>
+                <div className="tcb-field">
+                  <span className="tcb-label">End</span>
+                  <input type="text" className="tcb-input" value={(() => {
+                    const s = parseTimeToSeconds(settings.startTime);
+                    const d = parseTimeToSeconds(settings.duration);
+                    if (d > 0) return secondsToTimeStr(Math.min(s + d, trimDuration));
+                    return '';
+                  })()}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      const endSec = parseTimeToSeconds(v);
+                      const startSec = parseTimeToSeconds(settings.startTime);
+                      if (endSec > 0 && endSec > startSec) {
+                        const newDur = endSec - startSec;
+                        updateSetting('duration', newDur > 0.001 ? secondsToTimeStr(newDur) : '');
+                      }
+                    }} placeholder="0:00.000" />
+                </div>
+                <div className="tcb-field">
+                  <span className="tcb-label">Dur</span>
+                  <input type="text" className="tcb-input" value={settings.duration}
+                    onChange={(e) => updateSetting('duration', e.target.value)} placeholder="0:05.000" />
+                </div>
+                <button className="tcb-btn" onClick={() => { updateSetting('startTime', ''); updateSetting('duration', ''); }} title="Reset trim"><Trash2 size={12} /></button>
+              </div>
+              <div className="tcb-row">
+                <div className="tcb-field tcb-crop">
+                  <span className="tcb-label">Crop</span>
+                  <input type="number" className="tcb-input-sm" value={settings.cropW}
+                    onChange={(e) => updateSetting('cropW', e.target.value)} placeholder="W" min="0" />
+                  <span className="tcb-dim">×</span>
+                  <input type="number" className="tcb-input-sm" value={settings.cropH}
+                    onChange={(e) => updateSetting('cropH', e.target.value)} placeholder="H" min="0" />
+                  <span className="tcb-dim">@</span>
+                  <input type="number" className="tcb-input-sm" value={settings.cropX}
+                    onChange={(e) => updateSetting('cropX', e.target.value)} placeholder="X" min="0" />
+                  <input type="number" className="tcb-input-sm" value={settings.cropY}
+                    onChange={(e) => updateSetting('cropY', e.target.value)} placeholder="Y" min="0" />
+                </div>
+                <label className="tcb-toggle" title="Lock aspect ratio when resizing">
+                  <input type="checkbox" checked={cropLockAspect} onChange={(e) => setCropLockAspect(e.target.checked)} />
+                  <span>Lock</span>
+                </label>
+                <label className="tcb-toggle" title="Deinterlace video">
+                  <input type="checkbox" checked={settings.deinterlace} onChange={(e) => updateSetting('deinterlace', e.target.checked)} />
+                  <span>Dei</span>
+                </label>
+                <button className="tcb-btn" onClick={() => { updateSetting('cropW', ''); updateSetting('cropH', ''); updateSetting('cropX', ''); updateSetting('cropY', ''); }} title="Reset crop"><Trash2 size={12} /></button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Presets */}
+      {mediaInfo && !loadingInfo && !convertDone && (
+        <div className="preset-cards-section">
+          <div className="options-title-row" style={{ marginBottom: '10px' }}>
+            <h3 className="options-title"><Wand2 size={18} /> Presets</h3>
+            <span className="options-subtitle">Quick-start settings for common use cases</span>
+          </div>
+          <div className="preset-cards-grid">
+            {Object.entries(QUICK_PRESETS).map(([key, preset]) => {
+              const cats = { default: 'default', web_h264: 'web', web_h265: 'web', compatible: 'compat', youtube: 'social', discord: 'social', small: 'size', audio: 'audio' };
+              const isActive = Object.entries(preset.settings).every(([k, v]) => settings[k] === v);
+              return (
+                <button key={key} className={`preset-card cat-${cats[key] || 'default'}${isActive ? ' active' : ''}`} onClick={() => handleQuickPreset(key)} title={preset.settings.container + ' · ' + preset.settings.videoCodec + '/' + preset.settings.audioCodec} type="button">
+                  <span className="preset-card-label">{preset.label}</span>
+                  <span className="preset-card-desc">{preset.settings.container.toUpperCase()} {preset.settings.videoCodec !== 'copy' ? '· ' + preset.settings.videoCodec.toUpperCase() : ''}</span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="preset-actions">
+            {Object.keys(savedPresets).length > 0 && (
+              <select className="preset-saved-select" defaultValue="" onChange={(e) => { if (e.target.value) handleApplySavedPreset(e.target.value); }}>
+                <option value="" disabled>Saved presets ({Object.keys(savedPresets).length})</option>
                 {Object.keys(savedPresets).map(name => (
                   <option key={name} value={name}>{name}</option>
                 ))}
               </select>
-            </div>
-          )}
-          <button className="btn-save-preset" onClick={() => setShowSavePreset(true)} title="Save current settings as preset">
-            <Save size={14} /> Save
-          </button>
+            )}
+            <button className="btn-sm" onClick={() => setShowSavePreset(true)} title="Save current settings"><Save size={13} /> Save</button>
+            <button className="btn-sm" onClick={handlePresetExport} title="Export settings as JSON"><Download size={13} /> Export</button>
+            <button className="btn-sm" onClick={() => presetInputRef.current?.click()} title="Import settings from JSON"><Upload size={13} /> Import</button>
+            <input ref={presetInputRef} type="file" accept=".json" style={{ display: 'none' }} onChange={handlePresetImport} />
+          </div>
         </div>
       )}
 
@@ -1215,10 +1766,25 @@ export function ConverterView() {
         </div>
       )}
 
-      {/* Conversion Options */}
+      {/* Tab Navigation */}
       {mediaInfo && !loadingInfo && !convertDone && (
+        <div className="conv-tabs">
+          <button className={`conv-tab ${activeTab === 'format' ? 'active' : ''}`} onClick={() => setActiveTab('format')}><Film size={15} /> Format</button>
+          <button className={`conv-tab ${activeTab === 'effects' ? 'active' : ''}`} onClick={() => setActiveTab('effects')}><Palette size={15} /> Effects</button>
+          <button className={`conv-tab ${activeTab === 'tools' ? 'active' : ''}`} onClick={() => setActiveTab('tools')}><Scissors size={15} /> Tools</button>
+          <button className={`conv-tab ${activeTab === 'convert' ? 'active' : ''}`} onClick={() => setActiveTab('convert')}><Wand2 size={15} /> Convert</button>
+        </div>
+      )}
+
+      {/* Tab: Format */}
+      {mediaInfo && !loadingInfo && !convertDone && activeTab === 'format' && (
         <div className="conversion-options">
-          <h3 className="options-title"><Wand2 size={20} /> Conversion Options</h3>
+          <div className="options-title-row">
+            <h3 className="options-title"><Film size={18} /> Format Settings</h3>
+            <button className={`toggle-advanced ${showAdvanced ? 'active' : ''}`} onClick={() => setShowAdvanced(!showAdvanced)}>
+              {showAdvanced ? 'Simple Mode' : 'Advanced Mode'}
+            </button>
+          </div>
 
           {/* Output Format */}
           <Section icon={Film} title="Output Format" description="Choose the container format for your converted file." defaultOpen={true}>
@@ -1246,27 +1812,54 @@ export function ConverterView() {
                   <OptionRow label="CRF Quality" tooltip="Constant Rate Factor. Lower = better quality, larger file." description={getCrfDescription(settings.crf)}>
                     <div className="crf-slider-group">
                       <input type="range" min="0" max="51" step="1" value={settings.crf}
-                        onChange={(e) => updateSetting('crf', e.target.value)} className="crf-slider" />
+                        onChange={(e) => updateSetting('crf', e.target.value)} className="crf-slider" title="0-51: Lower = better quality, larger file" />
                       <span className="crf-value">{settings.crf}</span>
                     </div>
                   </OptionRow>
                   <OptionRow label="Video Bitrate" tooltip="Target bitrate. Leave 'Auto' to use CRF. Format: 1000k, 5M." description="Set a specific bitrate target">
                     <div className="bitrate-input-group">
                       <select value={settings.videoBitrate === 'auto' ? 'auto' : 'custom'}
-                        onChange={(e) => updateSetting('videoBitrate', e.target.value === 'auto' ? 'auto' : '1000k')}>
+                        onChange={(e) => {
+                          if (e.target.value === 'auto') {
+                            updateSetting('videoBitrate', 'auto');
+                          } else {
+                            const bps = mediaInfo?.bit_rate;
+                            const suggested = bps >= 1000000 ? (bps / 1000000).toFixed(1) + 'M' : (bps >= 1000 ? Math.round(bps / 1000) + 'k' : '1000k');
+                            updateSetting('videoBitrate', suggested);
+                          }
+                        }}>
                         <option value="auto">Auto (use CRF)</option>
                         <option value="custom">Custom</option>
                       </select>
                       {settings.videoBitrate !== 'auto' && (
-                        <input type="text" className="input-inline" value={settings.videoBitrate}
+                         <input type="text" className="input-inline" value={settings.videoBitrate}
                           onChange={(e) => updateSetting('videoBitrate', e.target.value)} placeholder="1000k, 5M..." />
                       )}
                     </div>
                   </OptionRow>
-                  <OptionRow label="Resolution" tooltip="Output resolution. Uses height (e.g., 1080 = 1920x1080)." description="Lower resolution = smaller file">
-                    <select value={settings.resolution} onChange={(e) => updateSetting('resolution', e.target.value)}>
-                      {RESOLUTIONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
-                    </select>
+                  <OptionRow label="Resolution" tooltip="Output resolution. Pick a standard size, or choose Custom for exact dimensions." description="Lower resolution = smaller file">
+                    {RESOLUTIONS.some(r => r.value === settings.resolution) ? (
+                      <select value={settings.resolution} onChange={(e) => {
+                        if (e.target.value === '__custom__') {
+                          updateSetting('resolution', '');
+                        } else {
+                          updateSetting('resolution', e.target.value);
+                        }
+                      }}>
+                        {RESOLUTIONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                        <option value="__custom__">Custom…</option>
+                      </select>
+                    ) : (
+                      <div className="resolution-custom-group">
+                        <div style={{ display: 'flex', gap: '6px', width: '100%', alignItems: 'center' }}>
+                          <input type="text" className="input-inline" value={settings.resolution}
+                            onChange={(e) => updateSetting('resolution', e.target.value)}
+                            placeholder="e.g. 1920x1080 or 540" style={{ flex: '1' }} />
+                          <button className="btn-sm" onClick={() => updateSetting('resolution', 'original')}>Presets</button>
+                        </div>
+                        <span className="input-hint">Use <strong>WxH</strong> (e.g. 1920x1080) or just a <strong>height</strong> (e.g. 720 for auto-width)</span>
+                      </div>
+                    )}
                   </OptionRow>
                   <OptionRow label="Frame Rate" tooltip="Output frames per second." description="Common video standards">
                     <select value={settings.framerate} onChange={(e) => updateSetting('framerate', e.target.value)}>
@@ -1278,16 +1871,20 @@ export function ConverterView() {
                       {PRESETS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
                     </select>
                   </OptionRow>
-                  <OptionRow label="Tune" tooltip="Optimize encoding for specific content types." description="Tune for your content type">
-                    <select value={settings.tune} onChange={(e) => updateSetting('tune', e.target.value)}>
-                      {TUNE_OPTIONS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                    </select>
-                  </OptionRow>
-                  <OptionRow label="H.264/H.265 Profile" tooltip="Constraint on encoding features for device compatibility." description="Compatibility level">
-                    <select value={settings.profile} onChange={(e) => updateSetting('profile', e.target.value)}>
-                      {PROFILES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
-                    </select>
-                  </OptionRow>
+                  {['h264', 'h265'].includes(settings.videoCodec) && (
+                    <OptionRow label="Tune" tooltip="Optimize encoding for specific content types (x264/x265 only)." description="Tune for your content type">
+                      <select value={settings.tune} onChange={(e) => updateSetting('tune', e.target.value)}>
+                        {TUNE_OPTIONS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                      </select>
+                    </OptionRow>
+                  )}
+                  {['h264', 'h265'].includes(settings.videoCodec) && (
+                    <OptionRow label="Profile" tooltip="Constraint on encoding features for device compatibility (x264/x265 only)." description="Compatibility level">
+                      <select value={settings.profile} onChange={(e) => updateSetting('profile', e.target.value)}>
+                        {PROFILES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+                      </select>
+                    </OptionRow>
+                  )}
                   <OptionRow label="Pixel Format" tooltip="Color subsampling. yuv420p is most compatible." description="Color sampling format">
                     <select value={settings.pixFmt} onChange={(e) => updateSetting('pixFmt', e.target.value)}>
                       {PIX_FMTS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
@@ -1306,10 +1903,29 @@ export function ConverterView() {
                   {FPS_OPTIONS.filter(f => ['original','10','15','20','24','30'].includes(f.value)).map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
                 </select>
               </OptionRow>
-              <OptionRow label="Resolution" tooltip="GIFs are large. Lower resolution helps." description="Output size">
-                <select value={settings.resolution} onChange={(e) => updateSetting('resolution', e.target.value)}>
-                  {RESOLUTIONS.filter(r => ['original','720','540','480','360'].includes(r.value)).map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
-                </select>
+              <OptionRow label="Resolution" tooltip="GIFs are large. Lower resolution helps. Pick a standard size or enter a custom one." description="Output size">
+                {RESOLUTIONS.filter(r => ['original','720','540','480','360'].includes(r.value)).some(r => r.value === settings.resolution) ? (
+                  <select value={settings.resolution} onChange={(e) => {
+                    if (e.target.value === '__custom__') {
+                      updateSetting('resolution', '');
+                    } else {
+                      updateSetting('resolution', e.target.value);
+                    }
+                  }}>
+                    {RESOLUTIONS.filter(r => ['original','720','540','480','360'].includes(r.value)).map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                    <option value="__custom__">Custom…</option>
+                  </select>
+                ) : (
+                  <div className="resolution-custom-group">
+                    <div style={{ display: 'flex', gap: '6px', width: '100%', alignItems: 'center' }}>
+                      <input type="text" className="input-inline" value={settings.resolution}
+                        onChange={(e) => updateSetting('resolution', e.target.value)}
+                        placeholder="e.g. 320x240 or 480" style={{ flex: '1' }} />
+                      <button className="btn-sm" onClick={() => updateSetting('resolution', 'original')}>Presets</button>
+                    </div>
+                    <span className="input-hint">Use <strong>WxH</strong> (e.g. 320x240) or just a <strong>height</strong> (e.g. 480 for auto-width)</span>
+                  </div>
+                )}
               </OptionRow>
             </Section>
           )}
@@ -1342,7 +1958,7 @@ export function ConverterView() {
                   <OptionRow label="Volume Adjustment" tooltip="Adjust audio volume in dB." description="Volume level">
                     <div className="volume-group">
                       <input type="range" min="-30" max="30" step="1" value={settings.volume}
-                        onChange={(e) => updateSetting('volume', e.target.value)} className="crf-slider" />
+                        onChange={(e) => updateSetting('volume', e.target.value)} className="crf-slider" title="-30 dB to +30 dB: Adjust audio volume" />
                       <span className="crf-value">{settings.volume > 0 ? '+' : ''}{settings.volume} dB</span>
                     </div>
                   </OptionRow>
@@ -1351,35 +1967,79 @@ export function ConverterView() {
             </Section>
           )}
 
-          {/* Visual Filters */}
-          <ToggleSection icon={Palette} title="Visual Filters" description="Apply color correction, watermarks, speed changes, and rotation effects.">
+          {showAdvanced && (
+            <Section icon={Settings} title="Advanced Settings" description="Fine-tune encoding with advanced parameters." defaultOpen={false}>
+              <OptionRow label="Hardware Acceleration" tooltip="Use GPU to speed up encoding." description="GPU encoding">
+                <select value={settings.hwaccel} onChange={(e) => updateSetting('hwaccel', e.target.value)}>
+                  {HW_ACCELS.map(h => (
+                    <option key={h.value} value={h.value}
+                      disabled={h.value !== 'none' && !ffmpegStatus.hwaccels?.includes(h.value)}>{h.label}</option>
+                  ))}
+                </select>
+              </OptionRow>
+              <OptionRow label="2-Pass Encoding" tooltip="Analyze video twice for optimal bitrate distribution. 2x slower." description="Analyze twice for better quality">
+                <label className="toggle-label">
+                  <input type="checkbox" checked={settings.twoPass} onChange={(e) => updateSetting('twoPass', e.target.checked)} disabled={settings.videoCodec === 'copy'} />
+                  <span className="toggle-switch"></span>
+                  {settings.twoPass ? 'Enabled' : 'Disabled'}
+                </label>
+              </OptionRow>
+              <OptionRow label="Threads" tooltip="Number of CPU threads for encoding. 0 = auto (recommended)." description="CPU threads">
+                <input type="number" className="input-inline" value={settings.threads}
+                  onChange={(e) => updateSetting('threads', e.target.value)} min="0" max="64" placeholder="0 = auto" style={{ width: '80px' }} />
+                <span className="input-suffix">(0 = auto)</span>
+              </OptionRow>
+              <OptionRow label="Preserve Metadata" tooltip="Keep original file metadata in the output." description="Keep metadata">
+                <label className="toggle-label">
+                  <input type="checkbox" checked={settings.metadataPreserve} onChange={(e) => updateSetting('metadataPreserve', e.target.checked)} />
+                  <span className="toggle-switch"></span>
+                  {settings.metadataPreserve ? 'Enabled' : 'Disabled'}
+                </label>
+              </OptionRow>
+              <OptionRow label="Custom FFmpeg Arguments" tooltip="Add any additional FFmpeg arguments directly." description="Raw ffmpeg flags">
+                <input type="text" className="input-full" value={settings.customArgs}
+                  onChange={(e) => updateSetting('customArgs', e.target.value)}
+                  placeholder="-vf 'eq=brightness=0.1' -metadata title='My Video' ..." />
+              </OptionRow>
+            </Section>
+          )}
+        </div>
+      )}
+
+      {/* Tab: Effects */}
+      {mediaInfo && !loadingInfo && !convertDone && activeTab === 'effects' && (
+        <div className="conversion-options">
+          <div className="options-title-row">
+            <h3 className="options-title"><Palette size={18} /> Visual Effects</h3>
+          </div>
+          <ToggleSection icon={Palette} title="Visual Filters" description="Apply color correction, watermarks, speed changes, and rotation effects." open={true}>
             {/* Color Correction */}
             <h4 className="vf-subheading"><Gauge size={14} /> Color Correction</h4>
             <OptionRow label="Brightness" tooltip="Adjust image brightness. Negative = darker, positive = brighter." description="Image brightness">
               <div className="crf-slider-group">
                 <input type="range" min="-1" max="1" step="0.05" value={settings.colorBrightness}
-                  onChange={(e) => updateSetting('colorBrightness', parseFloat(e.target.value))} className="crf-slider" />
+                  onChange={(e) => updateSetting('colorBrightness', parseFloat(e.target.value))} className="crf-slider" title="-1 to +1: Negative = darker, Positive = brighter" />
                 <span className="crf-value">{settings.colorBrightness > 0 ? '+' : ''}{settings.colorBrightness}</span>
               </div>
             </OptionRow>
             <OptionRow label="Contrast" tooltip="Adjust image contrast. 1.0 is normal. Higher = more contrast." description="Image contrast">
               <div className="crf-slider-group">
                 <input type="range" min="0.1" max="2.0" step="0.05" value={settings.colorContrast}
-                  onChange={(e) => updateSetting('colorContrast', parseFloat(e.target.value))} className="crf-slider" />
+                  onChange={(e) => updateSetting('colorContrast', parseFloat(e.target.value))} className="crf-slider" title="0.1 to 2.0: 1.0 = normal" />
                 <span className="crf-value">{settings.colorContrast.toFixed(2)}</span>
               </div>
             </OptionRow>
             <OptionRow label="Saturation" tooltip="Color intensity. 1.0 is normal. 0 = grayscale." description="Color saturation">
               <div className="crf-slider-group">
                 <input type="range" min="0" max="3" step="0.05" value={settings.colorSaturation}
-                  onChange={(e) => updateSetting('colorSaturation', parseFloat(e.target.value))} className="crf-slider" />
+                  onChange={(e) => updateSetting('colorSaturation', parseFloat(e.target.value))} className="crf-slider" title="0 to 3: 1.0 = normal, 0 = grayscale" />
                 <span className="crf-value">{settings.colorSaturation.toFixed(2)}</span>
               </div>
             </OptionRow>
             <OptionRow label="Gamma" tooltip="Adjust mid-tone brightness. 1.0 is normal." description="Gamma correction">
               <div className="crf-slider-group">
                 <input type="range" min="0.1" max="2.0" step="0.05" value={settings.colorGamma}
-                  onChange={(e) => updateSetting('colorGamma', parseFloat(e.target.value))} className="crf-slider" />
+                  onChange={(e) => updateSetting('colorGamma', parseFloat(e.target.value))} className="crf-slider" title="0.1 to 2.0: 1.0 = normal" />
                 <span className="crf-value">{settings.colorGamma.toFixed(2)}</span>
               </div>
             </OptionRow>
@@ -1391,7 +2051,7 @@ export function ConverterView() {
             <OptionRow label="Speed" tooltip="Change playback speed. 1.0 = normal, 2.0 = double speed, 0.5 = half speed." description="Playback rate">
               <div className="crf-slider-group">
                 <input type="range" min="0.25" max="4" step="0.05" value={settings.speed}
-                  onChange={(e) => updateSetting('speed', parseFloat(e.target.value))} className="crf-slider" />
+                  onChange={(e) => updateSetting('speed', parseFloat(e.target.value))} className="crf-slider" title="0.25x to 4x: 1.0 = normal speed" />
                 <span className="crf-value">{settings.speed.toFixed(2)}x</span>
               </div>
             </OptionRow>
@@ -1492,21 +2152,28 @@ export function ConverterView() {
               <OptionRow label="Opacity" tooltip="Watermark transparency. 1.0 = fully visible, 0.0 = invisible." description="Transparency level">
                 <div className="crf-slider-group">
                   <input type="range" min="0" max="1" step="0.05" value={settings.watermarkOpacity}
-                    onChange={(e) => updateSetting('watermarkOpacity', parseFloat(e.target.value))} className="crf-slider" />
+                    onChange={(e) => updateSetting('watermarkOpacity', parseFloat(e.target.value))} className="crf-slider" title="0% to 100%: Watermark transparency" />
                   <span className="crf-value">{Math.round(settings.watermarkOpacity * 100)}%</span>
                 </div>
               </OptionRow>
             )}
           </ToggleSection>
+        </div>
+      )}
 
-          {/* Target Size */}
-          <ToggleSection icon={BarChart3} title="Target File Size" description="Calculate the required bitrate to hit a specific output file size.">
-            <OptionRow label="Target Size (MB)" tooltip="Enter your desired output file size in megabytes." description="Desired output size">
+      {/* Tab: Tools */}
+      {mediaInfo && !loadingInfo && !convertDone && activeTab === 'tools' && (
+        <div className="conversion-options">
+          <div className="options-title-row">
+            <h3 className="options-title"><Scissors size={18} /> Tools</h3>
+          </div>
+          <ToggleSection icon={BarChart3} title="Target File Size" description="Calculate the required bitrate to hit a specific output file size. Leave empty or set to 0 for auto/default quality.">
+            <OptionRow label="Target Size (MB)" tooltip="Enter your desired output file size in megabytes. Leave empty or 0 for auto/default quality (uses CRF-based encoding)." description="Desired output size">
               <div className="target-size-group">
                 <input type="number" className="input-inline" value={targetSize}
-                  onChange={(e) => setTargetSize(e.target.value)} min="1" max="99999" placeholder="e.g. 100" style={{ width: '100px' }} />
+                  onChange={(e) => setTargetSize(e.target.value)} min="0" max="99999" placeholder="empty/0 = auto" style={{ width: '100px' }} />
                 <span className="input-suffix">MB</span>
-                <button className="btn-calculate-size" onClick={calculateTargetSize} disabled={!targetSize || !mediaInfo?.duration}>
+                <button className="btn-calculate-size" onClick={calculateTargetSize} disabled={!mediaInfo?.duration}>
                   Calculate
                 </button>
               </div>
@@ -1672,41 +2339,6 @@ export function ConverterView() {
             )}
           </ToggleSection>
 
-          {/* Trim & Crop */}
-          <ToggleSection icon={Scissors} title="Trim & Crop" description="Cut a segment and/or crop the video frame.">
-            <OptionRow label="Start Time" tooltip="Start trimming from this time. Format: HH:MM:SS or seconds." description="Where to begin">
-              <input type="text" className="input-full" value={settings.startTime}
-                onChange={(e) => updateSetting('startTime', e.target.value)} placeholder="00:00:00 or 90 (seconds)" />
-            </OptionRow>
-            <OptionRow label="Duration" tooltip="Length of output. Leave empty to trim to end." description="How long to keep">
-              <input type="text" className="input-full" value={settings.duration}
-                onChange={(e) => updateSetting('duration', e.target.value)} placeholder="00:05:00 or 300 (seconds)" />
-            </OptionRow>
-            <OptionRow label="Crop Width" tooltip="Width of the cropped area in pixels." description="Crop region width">
-              <input type="number" className="input-inline" value={settings.cropW}
-                onChange={(e) => updateSetting('cropW', e.target.value)} min="0" max="7680" placeholder="e.g. 1920" style={{ width: '100px' }} />
-            </OptionRow>
-            <OptionRow label="Crop Height" tooltip="Height of the cropped area in pixels." description="Crop region height">
-              <input type="number" className="input-inline" value={settings.cropH}
-                onChange={(e) => updateSetting('cropH', e.target.value)} min="0" max="4320" placeholder="e.g. 1080" style={{ width: '100px' }} />
-            </OptionRow>
-            <OptionRow label="Crop X Offset" tooltip="X position (from left) to start cropping." description="Crop X origin">
-              <input type="number" className="input-inline" value={settings.cropX}
-                onChange={(e) => updateSetting('cropX', e.target.value)} min="0" placeholder="0" style={{ width: '100px' }} />
-            </OptionRow>
-            <OptionRow label="Crop Y Offset" tooltip="Y position (from top) to start cropping." description="Crop Y origin">
-              <input type="number" className="input-inline" value={settings.cropY}
-                onChange={(e) => updateSetting('cropY', e.target.value)} min="0" placeholder="0" style={{ width: '100px' }} />
-            </OptionRow>
-            <OptionRow label="Deinterlace" tooltip="Convert interlaced video to progressive." description="Fix interlacing">
-              <label className="toggle-label">
-                <input type="checkbox" checked={settings.deinterlace} onChange={(e) => updateSetting('deinterlace', e.target.checked)} />
-                <span className="toggle-switch"></span>
-                {settings.deinterlace ? 'Enabled' : 'Disabled'}
-              </label>
-            </OptionRow>
-          </ToggleSection>
-
           {/* Subtitles */}
           {subtitleStreams.length > 0 && (
             <Section icon={Subtitles} title="Subtitles" description="Handle subtitle streams." defaultOpen={false}>
@@ -1728,43 +2360,15 @@ export function ConverterView() {
               )}
             </Section>
           )}
+        </div>
+      )}
 
-          {/* Advanced */}
-          <ToggleSection icon={Settings} title="Advanced Settings" description="Fine-tune encoding with advanced parameters.">
-            <OptionRow label="Hardware Acceleration" tooltip="Use GPU to speed up encoding." description="GPU encoding">
-              <select value={settings.hwaccel} onChange={(e) => updateSetting('hwaccel', e.target.value)}>
-                {HW_ACCELS.map(h => (
-                  <option key={h.value} value={h.value}
-                    disabled={h.value !== 'none' && !ffmpegStatus.hwaccels?.includes(h.value)}>{h.label}</option>
-                ))}
-              </select>
-            </OptionRow>
-            <OptionRow label="2-Pass Encoding" tooltip="Analyze video twice for optimal bitrate distribution. 2x slower." description="Analyze twice for better quality">
-              <label className="toggle-label">
-                <input type="checkbox" checked={settings.twoPass} onChange={(e) => updateSetting('twoPass', e.target.checked)} disabled={settings.videoCodec === 'copy'} />
-                <span className="toggle-switch"></span>
-                {settings.twoPass ? 'Enabled' : 'Disabled'}
-              </label>
-            </OptionRow>
-            <OptionRow label="Threads" tooltip="Number of CPU threads for encoding. 0 = auto." description="CPU threads">
-              <input type="number" className="input-inline" value={settings.threads}
-                onChange={(e) => updateSetting('threads', e.target.value)} min="0" max="64" style={{ width: '80px' }} />
-              <span className="input-suffix">(0 = auto)</span>
-            </OptionRow>
-            <OptionRow label="Preserve Metadata" tooltip="Keep original file metadata in the output." description="Keep metadata">
-              <label className="toggle-label">
-                <input type="checkbox" checked={settings.metadataPreserve} onChange={(e) => updateSetting('metadataPreserve', e.target.checked)} />
-                <span className="toggle-switch"></span>
-                {settings.metadataPreserve ? 'Enabled' : 'Disabled'}
-              </label>
-            </OptionRow>
-            <OptionRow label="Custom FFmpeg Arguments" tooltip="Add any additional FFmpeg arguments directly." description="Raw ffmpeg flags">
-              <input type="text" className="input-full" value={settings.customArgs}
-                onChange={(e) => updateSetting('customArgs', e.target.value)}
-                placeholder="-vf 'eq=brightness=0.1' -metadata title='My Video' ..." />
-            </OptionRow>
-          </ToggleSection>
-
+      {/* Tab: Convert */}
+      {mediaInfo && !loadingInfo && !convertDone && activeTab === 'convert' && (
+        <div className="conversion-options">
+          <div className="options-title-row">
+            <h3 className="options-title"><Wand2 size={18} /> Convert</h3>
+          </div>
           {/* Command Preview */}
           {mediaInfo && (
             <div className="command-preview">
@@ -1895,7 +2499,12 @@ export function ConverterView() {
           </div>
           <div className="batch-queue-list">
             {queue.map((item, idx) => (
-              <div key={idx} className={`batch-queue-item status-${item.status}`}>
+              <div key={idx} className={`batch-queue-item status-${item.status} ${dragIndex === idx ? 'dragging' : ''}`}
+                draggable={item.status !== 'converting'}
+                onDragStart={handleQueueDragStart(idx)}
+                onDragOver={handleQueueDragOver}
+                onDrop={handleQueueDrop(idx)}>
+                <div className="bqi-grip"><GripVertical size={14} /></div>
                 <div className="bqi-info">
                   <span className="bqi-name">{item.name}</span>
                   <span className="bqi-size">{formatBytes(item.size)}</span>
@@ -1915,6 +2524,28 @@ export function ConverterView() {
                 <button className="bqi-remove" onClick={() => dispatch({ type: 'REMOVE_FROM_QUEUE', payload: idx })} disabled={item.status === 'converting'}>
                   <X size={14} />
                 </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Convert History */}
+      {history.length > 0 && (
+        <div className="converter-history">
+          <div className="history-header">
+            <Clock size={16} />
+            <span className="history-title">Convert History ({history.length})</span>
+          </div>
+          <div className="history-list">
+            {history.map((entry, i) => (
+              <div key={i} className="history-item">
+                <div className="history-item-main">
+                  <span className="history-filename">{entry.filename}</span>
+                  <span className="history-details">
+                    {entry.size} &middot; {entry.container.toUpperCase()} &middot; {entry.timestamp}
+                  </span>
+                </div>
               </div>
             ))}
           </div>

@@ -276,9 +276,9 @@ try {
                 move_uploaded_file($_FILES['file']['tmp_name'], $uploadPath);
                 $inputPath = $uploadPath;
             }
-            $tmpDir = dirname(__DIR__) . '/uploads/ffmpeg_temp';
-            if (!is_dir($tmpDir)) @mkdir($tmpDir, 0777, true);
-            FFmpegService::split($inputPath, $segments, $tmpDir);
+            $outDir = dirname(__DIR__) . '/uploads/ffmpeg_output';
+            if (!is_dir($outDir)) @mkdir($outDir, 0777, true);
+            FFmpegService::split($inputPath, $segments, $outDir);
             exit;
 
         // -- crawler presets
