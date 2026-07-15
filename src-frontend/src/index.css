@@ -7589,6 +7589,230 @@ body.mini-player-dragging * {
   cursor: default;
 }
 
+/* ---- Target Size ---- */
+.target-size-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.input-suffix {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.btn-calculate-size {
+  padding: 5px 14px;
+  border: 1px solid var(--accent-color);
+  border-radius: 6px;
+  background: var(--accent-color);
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  transition: opacity 0.12s;
+}
+
+.btn-calculate-size:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.target-size-result {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: rgba(99,102,241,0.06);
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 8px;
+}
+
+.tsr-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 0;
+  font-size: 13px;
+}
+
+.tsr-label {
+  color: var(--text-secondary);
+}
+
+.tsr-value {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+}
+
+.tsr-crf {
+  color: var(--accent-color);
+  font-size: 16px;
+}
+
+.tsr-hint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.tsr-hint strong {
+  color: var(--accent-color);
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+}
+
+/* ---- Scene Detection ---- */
+.scene-detect-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-detect-scenes {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.btn-detect-scenes:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.btn-detect-scenes:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.scene-count {
+  font-size: 12px;
+  color: var(--accent-color);
+  font-weight: 500;
+}
+
+.scene-count.none {
+  color: var(--text-secondary);
+}
+
+.scene-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 4px;
+  margin-top: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.scene-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.03);
+  font-size: 12px;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  color: var(--text-primary);
+}
+
+.scene-idx {
+  color: var(--text-secondary);
+  min-width: 20px;
+}
+
+.scene-time {
+  flex: 1;
+}
+
+.scene-copy-btn {
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 3px;
+  opacity: 0;
+  transition: all 0.1s;
+}
+
+.scene-item:hover .scene-copy-btn {
+  opacity: 1;
+}
+
+.scene-copy-btn:hover {
+  color: var(--accent-color);
+  background: rgba(99,102,241,0.1);
+}
+
+.scene-more {
+  grid-column: 1 / -1;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-secondary);
+  padding: 6px;
+}
+
+/* ---- Comparison Table ---- */
+.comparison-table-wrap {
+  margin-top: 16px;
+  width: 100%;
+}
+
+.comparison-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.comparison-table th {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 2px solid var(--border-color);
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.comparison-table th:first-child {
+  width: 30%;
+}
+
+.comparison-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.comparison-table tr:last-child td {
+  border-bottom: none;
+}
+
+.cmp-label {
+  color: var(--text-secondary) !important;
+  font-weight: 500;
+}
+
 /* ---- Visual Filters ---- */
 .vf-subheading {
   display: flex;

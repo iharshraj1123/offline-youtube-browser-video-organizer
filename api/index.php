@@ -230,6 +230,15 @@ try {
             FFmpegService::cleanup();
             echo json_encode(['success' => true]);
             exit;
+        case 'ffmpeg_analyze':
+            $inputPath = $_POST['path'] ?? '';
+            $type = $_POST['type'] ?? 'scenes';
+            if (empty($inputPath)) {
+                echo json_encode(['error' => 'No file provided']);
+                exit;
+            }
+            echo json_encode(FFmpegService::analyze($inputPath, $type));
+            exit;
 
         // -- crawler presets
         case 'get_presets':

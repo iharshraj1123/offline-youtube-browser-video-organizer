@@ -231,6 +231,32 @@ class FFmpegService {
         return $result;
     }
 
+    public static function analyze($inputPath, $type) {
+        $ffmpegPath = self::getFFmpegPath();
+        if (!$ffmpegPath) return ['error' => 'FFmpeg not found'];
+
+        if ($type === 'scenes') {
+            $tempLink = self::getTempHardlink($inputPath);
+            $probePath = $tempLink ? $tempLink : $inputPath;
+            $cmd = $ffmpegPath . ' -i ' . escapeshellarg($probePath) . ' -vf "select=gt(scene\\,0.4),showinfo" -f null - 2>&1';
+            exec($cmd, $out, $code);
+            if ($tempLink && file_exists($tempLink)) @unlink($tempLink);
+
+            $scenes = [];
+            foreach ($out as $line) {
+                if (preg_match('/pts_time:([\d\.]+)/', $line, $m)) {
+                    $t = floatval($m[1]);
+                    if ($t > 0) $scenes[] = ['timestamp' => $t, 'time' => gmdate('H:i:s', floor($t))];
+                }
+            }
+
+            $scenes = array_slice($scenes, 0, 100);
+            return ['scenes' => $scenes];
+        }
+
+        return ['error' => 'Unknown analysis type'];
+    }
+
     public static function cleanup() {
         $tmpDir = dirname(__DIR__) . '/uploads/ffmpeg_temp';
         if (!is_dir($tmpDir)) return;

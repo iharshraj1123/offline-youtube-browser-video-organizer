@@ -4,7 +4,8 @@ import {
   RefreshCw, Download, Folder, Clock, Video, Music, Film,
   Settings, HelpCircle, Play, Image, Disc, Radio, Timer, Subtitles,
   Scissors, Copy, Check, Save, Trash2, List, FileUp,
-  Palette, Gauge, RotateCw, FlipHorizontal, FlipVertical, Type, Sun
+  Palette, Gauge, RotateCw, FlipHorizontal, FlipVertical, Type, Sun,
+  BarChart3
 } from 'lucide-react';
 
 function formatBytes(bytes) {
@@ -381,6 +382,10 @@ export function ConverterView() {
   const [showSavePreset, setShowSavePreset] = React.useState(false);
   const [watermarkImageFile, setWatermarkImageFile] = React.useState(null);
   const watermarkInputRef = useRef(null);
+  const [targetSize, setTargetSize] = React.useState('');
+  const [targetSizeResult, setTargetSizeResult] = React.useState(null);
+  const [scenes, setScenes] = React.useState(null);
+  const [analyzingScenes, setAnalyzingScenes] = React.useState(false);
 
   const { ffmpegStatus, filePath, selectedFile, mediaInfo, loadingInfo, fileError, settings, converting, convertProgress, convertTime, convertFps, convertSpeed, convertBitrate, convertEta, convertStatus, convertLog, convertDone, queue } = state;
 
@@ -662,12 +667,69 @@ export function ConverterView() {
   const handleReset = async () => {
     await cleanupTemp();
     setWatermarkImageFile(null);
+    setTargetSize('');
+    setTargetSizeResult(null);
+    setScenes(null);
     dispatch({ type: 'SET_FILE', payload: null });
     dispatch({ type: 'SET_MEDIA_INFO', payload: null });
     dispatch({ type: 'SET_FILE_PATH', payload: '' });
     dispatch({ type: 'SET_FILE_ERROR', payload: '' });
     dispatch({ type: 'SET_CONVERT_DONE', payload: null });
     dispatch({ type: 'UPDATE_PROGRESS', payload: { convertProgress: 0, convertStatus: '' } });
+  };
+
+  const calculateTargetSize = () => {
+    const mb = parseFloat(targetSize);
+    if (!mb || mb <= 0 || !mediaInfo?.duration) {
+      setTargetSizeResult(null);
+      return;
+    }
+    const durationSec = mediaInfo.duration;
+    const totalBits = mb * 1024 * 1024 * 8;
+    const audioBitrate = settings.audioCodec !== 'copy' && settings.audioBitrate !== 'auto'
+      ? parseInt(settings.audioBitrate) * 1000 : 128000;
+    const videoBits = totalBits - (audioBitrate * durationSec);
+    const videoBitrateBps = Math.max(videoBits / durationSec, 32000);
+    const videoKbps = Math.round(videoBitrateBps / 1000);
+
+    let suggestedCrf = 28;
+    if (videoKbps >= 8000) suggestedCrf = 18;
+    else if (videoKbps >= 4000) suggestedCrf = 23;
+    else if (videoKbps >= 2000) suggestedCrf = 28;
+    else if (videoKbps >= 1000) suggestedCrf = 32;
+    else suggestedCrf = 35;
+
+    setTargetSizeResult({
+      targetMB: mb,
+      videoBitrateKbps: videoKbps,
+      suggestedCrf,
+      estimatedAudioSize: Math.round(audioBitrate * durationSec / 8 / 1024 / 1024 * 10) / 10,
+    });
+  };
+
+  const detectScenes = async () => {
+    if (!mediaInfo && !selectedFile && !filePath) return;
+    setAnalyzingScenes(true);
+    try {
+      let path = filePath;
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('path', selectedFile.name);
+        const res = await fetch('./api/index.php?action=ffmpeg_info', { method: 'POST', body: formData });
+        const data = await res.json();
+        path = data._temp_cleanup || selectedFile.name;
+      }
+      if (path) {
+        const fd = new FormData();
+        fd.append('path', path);
+        fd.append('type', 'scenes');
+        const res = await fetch('./api/index.php?action=ffmpeg_analyze', { method: 'POST', body: fd });
+        const data = await res.json();
+        setScenes(data.scenes || []);
+      }
+    } catch {}
+    setAnalyzingScenes(false);
   };
 
   const hasEncoder = (name) => {
@@ -1301,6 +1363,69 @@ export function ConverterView() {
             )}
           </ToggleSection>
 
+          {/* Target Size */}
+          <ToggleSection icon={BarChart3} title="Target File Size" description="Calculate the required bitrate to hit a specific output file size.">
+            <OptionRow label="Target Size (MB)" tooltip="Enter your desired output file size in megabytes." description="Desired output size">
+              <div className="target-size-group">
+                <input type="number" className="input-inline" value={targetSize}
+                  onChange={(e) => setTargetSize(e.target.value)} min="1" max="99999" placeholder="e.g. 100" style={{ width: '100px' }} />
+                <span className="input-suffix">MB</span>
+                <button className="btn-calculate-size" onClick={calculateTargetSize} disabled={!targetSize || !mediaInfo?.duration}>
+                  Calculate
+                </button>
+              </div>
+            </OptionRow>
+            {targetSizeResult && (
+              <div className="target-size-result">
+                <div className="tsr-row">
+                  <span className="tsr-label">Required video bitrate:</span>
+                  <span className="tsr-value">{targetSizeResult.videoBitrateKbps.toLocaleString()} kb/s</span>
+                </div>
+                <div className="tsr-row">
+                  <span className="tsr-label">Suggested CRF:</span>
+                  <span className="tsr-value tsr-crf">{targetSizeResult.suggestedCrf}</span>
+                </div>
+                <div className="tsr-row">
+                  <span className="tsr-label">Estimated audio size:</span>
+                  <span className="tsr-value">~{targetSizeResult.estimatedAudioSize} MB</span>
+                </div>
+                <p className="tsr-hint">
+                  Set Video Bitrate to <strong>{targetSizeResult.videoBitrateKbps}k</strong> or CRF to <strong>{targetSizeResult.suggestedCrf}</strong> and enable 2-Pass for best results.
+                </p>
+              </div>
+            )}
+          </ToggleSection>
+
+          {/* Scene Detection */}
+          <ToggleSection icon={Sun} title="Scene Detection" description="Detect scene changes (chapter points) in your video using FFmpeg.">
+            <OptionRow label="Scene Threshold" description="Sensitivity (0.1 = few scenes, 0.6 = many scenes)" fullWidth>
+              <div className="scene-detect-area">
+                <button className="btn-detect-scenes" onClick={detectScenes} disabled={analyzingScenes}>
+                  {analyzingScenes ? <><Loader2 size={14} className="spin" /> Analyzing...</> : <>Detect Scenes</>}
+                </button>
+                {scenes && scenes.length > 0 && (
+                  <span className="scene-count">{scenes.length} scene{scenes.length !== 1 ? 's' : ''} found</span>
+                )}
+                {scenes && scenes.length === 0 && (
+                  <span className="scene-count none">No scene changes detected</span>
+                )}
+              </div>
+            </OptionRow>
+            {scenes && scenes.length > 0 && (
+              <div className="scene-list">
+                {scenes.slice(0, 30).map((s, i) => (
+                  <div key={i} className="scene-item">
+                    <span className="scene-idx">#{i + 1}</span>
+                    <span className="scene-time">{s.time}</span>
+                    <button className="scene-copy-btn" onClick={() => navigator.clipboard.writeText(`-ss ${s.time}`)}
+                      title="Copy -ss timestamp"><Copy size={11} /></button>
+                  </div>
+                ))}
+                {scenes.length > 30 && <div className="scene-more">...and {scenes.length - 30} more</div>}
+              </div>
+            )}
+          </ToggleSection>
+
           {/* Trim & Crop */}
           <ToggleSection icon={Scissors} title="Trim & Crop" description="Cut a segment and/or crop the video frame.">
             <OptionRow label="Start Time" tooltip="Start trimming from this time. Format: HH:MM:SS or seconds." description="Where to begin">
@@ -1448,6 +1573,55 @@ export function ConverterView() {
           <h3>Conversion Complete!</h3>
           <p className="done-filename">{convertDone.filename}</p>
           <p className="done-size">{convertDone.size_formatted}</p>
+
+          {/* Original vs Output comparison */}
+          {mediaInfo && (
+            <div className="comparison-table-wrap">
+              <h4 className="comparison-title"><BarChart3 size={16} /> Original vs Output</h4>
+              <table className="comparison-table">
+                <thead>
+                  <tr><th></th><th>Original</th><th>Output</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="cmp-label">Size</td>
+                    <td>{formatBytes(mediaInfo.size)}</td>
+                    <td>{convertDone.size_formatted}</td>
+                  </tr>
+                  <tr>
+                    <td className="cmp-label">Bitrate</td>
+                    <td>{formatBitrate(mediaInfo.bit_rate)}</td>
+                    <td>{convertBitrate || '-'}</td>
+                  </tr>
+                  <tr>
+                    <td className="cmp-label">Format</td>
+                    <td>{mediaInfo.format_name?.toUpperCase()}</td>
+                    <td>{settings.container.toUpperCase()}</td>
+                  </tr>
+                  {videoStreams[0] && (
+                    <tr>
+                      <td className="cmp-label">Video</td>
+                      <td>{videoStreams[0].codec} {videoStreams[0].width}x{videoStreams[0].height}</td>
+                      <td>{settings.videoCodec !== 'copy' ? settings.videoCodec.toUpperCase() : videoStreams[0].codec} {settings.resolution !== 'original' ? settings.resolution + 'p' : videoStreams[0].width + 'x' + videoStreams[0].height}</td>
+                    </tr>
+                  )}
+                  {audioStreams[0] && (
+                    <tr>
+                      <td className="cmp-label">Audio</td>
+                      <td>{audioStreams[0].codec} {formatBitrate(audioStreams[0].bitrate)}</td>
+                      <td>{settings.audioCodec !== 'copy' ? settings.audioCodec.toUpperCase() : audioStreams[0].codec}</td>
+                    </tr>
+                  )}
+                  <tr>
+                    <td className="cmp-label">Duration</td>
+                    <td>{formatDuration(mediaInfo.duration)}</td>
+                    <td>{convertTime || formatDuration(mediaInfo.duration)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+
           <div className="done-actions">
             <button className="btn-download-file" onClick={() => handleDownload(convertDone.download_token, convertDone.filename)}>
               <Download size={18} /> Download File
