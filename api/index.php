@@ -214,6 +214,9 @@ try {
             break;
 
         // ---- FFmpeg Converter ----
+        case 'ffmpeg_get_fonts': // <-- ADD THIS CASE
+            handleGetFonts();
+            break;
         case 'ffmpeg_verify':
             handleFfmpegVerify();
             break;
@@ -4351,5 +4354,27 @@ function handleDeletePreset($pdo) {
     $stmt->execute([':id' => $id]);
 
     echo json_encode(['success' => true]);
+    exit;
+}
+
+function handleGetFonts() {
+    $fontsDir = __DIR__ . '/../uploads/fonts';
+    if (!file_exists($fontsDir)) {
+        echo json_encode(['fonts' => []]);
+        exit;
+    }
+    
+    $files = scandir($fontsDir);
+    $fonts = [];
+    foreach ($files as $file) {
+        if ($file === '.' || $file === '..') continue;
+        $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+        // Only grab valid font files
+        if (in_array($ext, ['ttf', 'otf'])) {
+            $fonts[] = $file;
+        }
+    }
+    
+    echo json_encode(['fonts' => array_values($fonts)]);
     exit;
 }

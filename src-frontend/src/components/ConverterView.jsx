@@ -200,22 +200,38 @@ const HW_ACCELS = [
 ];
 
 const QUICK_PRESETS = {
-  'default': { label: 'Default Settings',
-    settings: { container: 'mp4', videoCodec: 'copy', audioCodec: 'copy', crf: 23, videoBitrate: 'auto', resolution: 'original', framerate: 'original', preset: 'medium', tune: '', profile: '', pixFmt: '', audioBitrate: 'auto', sampleRate: 'original', channels: 'original', volume: '0', startTime: '', duration: '', cropW: '', cropH: '', cropX: '', cropY: '', subtitleMode: 'none', subtitleStream: 0, deinterlace: false, hwaccel: 'none', twoPass: false, threads: '0', metadataPreserve: true, customArgs: '' } },
-  'web_h264': { label: 'Web (H.264)',
-    settings: { container: 'mp4', videoCodec: 'h264', audioCodec: 'aac', crf: 23, videoBitrate: 'auto', resolution: '1080', framerate: 'original', preset: 'medium', tune: '', profile: 'high', pixFmt: 'yuv420p', audioBitrate: '128k', sampleRate: '44100', channels: 'stereo', volume: '0', startTime: '', duration: '', cropW: '', cropH: '', cropX: '', cropY: '', subtitleMode: 'none', subtitleStream: 0, deinterlace: false, hwaccel: 'none', twoPass: false, threads: '0', metadataPreserve: true, customArgs: '' } },
-  'web_h265': { label: 'Web (H.265/HEVC)',
-    settings: { container: 'mp4', videoCodec: 'h265', audioCodec: 'aac', crf: 28, videoBitrate: 'auto', resolution: '1080', framerate: 'original', preset: 'medium', tune: '', profile: 'main', pixFmt: 'yuv420p', audioBitrate: '128k', sampleRate: '44100', channels: 'stereo', volume: '0', startTime: '', duration: '', cropW: '', cropH: '', cropX: '', cropY: '', subtitleMode: 'none', subtitleStream: 0, deinterlace: false, hwaccel: 'none', twoPass: false, threads: '0', metadataPreserve: true, customArgs: '' } },
-  'compatible': { label: 'Max Compatibility',
-    settings: { container: 'mp4', videoCodec: 'h264', audioCodec: 'aac', crf: 23, videoBitrate: 'auto', resolution: '720', framerate: '30', preset: 'medium', tune: '', profile: 'baseline', pixFmt: 'yuv420p', audioBitrate: '128k', sampleRate: '44100', channels: 'stereo', volume: '0', startTime: '', duration: '', cropW: '', cropH: '', cropX: '', cropY: '', subtitleMode: 'none', subtitleStream: 0, deinterlace: false, hwaccel: 'none', twoPass: false, threads: '0', metadataPreserve: true, customArgs: '' } },
-  'youtube': { label: 'YouTube Ready',
-    settings: { container: 'mp4', videoCodec: 'h264', audioCodec: 'aac', crf: 23, videoBitrate: 'auto', resolution: '1080', framerate: 'original', preset: 'slow', tune: 'film', profile: 'high', pixFmt: 'yuv420p', audioBitrate: '192k', sampleRate: '48000', channels: 'stereo', volume: '0', startTime: '', duration: '', cropW: '', cropH: '', cropX: '', cropY: '', subtitleMode: 'none', subtitleStream: 0, deinterlace: false, hwaccel: 'none', twoPass: false, threads: '0', metadataPreserve: true, customArgs: '' } },
-  'discord': { label: 'Discord/Twitter',
-    settings: { container: 'mp4', videoCodec: 'h264', audioCodec: 'aac', crf: 28, videoBitrate: 'auto', resolution: '720', framerate: '30', preset: 'fast', tune: '', profile: 'main', pixFmt: 'yuv420p', audioBitrate: '128k', sampleRate: '44100', channels: 'stereo', volume: '0', startTime: '', duration: '', cropW: '', cropH: '', cropX: '', cropY: '', subtitleMode: 'none', subtitleStream: 0, deinterlace: false, hwaccel: 'none', twoPass: false, threads: '0', metadataPreserve: true, customArgs: '' } },
-  'small': { label: 'Smallest Size',
-    settings: { container: 'mp4', videoCodec: 'h265', audioCodec: 'aac', crf: 35, videoBitrate: 'auto', resolution: '480', framerate: '24', preset: 'veryslow', tune: '', profile: 'main', pixFmt: 'yuv420p', audioBitrate: '64k', sampleRate: '22050', channels: 'mono', volume: '0', startTime: '', duration: '', cropW: '', cropH: '', cropX: '', cropY: '', subtitleMode: 'none', subtitleStream: 0, deinterlace: false, hwaccel: 'none', twoPass: false, threads: '0', metadataPreserve: true, customArgs: '' } },
-  'audio': { label: 'Audio Only (MP3)',
-    settings: { container: 'mp3', videoCodec: 'copy', audioCodec: 'mp3', crf: 23, videoBitrate: 'auto', resolution: 'original', framerate: 'original', preset: 'medium', tune: '', profile: '', pixFmt: '', audioBitrate: '192k', sampleRate: '44100', channels: 'stereo', volume: '0', startTime: '', duration: '', cropW: '', cropH: '', cropX: '', cropY: '', subtitleMode: 'none', subtitleStream: 0, deinterlace: false, hwaccel: 'none', twoPass: false, threads: '0', metadataPreserve: true, customArgs: '' } },
+  'default': {
+    label: 'Default Settings',
+    settings: { container: 'mp4', videoCodec: 'copy', audioCodec: 'copy', crf: 23, videoBitrate: 'auto', resolution: 'original', framerate: 'original', preset: 'medium', tune: '', profile: '', pixFmt: '', audioBitrate: 'auto', sampleRate: 'original', channels: 'original', volume: '0', startTime: '', duration: '', cropW: '', cropH: '', cropX: '', cropY: '', subtitleMode: 'none', subtitleStream: 0, deinterlace: false, hwaccel: 'none', twoPass: false, threads: '0', metadataPreserve: true, customArgs: '' }
+  },
+  'web_h264': {
+    label: 'Web (H.264)',
+    settings: { container: 'mp4', videoCodec: 'h264', audioCodec: 'aac', crf: 23, videoBitrate: 'auto', resolution: '1080', framerate: 'original', preset: 'medium', tune: '', profile: 'high', pixFmt: 'yuv420p', audioBitrate: '128k', sampleRate: '44100', channels: 'stereo', volume: '0', startTime: '', duration: '', cropW: '', cropH: '', cropX: '', cropY: '', subtitleMode: 'none', subtitleStream: 0, deinterlace: false, hwaccel: 'none', twoPass: false, threads: '0', metadataPreserve: true, customArgs: '' }
+  },
+  'web_h265': {
+    label: 'Web (H.265/HEVC)',
+    settings: { container: 'mp4', videoCodec: 'h265', audioCodec: 'aac', crf: 28, videoBitrate: 'auto', resolution: '1080', framerate: 'original', preset: 'medium', tune: '', profile: 'main', pixFmt: 'yuv420p', audioBitrate: '128k', sampleRate: '44100', channels: 'stereo', volume: '0', startTime: '', duration: '', cropW: '', cropH: '', cropX: '', cropY: '', subtitleMode: 'none', subtitleStream: 0, deinterlace: false, hwaccel: 'none', twoPass: false, threads: '0', metadataPreserve: true, customArgs: '' }
+  },
+  'compatible': {
+    label: 'Max Compatibility',
+    settings: { container: 'mp4', videoCodec: 'h264', audioCodec: 'aac', crf: 23, videoBitrate: 'auto', resolution: '720', framerate: '30', preset: 'medium', tune: '', profile: 'baseline', pixFmt: 'yuv420p', audioBitrate: '128k', sampleRate: '44100', channels: 'stereo', volume: '0', startTime: '', duration: '', cropW: '', cropH: '', cropX: '', cropY: '', subtitleMode: 'none', subtitleStream: 0, deinterlace: false, hwaccel: 'none', twoPass: false, threads: '0', metadataPreserve: true, customArgs: '' }
+  },
+  'youtube': {
+    label: 'YouTube Ready',
+    settings: { container: 'mp4', videoCodec: 'h264', audioCodec: 'aac', crf: 23, videoBitrate: 'auto', resolution: '1080', framerate: 'original', preset: 'slow', tune: 'film', profile: 'high', pixFmt: 'yuv420p', audioBitrate: '192k', sampleRate: '48000', channels: 'stereo', volume: '0', startTime: '', duration: '', cropW: '', cropH: '', cropX: '', cropY: '', subtitleMode: 'none', subtitleStream: 0, deinterlace: false, hwaccel: 'none', twoPass: false, threads: '0', metadataPreserve: true, customArgs: '' }
+  },
+  'discord': {
+    label: 'Discord/Twitter',
+    settings: { container: 'mp4', videoCodec: 'h264', audioCodec: 'aac', crf: 28, videoBitrate: 'auto', resolution: '720', framerate: '30', preset: 'fast', tune: '', profile: 'main', pixFmt: 'yuv420p', audioBitrate: '128k', sampleRate: '44100', channels: 'stereo', volume: '0', startTime: '', duration: '', cropW: '', cropH: '', cropX: '', cropY: '', subtitleMode: 'none', subtitleStream: 0, deinterlace: false, hwaccel: 'none', twoPass: false, threads: '0', metadataPreserve: true, customArgs: '' }
+  },
+  'small': {
+    label: 'Smallest Size',
+    settings: { container: 'mp4', videoCodec: 'h265', audioCodec: 'aac', crf: 35, videoBitrate: 'auto', resolution: '480', framerate: '24', preset: 'veryslow', tune: '', profile: 'main', pixFmt: 'yuv420p', audioBitrate: '64k', sampleRate: '22050', channels: 'mono', volume: '0', startTime: '', duration: '', cropW: '', cropH: '', cropX: '', cropY: '', subtitleMode: 'none', subtitleStream: 0, deinterlace: false, hwaccel: 'none', twoPass: false, threads: '0', metadataPreserve: true, customArgs: '' }
+  },
+  'audio': {
+    label: 'Audio Only (MP3)',
+    settings: { container: 'mp3', videoCodec: 'copy', audioCodec: 'mp3', crf: 23, videoBitrate: 'auto', resolution: 'original', framerate: 'original', preset: 'medium', tune: '', profile: '', pixFmt: '', audioBitrate: '192k', sampleRate: '44100', channels: 'stereo', volume: '0', startTime: '', duration: '', cropW: '', cropH: '', cropX: '', cropY: '', subtitleMode: 'none', subtitleStream: 0, deinterlace: false, hwaccel: 'none', twoPass: false, threads: '0', metadataPreserve: true, customArgs: '' }
+  },
 };
 
 const STORAGE_PRESETS_KEY = 'converter_saved_presets';
@@ -337,7 +353,7 @@ const initialState = {
     colorBrightness: 0, colorContrast: 1, colorSaturation: 1, colorGamma: 1,
     speed: 1, speedMaintainPitch: true,
     rotate: '', hflip: false, vflip: false,
-    watermarkType: 'none', watermarkPosition: 'se', watermarkOpacity: 1,
+    watermarkType: 'none', watermarkPosition: 'center', watermarkOpacity: 1, watermarkFont: '',
     watermarkText: '', watermarkFontSize: 24, watermarkColor: '#ffffff',
     watermarkImage: null,
   },
@@ -395,6 +411,18 @@ function reducer(state, action) {
   }
 }
 
+// Helper to safely map standard codecs to GPU encoders based on selected hardware
+const getSafeEncoder = (codecKey, hwaccel) => {
+  const map = { 'h264': 'libx264', 'h265': 'libx265', 'vp9': 'libvpx-vp9', 'av1': 'libaom-av1', 'mpeg4': 'mpeg4', 'vp8': 'libvpx' };
+
+  if (hwaccel === 'cuda') { map.h264 = 'h264_nvenc'; map.h265 = 'hevc_nvenc'; }
+  if (hwaccel === 'qsv') { map.h264 = 'h264_qsv'; map.h265 = 'hevc_qsv'; }
+  if (hwaccel === 'amf') { map.h264 = 'h264_amf'; map.h265 = 'hevc_amf'; }
+  if (hwaccel === 'videotoolbox') { map.h264 = 'h264_videotoolbox'; map.h265 = 'hevc_videotoolbox'; }
+
+  return map[codecKey] || codecKey;
+};
+
 // ---- Main Component ----
 
 export function ConverterView() {
@@ -424,6 +452,7 @@ export function ConverterView() {
   const [playerTime, setPlayerTime] = React.useState(0);
   const [playerPlaying, setPlayerPlaying] = React.useState(false);
   const playerSeeking = useRef(false);
+  const [availableFonts, setAvailableFonts] = React.useState([]);
 
   const { ffmpegStatus, filePath, selectedFile, mediaInfo, loadingInfo, fileError, settings, converting, convertProgress, convertTime, convertFps, convertSpeed, convertBitrate, convertEta, convertStatus, convertLog, convertDone, queue } = state;
 
@@ -517,7 +546,7 @@ export function ConverterView() {
       try {
         const parsed = JSON.parse(ev.target.result);
         dispatch({ type: 'APPLY_PRESET', payload: parsed });
-      } catch {}
+      } catch { }
     };
     reader.readAsText(file);
     if (presetInputRef.current) presetInputRef.current.value = '';
@@ -581,18 +610,41 @@ export function ConverterView() {
   };
 
   const watermarkPosMap = {
-    nw: { top: '12px', left: '12px' }, ne: { top: '12px', right: '12px' },
-    sw: { bottom: '12px', left: '12px' }, se: { bottom: '12px', right: '12px' },
-    center: { top: '50%', left: '50%', transform: 'translate(-50%,-50%)' },
+    'top-left': { top: '12px', left: '12px' },
+    'top-middle': { top: '12px', left: '50%', transform: 'translateX(-50%)' },
+    'top-right': { top: '12px', right: '12px' },
+    'center': { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' },
+    'bottom-left': { bottom: '12px', left: '12px' },
+    'bottom-middle': { bottom: '12px', left: '50%', transform: 'translateX(-50%)' },
+    'bottom-right': { bottom: '12px', right: '12px' },
   };
 
   // ---- Tab navigation ----
   const [activeTab, setActiveTab] = React.useState('format');
-  const [showAdvanced, setShowAdvanced] = React.useState(false);
+  const [showAdvanced, setShowAdvanced] = React.useState(true);
 
+  // Update your initial useEffect to also fetch the fonts
   useEffect(() => {
     checkFfmpeg();
+    fetchFonts();
   }, []);
+
+  // Add the fetch function
+  const fetchFonts = async () => {
+    try {
+      const res = await fetch('./api/index.php?action=ffmpeg_get_fonts');
+      const data = await res.json();
+      if (data.fonts && data.fonts.length > 0) {
+        setAvailableFonts(data.fonts);
+        // Set the first font as the default if one isn't selected
+        if (!settings.watermarkFont) {
+          dispatch({ type: 'UPDATE_SETTING', payload: { key: 'watermarkFont', value: data.fonts[0] } });
+        }
+      }
+    } catch (e) {
+      console.error("Failed to load fonts", e);
+    }
+  };
 
   const checkFfmpeg = async () => {
     dispatch({ type: 'SET_FFMPEG_STATUS', payload: { ...ffmpegStatus, checking: true } });
@@ -618,7 +670,7 @@ export function ConverterView() {
       try {
         const res = await fetch('./api/index.php?action=ffmpeg_cleanup');
         if (res.ok) return;
-      } catch {}
+      } catch { }
     }
   };
 
@@ -729,6 +781,34 @@ export function ConverterView() {
     }
   };
 
+  // --- DYNAMIC PREVIEW WATERMARK FONT INJECTION ---
+  const currentFontFile = settings.watermarkFont || (availableFonts.length > 0 ? availableFonts[0] : '');
+  const dynamicFontFamilyName = currentFontFile ? currentFontFile.replace(/\.[^/.]+$/, "") : 'sans-serif';
+
+  // 🟢 FIX: Construct a bulletproof absolute URL using the browser's current origin path
+  const parsedPath = window.location.pathname.replace(/\/[^/]*$/, '/'); // Cleans trailing index files to get the folder path
+  const absoluteFontUrl = `${window.location.origin}${parsedPath}uploads/fonts/${currentFontFile}`;
+
+  const fontStylesMarkup = currentFontFile ? (
+    <style>{`
+      @font-face {
+        font-family: '${dynamicFontFamilyName}';
+        src: url('${absoluteFontUrl}') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+      }
+    `}</style>
+  ) : null;
+
+  // Add this calculation inside your component render block right above the preview output
+  const nativeHeight = mediaInfo?.streams?.find(s => s.type === 'video')?.height || 1080;
+  const previewVideoElement = document.querySelector('.video-preview-player'); // or use a React ref if you have one bound to the preview block
+  const visualDisplayHeight = previewVideoElement ? previewVideoElement.clientHeight : 400;
+
+  // Calculate how much the preview player shrinks the video frame
+  const scalingFactor = visualDisplayHeight / nativeHeight;
+  const visualFontSize = Math.round(settings.watermarkFontSize * scalingFactor);
+
   const handleConvert = async () => {
     dispatch({ type: 'SET_CONVERTING', payload: true });
     dispatch({ type: 'UPDATE_PROGRESS', payload: { convertProgress: 0, convertTime: '', convertFps: '', convertSpeed: '', convertBitrate: '', convertEta: '', convertStatus: 'Starting conversion...' } });
@@ -737,15 +817,49 @@ export function ConverterView() {
 
     await cleanupTemp();
 
+    // Check if any visual filters are active
+    const needsVideoEncode =
+      settings.deinterlace ||
+      settings.resolution !== 'original' ||
+      (parseInt(settings.cropW) > 0 && parseInt(settings.cropH) > 0) ||
+      settings.colorBrightness !== 0 ||
+      Math.abs(settings.colorContrast - 1) > 0.01 ||
+      Math.abs(settings.colorSaturation - 1) > 0.01 ||
+      Math.abs(settings.colorGamma - 1) > 0.01 ||
+      settings.rotate !== '' ||
+      settings.hflip || settings.vflip ||
+      settings.speed !== 1 ||
+      (settings.watermarkType === 'text' && settings.watermarkText) ||
+      settings.watermarkType === 'image';
+
+    // Grab the original video codec from the probed streams
+    const originalCodec = mediaInfo?.streams?.find(s => s.type === 'video')?.codec;
+
+    // Force fallback to the original codec, or h264 if we can't figure it out
+    let fallbackCodec = 'h264';
+    if (originalCodec && originalCodec !== 'av1' && originalCodec !== 'vp9') {
+      fallbackCodec = originalCodec;
+    }
+    const finalVideoCodec = (settings.videoCodec === 'copy' && needsVideoEncode) ? fallbackCodec : settings.videoCodec;
+
+    // --- HW ACCEL FIX START ---
+    // Map to hardware encoder (e.g., h264_nvenc) if applicable
+    const finalEncoder = finalVideoCodec === 'copy' ? 'copy' : getSafeEncoder(finalVideoCodec, settings.hwaccel);
+
+    // Disable GPU decoding if using filters on problematic codecs (AV1/VP9) to prevent Code 69
+    const isProblematicCodec = originalCodec === 'av1' || originalCodec === 'vp9';
+    const safeHwAccel = (needsVideoEncode && isProblematicCodec) ? 'none' : settings.hwaccel;
+    // --- HW ACCEL FIX END ---
+
     const options = {
       container: settings.container,
-      video_codec: settings.videoCodec,
+      video_codec: finalEncoder, // <-- Updated to use hardware encoder
       audio_codec: settings.audioCodec,
-      crf: settings.videoCodec !== 'copy' ? settings.crf : '',
-      video_bitrate: (settings.videoCodec !== 'copy' && settings.videoBitrate !== 'auto') ? settings.videoBitrate : '',
+      crf: finalEncoder !== 'copy' ? settings.crf : '',
+      video_bitrate: (finalEncoder !== 'copy' && settings.videoBitrate !== 'auto') ? settings.videoBitrate : '',
       resolution: settings.resolution,
       framerate: settings.framerate,
-      preset: settings.videoCodec !== 'copy' ? settings.preset : '',
+      preset: finalEncoder !== 'copy' ? settings.preset : '',
       tune: settings.tune,
       profile: settings.profile,
       pix_fmt: settings.pixFmt,
@@ -757,7 +871,8 @@ export function ConverterView() {
       duration: settings.duration,
       crop_w: settings.cropW, crop_h: settings.cropH, crop_x: settings.cropX, crop_y: settings.cropY,
       subtitle_mode: settings.subtitleMode, subtitle_stream: settings.subtitleStream,
-      deinterlace: settings.deinterlace, hwaccel: settings.hwaccel,
+      deinterlace: settings.deinterlace,
+      hwaccel: safeHwAccel, // <-- Now safe for AV1/VP9
       two_pass: settings.twoPass, threads: settings.threads,
       metadata_preserve: settings.metadataPreserve, custom_args: settings.customArgs,
       color_brightness: settings.colorBrightness, color_contrast: settings.colorContrast,
@@ -767,6 +882,7 @@ export function ConverterView() {
       watermark_type: settings.watermarkType, watermark_position: settings.watermarkPosition,
       watermark_opacity: settings.watermarkOpacity, watermark_text: settings.watermarkText,
       watermark_font_size: settings.watermarkFontSize, watermark_color: settings.watermarkColor,
+      watermark_font: settings.watermarkFont,
     };
 
     try {
@@ -815,7 +931,7 @@ export function ConverterView() {
                 dispatch({ type: 'UPDATE_PROGRESS', payload: { convertStatus: 'Error: ' + msg.message } });
                 dispatch({ type: 'ADD_LOG', payload: 'ERROR: ' + msg.message });
               }
-            } catch {}
+            } catch { }
           }
         }
       }
@@ -1056,7 +1172,7 @@ export function ConverterView() {
         const data = await res.json();
         setScenes(data.scenes || []);
       }
-    } catch {}
+    } catch { }
     setAnalyzingScenes(false);
   };
 
@@ -1114,11 +1230,11 @@ export function ConverterView() {
               const msg = JSON.parse(line.slice(6));
               if (msg.type === 'done') setConcatDone(msg);
               else if (msg.type === 'error') setConcatDone({ error: msg.message });
-            } catch {}
+            } catch { }
           }
         }
       }
-    } catch {}
+    } catch { }
     setConcatConverting(false);
   };
 
@@ -1178,19 +1294,19 @@ export function ConverterView() {
               if (msg.type === 'segment_done') setSplitResults(prev => [...prev, msg]);
               else if (msg.type === 'segment_error') setSplitResults(prev => [...prev, msg]);
               else if (msg.type === 'done') splitDone();
-            } catch {}
+            } catch { }
           }
         }
       }
-    } catch {}
+    } catch { }
     setSplitConverting(false);
   };
 
-  const splitDone = () => {};
+  const splitDone = () => { };
 
   const hasEncoder = (name) => {
     return ffmpegStatus.video_encoders?.some(e => e.includes(name)) ||
-           ffmpegStatus.audio_encoders?.some(e => e.includes(name));
+      ffmpegStatus.audio_encoders?.some(e => e.includes(name));
   };
 
   const getAvailableVideoCodecs = () => {
@@ -1219,28 +1335,17 @@ export function ConverterView() {
   // ---- Build command preview ----
   const buildCommandPreview = useCallback(() => {
     const s = settings;
-    const inExt = mediaInfo?.format_name || 'file';
-    let cmd = `ffmpeg -y -i input.${inExt}`;
+    // Fix the comma-separated format bug for the preview
+    const rawFmt = mediaInfo?.format_name || 'file';
+    const inExt = rawFmt.split(',')[0];
+
+    // Start building command (we don't add -i yet so we can put -hwaccel before it)
+    let cmd = `ffmpeg -y`;
 
     const vfParts = [];
     const afParts = [];
 
-    if (s.hwaccel && s.hwaccel !== 'none') cmd += ` -hwaccel ${s.hwaccel}`;
-
-    if (s.videoCodec === 'copy') {
-      cmd += ' -c:v copy';
-    } else {
-      const vcMap = { 'h264': 'libx264', 'h265': 'libx265', 'vp9': 'libvpx-vp9', 'av1': 'libaom-av1', 'mpeg4': 'mpeg4', 'vp8': 'libvpx' };
-      cmd += ` -c:v ${vcMap[s.videoCodec] || s.videoCodec}`;
-      if (s.crf !== '') cmd += ` -crf ${s.crf}`;
-      if (s.videoBitrate !== 'auto') cmd += ` -b:v ${s.videoBitrate}`;
-      if (s.framerate !== 'original') cmd += ` -r ${s.framerate}`;
-      if (s.preset) cmd += ` -preset ${s.preset}`;
-      if (s.tune) cmd += ` -tune ${s.tune}`;
-      if (s.profile) cmd += ` -profile:v ${s.profile}`;
-      if (s.pixFmt) cmd += ` -pix_fmt ${s.pixFmt}`;
-    }
-
+    // 1. Build Visual Filters FIRST
     if (s.deinterlace) vfParts.push('yadif');
     if (s.resolution !== 'original') {
       vfParts.push(isNaN(s.resolution) ? `scale=${s.resolution.replace('x', ':')}` : `scale=-1:${s.resolution}`);
@@ -1265,15 +1370,84 @@ export function ConverterView() {
     if (s.speed !== 1) vfParts.push(`setpts=${(1 / s.speed).toFixed(3)}*PTS`);
 
     if (s.watermarkType === 'text' && s.watermarkText) {
-      const pos = { nw: '10:10', ne: 'W-w-10:10', sw: '10:H-h-10', center: '(W-w)/2:(H-h)/2', se: 'W-w-10:H-h-10' }[s.watermarkPosition] || 'W-w-10:10';
-      vfParts.push(`drawtext=text='${s.watermarkText}':fontsize=${s.watermarkFontSize}:fontcolor=${s.watermarkColor}@${s.watermarkOpacity}:${pos}`);
+      const posMap = {
+        'top-left': "x=10:y=10",
+        'top-middle': "x=(w-tw)/2:y=10",
+        'top-right': "x=w-tw-10:y=10",
+        'center': "x=(w-tw)/2:y=(h-th)/2",
+        'bottom-left': "x=10:y=h-th-10",
+        'bottom-middle': "x=(w-tw)/2:y=h-th-10",
+        'bottom-right': "x=w-tw-10:y=h-th-10"
+      }
+      const pos = posMap[s.watermarkPosition] || 'x=(w-tw)/2:y=(h-th)/2';
+
+      let cleanColor = s.watermarkColor || '#ffffff';
+      if (cleanColor.startsWith('#')) {
+        cleanColor = cleanColor.replace('#', '0x');
+        const opacityAlpha = Math.round((parseFloat(s.watermarkOpacity) || 1) * 255);
+        const hexAlpha = opacityAlpha.toString(16).padStart(2, '0').toUpperCase();
+        cleanColor += hexAlpha;
+      }
+
+      // NEW: Grab the selected font and build a placeholder path for the UI preview
+      const fontFile = s.watermarkFont || (availableFonts.length > 0 ? availableFonts[0] : 'arial.ttf');
+      const previewFontPath = `uploads/fonts/${fontFile}`;
+
+      // Insert fontfile parameter into the string
+      vfParts.push(`drawtext=text='${s.watermarkText}':fontfile='${previewFontPath}':fontsize=${s.watermarkFontSize}:fontcolor=${cleanColor}:${pos}`);
     }
-    if (s.watermarkType === 'image') cmd = `ffmpeg -y -i input.${inExt} -i watermark.png`;
+
+    const originalCodec = mediaInfo?.streams?.find(s => s.type === 'video')?.codec;
+
+    // 2. Determine Safe Video Codec & HW Accel Rules
+    const needsVideoEncode = vfParts.length > 0 || (s.watermarkType === 'image');
+    const displayVideoCodec = (s.videoCodec === 'copy' && needsVideoEncode) ? 'h264' : s.videoCodec;
+
+    // NEW: Map to hardware encoder (e.g. h264_nvenc)
+    const finalEncoder = displayVideoCodec === 'copy' ? 'copy' : getSafeEncoder(displayVideoCodec, s.hwaccel);
+
+    // NEW: Disable hardware *decoding* if using CPU filters to avoid Code 69 crash
+    const isProblematicCodec = originalCodec === 'av1' || originalCodec === 'vp9';
+    const safeHwAccel = (needsVideoEncode && isProblematicCodec) ? 'none' : s.hwaccel;
+
+    if (safeHwAccel && safeHwAccel !== 'none') cmd += ` -hwaccel ${safeHwAccel}`;
+
+    // Append Inputs AFTER hwaccel
+    cmd += ` -i input.${inExt}`;
+    if (s.watermarkType === 'image') cmd += ` -i watermark.png`;
+
+    // 3. Append Video Arguments using the new finalEncoder
+    if (finalEncoder === 'copy') {
+      cmd += ' -c:v copy';
+    } else {
+      cmd += ` -c:v ${finalEncoder}`;
+
+      // --- THE NVENC CRF FIX ---
+      if (finalEncoder.includes('nvenc')) {
+        // NVENC uses -cq and requires VBR rate control to act like CRF
+        if (s.crf !== '') cmd += ` -rc vbr -cq ${s.crf} -b:v 0`;
+        // Map standard CPU presets to Nvidia's 'p' presets
+        const nvencPresets = { 'ultrafast': 'p1', 'superfast': 'p2', 'veryfast': 'p3', 'faster': 'p4', 'fast': 'p4', 'medium': 'p4', 'slow': 'p5', 'slower': 'p6', 'veryslow': 'p7' };
+        if (s.preset) cmd += ` -preset ${nvencPresets[s.preset] || 'p4'}`;
+      } else {
+        // Standard CPU CRF behavior
+        if (s.crf !== '') cmd += ` -crf ${s.crf}`;
+        if (s.preset) cmd += ` -preset ${s.preset}`;
+      }
+
+      if (s.videoBitrate !== 'auto') cmd += ` -b:v ${s.videoBitrate}`;
+      if (s.framerate !== 'original') cmd += ` -r ${s.framerate}`;
+      if (s.tune) cmd += ` -tune ${s.tune}`;
+      if (s.profile) cmd += ` -profile:v ${s.profile}`;
+      if (s.pixFmt) cmd += ` -pix_fmt ${s.pixFmt}`;
+    }
 
     if (s.subtitleMode === 'copy') cmd += ' -c:s copy';
 
+    // 4. Append Filters
     if (vfParts.length) cmd += ' -vf "' + vfParts.join(',') + '"';
 
+    // 5. Build Audio
     if (s.audioCodec === 'copy') {
       cmd += ' -c:a copy';
     } else {
@@ -1300,6 +1474,7 @@ export function ConverterView() {
 
     if (afParts.length) cmd += ' -af "' + afParts.join(',') + '"';
 
+    // 6. Append Utilities
     if (s.startTime) cmd += ` -ss ${s.startTime}`;
     if (s.duration) cmd += ` -t ${s.duration}`;
     if (s.twoPass) cmd += ' -pass 2';
@@ -1313,8 +1488,44 @@ export function ConverterView() {
   }, [settings, mediaInfo]);
 
   // ---- Batch queue processing ----
+  // ---- Batch queue processing ----
   const processQueue = async () => {
     await cleanupTemp();
+
+    // 1. Determine safe codec upfront before processing the queue
+    const needsVideoEncode =
+      settings.deinterlace ||
+      settings.resolution !== 'original' ||
+      (parseInt(settings.cropW) > 0 && parseInt(settings.cropH) > 0) ||
+      settings.colorBrightness !== 0 ||
+      Math.abs(settings.colorContrast - 1) > 0.01 ||
+      Math.abs(settings.colorSaturation - 1) > 0.01 ||
+      Math.abs(settings.colorGamma - 1) > 0.01 ||
+      settings.rotate !== '' ||
+      settings.hflip || settings.vflip ||
+      settings.speed !== 1 ||
+      (settings.watermarkType === 'text' && settings.watermarkText) ||
+      settings.watermarkType === 'image';
+
+    // Grab the original video codec from the probed streams
+    const originalCodec = mediaInfo?.streams?.find(s => s.type === 'video')?.codec;
+
+    // Force fallback to the original codec, or h264 if we can't figure it out
+    let fallbackCodec = 'h264';
+    if (originalCodec && originalCodec !== 'av1' && originalCodec !== 'vp9') {
+      fallbackCodec = originalCodec;
+    }
+    const finalVideoCodec = (settings.videoCodec === 'copy' && needsVideoEncode) ? fallbackCodec : settings.videoCodec;
+
+    // --- HW ACCEL FIX START ---
+    // Map to hardware encoder (e.g., h264_nvenc) if applicable
+    const finalEncoder = finalVideoCodec === 'copy' ? 'copy' : getSafeEncoder(finalVideoCodec, settings.hwaccel);
+
+    // Disable GPU decoding if using filters on problematic codecs (AV1/VP9) to prevent Code 69
+    const isProblematicCodec = originalCodec === 'av1' || originalCodec === 'vp9';
+    const safeHwAccel = (needsVideoEncode && isProblematicCodec) ? 'none' : settings.hwaccel;
+    // --- HW ACCEL FIX END ---
+
     for (let i = 0; i < queue.length; i++) {
       const item = queue[i];
       if (item.status === 'done' || item.status === 'error') continue;
@@ -1322,19 +1533,20 @@ export function ConverterView() {
 
       const options = {
         container: settings.container,
-        video_codec: settings.videoCodec,
+        video_codec: finalEncoder, // <-- Updated to use hardware encoder
         audio_codec: settings.audioCodec,
-        crf: settings.videoCodec !== 'copy' ? settings.crf : '',
-        video_bitrate: (settings.videoCodec !== 'copy' && settings.videoBitrate !== 'auto') ? settings.videoBitrate : '',
+        crf: finalEncoder !== 'copy' ? settings.crf : '',
+        video_bitrate: (finalEncoder !== 'copy' && settings.videoBitrate !== 'auto') ? settings.videoBitrate : '',
         resolution: settings.resolution, framerate: settings.framerate,
-        preset: settings.videoCodec !== 'copy' ? settings.preset : '',
+        preset: finalEncoder !== 'copy' ? settings.preset : '',
         tune: settings.tune, profile: settings.profile, pix_fmt: settings.pixFmt,
         audio_bitrate: (settings.audioCodec !== 'copy' && settings.audioBitrate !== 'auto') ? settings.audioBitrate : '',
         sample_rate: settings.sampleRate, channels: settings.channels, volume: settings.volume,
         start_time: settings.startTime, duration: settings.duration,
         crop_w: settings.cropW, crop_h: settings.cropH, crop_x: settings.cropX, crop_y: settings.cropY,
         subtitle_mode: settings.subtitleMode, subtitle_stream: settings.subtitleStream,
-        deinterlace: settings.deinterlace, hwaccel: settings.hwaccel,
+        deinterlace: settings.deinterlace,
+        hwaccel: safeHwAccel, // <-- Now safe for AV1/VP9
         two_pass: settings.twoPass, threads: settings.threads,
         metadata_preserve: settings.metadataPreserve, custom_args: settings.customArgs,
       };
@@ -1367,7 +1579,7 @@ export function ConverterView() {
                 } else if (msg.type === 'error') {
                   dispatch({ type: 'UPDATE_QUEUE_ITEM', payload: { index: i, data: { status: 'error', error: msg.message } } });
                 }
-              } catch {}
+              } catch { }
             }
           }
         }
@@ -1401,79 +1613,79 @@ export function ConverterView() {
           <><AlertCircle size={16} /> FFmpeg not found
             <span className="ffmpeg-install-hint">Install FFmpeg from <a href="https://ffmpeg.org" target="_blank" rel="noopener">ffmpeg.org</a></span>
           </>
-          )}
-          {/* Trim & Crop settings */}
-          {videoSrc && (
-            <div className="trim-crop-bar">
-              <div className="tcb-row">
-                <div className="tcb-field">
-                  <span className="tcb-label">Start</span>
-                  <input type="text" className="tcb-input" value={settings.startTime}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      updateSetting('startTime', v);
-                      const s = parseTimeToSeconds(v);
-                      const d = parseTimeToSeconds(settings.duration);
-                      if (s > 0 && d > 0) {
-                        const maxEnd = trimDuration;
-                        const end = Math.min(s + d, maxEnd);
-                        const newD = end - s;
-                        updateSetting('duration', newD > 0.001 ? secondsToTimeStr(newD) : '');
-                      }
-                    }} placeholder="0:00.000" />
-                </div>
-                <div className="tcb-field">
-                  <span className="tcb-label">End</span>
-                  <input type="text" className="tcb-input" value={(() => {
-                    const s = parseTimeToSeconds(settings.startTime);
+        )}
+        {/* Trim & Crop settings */}
+        {videoSrc && (
+          <div className="trim-crop-bar">
+            <div className="tcb-row">
+              <div className="tcb-field">
+                <span className="tcb-label">Start</span>
+                <input type="text" className="tcb-input" value={settings.startTime}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    updateSetting('startTime', v);
+                    const s = parseTimeToSeconds(v);
                     const d = parseTimeToSeconds(settings.duration);
-                    if (d > 0) return secondsToTimeStr(Math.min(s + d, trimDuration));
-                    return '';
-                  })()}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      const endSec = parseTimeToSeconds(v);
-                      const startSec = parseTimeToSeconds(settings.startTime);
-                      if (endSec > 0 && endSec > startSec) {
-                        const newDur = endSec - startSec;
-                        updateSetting('duration', newDur > 0.001 ? secondsToTimeStr(newDur) : '');
-                      }
-                    }} placeholder="0:00.000" />
-                </div>
-                <div className="tcb-field">
-                  <span className="tcb-label">Dur</span>
-                  <input type="text" className="tcb-input" value={settings.duration}
-                    onChange={(e) => updateSetting('duration', e.target.value)} placeholder="0:05.000" />
-                </div>
-                <button className="tcb-btn" onClick={() => { updateSetting('startTime', ''); updateSetting('duration', ''); }} title="Reset trim"><Trash2 size={12} /></button>
+                    if (s > 0 && d > 0) {
+                      const maxEnd = trimDuration;
+                      const end = Math.min(s + d, maxEnd);
+                      const newD = end - s;
+                      updateSetting('duration', newD > 0.001 ? secondsToTimeStr(newD) : '');
+                    }
+                  }} placeholder="0:00.000" />
               </div>
-              <div className="tcb-row">
-                <div className="tcb-field tcb-crop">
-                  <span className="tcb-label">Crop</span>
-                  <input type="number" className="tcb-input-sm" value={settings.cropW}
-                    onChange={(e) => updateSetting('cropW', e.target.value)} placeholder="W" min="0" />
-                  <span className="tcb-dim">×</span>
-                  <input type="number" className="tcb-input-sm" value={settings.cropH}
-                    onChange={(e) => updateSetting('cropH', e.target.value)} placeholder="H" min="0" />
-                  <span className="tcb-dim">@</span>
-                  <input type="number" className="tcb-input-sm" value={settings.cropX}
-                    onChange={(e) => updateSetting('cropX', e.target.value)} placeholder="X" min="0" />
-                  <input type="number" className="tcb-input-sm" value={settings.cropY}
-                    onChange={(e) => updateSetting('cropY', e.target.value)} placeholder="Y" min="0" />
-                </div>
-                <label className="tcb-toggle" title="Lock aspect ratio when resizing">
-                  <input type="checkbox" checked={cropLockAspect} onChange={(e) => setCropLockAspect(e.target.checked)} />
-                  <span>Lock</span>
-                </label>
-                <label className="tcb-toggle" title="Deinterlace video">
-                  <input type="checkbox" checked={settings.deinterlace} onChange={(e) => updateSetting('deinterlace', e.target.checked)} />
-                  <span>Dei</span>
-                </label>
-                <button className="tcb-btn" onClick={() => { updateSetting('cropW', ''); updateSetting('cropH', ''); updateSetting('cropX', ''); updateSetting('cropY', ''); }} title="Reset crop"><Trash2 size={12} /></button>
+              <div className="tcb-field">
+                <span className="tcb-label">End</span>
+                <input type="text" className="tcb-input" value={(() => {
+                  const s = parseTimeToSeconds(settings.startTime);
+                  const d = parseTimeToSeconds(settings.duration);
+                  if (d > 0) return secondsToTimeStr(Math.min(s + d, trimDuration));
+                  return '';
+                })()}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    const endSec = parseTimeToSeconds(v);
+                    const startSec = parseTimeToSeconds(settings.startTime);
+                    if (endSec > 0 && endSec > startSec) {
+                      const newDur = endSec - startSec;
+                      updateSetting('duration', newDur > 0.001 ? secondsToTimeStr(newDur) : '');
+                    }
+                  }} placeholder="0:00.000" />
               </div>
+              <div className="tcb-field">
+                <span className="tcb-label">Dur</span>
+                <input type="text" className="tcb-input" value={settings.duration}
+                  onChange={(e) => updateSetting('duration', e.target.value)} placeholder="0:05.000" />
+              </div>
+              <button className="tcb-btn" onClick={() => { updateSetting('startTime', ''); updateSetting('duration', ''); }} title="Reset trim"><Trash2 size={12} /></button>
             </div>
-          )}
-        </div>
+            <div className="tcb-row">
+              <div className="tcb-field tcb-crop">
+                <span className="tcb-label">Crop</span>
+                <input type="number" className="tcb-input-sm" value={settings.cropW}
+                  onChange={(e) => updateSetting('cropW', e.target.value)} placeholder="W" min="0" />
+                <span className="tcb-dim">×</span>
+                <input type="number" className="tcb-input-sm" value={settings.cropH}
+                  onChange={(e) => updateSetting('cropH', e.target.value)} placeholder="H" min="0" />
+                <span className="tcb-dim">@</span>
+                <input type="number" className="tcb-input-sm" value={settings.cropX}
+                  onChange={(e) => updateSetting('cropX', e.target.value)} placeholder="X" min="0" />
+                <input type="number" className="tcb-input-sm" value={settings.cropY}
+                  onChange={(e) => updateSetting('cropY', e.target.value)} placeholder="Y" min="0" />
+              </div>
+              <label className="tcb-toggle" title="Lock aspect ratio when resizing">
+                <input type="checkbox" checked={cropLockAspect} onChange={(e) => setCropLockAspect(e.target.checked)} />
+                <span>Lock</span>
+              </label>
+              <label className="tcb-toggle" title="Deinterlace video">
+                <input type="checkbox" checked={settings.deinterlace} onChange={(e) => updateSetting('deinterlace', e.target.checked)} />
+                <span>Dei</span>
+              </label>
+              <button className="tcb-btn" onClick={() => { updateSetting('cropW', ''); updateSetting('cropH', ''); updateSetting('cropX', ''); updateSetting('cropY', ''); }} title="Reset crop"><Trash2 size={12} /></button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* File Selection */}
       {!mediaInfo && !loadingInfo && !fileError && (
@@ -1497,9 +1709,9 @@ export function ConverterView() {
             <button className="btn-fetch" onClick={handlePathSubmit} disabled={!filePath.trim()}>
               <FileVideo size={16} /> Load File
             </button>
-            </div>
           </div>
-        )}
+        </div>
+      )}
 
       {/* Loading */}
       {loadingInfo && (
@@ -1563,69 +1775,81 @@ export function ConverterView() {
         <div className="preview-section">
           <div className="preview-inner">
             <div className="preview-player-wrap">
-            {videoSrc ? (
-              <>
-                <video ref={videoRef} className="preview-video" src={videoSrc}
-                  onClick={() => { const v = videoRef.current; if (!v) return; if (v.paused) v.play(); else v.pause(); }}
-                  onTimeUpdate={() => { if (!playerSeeking.current) setPlayerTime(videoRef.current?.currentTime || 0); }}
-                  onPlay={() => setPlayerPlaying(true)} onPause={() => setPlayerPlaying(false)}
-                  onLoadedMetadata={() => { setPlayerTime(0); setPlayerPlaying(false); }}
-                  style={getPreviewStyle()}>
-                  Your browser does not support video playback.
-                </video>
-                {settings.watermarkType === 'text' && settings.watermarkText && (
-                  <div className="preview-watermark" style={{ ...watermarkPosMap[settings.watermarkPosition] || watermarkPosMap.se, opacity: settings.watermarkOpacity, color: settings.watermarkColor, fontSize: `${settings.watermarkFontSize}px` }}>
-                    {settings.watermarkText}
-                  </div>
-                )}
-                {videoSrc && (() => {
-                  const rect = videoRef.current?.getBoundingClientRect();
-                  const vw = videoRef.current?.videoWidth || rect?.width || 1;
-                  const vh = videoRef.current?.videoHeight || rect?.height || 1;
-                  const dw = rect?.width || 320;
-                  const dh = rect?.height || 240;
-                  const hasCrop = parseInt(settings.cropW) > 0 && parseInt(settings.cropH) > 0;
-                  const cx = hasCrop ? (parseInt(settings.cropX) || 0) / vw * 100 : 0;
-                  const cy = hasCrop ? (parseInt(settings.cropY) || 0) / vh * 100 : 0;
-                  const cw = hasCrop ? (parseInt(settings.cropW) || 0) / vw * 100 : 100;
-                  const ch = hasCrop ? (parseInt(settings.cropH) || 0) / vh * 100 : 100;
-                  const cxEnd = cx + cw;
-                  const cyEnd = cy + ch;
-                  return (
-                    <div className="crop-overlay" style={{ zIndex: 5 }}>
-                      {hasCrop && (
-                        <>
-                          <div className="crop-mask" style={{ top: '0', left: '0', right: '0', height: `${cy}%` }} />
-                          <div className="crop-mask" style={{ top: `${cyEnd}%`, left: '0', right: '0', bottom: '0' }} />
-                          <div className="crop-mask" style={{ top: `${cy}%`, left: '0', width: `${cx}%`, height: `${ch}%` }} />
-                          <div className="crop-mask" style={{ top: `${cy}%`, right: '0', width: `${100 - cxEnd}%`, height: `${ch}%` }} />
-                          <div className="crop-stats">{Math.round(parseInt(settings.cropW) || 0)}×{Math.round(parseInt(settings.cropH) || 0)} · ({parseInt(settings.cropX) || 0},{parseInt(settings.cropY) || 0}) · {(() => {
-                            const w = parseInt(settings.cropW) || 1;
-                            const h = parseInt(settings.cropH) || 1;
-                            const g = (a, b) => b ? g(b, a % b) : a;
-                            const d = g(w, h);
-                            return `${w / d}:${h / d}`;
-                          })()}</div>
-                        </>
-                      )}
-                      {hasCrop && (
-                        <div className="crop-hole" style={{ left: `${cx}%`, top: `${cy}%`, width: `${cw}%`, height: `${ch}%` }} onMouseDown={(e) => { e.stopPropagation(); handleCropMouseDown(e, 'move'); }} />
-                      )}
-                      <div className={`crop-border${hasCrop ? '' : ' crop-border-inert'}`} style={{ left: `${cx}%`, top: `${cy}%`, width: `${cw}%`, height: `${ch}%` }} />
-                      <div className="crop-handle" style={{ cursor: 'nw-resize', left: `${cx}%`, top: `${cy}%` }} onMouseDown={(e) => { e.stopPropagation(); handleCropMouseDown(e, 'nw'); }} />
-                      <div className="crop-handle" style={{ cursor: 'ne-resize', left: `${cxEnd}%`, top: `${cy}%` }} onMouseDown={(e) => { e.stopPropagation(); handleCropMouseDown(e, 'ne'); }} />
-                      <div className="crop-handle" style={{ cursor: 'sw-resize', left: `${cx}%`, top: `${cyEnd}%` }} onMouseDown={(e) => { e.stopPropagation(); handleCropMouseDown(e, 'sw'); }} />
-                      <div className="crop-handle" style={{ cursor: 'se-resize', left: `${cxEnd}%`, top: `${cyEnd}%` }} onMouseDown={(e) => { e.stopPropagation(); handleCropMouseDown(e, 'se'); }} />
+              {videoSrc ? (
+                <>
+                  <video ref={videoRef} className="preview-video" src={videoSrc}
+                    onClick={() => { const v = videoRef.current; if (!v) return; if (v.paused) v.play(); else v.pause(); }}
+                    onTimeUpdate={() => { if (!playerSeeking.current) setPlayerTime(videoRef.current?.currentTime || 0); }}
+                    onPlay={() => setPlayerPlaying(true)} onPause={() => setPlayerPlaying(false)}
+                    onLoadedMetadata={() => { setPlayerTime(0); setPlayerPlaying(false); }}
+                    style={getPreviewStyle()}>
+                    Your browser does not support video playback.
+                  </video>
+                  {/* Include our runtime style wrapper injection right above the watermark */}
+                  {fontStylesMarkup}
+
+                  {settings.watermarkType === 'text' && settings.watermarkText && (
+                    <div
+                      className="preview-watermark"
+                      style={{
+                        ...watermarkPosMap[settings.watermarkPosition] || watermarkPosMap.se,
+                        opacity: settings.watermarkOpacity,
+                        color: settings.watermarkColor,
+                        fontSize: `${visualFontSize}px`,
+                        fontFamily: `'${dynamicFontFamilyName}', sans-serif` // 🟢 Added this line
+                      }}
+                    >
+                      {settings.watermarkText}
                     </div>
-                  );
-                })()}
-              </>
-            ) : (
-              <div className="preview-placeholder">
-                <FileVideo size={32} />
-                <span>{mediaInfo.filename}</span>
-              </div>
-            )}
+                  )}
+                  {videoSrc && (() => {
+                    const rect = videoRef.current?.getBoundingClientRect();
+                    const vw = videoRef.current?.videoWidth || rect?.width || 1;
+                    const vh = videoRef.current?.videoHeight || rect?.height || 1;
+                    const dw = rect?.width || 320;
+                    const dh = rect?.height || 240;
+                    const hasCrop = parseInt(settings.cropW) > 0 && parseInt(settings.cropH) > 0;
+                    const cx = hasCrop ? (parseInt(settings.cropX) || 0) / vw * 100 : 0;
+                    const cy = hasCrop ? (parseInt(settings.cropY) || 0) / vh * 100 : 0;
+                    const cw = hasCrop ? (parseInt(settings.cropW) || 0) / vw * 100 : 100;
+                    const ch = hasCrop ? (parseInt(settings.cropH) || 0) / vh * 100 : 100;
+                    const cxEnd = cx + cw;
+                    const cyEnd = cy + ch;
+                    return (
+                      <div className="crop-overlay" style={{ zIndex: 5 }}>
+                        {hasCrop && (
+                          <>
+                            <div className="crop-mask" style={{ top: '0', left: '0', right: '0', height: `${cy}%` }} />
+                            <div className="crop-mask" style={{ top: `${cyEnd}%`, left: '0', right: '0', bottom: '0' }} />
+                            <div className="crop-mask" style={{ top: `${cy}%`, left: '0', width: `${cx}%`, height: `${ch}%` }} />
+                            <div className="crop-mask" style={{ top: `${cy}%`, right: '0', width: `${100 - cxEnd}%`, height: `${ch}%` }} />
+                            <div className="crop-stats">{Math.round(parseInt(settings.cropW) || 0)}×{Math.round(parseInt(settings.cropH) || 0)} · ({parseInt(settings.cropX) || 0},{parseInt(settings.cropY) || 0}) · {(() => {
+                              const w = parseInt(settings.cropW) || 1;
+                              const h = parseInt(settings.cropH) || 1;
+                              const g = (a, b) => b ? g(b, a % b) : a;
+                              const d = g(w, h);
+                              return `${w / d}:${h / d}`;
+                            })()}</div>
+                          </>
+                        )}
+                        {hasCrop && (
+                          <div className="crop-hole" style={{ left: `${cx}%`, top: `${cy}%`, width: `${cw}%`, height: `${ch}%` }} onMouseDown={(e) => { e.stopPropagation(); handleCropMouseDown(e, 'move'); }} />
+                        )}
+                        <div className={`crop-border${hasCrop ? '' : ' crop-border-inert'}`} style={{ left: `${cx}%`, top: `${cy}%`, width: `${cw}%`, height: `${ch}%` }} />
+                        <div className="crop-handle" style={{ cursor: 'nw-resize', left: `${cx}%`, top: `${cy}%` }} onMouseDown={(e) => { e.stopPropagation(); handleCropMouseDown(e, 'nw'); }} />
+                        <div className="crop-handle" style={{ cursor: 'ne-resize', left: `${cxEnd}%`, top: `${cy}%` }} onMouseDown={(e) => { e.stopPropagation(); handleCropMouseDown(e, 'ne'); }} />
+                        <div className="crop-handle" style={{ cursor: 'sw-resize', left: `${cx}%`, top: `${cyEnd}%` }} onMouseDown={(e) => { e.stopPropagation(); handleCropMouseDown(e, 'sw'); }} />
+                        <div className="crop-handle" style={{ cursor: 'se-resize', left: `${cxEnd}%`, top: `${cyEnd}%` }} onMouseDown={(e) => { e.stopPropagation(); handleCropMouseDown(e, 'se'); }} />
+                      </div>
+                    );
+                  })()}
+                </>
+              ) : (
+                <div className="preview-placeholder">
+                  <FileVideo size={32} />
+                  <span>{mediaInfo.filename}</span>
+                </div>
+              )}
             </div>
           </div>
           {/* Custom player controls */}
@@ -1782,9 +2006,6 @@ export function ConverterView() {
         <div className="conversion-options">
           <div className="options-title-row">
             <h3 className="options-title"><Film size={18} /> Format Settings</h3>
-            <button className={`toggle-advanced ${showAdvanced ? 'active' : ''}`} onClick={() => setShowAdvanced(!showAdvanced)}>
-              {showAdvanced ? 'Simple Mode' : 'Advanced Mode'}
-            </button>
           </div>
 
           {/* Output Format */}
@@ -1901,11 +2122,11 @@ export function ConverterView() {
             <Section icon={Image} title="GIF Settings" description="Options specific to animated GIF output." defaultOpen={false}>
               <OptionRow label="Frame Rate" tooltip="Lower FPS = smaller GIF." description="GIF frame rate">
                 <select value={settings.framerate} onChange={(e) => updateSetting('framerate', e.target.value)}>
-                  {FPS_OPTIONS.filter(f => ['original','10','15','20','24','30'].includes(f.value)).map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+                  {FPS_OPTIONS.filter(f => ['original', '10', '15', '20', '24', '30'].includes(f.value)).map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
                 </select>
               </OptionRow>
               <OptionRow label="Resolution" tooltip="GIFs are large. Lower resolution helps. Pick a standard size or enter a custom one." description="Output size">
-                {RESOLUTIONS.filter(r => ['original','720','540','480','360'].includes(r.value)).some(r => r.value === settings.resolution) ? (
+                {RESOLUTIONS.filter(r => ['original', '720', '540', '480', '360'].includes(r.value)).some(r => r.value === settings.resolution) ? (
                   <select value={settings.resolution} onChange={(e) => {
                     if (e.target.value === '__custom__') {
                       updateSetting('resolution', '');
@@ -1913,7 +2134,7 @@ export function ConverterView() {
                       updateSetting('resolution', e.target.value);
                     }
                   }}>
-                    {RESOLUTIONS.filter(r => ['original','720','540','480','360'].includes(r.value)).map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                    {RESOLUTIONS.filter(r => ['original', '720', '540', '480', '360'].includes(r.value)).map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                     <option value="__custom__">Custom…</option>
                   </select>
                 ) : (
@@ -2109,6 +2330,20 @@ export function ConverterView() {
             </OptionRow>
             {settings.watermarkType === 'text' && (
               <>
+                <OptionRow label="Font Family" description="Choose a typeface for the text">
+                  <select
+                    value={settings.watermarkFont}
+                    onChange={(e) => updateSetting('watermarkFont', e.target.value)}
+                    className="select-input"
+                  >
+                    {availableFonts.length === 0 && <option value="">No fonts found in uploads/fonts...</option>}
+                    {availableFonts.map(font => (
+                      <option key={font} value={font}>
+                        {font.replace(/\.[^/.]+$/, "")} {/* Removes the .ttf extension for a cleaner look */}
+                      </option>
+                    ))}
+                  </select>
+                </OptionRow>
                 <OptionRow label="Watermark Text" description="Text to display">
                   <input type="text" className="input-full" value={settings.watermarkText}
                     onChange={(e) => updateSetting('watermarkText', e.target.value)} placeholder="My Watermark" />
@@ -2141,10 +2376,24 @@ export function ConverterView() {
             )}
             {settings.watermarkType !== 'none' && (
               <OptionRow label="Position" description="Where to place the watermark">
-                <div className="vf-button-grid">
-                  {[{ v: 'nw', l: 'NW' }, { v: 'ne', l: 'NE' }, { v: 'center', l: 'Center' }, { v: 'sw', l: 'SW' }, { v: 'se', l: 'SE' }].map(o => (
-                    <button key={o.v} type="button" className={`vf-btn-sm ${settings.watermarkPosition === o.v ? 'active' : ''}`}
-                      onClick={() => updateSetting('watermarkPosition', o.v)}>{o.l}</button>
+                <div className="watermark-position-matrix">
+                  {[
+                    { v: 'top-left', l: '↖' },
+                    { v: 'top-middle', l: '↑' },
+                    { v: 'top-right', l: '↗' },
+                    { v: 'bottom-left', l: '↙' },
+                    { v: 'bottom-middle', l: '↓' },
+                    { v: 'bottom-right', l: '↘' },
+                    { v: 'center', l: 'Center' }
+                  ].map(o => (
+                    <button
+                      key={o.v}
+                      type="button"
+                      className={`vf-btn-sm position-grid-btn ${o.v} ${settings.watermarkPosition === o.v ? 'active' : ''}`}
+                      onClick={() => updateSetting('watermarkPosition', o.v)}
+                    >
+                      {o.l}
+                    </button>
                   ))}
                 </div>
               </OptionRow>

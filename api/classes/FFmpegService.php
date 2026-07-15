@@ -360,12 +360,42 @@ class FFmpegService {
         }
         // Text watermark
         if (!empty($opts['watermark_type']) && $opts['watermark_type'] === 'text' && !empty($opts['watermark_text'])) {
-            $pos = self::getWatermarkPosition($opts['watermark_position'] ?? 'se');
+            // Match the frontend's text alignment geometry rules perfectly
+            $textPosMap = [
+                'top-left'      => "x=10:y=10",
+                'top-middle'    => "x=(w-tw)/2:y=10",
+                'top-right'     => "x=w-tw-10:y=10",
+                'center'        => "x=(w-tw)/2:y=(h-th)/2",
+                'bottom-left'   => "x=10:y=h-th-10",
+                'bottom-middle' => "x=(w-tw)/2:y=h-th-10",
+                'bottom-right'  => "x=w-tw-10:y=h-th-10",
+                // Fallbacks for legacy/short keys
+                'nw'            => "x=10:y=10",
+                'ne'            => "x=w-tw-10:y=10",
+                'sw'            => "x=10:y=h-th-10",
+                'se'            => "x=w-tw-10:y=h-th-10"
+            ];
+            $pos = $textPosMap[$opts['watermark_position'] ?? 'center'] ?? "x=(w-tw)/2:y=(h-th)/2";
+
             $fs = intval($opts['watermark_font_size'] ?? 24);
-            $color = preg_replace('/[^a-fA-F0-9#]/', '', $opts['watermark_color'] ?? 'white');
+            $color = preg_replace('/[^a-fA-F0-9#a-zA-Z]/', '', $opts['watermark_color'] ?? 'white');
             $alpha = floatval($opts['watermark_opacity'] ?? 1.0);
-            $text = escapeshellarg($opts['watermark_text']);
-            $parts[] = "drawtext=text={$text}:fontsize={$fs}:fontcolor={$color}@{$alpha}:{$pos}";
+            
+            // Clean up text characters to prevent breaking outer double quotes
+            $cleanText = str_replace("'", "'\\''", $opts['watermark_text']); 
+
+            $fontStr = '';
+            if (!empty($opts['watermark_font'])) {
+                $absoluteFontPath = self::getBaseDir() . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'fonts' . DIRECTORY_SEPARATOR . basename($opts['watermark_font']);
+                if (file_exists($absoluteFontPath)) {
+                    $safeFontPath = str_replace('\\', '/', $absoluteFontPath);
+                    $safeFontPath = str_replace(':', '\\:', $safeFontPath);
+                    $fontStr = ":fontfile='{$safeFontPath}'";
+                }
+            }
+
+            // Enclose the text string safely inside single quotes
+            $parts[] = "drawtext=text='{$cleanText}':fontsize={$fs}:fontcolor={$color}@{$alpha}{$fontStr}:{$pos}";
         }
 
         if (!empty($opts['subtitle_mode']) && $opts['subtitle_mode'] === 'burn') {
@@ -594,6 +624,9 @@ class FFmpegService {
 
         echo "data: " . json_encode(['type' => 'info', 'message' => 'Starting conversion...']) . "\n\n";
         flush();
+
+        // echo "data: " . json_encode(['type' => 'info', 'message' => 'Executing Command: ' . $cmd]) . "\n\n";
+        // flush();
 
         // Two-pass
         if ($twoPass && $videoCodec !== 'copy') {
