@@ -3062,28 +3062,28 @@ function PlayerView({
         }
       }
       // Arrow Up/Down: volume ±2% — only when video element is focused
-      if (isVideoFocused) {
-        if (e.code === 'ArrowUp') {
-          e.preventDefault();
-          const newVol = Math.min(1, Math.round((volumeRef.current + 0.02) * 100) / 100);
-          volumeRef.current = newVol;
-          if (videoRef.current) { videoRef.current.volume = newVol; videoRef.current.muted = false; }
-          setIsMuted(false);
-          setVolume(newVol);
-          localStorage.setItem('yt_volume', newVol);
-          showFlashNotification(`Volume: ${Math.round(newVol * 100)}%`);
-        }
-        if (e.code === 'ArrowDown') {
-          e.preventDefault();
-          const newVol = Math.max(0, Math.round((volumeRef.current - 0.02) * 100) / 100);
-          volumeRef.current = newVol;
-          if (videoRef.current) { videoRef.current.volume = newVol; videoRef.current.muted = newVol === 0; }
-          setIsMuted(newVol === 0);
-          setVolume(newVol);
-          localStorage.setItem('yt_volume', newVol);
-          showFlashNotification(`Volume: ${Math.round(newVol * 100)}%`);
-        }
+      //if (isVideoFocused) {
+      if (e.code === 'ArrowUp') {
+        e.preventDefault();
+        const newVol = Math.min(1, Math.round((volumeRef.current + 0.02) * 100) / 100);
+        volumeRef.current = newVol;
+        if (videoRef.current) { videoRef.current.volume = newVol; videoRef.current.muted = false; }
+        setIsMuted(false);
+        setVolume(newVol);
+        localStorage.setItem('yt_volume', newVol);
+        showFlashNotification(`Volume: ${Math.round(newVol * 100)}%`);
       }
+      if (e.code === 'ArrowDown') {
+        e.preventDefault();
+        const newVol = Math.max(0, Math.round((volumeRef.current - 0.02) * 100) / 100);
+        volumeRef.current = newVol;
+        if (videoRef.current) { videoRef.current.volume = newVol; videoRef.current.muted = newVol === 0; }
+        setIsMuted(newVol === 0);
+        setVolume(newVol);
+        localStorage.setItem('yt_volume', newVol);
+        showFlashNotification(`Volume: ${Math.round(newVol * 100)}%`);
+      }
+      //}
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);

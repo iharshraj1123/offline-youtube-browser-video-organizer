@@ -1113,6 +1113,7 @@ button {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  overflow-wrap: anywhere;
 }
 
 .sidebar-channel {
@@ -1665,6 +1666,7 @@ button {
   color: #e0e0e0;
   transition: background-color 0.2s;
   text-align: left;
+  overflow-wrap: anywhere;
 }
 
 .suggestion-item.active {
