@@ -3,7 +3,8 @@ import {
   Wand2, FileVideo, Upload, X, Loader2, CheckCircle, AlertCircle,
   RefreshCw, Download, Folder, Clock, Video, Music, Film,
   Settings, HelpCircle, Play, Image, Disc, Radio, Timer, Subtitles,
-  Scissors, Copy, Check, Save, Trash2, List, ChevronDown, FileUp
+  Scissors, Copy, Check, Save, Trash2, List, FileUp,
+  Palette, Gauge, RotateCw, FlipHorizontal, FlipVertical, Type, Sun
 } from 'lucide-react';
 
 function formatBytes(bytes) {
@@ -309,6 +310,12 @@ const initialState = {
     subtitleMode: 'none', subtitleStream: 0,
     deinterlace: false, hwaccel: 'none', twoPass: false,
     threads: '0', metadataPreserve: true, customArgs: '',
+    colorBrightness: 0, colorContrast: 1, colorSaturation: 1, colorGamma: 1,
+    speed: 1, speedMaintainPitch: true,
+    rotate: '', hflip: false, vflip: false,
+    watermarkType: 'none', watermarkPosition: 'se', watermarkOpacity: 1,
+    watermarkText: '', watermarkFontSize: 24, watermarkColor: '#ffffff',
+    watermarkImage: null,
   },
   converting: false,
   convertProgress: 0, convertTime: '', convertFps: '', convertSpeed: '',
@@ -372,6 +379,8 @@ export function ConverterView() {
   const abortRef = useRef(null);
   const [presetName, setPresetName] = React.useState('');
   const [showSavePreset, setShowSavePreset] = React.useState(false);
+  const [watermarkImageFile, setWatermarkImageFile] = React.useState(null);
+  const watermarkInputRef = useRef(null);
 
   const { ffmpegStatus, filePath, selectedFile, mediaInfo, loadingInfo, fileError, settings, converting, convertProgress, convertTime, convertFps, convertSpeed, convertBitrate, convertEta, convertStatus, convertLog, convertDone, queue } = state;
 
@@ -420,7 +429,12 @@ export function ConverterView() {
     }
   };
 
+  const cleanupTemp = async () => {
+    try { await fetch('./api/index.php?action=ffmpeg_cleanup'); } catch {}
+  };
+
   const loadFileInfo = async (path, file) => {
+    await cleanupTemp();
     dispatch({ type: 'SET_LOADING', payload: true });
     dispatch({ type: 'SET_FILE_ERROR', payload: '' });
     try {
@@ -540,6 +554,8 @@ export function ConverterView() {
     dispatch({ type: 'CLEAR_LOG' });
     dispatch({ type: 'SET_CONVERT_DONE', payload: null });
 
+    await cleanupTemp();
+
     const options = {
       container: settings.container,
       video_codec: settings.videoCodec,
@@ -558,18 +574,18 @@ export function ConverterView() {
       volume: settings.volume,
       start_time: settings.startTime,
       duration: settings.duration,
-      crop_w: settings.cropW,
-      crop_h: settings.cropH,
-      crop_x: settings.cropX,
-      crop_y: settings.cropY,
-      subtitle_mode: settings.subtitleMode,
-      subtitle_stream: settings.subtitleStream,
-      deinterlace: settings.deinterlace,
-      hwaccel: settings.hwaccel,
-      two_pass: settings.twoPass,
-      threads: settings.threads,
-      metadata_preserve: settings.metadataPreserve,
-      custom_args: settings.customArgs,
+      crop_w: settings.cropW, crop_h: settings.cropH, crop_x: settings.cropX, crop_y: settings.cropY,
+      subtitle_mode: settings.subtitleMode, subtitle_stream: settings.subtitleStream,
+      deinterlace: settings.deinterlace, hwaccel: settings.hwaccel,
+      two_pass: settings.twoPass, threads: settings.threads,
+      metadata_preserve: settings.metadataPreserve, custom_args: settings.customArgs,
+      color_brightness: settings.colorBrightness, color_contrast: settings.colorContrast,
+      color_saturation: settings.colorSaturation, color_gamma: settings.colorGamma,
+      speed: settings.speed, speed_maintain_pitch: settings.speedMaintainPitch,
+      rotate: settings.rotate, hflip: settings.hflip, vflip: settings.vflip,
+      watermark_type: settings.watermarkType, watermark_position: settings.watermarkPosition,
+      watermark_opacity: settings.watermarkOpacity, watermark_text: settings.watermarkText,
+      watermark_font_size: settings.watermarkFontSize, watermark_color: settings.watermarkColor,
     };
 
     try {
@@ -579,6 +595,9 @@ export function ConverterView() {
         formData.append('file', selectedFile);
       } else {
         formData.append('input', filePath);
+      }
+      if (watermarkImageFile) {
+        formData.append('watermark_image', watermarkImageFile);
       }
       formData.append('options', JSON.stringify(options));
 
@@ -640,7 +659,9 @@ export function ConverterView() {
     dispatch({ type: 'SET_FILE_PATH', payload: '' });
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
+    await cleanupTemp();
+    setWatermarkImageFile(null);
     dispatch({ type: 'SET_FILE', payload: null });
     dispatch({ type: 'SET_MEDIA_INFO', payload: null });
     dispatch({ type: 'SET_FILE_PATH', payload: '' });
@@ -680,11 +701,13 @@ export function ConverterView() {
   // ---- Build command preview ----
   const buildCommandPreview = useCallback(() => {
     const s = settings;
-    let cmd = `ffmpeg -y -i input.${mediaInfo?.format_name || 'file'}`;
+    const inExt = mediaInfo?.format_name || 'file';
+    let cmd = `ffmpeg -y -i input.${inExt}`;
 
-    if (s.hwaccel && s.hwaccel !== 'none') {
-      cmd += ` -hwaccel ${s.hwaccel}`;
-    }
+    const vfParts = [];
+    const afParts = [];
+
+    if (s.hwaccel && s.hwaccel !== 'none') cmd += ` -hwaccel ${s.hwaccel}`;
 
     if (s.videoCodec === 'copy') {
       cmd += ' -c:v copy';
@@ -693,9 +716,6 @@ export function ConverterView() {
       cmd += ` -c:v ${vcMap[s.videoCodec] || s.videoCodec}`;
       if (s.crf !== '') cmd += ` -crf ${s.crf}`;
       if (s.videoBitrate !== 'auto') cmd += ` -b:v ${s.videoBitrate}`;
-      if (s.resolution !== 'original') {
-        cmd += isNaN(s.resolution) ? ` -vf scale=${s.resolution.replace('x', ':')}` : ` -vf scale=-1:${s.resolution}`;
-      }
       if (s.framerate !== 'original') cmd += ` -r ${s.framerate}`;
       if (s.preset) cmd += ` -preset ${s.preset}`;
       if (s.tune) cmd += ` -tune ${s.tune}`;
@@ -703,18 +723,38 @@ export function ConverterView() {
       if (s.pixFmt) cmd += ` -pix_fmt ${s.pixFmt}`;
     }
 
-    if (s.deinterlace) {
-      cmd += ' -vf yadif';
+    if (s.deinterlace) vfParts.push('yadif');
+    if (s.resolution !== 'original') {
+      vfParts.push(isNaN(s.resolution) ? `scale=${s.resolution.replace('x', ':')}` : `scale=-1:${s.resolution}`);
+    }
+    if (s.cropW && s.cropH && parseInt(s.cropW) > 0 && parseInt(s.cropH) > 0) {
+      vfParts.push(`crop=${s.cropW}:${s.cropH}:${s.cropX || 0}:${s.cropY || 0}`);
     }
 
-    if (s.cropW && s.cropH && parseInt(s.cropW) > 0 && parseInt(s.cropH) > 0) {
-      const crop = `crop=${s.cropW}:${s.cropH}:${s.cropX || 0}:${s.cropY || 0}`;
-      if (cmd.includes('-vf ')) {
-        cmd = cmd.replace(/-vf "[^"]+"/, m => m.replace('"', `"${crop},`));
-      } else {
-        cmd += ` -vf "${crop}"`;
-      }
+    const eqP = [];
+    if (s.colorBrightness !== 0) eqP.push(`brightness=${s.colorBrightness}`);
+    if (Math.abs(s.colorContrast - 1) > 0.01) eqP.push(`contrast=${s.colorContrast}`);
+    if (Math.abs(s.colorSaturation - 1) > 0.01) eqP.push(`saturation=${s.colorSaturation}`);
+    if (Math.abs(s.colorGamma - 1) > 0.01) eqP.push(`gamma=${s.colorGamma}`);
+    if (eqP.length) vfParts.push('eq=' + eqP.join(':'));
+
+    if (s.rotate === '90cw') vfParts.push('transpose=1');
+    else if (s.rotate === '90ccw') vfParts.push('transpose=2');
+    else if (s.rotate === '180') { vfParts.push('hflip'); vfParts.push('vflip'); }
+    if (s.hflip) vfParts.push('hflip');
+    if (s.vflip) vfParts.push('vflip');
+
+    if (s.speed !== 1) vfParts.push(`setpts=${(1 / s.speed).toFixed(3)}*PTS`);
+
+    if (s.watermarkType === 'text' && s.watermarkText) {
+      const pos = { nw: '10:10', ne: 'W-w-10:10', sw: '10:H-h-10', center: '(W-w)/2:(H-h)/2', se: 'W-w-10:H-h-10' }[s.watermarkPosition] || 'W-w-10:10';
+      vfParts.push(`drawtext=text='${s.watermarkText}':fontsize=${s.watermarkFontSize}:fontcolor=${s.watermarkColor}@${s.watermarkOpacity}:${pos}`);
     }
+    if (s.watermarkType === 'image') cmd = `ffmpeg -y -i input.${inExt} -i watermark.png`;
+
+    if (s.subtitleMode === 'copy') cmd += ' -c:s copy';
+
+    if (vfParts.length) cmd += ' -vf "' + vfParts.join(',') + '"';
 
     if (s.audioCodec === 'copy') {
       cmd += ' -c:a copy';
@@ -729,13 +769,21 @@ export function ConverterView() {
       }
     }
 
-    if (s.subtitleMode === 'burn') cmd += ' -vf subtitles=input:stream_index=0';
-    else if (s.subtitleMode === 'copy') cmd += ' -c:s copy';
+    if (s.speed !== 1 && s.speedMaintainPitch) {
+      let r = s.speed;
+      const at = [];
+      while (r > 2) { at.push('atempo=2.0'); r /= 2; }
+      while (r < 0.5) { at.push('atempo=0.5'); r /= 0.5; }
+      if (Math.abs(r - 1) > 0.01) at.push(`atempo=${r.toFixed(6)}`);
+      afParts.push(...at);
+    } else if (s.volume !== '0' && s.volume !== 'original') {
+      afParts.push(`volume=${s.volume}dB`);
+    }
+
+    if (afParts.length) cmd += ' -af "' + afParts.join(',') + '"';
 
     if (s.startTime) cmd += ` -ss ${s.startTime}`;
     if (s.duration) cmd += ` -t ${s.duration}`;
-    if (s.volume !== '0' && s.volume !== 'original') cmd += ` -af volume=${s.volume}dB`;
-
     if (s.twoPass) cmd += ' -pass 2';
     if (parseInt(s.threads) > 0) cmd += ` -threads ${s.threads}`;
     if (s.metadataPreserve) cmd += ' -map_metadata 0';
@@ -748,6 +796,7 @@ export function ConverterView() {
 
   // ---- Batch queue processing ----
   const processQueue = async () => {
+    await cleanupTemp();
     for (let i = 0; i < queue.length; i++) {
       const item = queue[i];
       if (item.status === 'done' || item.status === 'error') continue;
@@ -1103,6 +1152,154 @@ export function ConverterView() {
               )}
             </Section>
           )}
+
+          {/* Visual Filters */}
+          <ToggleSection icon={Palette} title="Visual Filters" description="Apply color correction, watermarks, speed changes, and rotation effects.">
+            {/* Color Correction */}
+            <h4 className="vf-subheading"><Gauge size={14} /> Color Correction</h4>
+            <OptionRow label="Brightness" tooltip="Adjust image brightness. Negative = darker, positive = brighter." description="Image brightness">
+              <div className="crf-slider-group">
+                <input type="range" min="-1" max="1" step="0.05" value={settings.colorBrightness}
+                  onChange={(e) => updateSetting('colorBrightness', parseFloat(e.target.value))} className="crf-slider" />
+                <span className="crf-value">{settings.colorBrightness > 0 ? '+' : ''}{settings.colorBrightness}</span>
+              </div>
+            </OptionRow>
+            <OptionRow label="Contrast" tooltip="Adjust image contrast. 1.0 is normal. Higher = more contrast." description="Image contrast">
+              <div className="crf-slider-group">
+                <input type="range" min="0.1" max="2.0" step="0.05" value={settings.colorContrast}
+                  onChange={(e) => updateSetting('colorContrast', parseFloat(e.target.value))} className="crf-slider" />
+                <span className="crf-value">{settings.colorContrast.toFixed(2)}</span>
+              </div>
+            </OptionRow>
+            <OptionRow label="Saturation" tooltip="Color intensity. 1.0 is normal. 0 = grayscale." description="Color saturation">
+              <div className="crf-slider-group">
+                <input type="range" min="0" max="3" step="0.05" value={settings.colorSaturation}
+                  onChange={(e) => updateSetting('colorSaturation', parseFloat(e.target.value))} className="crf-slider" />
+                <span className="crf-value">{settings.colorSaturation.toFixed(2)}</span>
+              </div>
+            </OptionRow>
+            <OptionRow label="Gamma" tooltip="Adjust mid-tone brightness. 1.0 is normal." description="Gamma correction">
+              <div className="crf-slider-group">
+                <input type="range" min="0.1" max="2.0" step="0.05" value={settings.colorGamma}
+                  onChange={(e) => updateSetting('colorGamma', parseFloat(e.target.value))} className="crf-slider" />
+                <span className="crf-value">{settings.colorGamma.toFixed(2)}</span>
+              </div>
+            </OptionRow>
+
+            <hr className="vf-divider" />
+
+            {/* Speed */}
+            <h4 className="vf-subheading"><Sun size={14} /> Speed Change</h4>
+            <OptionRow label="Speed" tooltip="Change playback speed. 1.0 = normal, 2.0 = double speed, 0.5 = half speed." description="Playback rate">
+              <div className="crf-slider-group">
+                <input type="range" min="0.25" max="4" step="0.05" value={settings.speed}
+                  onChange={(e) => updateSetting('speed', parseFloat(e.target.value))} className="crf-slider" />
+                <span className="crf-value">{settings.speed.toFixed(2)}x</span>
+              </div>
+            </OptionRow>
+            <OptionRow label="Frame Handling" tooltip="How to handle frames when changing speed." description="Frame processing">
+              <select value={settings.speedMaintainPitch ? 'smooth' : 'fast'} onChange={(e) => updateSetting('speedMaintainPitch', e.target.value === 'smooth')}>
+                <option value="smooth">Smooth (maintain pitch, duplicate frames)</option>
+                <option value="fast">Fast (drop/duplicate frames, no pitch shift)</option>
+              </select>
+            </OptionRow>
+
+            <hr className="vf-divider" />
+
+            {/* Rotate & Flip */}
+            <h4 className="vf-subheading"><RotateCw size={14} /> Rotate & Flip</h4>
+            <OptionRow label="Rotation" description="Rotate the video" fullWidth>
+              <div className="vf-button-group">
+                {[
+                  { value: '', label: 'None' },
+                  { value: '90cw', label: '90° CW' },
+                  { value: '90ccw', label: '90° CCW' },
+                  { value: '180', label: '180°' },
+                ].map(o => (
+                  <button key={o.value} type="button"
+                    className={`vf-btn ${settings.rotate === o.value ? 'active' : ''}`}
+                    onClick={() => updateSetting('rotate', o.value)}>
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+            </OptionRow>
+            <OptionRow label="Flip" description="Mirror the video" fullWidth>
+              <div className="vf-button-group">
+                <button type="button" className={`vf-btn ${settings.hflip ? 'active' : ''}`}
+                  onClick={() => updateSetting('hflip', !settings.hflip)}>
+                  <FlipHorizontal size={14} /> Horizontal
+                </button>
+                <button type="button" className={`vf-btn ${settings.vflip ? 'active' : ''}`}
+                  onClick={() => updateSetting('vflip', !settings.vflip)}>
+                  <FlipVertical size={14} /> Vertical
+                </button>
+              </div>
+            </OptionRow>
+
+            <hr className="vf-divider" />
+
+            {/* Watermark */}
+            <h4 className="vf-subheading"><Type size={14} /> Watermark</h4>
+            <OptionRow label="Watermark Type" description="Add a text or image watermark">
+              <select value={settings.watermarkType} onChange={(e) => updateSetting('watermarkType', e.target.value)}>
+                <option value="none">None</option>
+                <option value="text">Text Watermark</option>
+                <option value="image">Image Watermark</option>
+              </select>
+            </OptionRow>
+            {settings.watermarkType === 'text' && (
+              <>
+                <OptionRow label="Watermark Text" description="Text to display">
+                  <input type="text" className="input-full" value={settings.watermarkText}
+                    onChange={(e) => updateSetting('watermarkText', e.target.value)} placeholder="My Watermark" />
+                </OptionRow>
+                <OptionRow label="Font Size" description="Text size in pixels">
+                  <input type="number" className="input-inline" value={settings.watermarkFontSize}
+                    onChange={(e) => updateSetting('watermarkFontSize', parseInt(e.target.value) || 24)} min="8" max="200" style={{ width: '80px' }} />
+                </OptionRow>
+                <OptionRow label="Color" description="Text color">
+                  <input type="color" value={settings.watermarkColor}
+                    onChange={(e) => updateSetting('watermarkColor', e.target.value)} style={{ width: '60px', height: '32px', padding: '2px' }} />
+                </OptionRow>
+              </>
+            )}
+            {settings.watermarkType === 'image' && (
+              <OptionRow label="Watermark Image" description="Upload a PNG with transparency">
+                <div className="watermark-upload-area">
+                  <button type="button" className="btn-upload-watermark" onClick={() => watermarkInputRef.current?.click()}>
+                    <Upload size={14} /> {watermarkImageFile ? watermarkImageFile.name : 'Choose Image'}
+                  </button>
+                  <input ref={watermarkInputRef} type="file" accept="image/png,image/jpeg,image/webp" style={{ display: 'none' }}
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) setWatermarkImageFile(f); }} />
+                  {watermarkImageFile && (
+                    <button type="button" className="btn-watermark-remove" onClick={() => { setWatermarkImageFile(null); if (watermarkInputRef.current) watermarkInputRef.current.value = ''; }}>
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+              </OptionRow>
+            )}
+            {settings.watermarkType !== 'none' && (
+              <OptionRow label="Position" description="Where to place the watermark">
+                <div className="vf-button-grid">
+                  {[{ v: 'nw', l: 'NW' }, { v: 'ne', l: 'NE' }, { v: 'center', l: 'Center' }, { v: 'sw', l: 'SW' }, { v: 'se', l: 'SE' }].map(o => (
+                    <button key={o.v} type="button" className={`vf-btn-sm ${settings.watermarkPosition === o.v ? 'active' : ''}`}
+                      onClick={() => updateSetting('watermarkPosition', o.v)}>{o.l}</button>
+                  ))}
+                </div>
+              </OptionRow>
+            )}
+            {settings.watermarkType !== 'none' && (
+              <OptionRow label="Opacity" tooltip="Watermark transparency. 1.0 = fully visible, 0.0 = invisible." description="Transparency level">
+                <div className="crf-slider-group">
+                  <input type="range" min="0" max="1" step="0.05" value={settings.watermarkOpacity}
+                    onChange={(e) => updateSetting('watermarkOpacity', parseFloat(e.target.value))} className="crf-slider" />
+                  <span className="crf-value">{Math.round(settings.watermarkOpacity * 100)}%</span>
+                </div>
+              </OptionRow>
+            )}
+          </ToggleSection>
 
           {/* Trim & Crop */}
           <ToggleSection icon={Scissors} title="Trim & Crop" description="Cut a segment and/or crop the video frame.">

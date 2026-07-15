@@ -226,6 +226,10 @@ try {
         case 'ffmpeg_download':
             handleFfmpegDownload();
             break;
+        case 'ffmpeg_cleanup':
+            FFmpegService::cleanup();
+            echo json_encode(['success' => true]);
+            exit;
 
         // -- crawler presets
         case 'get_presets':

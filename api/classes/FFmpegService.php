@@ -231,6 +231,98 @@ class FFmpegService {
         return $result;
     }
 
+    public static function cleanup() {
+        $tmpDir = dirname(__DIR__) . '/uploads/ffmpeg_temp';
+        if (!is_dir($tmpDir)) return;
+        $files = glob($tmpDir . '/*');
+        foreach ($files as $f) {
+            $base = basename($f);
+            if (preg_match('/^[a-f0-9]{32}_/', $base)) continue;
+            @unlink($f);
+        }
+    }
+
+    private static function getWatermarkPosition($pos) {
+        switch ($pos) {
+            case 'nw': return '10:10';
+            case 'ne': return 'W-w-10:10';
+            case 'sw': return '10:H-h-10';
+            case 'center': return '(W-w)/2:(H-h)/2';
+            default: return 'W-w-10:H-h-10';
+        }
+    }
+
+    private static function buildVfFilters($opts) {
+        $parts = [];
+        if (!empty($opts['deinterlace'])) $parts[] = 'yadif';
+        if (!empty($opts['resolution']) && $opts['resolution'] !== 'original') {
+            if (is_numeric($opts['resolution'])) {
+                $parts[] = 'scale=-1:' . intval($opts['resolution']);
+            } else {
+                $res = str_replace(['x', 'X'], ':', $opts['resolution']);
+                $parts[] = 'scale=' . $res;
+            }
+        }
+        if (!empty($opts['crop_w']) && intval($opts['crop_w']) > 0 && !empty($opts['crop_h']) && intval($opts['crop_h']) > 0) {
+            $parts[] = "crop={$opts['crop_w']}:{$opts['crop_h']}:{$opts['crop_x']}:{$opts['crop_y']}";
+        }
+        $eqParts = [];
+        if (isset($opts['color_brightness']) && floatval($opts['color_brightness']) !== 0.0) {
+            $eqParts[] = 'brightness=' . floatval($opts['color_brightness']);
+        }
+        if (isset($opts['color_contrast']) && abs(floatval($opts['color_contrast']) - 1.0) > 0.01) {
+            $eqParts[] = 'contrast=' . floatval($opts['color_contrast']);
+        }
+        if (isset($opts['color_saturation']) && abs(floatval($opts['color_saturation']) - 1.0) > 0.01) {
+            $eqParts[] = 'saturation=' . floatval($opts['color_saturation']);
+        }
+        if (isset($opts['color_gamma']) && abs(floatval($opts['color_gamma']) - 1.0) > 0.01) {
+            $eqParts[] = 'gamma=' . floatval($opts['color_gamma']);
+        }
+        if (!empty($eqParts)) $parts[] = 'eq=' . implode(':', $eqParts);
+        if (!empty($opts['rotate'])) {
+            if ($opts['rotate'] === '90cw') $parts[] = 'transpose=1';
+            elseif ($opts['rotate'] === '90ccw') $parts[] = 'transpose=2';
+            elseif ($opts['rotate'] === '180') { $parts[] = 'hflip'; $parts[] = 'vflip'; }
+        }
+        if (!empty($opts['hflip'])) $parts[] = 'hflip';
+        if (!empty($opts['vflip'])) $parts[] = 'vflip';
+        if (isset($opts['speed']) && floatval($opts['speed']) > 0 && abs(floatval($opts['speed']) - 1.0) > 0.01) {
+            $parts[] = 'setpts=' . (1 / floatval($opts['speed'])) . '*PTS';
+        }
+        // Text watermark
+        if (!empty($opts['watermark_type']) && $opts['watermark_type'] === 'text' && !empty($opts['watermark_text'])) {
+            $pos = self::getWatermarkPosition($opts['watermark_position'] ?? 'se');
+            $fs = intval($opts['watermark_font_size'] ?? 24);
+            $color = preg_replace('/[^a-fA-F0-9#]/', '', $opts['watermark_color'] ?? 'white');
+            $alpha = floatval($opts['watermark_opacity'] ?? 1.0);
+            $text = escapeshellarg($opts['watermark_text']);
+            $parts[] = "drawtext=text={$text}:fontsize={$fs}:fontcolor={$color}@{$alpha}:{$pos}";
+        }
+
+        if (!empty($opts['subtitle_mode']) && $opts['subtitle_mode'] === 'burn') {
+            $subStream = intval($opts['subtitle_stream'] ?? 0);
+            $parts[] = 'subtitles=' . escapeshellarg($opts['_input_path_for_subtitles']) . ':stream_index=' . $subStream;
+        }
+        return $parts;
+    }
+
+    private static function buildAfFilters($opts) {
+        $parts = [];
+        if (!empty($opts['volume']) && $opts['volume'] !== '0' && $opts['volume'] !== 'original') {
+            $vol = floatval($opts['volume']);
+            if ($vol !== 0) $parts[] = 'volume=' . $vol . 'dB';
+        }
+        if (isset($opts['speed']) && floatval($opts['speed']) > 0 && abs(floatval($opts['speed']) - 1.0) > 0.01) {
+            $speed = floatval($opts['speed']);
+            $remaining = $speed;
+            while ($remaining > 2.0) { $parts[] = 'atempo=2.0'; $remaining /= 2.0; }
+            while ($remaining < 0.5) { $parts[] = 'atempo=0.5'; $remaining /= 0.5; }
+            if (abs($remaining - 1.0) > 0.01) $parts[] = 'atempo=' . number_format($remaining, 6);
+        }
+        return $parts;
+    }
+
     public static function convert($inputPath, $opts) {
         $ffmpegPath = self::getFFmpegPath();
         if (!$ffmpegPath) {
@@ -266,6 +358,18 @@ class FFmpegService {
         $tempLink2 = self::getTempHardlink($inputPath);
         $cmdInput = $tempLink2 ? $tempLink2 : $inputPath;
 
+        // Watermark image upload (from $_FILES)
+        $watermarkImage = null;
+        if (!empty($opts['watermark_type']) && $opts['watermark_type'] === 'image') {
+            if (isset($_FILES['watermark_image']) && $_FILES['watermark_image']['error'] === UPLOAD_ERR_OK) {
+                $tmpDir2 = dirname(__DIR__) . '/uploads/ffmpeg_temp';
+                if (!is_dir($tmpDir2)) @mkdir($tmpDir2, 0777, true);
+                $wmPath = $tmpDir2 . '/' . uniqid('wm_') . '_' . basename($_FILES['watermark_image']['name']);
+                move_uploaded_file($_FILES['watermark_image']['tmp_name'], $wmPath);
+                $watermarkImage = $wmPath;
+            }
+        }
+
         // Build command
         $cmd = $ffmpegPath . ' -y -progress pipe:1';
 
@@ -275,8 +379,15 @@ class FFmpegService {
 
         $cmd .= ' -i ' . escapeshellarg($cmdInput);
 
-        // Collect filter chain
-        $filterParts = [];
+        // Add watermark image input if present
+        if ($watermarkImage) {
+            $cmd .= ' -i ' . escapeshellarg($watermarkImage);
+        }
+
+        // Build filter chains
+        $opts['_input_path_for_subtitles'] = $cmdInput;
+        $vfParts = self::buildVfFilters($opts);
+        $afParts = self::buildAfFilters($opts);
 
         // Video options
         $videoCodec = $opts['video_codec'] ?? 'copy';
@@ -299,15 +410,6 @@ class FFmpegService {
                 $cmd .= ' -b:v ' . escapeshellarg($opts['video_bitrate']);
             }
 
-            if (!empty($opts['resolution']) && $opts['resolution'] !== 'original') {
-                if (is_numeric($opts['resolution'])) {
-                    $filterParts[] = 'scale=-1:' . intval($opts['resolution']);
-                } elseif (strpos($opts['resolution'], 'x') !== false || strpos($opts['resolution'], ':') !== false) {
-                    $res = str_replace(['x', 'X'], ':', $opts['resolution']);
-                    $filterParts[] = 'scale=' . $res;
-                }
-            }
-
             if (!empty($opts['framerate']) && $opts['framerate'] !== 'original') {
                 $cmd .= ' -r ' . escapeshellarg($opts['framerate']);
             }
@@ -326,24 +428,29 @@ class FFmpegService {
             }
         }
 
-        // Deinterlace
-        if (!empty($opts['deinterlace'])) {
-            $filterParts[] = 'yadif';
+        // Watermark: add overlay to filter chain or use filter_complex
+        $useComplex = false;
+        if ($watermarkImage) {
+            $wmPos = self::getWatermarkPosition($opts['watermark_position'] ?? 'se');
+            $alpha = floatval($opts['watermark_opacity'] ?? 1.0);
+            if ($alpha < 1.0) {
+                $wmExpr = "overlay={$wmPos}:format=auto,format=rgba,colorchannelmixer=aa={$alpha}";
+            } else {
+                $wmExpr = "overlay={$wmPos}";
+            }
+            $filterComplex = "[0:v]";
+            if (!empty($vfParts)) {
+                $filterComplex .= implode(',', $vfParts) . ",";
+            }
+            $filterComplex .= "[vid];[vid][1:v]" . $wmExpr;
+            $useComplex = true;
         }
 
-        // Crop
-        if (!empty($opts['crop_w']) && intval($opts['crop_w']) > 0 &&
-            !empty($opts['crop_h']) && intval($opts['crop_h']) > 0) {
-            $cropW = intval($opts['crop_w']);
-            $cropH = intval($opts['crop_h']);
-            $cropX = intval($opts['crop_x'] ?? 0);
-            $cropY = intval($opts['crop_y'] ?? 0);
-            $filterParts[] = "crop={$cropW}:{$cropH}:{$cropX}:{$cropY}";
-        }
-
-        // Apply filter chain if any
-        if (!empty($filterParts)) {
-            $cmd .= ' -vf "' . implode(',', $filterParts) . '"';
+        // Apply video filter chain
+        if ($useComplex) {
+            $cmd .= ' -filter_complex "' . $filterComplex . '"';
+        } elseif (!empty($vfParts)) {
+            $cmd .= ' -vf "' . implode(',', $vfParts) . '"';
         }
 
         // Audio options
@@ -366,23 +473,19 @@ class FFmpegService {
             }
         }
 
-        // Subtitle handling
-        if (!empty($opts['subtitle_mode']) && $opts['subtitle_mode'] === 'burn') {
-            $subStream = intval($opts['subtitle_stream'] ?? 0);
-            $cmd .= ' -vf subtitles=' . escapeshellarg($cmdInput) . ':stream_index=' . $subStream;
-        } elseif (!empty($opts['subtitle_mode']) && $opts['subtitle_mode'] === 'copy') {
+        // Subtitle handling (stream copy, not burn — burn handled in vf filters)
+        if (!empty($opts['subtitle_mode']) && $opts['subtitle_mode'] === 'copy') {
             $cmd .= ' -c:s copy';
+        }
+
+        // Audio filter chain
+        if (!empty($afParts)) {
+            $cmd .= ' -af "' . implode(',', $afParts) . '"';
         }
 
         // Trim
         if (!empty($opts['start_time'])) $cmd .= ' -ss ' . escapeshellarg($opts['start_time']);
         if (!empty($opts['duration'])) $cmd .= ' -t ' . escapeshellarg($opts['duration']);
-
-        // Volume
-        if (!empty($opts['volume']) && $opts['volume'] !== '0' && $opts['volume'] !== 'original') {
-            $vol = floatval($opts['volume']);
-            if ($vol !== 0) $cmd .= ' -af volume=' . $vol . 'dB';
-        }
 
         // Two-pass
         $twoPass = !empty($opts['two_pass']);

@@ -7589,6 +7589,131 @@ body.mini-player-dragging * {
   cursor: default;
 }
 
+/* ---- Visual Filters ---- */
+.vf-subheading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 12px 0 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.vf-subheading:first-child {
+  margin-top: 0;
+}
+
+.vf-divider {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 14px 0;
+}
+
+.vf-button-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.vf-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.12s;
+}
+
+.vf-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.vf-btn.active {
+  background: var(--accent-color);
+  color: #fff;
+  border-color: var(--accent-color);
+}
+
+.vf-button-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  max-width: 300px;
+}
+
+.vf-btn-sm {
+  padding: 4px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 11px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.12s;
+}
+
+.vf-btn-sm:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.vf-btn-sm.active {
+  background: var(--accent-color);
+  color: #fff;
+  border-color: var(--accent-color);
+}
+
+.watermark-upload-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-upload-watermark {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.btn-upload-watermark:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.btn-watermark-remove {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.btn-watermark-remove:hover {
+  color: #ef4444;
+  background: rgba(239,68,68,0.1);
+}
+
 /* --- Responsive Adjustments --- */
 @media (max-width: 768px) {
   .converter-view {
