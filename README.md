@@ -1,6 +1,6 @@
 # Offline YouTube Browser & Video Organizer
 
-<img width="1912" height="967" alt="image" src="https://github.com/user-attachments/assets/dac41d5a-d97a-417b-ac3e-a087c51e432f" />
+<img width="1917" height="972" alt="image" src="https://github.com/user-attachments/assets/c68b32c5-daa0-4818-9533-669c3e5d8d6b" />
 
 <img width="1915" height="922" alt="image" src="https://github.com/user-attachments/assets/8552707e-6b96-458a-98c1-6f83fdd378ad" />
 
