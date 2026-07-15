@@ -681,4 +681,184 @@ class FFmpegService {
         @unlink($filePath);
         exit;
     }
+
+    public static function concat($inputPaths, $opts) {
+        $ffmpegPath = self::getFFmpegPath();
+        if (!$ffmpegPath) {
+            echo "data: " . json_encode(['type' => 'error', 'message' => 'FFmpeg not found']) . "\n\n";
+            flush(); exit;
+        }
+        if (empty($inputPaths) || !is_array($inputPaths)) {
+            echo "data: " . json_encode(['type' => 'error', 'message' => 'No input files provided']) . "\n\n";
+            flush(); exit;
+        }
+
+        $container = preg_replace('/[^a-zA-Z0-9]/', '', $opts['container'] ?? 'mp4');
+        if (empty($container)) $container = 'mp4';
+        $tmpDir = dirname(__DIR__) . '/uploads/ffmpeg_temp';
+        if (!is_dir($tmpDir)) @mkdir($tmpDir, 0777, true);
+
+        $token = bin2hex(random_bytes(16));
+        $outputFilename = 'concat_output.' . $container;
+        $outputPath = $tmpDir . '/' . $token . '_' . $outputFilename;
+
+        // Create concat demuxer file
+        $concatFile = $tmpDir . '/' . uniqid('concat_') . '.txt';
+        $fh = @fopen($concatFile, 'w');
+        if (!$fh) {
+            echo "data: " . json_encode(['type' => 'error', 'message' => 'Failed to create concat file']) . "\n\n";
+            flush(); exit;
+        }
+        foreach ($inputPaths as $p) {
+            $escaped = str_replace("'", "'\\''", $p);
+            fwrite($fh, "file '$escaped'\n");
+        }
+        fclose($fh);
+
+        $reEncode = !empty($opts['re_encode']);
+        $cmd = $ffmpegPath . ' -y -progress pipe:1 -f concat -safe 0 -i ' . escapeshellarg($concatFile);
+
+        if ($reEncode) {
+            $videoCodec = $opts['video_codec'] ?? 'copy';
+            $audioCodec = $opts['audio_codec'] ?? 'copy';
+            $codecMap = ['h264' => 'libx264', 'h265' => 'libx265', 'vp9' => 'libvpx-vp9', 'av1' => 'libaom-av1', 'mpeg4' => 'mpeg4', 'vp8' => 'libvpx', 'aac' => 'aac', 'mp3' => 'libmp3lame', 'opus' => 'libopus', 'flac' => 'flac', 'wav' => 'pcm_s16le', 'ac3' => 'ac3', 'eac3' => 'eac3', 'copy' => 'copy'];
+            if ($videoCodec !== 'copy') {
+                $cmd .= ' -c:v ' . ($codecMap[$videoCodec] ?? $videoCodec);
+                if (!empty($opts['crf'])) $cmd .= ' -crf ' . intval($opts['crf']);
+                if (!empty($opts['preset'])) $cmd .= ' -preset ' . escapeshellarg($opts['preset']);
+            } else {
+                $cmd .= ' -c:v copy';
+            }
+            if ($audioCodec !== 'copy') {
+                $cmd .= ' -c:a ' . ($codecMap[$audioCodec] ?? $audioCodec);
+                if (!empty($opts['audio_bitrate']) && $opts['audio_bitrate'] !== 'auto') $cmd .= ' -b:a ' . escapeshellarg($opts['audio_bitrate']);
+            } else {
+                $cmd .= ' -c:a copy';
+            }
+            if (!empty($opts['metadata_preserve'])) $cmd .= ' -map_metadata 0';
+            if ($container === 'mp4') $cmd .= ' -movflags +faststart';
+        } else {
+            $cmd .= ' -c copy';
+        }
+
+        $cmd .= ' ' . escapeshellarg($outputPath) . ' 2>&1';
+
+        header('Content-Type: text/event-stream');
+        header('Cache-Control: no-cache');
+        header('Connection: keep-alive');
+        header('X-Accel-Buffering: no');
+        @set_time_limit(0);
+        @ini_set('output_buffering', '0');
+        @ini_set('zlib.output_compression', 0);
+        while (@ob_get_level() > 0) { @ob_end_flush(); }
+        ob_implicit_flush(true);
+
+        echo "data: " . json_encode(['type' => 'info', 'message' => 'Merging files...']) . "\n\n";
+        flush();
+
+        $descriptors = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
+        $process = @proc_open($cmd, $descriptors, $pipes);
+        if (!is_resource($process)) {
+            @unlink($concatFile);
+            echo "data: " . json_encode(['type' => 'error', 'message' => 'Failed to start FFmpeg']) . "\n\n";
+            flush(); exit;
+        }
+        fclose($pipes[0]);
+        $stderr = '';
+        while (!feof($pipes[1])) {
+            $line = fgets($pipes[1]);
+            if ($line === false) break;
+            $line = trim($line);
+            if (strpos($line, '=') !== false) {
+                $parts = explode('=', $line, 2);
+                if (trim($parts[0]) === 'progress' && trim($parts[1]) === 'end') {
+                    echo "data: " . json_encode(['type' => 'complete']) . "\n\n"; flush();
+                }
+            }
+        }
+        $stderr .= stream_get_contents($pipes[2]);
+        fclose($pipes[1]); fclose($pipes[2]);
+        $rc = proc_close($process);
+        @unlink($concatFile);
+
+        if ($rc === 0 && file_exists($outputPath) && filesize($outputPath) > 0) {
+            $fs = filesize($outputPath);
+            echo "data: " . json_encode(['type' => 'done', 'download_token' => $token, 'filename' => $outputFilename, 'size' => $fs, 'size_formatted' => $fs > 1048576 ? round($fs / 1048576, 2) . ' MB' : round($fs / 1024, 2) . ' KB', 'output_path' => $outputPath]) . "\n\n";
+        } else {
+            $err = !empty($stderr) ? substr(trim($stderr), -300) : 'Unknown error';
+            echo "data: " . json_encode(['type' => 'error', 'message' => 'Merge failed: ' . $err]) . "\n\n";
+        }
+        flush(); exit;
+    }
+
+    public static function split($inputPath, $segments, $outputDir) {
+        $ffmpegPath = self::getFFmpegPath();
+        if (!$ffmpegPath) {
+            echo json_encode(['error' => 'FFmpeg not found']);
+            exit;
+        }
+
+        header('Content-Type: text/event-stream');
+        header('Cache-Control: no-cache');
+        header('Connection: keep-alive');
+        header('X-Accel-Buffering: no');
+        @set_time_limit(0);
+        @ini_set('output_buffering', '0');
+        @ini_set('zlib.output_compression', 0);
+        while (@ob_get_level() > 0) { @ob_end_flush(); }
+        ob_implicit_flush(true);
+
+        $tempLink = self::getTempHardlink($inputPath);
+        $cmdInput = $tempLink ? $tempLink : $inputPath;
+        $results = [];
+
+        foreach ($segments as $i => $seg) {
+            $start = $seg['start'] ?? '';
+            $end = $seg['end'] ?? '';
+            $label = $seg['label'] ?? ('segment_' . ($i + 1));
+            $container = $seg['container'] ?? 'mp4';
+            $ext = preg_replace('/[^a-zA-Z0-9]/', '', $container);
+            if (empty($ext)) $ext = 'mp4';
+
+            $token = bin2hex(random_bytes(16));
+            $outputFilename = $label . '.' . $ext;
+            $outputPath = $outputDir . '/' . $token . '_' . $outputFilename;
+
+            $cmd = $ffmpegPath . ' -y -progress pipe:1';
+            if (!empty($start)) $cmd .= ' -ss ' . escapeshellarg($start);
+            $cmd .= ' -i ' . escapeshellarg($cmdInput);
+            if (!empty($end)) $cmd .= ' -to ' . escapeshellarg($end);
+            $cmd .= ' -c copy ' . escapeshellarg($outputPath) . ' 2>&1';
+
+            echo "data: " . json_encode(['type' => 'info', 'message' => "Extracting segment " . ($i + 1) . ": {$label}..."]) . "\n\n";
+            flush();
+
+            $descriptors = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
+            $process = @proc_open($cmd, $descriptors, $pipes);
+            if (!is_resource($process)) {
+                $results[] = ['index' => $i, 'label' => $label, 'error' => 'FFmpeg failed to start'];
+                continue;
+            }
+            fclose($pipes[0]);
+            stream_get_contents($pipes[1]);
+            $errOut = stream_get_contents($pipes[2]);
+            fclose($pipes[1]); fclose($pipes[2]);
+            $rc = proc_close($process);
+
+            if ($rc === 0 && file_exists($outputPath) && filesize($outputPath) > 0) {
+                $fs = filesize($outputPath);
+                $results[] = ['index' => $i, 'label' => $label, 'download_token' => $token, 'filename' => $outputFilename, 'size' => $fs, 'size_formatted' => $fs > 1048576 ? round($fs / 1048576, 2) . ' MB' : round($fs / 1024, 2) . ' KB'];
+                echo "data: " . json_encode(['type' => 'segment_done', 'index' => $i, 'label' => $label, 'filename' => $outputFilename, 'size_formatted' => $results[count($results)-1]['size_formatted'], 'download_token' => $token]) . "\n\n";
+                flush();
+            } else {
+                $results[] = ['index' => $i, 'label' => $label, 'error' => substr(trim($errOut), -200)];
+                echo "data: " . json_encode(['type' => 'segment_error', 'index' => $i, 'label' => $label, 'error' => substr(trim($errOut), -200)]) . "\n\n";
+                flush();
+            }
+        }
+
+        if ($tempLink && file_exists($tempLink)) @unlink($tempLink);
+        echo "data: " . json_encode(['type' => 'done', 'results' => $results]) . "\n\n";
+        flush(); exit;
+    }
 }

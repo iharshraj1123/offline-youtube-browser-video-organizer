@@ -240,6 +240,47 @@ try {
             echo json_encode(FFmpegService::analyze($inputPath, $type));
             exit;
 
+        case 'ffmpeg_concat':
+            $inputJson = $_POST['paths'] ?? '[]';
+            $paths = json_decode($inputJson, true) ?: [];
+            $rawOpts = $_POST['options'] ?? '{}';
+            $opts = json_decode($rawOpts, true) ?: [];
+            if (isset($_FILES['files'])) {
+                $tmpDir = dirname(__DIR__) . '/uploads/ffmpeg_temp';
+                if (!is_dir($tmpDir)) @mkdir($tmpDir, 0777, true);
+                $files = $_FILES['files'];
+                $count = is_array($files['name']) ? count($files['name']) : 1;
+                for ($i = 0; $i < $count; $i++) {
+                    if ($files['error'][$i] === UPLOAD_ERR_OK) {
+                        $dest = $tmpDir . '/' . uniqid('concat_') . '_' . basename($files['name'][$i]);
+                        move_uploaded_file($files['tmp_name'][$i], $dest);
+                        $paths[] = $dest;
+                    }
+                }
+            }
+            FFmpegService::concat($paths, $opts);
+            exit;
+
+        case 'ffmpeg_split':
+            $inputPath = $_POST['input'] ?? '';
+            $segJson = $_POST['segments'] ?? '[]';
+            $segments = json_decode($segJson, true) ?: [];
+            if (empty($inputPath) || empty($segments)) {
+                echo "data: " . json_encode(['type' => 'error', 'message' => 'Missing input or segments']) . "\n\n";
+                flush(); exit;
+            }
+            if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
+                $tmpDir = dirname(__DIR__) . '/uploads/ffmpeg_temp';
+                if (!is_dir($tmpDir)) @mkdir($tmpDir, 0777, true);
+                $uploadPath = $tmpDir . '/' . uniqid('upload_') . '_' . basename($_FILES['file']['name']);
+                move_uploaded_file($_FILES['file']['tmp_name'], $uploadPath);
+                $inputPath = $uploadPath;
+            }
+            $tmpDir = dirname(__DIR__) . '/uploads/ffmpeg_temp';
+            if (!is_dir($tmpDir)) @mkdir($tmpDir, 0777, true);
+            FFmpegService::split($inputPath, $segments, $tmpDir);
+            exit;
+
         // -- crawler presets
         case 'get_presets':
             handleGetPresets($pdo);

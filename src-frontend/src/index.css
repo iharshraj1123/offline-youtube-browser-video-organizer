@@ -7813,6 +7813,350 @@ body.mini-player-dragging * {
   font-weight: 500;
 }
 
+/* ---- Concatenation ---- */
+.concat-area {
+  width: 100%;
+}
+
+.concat-drop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px;
+  border: 2px dashed var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 14px;
+  transition: all 0.12s;
+}
+
+.concat-drop:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  background: rgba(99,102,241,0.04);
+}
+
+.concat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.concat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.03);
+  font-size: 13px;
+}
+
+.concat-idx {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--accent-color);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.concat-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+
+.concat-size {
+  font-size: 11px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.concat-actions {
+  display: flex;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.concat-move {
+  padding: 2px 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.concat-move:hover:not(:disabled) {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.concat-move:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.concat-remove {
+  display: flex;
+  align-items: center;
+  padding: 3px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.concat-remove:hover {
+  color: #ef4444;
+  background: rgba(239,68,68,0.1);
+}
+
+.concat-action {
+  margin-top: 8px;
+}
+
+.btn-concat-start {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent-color);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: opacity 0.12s;
+  width: 100%;
+  justify-content: center;
+}
+
+.btn-concat-start:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.concat-done {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: rgba(34,197,94,0.08);
+  color: #22c55e;
+  font-size: 13px;
+}
+
+.concat-done.error {
+  background: rgba(239,68,68,0.08);
+  color: #ef4444;
+}
+
+.btn-download-cb {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  padding: 4px 10px;
+  border: 1px solid currentColor;
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.btn-download-cb:hover {
+  opacity: 0.8;
+}
+
+/* ---- Splitter ---- */
+.split-segments {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.split-segment-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.02);
+}
+
+.split-idx {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--accent-color);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.split-input {
+  width: 100px;
+  padding: 4px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+}
+
+.split-to {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.split-label-input {
+  flex: 1;
+  min-width: 80px;
+  padding: 4px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+.split-remove-btn {
+  display: flex;
+  align-items: center;
+  padding: 3px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.split-remove-btn:hover:not(:disabled) {
+  color: #ef4444;
+  background: rgba(239,68,68,0.1);
+}
+
+.split-remove-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.split-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.btn-split-add {
+  padding: 5px 14px;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.btn-split-add:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.btn-split-scenes {
+  padding: 5px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--accent-color);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.btn-split-scenes:hover {
+  background: rgba(99,102,241,0.06);
+}
+
+.btn-split-start {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent-color);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: opacity 0.12s;
+  width: 100%;
+  justify-content: center;
+}
+
+.btn-split-start:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.split-results {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.split-result-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(34,197,94,0.06);
+  color: #22c55e;
+  font-size: 13px;
+}
+
+.split-result-item.error {
+  background: rgba(239,68,68,0.06);
+  color: #ef4444;
+}
+
+.split-result-size {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-left: auto;
+}
+
 /* ---- Visual Filters ---- */
 .vf-subheading {
   display: flex;

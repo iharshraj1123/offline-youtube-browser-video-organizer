@@ -5,7 +5,7 @@ import {
   Settings, HelpCircle, Play, Image, Disc, Radio, Timer, Subtitles,
   Scissors, Copy, Check, Save, Trash2, List, FileUp,
   Palette, Gauge, RotateCw, FlipHorizontal, FlipVertical, Type, Sun,
-  BarChart3
+  BarChart3, Merge, Split, GripVertical
 } from 'lucide-react';
 
 function formatBytes(bytes) {
@@ -386,6 +386,14 @@ export function ConverterView() {
   const [targetSizeResult, setTargetSizeResult] = React.useState(null);
   const [scenes, setScenes] = React.useState(null);
   const [analyzingScenes, setAnalyzingScenes] = React.useState(false);
+  const concatInputRef = useRef(null);
+  const [concatFiles, setConcatFiles] = React.useState([]);
+  const [concatReEncode, setConcatReEncode] = React.useState(false);
+  const [concatConverting, setConcatConverting] = React.useState(false);
+  const [concatDone, setConcatDone] = React.useState(null);
+  const [splitSegments, setSplitSegments] = React.useState([{ start: '', end: '', label: 'segment_1' }]);
+  const [splitConverting, setSplitConverting] = React.useState(false);
+  const [splitResults, setSplitResults] = React.useState([]);
 
   const { ffmpegStatus, filePath, selectedFile, mediaInfo, loadingInfo, fileError, settings, converting, convertProgress, convertTime, convertFps, convertSpeed, convertBitrate, convertEta, convertStatus, convertLog, convertDone, queue } = state;
 
@@ -731,6 +739,134 @@ export function ConverterView() {
     } catch {}
     setAnalyzingScenes(false);
   };
+
+  const handleConcatAdd = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length) setConcatFiles(prev => [...prev, ...files]);
+    if (concatInputRef.current) concatInputRef.current.value = '';
+  };
+
+  const handleConcatRemove = (idx) => {
+    setConcatFiles(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleConcatMove = (idx, dir) => {
+    const items = [...concatFiles];
+    const target = idx + dir;
+    if (target < 0 || target >= items.length) return;
+    [items[idx], items[target]] = [items[target], items[idx]];
+    setConcatFiles(items);
+  };
+
+  const handleConcatStart = async () => {
+    if (concatFiles.length < 2) return;
+    setConcatConverting(true);
+    setConcatDone(null);
+    await cleanupTemp();
+
+    const formData = new FormData();
+    for (const f of concatFiles) formData.append('files[]', f);
+    formData.append('options', JSON.stringify({
+      container: settings.container,
+      re_encode: concatReEncode,
+      video_codec: concatReEncode ? settings.videoCodec : 'copy',
+      audio_codec: concatReEncode ? settings.audioCodec : 'copy',
+      crf: concatReEncode ? settings.crf : '',
+      preset: concatReEncode ? settings.preset : '',
+      audio_bitrate: concatReEncode && settings.audioBitrate !== 'auto' ? settings.audioBitrate : '',
+      metadata_preserve: settings.metadataPreserve,
+    }));
+
+    try {
+      const res = await fetch('./api/index.php?action=ffmpeg_concat', { method: 'POST', body: formData });
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const msg = JSON.parse(line.slice(6));
+              if (msg.type === 'done') setConcatDone(msg);
+              else if (msg.type === 'error') setConcatDone({ error: msg.message });
+            } catch {}
+          }
+        }
+      }
+    } catch {}
+    setConcatConverting(false);
+  };
+
+  const handleSplitAddSegment = () => {
+    setSplitSegments(prev => [...prev, { start: '', end: '', label: 'segment_' + (prev.length + 1) }]);
+  };
+
+  const handleSplitUpdateSegment = (idx, field, value) => {
+    setSplitSegments(prev => prev.map((s, i) => i === idx ? { ...s, [field]: value } : s));
+  };
+
+  const handleSplitRemoveSegment = (idx) => {
+    setSplitSegments(prev => prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev);
+  };
+
+  const handleSplitFromScenes = () => {
+    if (!scenes || scenes.length === 0) return;
+    const segs = scenes.map((s, i) => ({
+      start: s.time,
+      end: scenes[i + 1] ? scenes[i + 1].time : '',
+      label: 'scene_' + (i + 1),
+    }));
+    setSplitSegments(segs);
+  };
+
+  const handleSplitStart = async () => {
+    const valid = splitSegments.filter(s => s.start);
+    if (valid.length === 0) return;
+    setSplitConverting(true);
+    setSplitResults([]);
+    await cleanupTemp();
+
+    const formData = new FormData();
+    if (selectedFile) {
+      formData.append('file', selectedFile);
+      formData.append('input', selectedFile.name);
+    } else {
+      formData.append('input', filePath);
+    }
+    formData.append('segments', JSON.stringify(valid.map(s => ({ ...s, container: settings.container }))));
+
+    try {
+      const res = await fetch('./api/index.php?action=ffmpeg_split', { method: 'POST', body: formData });
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const msg = JSON.parse(line.slice(6));
+              if (msg.type === 'segment_done') setSplitResults(prev => [...prev, msg]);
+              else if (msg.type === 'segment_error') setSplitResults(prev => [...prev, msg]);
+              else if (msg.type === 'done') splitDone();
+            } catch {}
+          }
+        }
+      }
+    } catch {}
+    setSplitConverting(false);
+  };
+
+  const splitDone = () => {};
 
   const hasEncoder = (name) => {
     return ffmpegStatus.video_encoders?.some(e => e.includes(name)) ||
@@ -1422,6 +1558,116 @@ export function ConverterView() {
                   </div>
                 ))}
                 {scenes.length > 30 && <div className="scene-more">...and {scenes.length - 30} more</div>}
+              </div>
+            )}
+          </ToggleSection>
+
+          {/* Concatenation */}
+          <ToggleSection icon={Merge} title="Concatenation" description="Join multiple video files together. Supports stream copy (fast) or re-encode.">
+            <OptionRow label="Source Files" description="Add files to merge. Order matters." fullWidth>
+              <div className="concat-area">
+                <div className="concat-drop" onClick={() => concatInputRef.current?.click()}>
+                  <Upload size={18} />
+                  <span>Click to add files</span>
+                  <input ref={concatInputRef} type="file" accept="video/*,audio/*" multiple style={{ display: 'none' }} onChange={handleConcatAdd} />
+                </div>
+              </div>
+            </OptionRow>
+            {concatFiles.length > 0 && (
+              <OptionRow fullWidth>
+                <div className="concat-list">
+                  {concatFiles.map((f, i) => (
+                    <div key={i} className="concat-item">
+                      <span className="concat-idx">{i + 1}</span>
+                      <span className="concat-name">{f.name}</span>
+                      <span className="concat-size">{formatBytes(f.size)}</span>
+                      <div className="concat-actions">
+                        <button className="concat-move" onClick={() => handleConcatMove(i, -1)} disabled={i === 0} title="Move up"><span>↑</span></button>
+                        <button className="concat-move" onClick={() => handleConcatMove(i, 1)} disabled={i === concatFiles.length - 1} title="Move down"><span>↓</span></button>
+                        <button className="concat-remove" onClick={() => handleConcatRemove(i)} title="Remove"><X size={14} /></button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </OptionRow>
+            )}
+            {concatFiles.length >= 2 && (
+              <OptionRow label="Mode" description="Stream copy is instant. Re-encode applies current settings.">
+                <label className="toggle-label">
+                  <input type="checkbox" checked={concatReEncode} onChange={(e) => setConcatReEncode(e.target.checked)} />
+                  <span className="toggle-switch"></span>
+                  {concatReEncode ? 'Re-encode' : 'Stream Copy (fast)'}
+                </label>
+              </OptionRow>
+            )}
+            {concatFiles.length >= 2 && (
+              <div className="concat-action">
+                <button className="btn-concat-start" onClick={handleConcatStart} disabled={concatConverting}>
+                  {concatConverting ? <><Loader2 size={16} className="spin" /> Merging...</> : <><Merge size={16} /> Merge {concatFiles.length} Files</>}
+                </button>
+              </div>
+            )}
+            {concatDone && !concatDone.error && (
+              <div className="concat-done">
+                <CheckCircle size={16} /> Merged: {concatDone.filename} ({concatDone.size_formatted})
+                <button className="btn-download-cb" onClick={() => { const a = document.createElement('a'); a.href = `./api/index.php?action=ffmpeg_download&token=${concatDone.download_token}`; a.download = concatDone.filename; a.click(); }}>
+                  <Download size={14} /> Download
+                </button>
+              </div>
+            )}
+            {concatDone?.error && (
+              <div className="concat-done error">
+                <AlertCircle size={16} /> {concatDone.error}
+              </div>
+            )}
+          </ToggleSection>
+
+          {/* Splitter */}
+          <ToggleSection icon={Split} title="Splitter" description="Split your video into multiple segments by specifying time ranges.">
+            <OptionRow label="Segments" description="Define start/end times for each segment. Leave end empty for 'to end'." fullWidth>
+              <div className="split-segments">
+                {splitSegments.map((seg, i) => (
+                  <div key={i} className="split-segment-row">
+                    <span className="split-idx">{i + 1}</span>
+                    <input type="text" className="split-input" placeholder="Start (00:00)" value={seg.start}
+                      onChange={(e) => handleSplitUpdateSegment(i, 'start', e.target.value)} />
+                    <span className="split-to">→</span>
+                    <input type="text" className="split-input" placeholder="End (optional)" value={seg.end}
+                      onChange={(e) => handleSplitUpdateSegment(i, 'end', e.target.value)} />
+                    <input type="text" className="split-label-input" placeholder="Label" value={seg.label}
+                      onChange={(e) => handleSplitUpdateSegment(i, 'label', e.target.value)} />
+                    <button className="split-remove-btn" onClick={() => handleSplitRemoveSegment(i)} disabled={splitSegments.length <= 1}><X size={14} /></button>
+                  </div>
+                ))}
+              </div>
+            </OptionRow>
+            <div className="split-actions">
+              <button className="btn-split-add" onClick={handleSplitAddSegment}>+ Add Segment</button>
+              {scenes && scenes.length > 0 && (
+                <button className="btn-split-scenes" onClick={handleSplitFromScenes}>Use Scenes</button>
+              )}
+            </div>
+            {splitSegments.some(s => s.start) && (
+              <OptionRow fullWidth>
+                <button className="btn-split-start" onClick={handleSplitStart} disabled={splitConverting}>
+                  {splitConverting ? <><Loader2 size={16} className="spin" /> Splitting...</> : <><Split size={16} /> Split into {splitSegments.filter(s => s.start).length} Segments</>}
+                </button>
+              </OptionRow>
+            )}
+            {splitResults.length > 0 && (
+              <div className="split-results">
+                {splitResults.map((r, i) => (
+                  <div key={i} className={`split-result-item ${r.error ? 'error' : ''}`}>
+                    {r.error ? <AlertCircle size={14} /> : <CheckCircle size={14} />}
+                    <span>{r.label}</span>
+                    {!r.error && <span className="split-result-size">{r.size_formatted}</span>}
+                    {!r.error && (
+                      <button className="btn-download-cb" onClick={() => { const a = document.createElement('a'); a.href = `./api/index.php?action=ffmpeg_download&token=${r.download_token}`; a.download = r.filename; a.click(); }}>
+                        <Download size={14} />
+                      </button>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
           </ToggleSection>
