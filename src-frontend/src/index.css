@@ -9360,7 +9360,7 @@ body.mini-player-dragging * {
 .shorts-video-element {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 /* Play/Pause center overlay indicator */
@@ -9624,7 +9624,7 @@ body.mini-player-dragging * {
   }
 
   .shorts-video-element {
-    object-fit: cover;
+    object-fit: contain;
   }
 
   .shorts-meta-overlay {
