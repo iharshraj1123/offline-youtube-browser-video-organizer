@@ -1108,7 +1108,7 @@ export default function App() {
 // ----------------------------------------
 // SUB-VIEW: HomeView
 // ----------------------------------------
-function HomeView({ videos, loading, activeCategory, currentSort, onPillSelect, onPlayVideo }) {
+function HomeView({ videos, loading, activeCategory, currentSort, onPillSelect, onPlayVideo, onPlayShort }) {
   const [visibleCount, setVisibleCount] = useState(24);
 
   const staticPills = [
@@ -1221,7 +1221,7 @@ function HomeView({ videos, loading, activeCategory, currentSort, onPillSelect, 
             </div>
             <div className="shorts-shelf">
               {shortsVideos.slice(0, 16).map((vid) => (
-                <ShortsCard key={vid.vid_id} video={vid} onClick={() => onPlayVideo(vid)} />
+                <ShortsCard key={vid.vid_id} video={vid} onClick={() => onPlayShort(vid, shortsVideos)} />
               ))}
             </div>
           </div>
