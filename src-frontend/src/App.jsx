@@ -1110,6 +1110,13 @@ export default function App() {
 // ----------------------------------------
 function HomeView({ videos, loading, activeCategory, currentSort, onPillSelect, onPlayVideo, onPlayShort }) {
   const [visibleCount, setVisibleCount] = useState(24);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const staticPills = [
     { id: 'all', label: 'all', category: 'all', sort: 'mix' },
@@ -1162,6 +1169,74 @@ function HomeView({ videos, loading, activeCategory, currentSort, onPillSelect, 
   const visibleRegularVideos = useMemo(() => regularVideos.slice(0, visibleCount), [regularVideos, visibleCount]);
   const visibleVideos = useMemo(() => videos.slice(0, visibleCount), [videos, visibleCount]);
 
+  const renderInterleavedContent = () => {
+    if (!isAllMix || shortsVideos.length === 0) {
+      return (
+        <div className="video-grid">
+          {visibleVideos.map((vid) => (
+            <VideoCard key={vid.vid_id} video={vid} onClick={() => onPlayVideo(vid)} />
+          ))}
+        </div>
+      );
+    }
+
+    const firstInterval = isMobile ? 4 : 8;
+    const nextInterval = isMobile ? 6 : 12;
+    const shortsPerShelf = 8;
+
+    const elements = [];
+    let regularIndex = 0;
+    let shortsIndex = 0;
+    let shelfCount = 0;
+
+    const totalRegular = visibleRegularVideos.length;
+    const totalShorts = shortsVideos.length;
+
+    while (regularIndex < totalRegular) {
+      const chunkSize = (shelfCount === 0) ? firstInterval : nextInterval;
+      const nextRegularSlice = visibleRegularVideos.slice(regularIndex, regularIndex + chunkSize);
+
+      if (nextRegularSlice.length > 0) {
+        elements.push(
+          <div className="video-grid" key={`reg-${regularIndex}`} style={{ marginTop: regularIndex > 0 ? '24px' : '0' }}>
+            {nextRegularSlice.map((vid) => (
+              <VideoCard key={vid.vid_id} video={vid} onClick={() => onPlayVideo(vid)} />
+            ))}
+          </div>
+        );
+        regularIndex += chunkSize;
+      } else {
+        break;
+      }
+
+      if (shortsIndex < totalShorts) {
+        const nextShortsSlice = shortsVideos.slice(shortsIndex, shortsIndex + shortsPerShelf);
+        if (nextShortsSlice.length > 0) {
+          const currentShortsSlice = [...nextShortsSlice];
+          elements.push(
+            <div className="shorts-section" key={`shorts-shelf-${shelfCount}`}>
+              <div className="shorts-header">
+                <span className="shorts-header-icon">
+                  <Flame size={20} fill="var(--primary-color)" stroke="none" />
+                </span>
+                <span>Shorts</span>
+              </div>
+              <div className="shorts-shelf">
+                {currentShortsSlice.map((vid) => (
+                  <ShortsCard key={vid.vid_id} video={vid} onClick={() => onPlayShort(vid, shortsVideos)} />
+                ))}
+              </div>
+            </div>
+          );
+          shortsIndex += shortsPerShelf;
+          shelfCount++;
+        }
+      }
+    }
+
+    return elements;
+  };
+
   return (
     <>
       {/* Category Selection Bar */}
@@ -1200,47 +1275,8 @@ function HomeView({ videos, loading, activeCategory, currentSort, onPillSelect, 
           <Folder size={48} style={{ marginBottom: '12px' }} />
           <p>No video files found. Go to the Crawl Folders page to import videos!</p>
         </div>
-      ) : isAllMix && shortsVideos.length > 0 ? (
-        <>
-          {/* First row of regular videos */}
-          {visibleRegularVideos.slice(0, 8).length > 0 && (
-            <div className="video-grid">
-              {visibleRegularVideos.slice(0, 8).map((vid) => (
-                <VideoCard key={vid.vid_id} video={vid} onClick={() => onPlayVideo(vid)} />
-              ))}
-            </div>
-          )}
-
-          {/* Shorts shelf */}
-          <div className="shorts-section">
-            <div className="shorts-header">
-              <span className="shorts-header-icon">
-                <Flame size={20} fill="var(--primary-color)" stroke="none" />
-              </span>
-              <span>Shorts</span>
-            </div>
-            <div className="shorts-shelf">
-              {shortsVideos.slice(0, 16).map((vid) => (
-                <ShortsCard key={vid.vid_id} video={vid} onClick={() => onPlayShort(vid, shortsVideos)} />
-              ))}
-            </div>
-          </div>
-
-          {/* Rest of the regular videos */}
-          {visibleRegularVideos.slice(8).length > 0 && (
-            <div className="video-grid" style={{ marginTop: '16px' }}>
-              {visibleRegularVideos.slice(8).map((vid) => (
-                <VideoCard key={vid.vid_id} video={vid} onClick={() => onPlayVideo(vid)} />
-              ))}
-            </div>
-          )}
-        </>
       ) : (
-        <div className="video-grid">
-          {visibleVideos.map((vid) => (
-            <VideoCard key={vid.vid_id} video={vid} onClick={() => onPlayVideo(vid)} />
-          ))}
-        </div>
+        renderInterleavedContent()
       )}
     </>
   );
