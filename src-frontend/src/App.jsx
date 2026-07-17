@@ -408,6 +408,15 @@ export default function App() {
     }
   }, [currentView, isTheaterMode]);
 
+  useEffect(() => {
+    if (currentView === 'player' && playingVideo && playingVideo.vid_name) {
+      const cleanTitle = playingVideo.vid_name.replace(/\.[a-zA-Z0-9]+$/, '');
+      document.title = `${cleanTitle} - YouTube`;
+    } else {
+      document.title = 'YouTube';
+    }
+  }, [currentView, playingVideo]);
+
 
 
   // Fetch Videos
