@@ -7,7 +7,7 @@ import {
   Play, Pause, Volume2, VolumeX, Maximize, Minimize,
   Settings, Trash2, Edit, RefreshCw, Plus, Check, Loader2,
   ThumbsUp, ThumbsDown, Info, Mic, Bell, CornerUpLeft,
-  Repeat, Shuffle, Download, SkipBack, SkipForward, ListMusic, X, RotateCcw, RotateCw, Cast, Upload, Subtitles, AlertTriangle, Wand2
+  Repeat, Shuffle, Download, SkipBack, SkipForward, ListMusic, X, RotateCcw, RotateCw, Cast, Upload, Subtitles, AlertTriangle, Wand2, Flame
 } from 'lucide-react';
 import { AuthModal } from './components/AuthModal';
 import { CommentsSection } from './components/CommentsSection';
@@ -98,7 +98,7 @@ export default function App() {
   const [playingVideo, setPlayingVideo] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
-  const [currentSort, setCurrentSort] = useState('recent'); // 'recent' | 'mix'
+  const [currentSort, setCurrentSort] = useState('mix'); // 'recent' | 'mix'
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     return localStorage.getItem('yt_sidebar_collapsed') === 'true';
   });
@@ -1087,7 +1087,8 @@ function HomeView({ videos, loading, activeCategory, currentSort, onPillSelect, 
   const [visibleCount, setVisibleCount] = useState(24);
 
   const staticPills = [
-    { id: 'all', label: 'all', category: 'all', sort: 'recent' },
+    { id: 'all', label: 'all', category: 'all', sort: 'mix' },
+    { id: 'recent', label: 'recent', category: 'all', sort: 'recent' },
     { id: 'oldest', label: 'oldest', category: 'all', sort: 'oldest' },
     { id: 'video_songs', label: 'video songs', category: 'video songs', sort: 'recent' },
     { id: 'downloads', label: 'downloads', category: 'downloads', sort: 'recent' },
@@ -1096,23 +1097,42 @@ function HomeView({ videos, loading, activeCategory, currentSort, onPillSelect, 
     { id: 'favourite', label: 'favourite', category: 'favourite', sort: 'recent' }
   ];
 
+  // Helper to detect portrait videos (Shorts)
+  const isShort = (vid) => {
+    if (vid.tags) {
+      const tagList = vid.tags.split(',').map(t => t.trim().toLowerCase());
+      if (tagList.includes('shorts')) return true;
+    }
+    if (vid.height && vid.width && vid.height >= vid.width) {
+      return true;
+    }
+    return false;
+  };
+
+  const isAllMix = activeCategory === 'all' && currentSort === 'mix';
+
+  // Separate videos into categories
+  const shortsVideos = useMemo(() => isAllMix ? videos.filter(isShort) : [], [videos, isAllMix]);
+  const regularVideos = useMemo(() => isAllMix ? videos.filter(v => !isShort(v)) : videos, [videos, isAllMix]);
+
   // Infinite Scroll Listener
   useEffect(() => {
     const handleScroll = () => {
       if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 300) {
-        setVisibleCount(prev => Math.min(prev + 24, videos.length));
+        setVisibleCount(prev => Math.min(prev + 24, regularVideos.length));
       }
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [videos]);
+  }, [regularVideos]);
 
   // Reset infinite scroll count when filter/videos changes
   useEffect(() => {
     setVisibleCount(24);
   }, [videos]);
 
-  const visibleVideos = videos.slice(0, visibleCount);
+  const visibleRegularVideos = useMemo(() => regularVideos.slice(0, visibleCount), [regularVideos, visibleCount]);
+  const visibleVideos = useMemo(() => videos.slice(0, visibleCount), [videos, visibleCount]);
 
   return (
     <>
@@ -1152,6 +1172,41 @@ function HomeView({ videos, loading, activeCategory, currentSort, onPillSelect, 
           <Folder size={48} style={{ marginBottom: '12px' }} />
           <p>No video files found. Go to the Crawl Folders page to import videos!</p>
         </div>
+      ) : isAllMix && shortsVideos.length > 0 ? (
+        <>
+          {/* First row of regular videos */}
+          {visibleRegularVideos.slice(0, 8).length > 0 && (
+            <div className="video-grid">
+              {visibleRegularVideos.slice(0, 8).map((vid) => (
+                <VideoCard key={vid.vid_id} video={vid} onClick={() => onPlayVideo(vid)} />
+              ))}
+            </div>
+          )}
+
+          {/* Shorts shelf */}
+          <div className="shorts-section">
+            <div className="shorts-header">
+              <span className="shorts-header-icon">
+                <Flame size={20} fill="var(--primary-color)" stroke="none" />
+              </span>
+              <span>Shorts</span>
+            </div>
+            <div className="shorts-shelf">
+              {shortsVideos.slice(0, 16).map((vid) => (
+                <ShortsCard key={vid.vid_id} video={vid} onClick={() => onPlayVideo(vid)} />
+              ))}
+            </div>
+          </div>
+
+          {/* Rest of the regular videos */}
+          {visibleRegularVideos.slice(8).length > 0 && (
+            <div className="video-grid" style={{ marginTop: '16px' }}>
+              {visibleRegularVideos.slice(8).map((vid) => (
+                <VideoCard key={vid.vid_id} video={vid} onClick={() => onPlayVideo(vid)} />
+              ))}
+            </div>
+          )}
+        </>
       ) : (
         <div className="video-grid">
           {visibleVideos.map((vid) => (
@@ -1160,6 +1215,26 @@ function HomeView({ videos, loading, activeCategory, currentSort, onPillSelect, 
         </div>
       )}
     </>
+  );
+}
+
+// ----------------------------------------
+// SUB-COMPONENT: ShortsCard
+// ----------------------------------------
+function ShortsCard({ video, onClick }) {
+  const cleanTitle = video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '');
+  const thumbnailSrc = `./thumbnails/${video.vid_id}.jpg`;
+  
+  return (
+    <div className="shorts-card" onClick={onClick}>
+      <div className="shorts-thumbnail-wrapper">
+        <img src={thumbnailSrc} alt={cleanTitle} className="shorts-thumbnail" />
+        <div className="shorts-overlay">
+          <div className="shorts-title">{cleanTitle}</div>
+          <div className="shorts-views">{video.views || 0} views</div>
+        </div>
+      </div>
+    </div>
   );
 }
 

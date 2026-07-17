@@ -229,6 +229,24 @@ try {
         case 'ffmpeg_download':
             handleFfmpegDownload();
             break;
+        case 'open_local_file':
+            $path = $_POST['path'] ?? $_GET['path'] ?? '';
+            if (empty($path)) {
+                echo json_encode(['error' => 'No path provided']);
+                exit;
+            }
+            if (file_exists($path)) {
+                if (strncasecmp(PHP_OS, 'WIN', 3) === 0) {
+                    pclose(popen('start "" ' . escapeshellarg($path), 'r'));
+                    echo json_encode(['success' => true]);
+                } else {
+                    pclose(popen('xdg-open ' . escapeshellarg($path), 'r'));
+                    echo json_encode(['success' => true]);
+                }
+            } else {
+                echo json_encode(['error' => 'File not found on disk']);
+            }
+            exit;
         case 'ffmpeg_cleanup':
             FFmpegService::cleanup();
             echo json_encode(['success' => true]);
@@ -627,7 +645,7 @@ function processSingleVideo($pdo, $file, $uploaderInfo, $ffmpegPath, $videoExten
         ':duration' => $meta['duration'],
         ':upload_date' => $upload_date,
         ':upload_time' => $upload_time,
-        ':tags' => '',
+        ':tags' => (!empty($meta['width']) && !empty($meta['height']) && (int)$meta['height'] >= (int)$meta['width']) ? 'shorts' : '',
         ':description' => $description,
         ':filesize' => $meta['filesize'],
         ':width' => $meta['width'],

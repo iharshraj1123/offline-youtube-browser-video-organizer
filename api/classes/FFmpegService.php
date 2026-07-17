@@ -400,7 +400,12 @@ class FFmpegService {
 
         if (!empty($opts['subtitle_mode']) && $opts['subtitle_mode'] === 'burn') {
             $subStream = intval($opts['subtitle_stream'] ?? 0);
-            $parts[] = 'subtitles=' . escapeshellarg($opts['_input_path_for_subtitles']) . ':stream_index=' . $subStream;
+            $subPath = $opts['_input_path_for_subtitles'];
+            // Escape for FFmpeg filter syntax (especially on Windows)
+            $subPath = str_replace('\\', '/', $subPath);
+            $subPath = str_replace(':', '\\:', $subPath);
+            // Enclose path in single quotes so spaces don't break the filter
+            $parts[] = "subtitles='{$subPath}':stream_index={$subStream}";
         }
         return $parts;
     }
@@ -486,48 +491,80 @@ class FFmpegService {
         $vfParts = self::buildVfFilters($opts);
         $afParts = self::buildAfFilters($opts);
 
-        // Video options
-        $videoCodec = $opts['video_codec'] ?? 'copy';
-        if ($videoCodec === 'copy') {
-            $cmd .= ' -c:v copy';
+        $isAudioContainer = in_array($container, ['m4a', 'mp3', 'flac', 'wav', 'ogg']);
+        $isGif = ($container === 'gif');
+
+        if ($isAudioContainer) {
+            $cmd .= ' -vn';
+            $useComplex = false;
+            $vfParts = [];
+            // Auto-correct copy audio codec to prevent muxing incompatible formats
+            $audioCodec = $opts['audio_codec'] ?? 'copy';
+            if ($audioCodec === 'copy') {
+                if ($container === 'mp3') $audioCodec = 'mp3';
+                elseif ($container === 'wav') $audioCodec = 'wav';
+                elseif ($container === 'flac') $audioCodec = 'flac';
+                elseif ($container === 'm4a') $audioCodec = 'aac';
+                elseif ($container === 'ogg') $audioCodec = 'opus';
+            }
+        } elseif ($isGif) {
+            $cmd .= ' -an';
+            $useComplex = false;
+            // GIFs must be video-only and re-encoded
+            $videoCodec = 'gif';
         } else {
-            $ffVideoCodec = self::$codecMap[$videoCodec] ?? $videoCodec;
-            $cmd .= ' -c:v ' . $ffVideoCodec;
+            // Video options
+            $videoCodec = $opts['video_codec'] ?? 'copy';
+            // Auto-fallback from copy to encoder if video filters/watermarks are requested
+            if ($videoCodec === 'copy' && (!empty($vfParts) || $watermarkImage)) {
+                $videoCodec = 'h264';
+            }
 
-            if (!empty($opts['crf']) && $opts['crf'] !== '') {
-                $crf = intval($opts['crf']);
-                if (in_array($videoCodec, ['vp9', 'av1'])) {
-                    $cmd .= ' -crf ' . max(0, min(63, $crf));
-                } else {
-                    $cmd .= ' -crf ' . max(0, min(51, $crf));
+            if ($videoCodec === 'copy') {
+                $cmd .= ' -c:v copy';
+            } else {
+                $ffVideoCodec = self::$codecMap[$videoCodec] ?? $videoCodec;
+                $cmd .= ' -c:v ' . $ffVideoCodec;
+
+                if (!empty($opts['crf']) && $opts['crf'] !== '') {
+                    $crf = intval($opts['crf']);
+                    if (in_array($videoCodec, ['vp9', 'av1'])) {
+                        $cmd .= ' -crf ' . max(0, min(63, $crf));
+                    } else {
+                        $cmd .= ' -crf ' . max(0, min(51, $crf));
+                    }
                 }
-            }
 
-            if (!empty($opts['video_bitrate'])) {
-                $cmd .= ' -b:v ' . escapeshellarg($opts['video_bitrate']);
-            }
+                if (!empty($opts['video_bitrate']) && $opts['video_bitrate'] !== 'auto') {
+                    $cmd .= ' -b:v ' . escapeshellarg($opts['video_bitrate']);
+                }
 
-            if (!empty($opts['framerate']) && $opts['framerate'] !== 'original') {
-                $cmd .= ' -r ' . escapeshellarg($opts['framerate']);
-            }
+                if (!empty($opts['framerate']) && $opts['framerate'] !== 'original') {
+                    $cmd .= ' -r ' . escapeshellarg($opts['framerate']);
+                }
 
-            if (!empty($opts['preset'])) {
-                $cmd .= ' -preset ' . escapeshellarg($opts['preset']);
-            }
-            if (!empty($opts['tune'])) {
-                $cmd .= ' -tune ' . escapeshellarg($opts['tune']);
-            }
-            if (!empty($opts['profile'])) {
-                $cmd .= ' -profile:v ' . escapeshellarg($opts['profile']);
-            }
-            if (!empty($opts['pix_fmt'])) {
-                $cmd .= ' -pix_fmt ' . escapeshellarg($opts['pix_fmt']);
+                // Only H.264 and H.265 support preset/tune/profile in standard syntax
+                $isH26X = in_array($videoCodec, ['h264', 'h265', 'hevc']);
+                if ($isH26X) {
+                    if (!empty($opts['preset'])) {
+                        $cmd .= ' -preset ' . escapeshellarg($opts['preset']);
+                    }
+                    if (!empty($opts['tune'])) {
+                        $cmd .= ' -tune ' . escapeshellarg($opts['tune']);
+                    }
+                    if (!empty($opts['profile'])) {
+                        $cmd .= ' -profile:v ' . escapeshellarg($opts['profile']);
+                    }
+                }
+                if (!empty($opts['pix_fmt'])) {
+                    $cmd .= ' -pix_fmt ' . escapeshellarg($opts['pix_fmt']);
+                }
             }
         }
 
         // Watermark: add overlay to filter chain or use filter_complex
         $useComplex = false;
-        if ($watermarkImage) {
+        if (!$isAudioContainer && !$isGif && $watermarkImage) {
             $wmPos = self::getWatermarkPosition($opts['watermark_position'] ?? 'se');
             $alpha = floatval($opts['watermark_opacity'] ?? 1.0);
             if ($alpha < 1.0) {
@@ -550,33 +587,49 @@ class FFmpegService {
             $cmd .= ' -vf "' . implode(',', $vfParts) . '"';
         }
 
-        // Audio options
-        $audioCodec = $opts['audio_codec'] ?? 'copy';
-        if ($audioCodec === 'copy') {
-            $cmd .= ' -c:a copy';
-        } else {
-            $ffAudioCodec = self::$codecMap[$audioCodec] ?? $audioCodec;
-            $cmd .= ' -c:a ' . $ffAudioCodec;
-            if (!empty($opts['audio_bitrate']) && $opts['audio_bitrate'] !== 'auto') {
-                $cmd .= ' -b:a ' . escapeshellarg($opts['audio_bitrate']);
+        // Audio options (skipped for GIF)
+        if (!$isGif) {
+            $audioCodec = $opts['audio_codec'] ?? 'copy';
+            // Auto-fallback from copy to encoder if audio filters are requested
+            if ($audioCodec === 'copy' && !empty($afParts)) {
+                $audioCodec = 'aac';
             }
-            if (!empty($opts['sample_rate']) && $opts['sample_rate'] !== 'original') {
-                $cmd .= ' -ar ' . intval($opts['sample_rate']);
-            }
-            if (!empty($opts['channels']) && $opts['channels'] !== 'original') {
-                $chMap = ['mono' => 1, 'stereo' => 2, '5.1' => 6, '7.1' => 8];
-                $ch = $chMap[$opts['channels']] ?? intval($opts['channels']);
-                if ($ch > 0) $cmd .= ' -ac ' . $ch;
+
+            if ($audioCodec === 'copy') {
+                $cmd .= ' -c:a copy';
+            } else {
+                $ffAudioCodec = self::$codecMap[$audioCodec] ?? $audioCodec;
+                $cmd .= ' -c:a ' . $ffAudioCodec;
+                
+                // Raw PCM (WAV) does not support bitrate parameters
+                $isPCM = (strpos($ffAudioCodec, 'pcm_') === 0);
+                if (!$isPCM && !empty($opts['audio_bitrate']) && $opts['audio_bitrate'] !== 'auto') {
+                    $cmd .= ' -b:a ' . escapeshellarg($opts['audio_bitrate']);
+                }
+                if (!empty($opts['sample_rate']) && $opts['sample_rate'] !== 'original') {
+                    $cmd .= ' -ar ' . intval($opts['sample_rate']);
+                }
+                if (!empty($opts['channels']) && $opts['channels'] !== 'original') {
+                    $chMap = ['mono' => 1, 'stereo' => 2, '5.1' => 6, '7.1' => 8];
+                    $ch = $chMap[$opts['channels']] ?? intval($opts['channels']);
+                    // Enforce channel limits based on encoder support
+                    if ($ffAudioCodec === 'libmp3lame') {
+                        $ch = min(2, $ch);
+                    } elseif ($ffAudioCodec === 'ac3') {
+                        $ch = min(6, $ch);
+                    }
+                    if ($ch > 0) $cmd .= ' -ac ' . $ch;
+                }
             }
         }
 
-        // Subtitle handling (stream copy, not burn — burn handled in vf filters)
-        if (!empty($opts['subtitle_mode']) && $opts['subtitle_mode'] === 'copy') {
+        // Subtitle handling (stream copy, not burn — burn handled in vf filters; skipped for audio-only and GIF)
+        if (!$isAudioContainer && !$isGif && !empty($opts['subtitle_mode']) && $opts['subtitle_mode'] === 'copy') {
             $cmd .= ' -c:s copy';
         }
 
         // Audio filter chain
-        if (!empty($afParts)) {
+        if (!empty($afParts) && !$isGif) {
             $cmd .= ' -af "' . implode(',', $afParts) . '"';
         }
 
@@ -584,8 +637,8 @@ class FFmpegService {
         if (!empty($opts['start_time'])) $cmd .= ' -ss ' . escapeshellarg($opts['start_time']);
         if (!empty($opts['duration'])) $cmd .= ' -t ' . escapeshellarg($opts['duration']);
 
-        // Two-pass
-        $twoPass = !empty($opts['two_pass']);
+        // Two-pass (only for video container)
+        $twoPass = !empty($opts['two_pass']) && !$isAudioContainer && !$isGif;
 
         // Threads
         if (!empty($opts['threads']) && intval($opts['threads']) > 0) {
@@ -630,8 +683,9 @@ class FFmpegService {
 
         // Two-pass
         if ($twoPass && $videoCodec !== 'copy') {
+            $nullDev = (strncasecmp(PHP_OS, 'WIN', 3) === 0) ? 'NUL' : '/dev/null';
             $pass1Cmd = $cmd;
-            $pass1Cmd = str_replace(' ' . escapeshellarg($outputPath), ' -pass 1 -f null NUL', $pass1Cmd);
+            $pass1Cmd = str_replace(' ' . escapeshellarg($outputPath), " -pass 1 -f null {$nullDev}", $pass1Cmd);
             $pass1Cmd .= ' 2>&1';
             echo "data: " . json_encode(['type' => 'info', 'message' => 'Running first pass (2-pass encoding)...']) . "\n\n";
             flush();

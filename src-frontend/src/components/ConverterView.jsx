@@ -5,7 +5,7 @@ import {
   Settings, HelpCircle, Play, Image, Disc, Radio, Timer, Subtitles,
   Scissors, Copy, Check, Save, Trash2, List,
   Palette, Gauge, RotateCw, FlipHorizontal, FlipVertical, Type, Sun,
-  BarChart3, Merge, Split, GripVertical
+  BarChart3, Merge, Split, GripVertical, ExternalLink
 } from 'lucide-react';
 
 function formatBytes(bytes) {
@@ -571,6 +571,9 @@ export function ConverterView() {
         audioCodec: settings.audioCodec,
         timestamp: new Date().toLocaleString(),
         duration: mediaInfo.duration,
+        originalName: mediaInfo.filename,
+        downloadToken: convertDone.download_token,
+        outputPath: convertDone.output_path || '',
       };
       const updated = [entry, ...historyRef.current.filter(h => h.filename !== entry.filename)].slice(0, 20);
       setHistory(updated);
@@ -955,6 +958,38 @@ export function ConverterView() {
     dispatch({ type: 'SET_FILE', payload: null });
     dispatch({ type: 'SET_MEDIA_INFO', payload: null });
     dispatch({ type: 'SET_FILE_PATH', payload: '' });
+  };
+
+  const handleDownloadFromHistory = (token, filename) => {
+    const a = document.createElement('a');
+    a.href = `./api/index.php?action=ffmpeg_download&token=${token}`;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  const handleOpenLocalFile = async (path) => {
+    try {
+      const formData = new FormData();
+      formData.append('path', path);
+      const res = await fetch('./api/index.php?action=open_local_file', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.error) {
+        alert(data.error);
+      }
+    } catch (e) {
+      alert('Failed to open file: ' + e.message);
+    }
+  };
+
+  const handleDeleteHistoryItem = (index) => {
+    const updated = historyRef.current.filter((_, idx) => idx !== index);
+    setHistory(updated);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
   };
 
   const handleReset = async () => {
@@ -2790,11 +2825,42 @@ export function ConverterView() {
           <div className="history-list">
             {history.map((entry, i) => (
               <div key={i} className="history-item">
-                <div className="history-item-main">
-                  <span className="history-filename">{entry.filename}</span>
-                  <span className="history-details">
-                    {entry.size} &middot; {entry.container.toUpperCase()} &middot; {entry.timestamp}
-                  </span>
+                <div className="history-item-content">
+                  <div className="history-item-main">
+                    <div className="history-flow">
+                      <span className="history-flow-source" title={entry.originalName || "Original source"}>
+                        {entry.originalName || "Original source"}
+                      </span>
+                      <span className="history-flow-arrow">➔</span>
+                      <span className="history-flow-dest" title={entry.filename}>
+                        {entry.filename}
+                      </span>
+                    </div>
+                    <div className="history-details">
+                      <span className="history-detail-badge">{entry.container.toUpperCase()}</span>
+                      {entry.videoCodec && entry.videoCodec !== 'copy' && <span className="history-detail-badge">{entry.videoCodec.toUpperCase()}</span>}
+                      <span>{entry.size}</span>
+                      <span className="history-dot">&middot;</span>
+                      <span>{entry.timestamp}</span>
+                    </div>
+                  </div>
+                  <div className="history-item-actions">
+                    {entry.outputPath && (
+                      <button className="history-action-btn btn-open" onClick={() => handleOpenLocalFile(entry.outputPath)} title="Open output file locally">
+                        <ExternalLink size={13} />
+                        <span>Open</span>
+                      </button>
+                    )}
+                    {entry.downloadToken && (
+                      <button className="history-action-btn btn-download" onClick={() => handleDownloadFromHistory(entry.downloadToken, entry.filename)} title="Download file via browser">
+                        <Download size={13} />
+                        <span>Download</span>
+                      </button>
+                    )}
+                    <button className="history-action-btn btn-delete" onClick={() => handleDeleteHistoryItem(i)} title="Remove from history">
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
