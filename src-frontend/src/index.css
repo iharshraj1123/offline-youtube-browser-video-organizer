@@ -105,6 +105,7 @@ button {
   letter-spacing: -0.5px;
   display: flex;
   align-items: center;
+  color: var(--text-color);
 }
 
 .logo-badge {
@@ -1269,6 +1270,10 @@ button {
 
   .logo-icon-only {
     display: block !important;
+  }
+
+  .logo-text {
+    display: none !important;
   }
 
   .volume-slider {

@@ -674,17 +674,12 @@ export default function App() {
 
           <div className="logo-container" style={{ cursor: 'pointer' }} onClick={handleGoHome}>
             <img
-              src="./yt-logo.png"
-              alt="YouTube"
-              className="logo-full"
-              style={{ height: '24px', objectFit: 'contain', display: 'block' }}
-            />
-            <img
               src="./yt-icon.png"
               alt="YouTube"
               className="logo-icon-only"
-              style={{ height: '24px', objectFit: 'contain', display: 'none' }}
+              style={{ height: '24px', objectFit: 'contain', display: 'block' }}
             />
+            <span className="logo-text">YouTube</span>
           </div>
         </div>
 
