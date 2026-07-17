@@ -9590,36 +9590,69 @@ body.mini-player-dragging * {
   padding: 10px;
 }
 
-/* Responsive Overrides */
 @media (max-width: 768px) {
   .shorts-viewer-content {
-    padding: 10px;
+    padding: 0;
   }
 
   .shorts-back-btn {
-    top: 10px;
-    left: 10px;
-    padding: 6px 12px;
+    top: 16px;
+    left: 16px;
+    padding: 8px 16px;
     font-size: 13px;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    border-color: rgba(255, 255, 255, 0.15);
   }
 
   .shorts-player-layout {
-    gap: 10px;
-    margin-top: 50px;
-    max-height: calc(100vh - 60px);
+    margin-top: 0;
+    width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    gap: 0;
   }
 
   .shorts-video-container {
-    max-height: calc(100vh - 100px);
+    width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    aspect-ratio: auto;
+    border-radius: 0;
+    border: none;
+    flex: 1;
+  }
+
+  .shorts-video-element {
+    object-fit: cover;
+  }
+
+  .shorts-meta-overlay {
+    bottom: 0;
+    left: 0;
+    right: 80px;
+    padding: 24px 16px;
+    background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.85) 100%);
   }
 
   .shorts-actions-column {
-    gap: 12px;
+    position: absolute;
+    bottom: 40px;
+    right: 16px;
+    gap: 16px;
+    z-index: 10;
   }
 
   .shorts-action-btn-circle {
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
+    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .shorts-action-label {
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
   }
 
   /* Comments overlay slide-up for mobile */
@@ -9629,11 +9662,12 @@ body.mini-player-dragging * {
     left: 0;
     right: 0;
     width: 100%;
-    height: 60vh;
+    height: 65vh;
     border-radius: 16px 16px 0 0;
-    box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.8);
     border-bottom: none;
     border-left: none;
     border-right: none;
+    background: rgba(15, 15, 15, 0.98);
   }
 }
