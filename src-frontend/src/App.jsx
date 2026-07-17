@@ -7,7 +7,7 @@ import {
   Play, Pause, Volume2, VolumeX, Maximize, Minimize,
   Settings, Trash2, Edit, RefreshCw, Plus, Check, Loader2,
   ThumbsUp, ThumbsDown, Info, Mic, Bell, CornerUpLeft,
-  Repeat, Shuffle, Download, SkipBack, SkipForward, ListMusic, X, RotateCcw, RotateCw, Cast, Upload, Subtitles, AlertTriangle, Wand2, Flame
+  Repeat, Shuffle, Download, SkipBack, SkipForward, ListMusic, X, RotateCcw, RotateCw, Cast, Upload, Subtitles, AlertTriangle, Wand2, Flame, MessageSquare
 } from 'lucide-react';
 import { AuthModal } from './components/AuthModal';
 import { CommentsSection } from './components/CommentsSection';
@@ -1276,9 +1276,11 @@ function ShortsPlayerView({ shortsList, initialIndex, onClose, currentUser, onOp
   const [isMuted, setIsMuted] = useState(false);
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const currentVideo = shortsList[currentIndex];
   const videoRef = useRef(null);
+  const playerLayoutRef = useRef(null);
 
   // Auto-play when video changes
   useEffect(() => {
@@ -1352,6 +1354,15 @@ function ShortsPlayerView({ shortsList, initialIndex, onClose, currentUser, onOp
     }
   };
 
+  // Listen to fullscreen changes (sync state if user presses Esc)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
   const togglePlay = () => {
     if (videoRef.current) {
       if (videoRef.current.paused) {
@@ -1369,6 +1380,22 @@ function ShortsPlayerView({ shortsList, initialIndex, onClose, currentUser, onOp
     if (videoRef.current) {
       videoRef.current.muted = !isMuted;
       setIsMuted(!isMuted);
+    }
+  };
+
+  const toggleFullscreen = (e) => {
+    e.stopPropagation();
+    const container = playerLayoutRef.current;
+    if (!container) return;
+    if (!document.fullscreenElement) {
+      container.requestFullscreen().then(() => {
+        setIsFullscreen(true);
+      }).catch(err => {
+        console.error("Error enabling fullscreen:", err);
+      });
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
     }
   };
 
@@ -1418,7 +1445,7 @@ function ShortsPlayerView({ shortsList, initialIndex, onClose, currentUser, onOp
         </button>
 
         {/* Swipe Layout */}
-        <div className="shorts-player-layout">
+        <div ref={playerLayoutRef} className="shorts-player-layout">
           {/* Main Video Box */}
           <div className="shorts-video-container" onClick={togglePlay}>
             <video
@@ -1430,9 +1457,12 @@ function ShortsPlayerView({ shortsList, initialIndex, onClose, currentUser, onOp
             />
 
             {/* Video Controls overlay */}
-            <div className="shorts-video-controls">
-              <button className="shorts-control-icon-btn" onClick={toggleMute}>
+            <div className="shorts-video-controls" style={{ display: 'flex', gap: '8px' }}>
+              <button className="shorts-control-icon-btn" onClick={toggleMute} title={isMuted ? "Unmute" : "Mute"}>
                 {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+              </button>
+              <button className="shorts-control-icon-btn" onClick={toggleFullscreen} title="Toggle Fullscreen">
+                {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
               </button>
             </div>
 
@@ -1476,7 +1506,7 @@ function ShortsPlayerView({ shortsList, initialIndex, onClose, currentUser, onOp
 
             <div className="shorts-action-item" onClick={() => setShowComments(!showComments)}>
               <button className={`shorts-action-btn-circle ${showComments ? 'active' : ''}`}>
-                <CornerUpLeft size={22} />
+                <MessageSquare size={22} fill={showComments ? "currentColor" : "none"} />
               </button>
               <span className="shorts-action-label">{currentVideo.comments || 0}</span>
             </div>
