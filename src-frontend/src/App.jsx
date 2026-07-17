@@ -103,6 +103,10 @@ export default function App() {
     return localStorage.getItem('yt_sidebar_collapsed') === 'true';
   });
 
+  // Shorts Player States
+  const [shortsList, setShortsList] = useState([]);
+  const [initialShortIndex, setInitialShortIndex] = useState(0);
+
   // Playlists States
   const [playlists, setPlaylists] = useState([]);
   const [activePlaylist, setActivePlaylist] = useState(null);
@@ -570,6 +574,14 @@ export default function App() {
     }
   };
 
+  const handlePlayShort = (shortVideo, allShorts) => {
+    fetch(`./api/index.php?action=view_video&id=${shortVideo.vid_id}`).catch(() => {});
+    setShortsList(allShorts);
+    const idx = allShorts.findIndex(v => v.vid_id === shortVideo.vid_id);
+    setInitialShortIndex(idx >= 0 ? idx : 0);
+    setCurrentView('shorts');
+  };
+
   // Load a video for playing
   const handlePlayVideo = async (video, keepMiniPlayer = false, skipHistory = false) => {
     const shouldKeepMini = keepMiniPlayer;
@@ -965,6 +977,19 @@ export default function App() {
               currentSort={currentSort}
               onPillSelect={handlePillSelect}
               onPlayVideo={handlePlayVideo}
+              onPlayShort={handlePlayShort}
+            />
+          )}
+
+          {currentView === 'shorts' && (
+            <ShortsPlayerView
+              shortsList={shortsList}
+              initialIndex={initialShortIndex}
+              onClose={handleGoHome}
+              currentUser={user}
+              onOpenAuth={() => setShowAuthModal(true)}
+              onNavigateToProfile={() => setCurrentView('profile')}
+              showFlashNotification={showFlashNotification}
             />
           )}
 
@@ -1235,6 +1260,261 @@ function ShortsCard({ video, onClick }) {
         <div className="shorts-overlay">
           <div className="shorts-title">{cleanTitle}</div>
           <div className="shorts-views">{video.views || 0} views</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------
+// SUB-COMPONENT: ShortsPlayerView
+// ----------------------------------------
+function ShortsPlayerView({ shortsList, initialIndex, onClose, currentUser, onOpenAuth, onNavigateToProfile, showFlashNotification }) {
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [showComments, setShowComments] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [disliked, setDisliked] = useState(false);
+
+  const currentVideo = shortsList[currentIndex];
+  const videoRef = useRef(null);
+
+  // Auto-play when video changes
+  useEffect(() => {
+    setIsPlaying(true);
+    setLiked(false);
+    setDisliked(false);
+    if (videoRef.current) {
+      videoRef.current.src = translateVideoUrl(currentVideo.link);
+      videoRef.current.load();
+      videoRef.current.play().catch(e => console.error("Auto-play blocked:", e));
+    }
+  }, [currentIndex, currentVideo]);
+
+  const handleNext = () => {
+    if (currentIndex < shortsList.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(prev => prev - 1);
+    }
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowDown') {
+        handleNext();
+        e.preventDefault();
+      } else if (e.key === 'ArrowUp') {
+        handlePrev();
+        e.preventDefault();
+      } else if (e.key === ' ') {
+        togglePlay();
+        e.preventDefault();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentIndex, shortsList, isPlaying]);
+
+  // Wheel scroll navigation (throttled)
+  const lastScrollTime = useRef(0);
+  const handleWheel = (e) => {
+    const now = Date.now();
+    if (now - lastScrollTime.current < 800) return;
+    if (e.deltaY > 50) {
+      handleNext();
+      lastScrollTime.current = now;
+    } else if (e.deltaY < -50) {
+      handlePrev();
+      lastScrollTime.current = now;
+    }
+  };
+
+  // Touch swipe support
+  const touchStartY = useRef(0);
+  const handleTouchStart = (e) => {
+    touchStartY.current = e.touches[0].clientY;
+  };
+  const handleTouchEnd = (e) => {
+    const diffY = touchStartY.current - e.changedTouches[0].clientY;
+    if (Math.abs(diffY) > 50) {
+      if (diffY > 0) {
+        handleNext();
+      } else {
+        handlePrev();
+      }
+    }
+  };
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (videoRef.current.paused) {
+        videoRef.current.play();
+        setIsPlaying(true);
+      } else {
+        videoRef.current.pause();
+        setIsPlaying(false);
+      }
+    }
+  };
+
+  const toggleMute = (e) => {
+    e.stopPropagation();
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
+  const handleLike = (e) => {
+    e.stopPropagation();
+    if (!currentUser?.name) {
+      onOpenAuth();
+      return;
+    }
+    if (liked) {
+      setLiked(false);
+    } else {
+      setLiked(true);
+      setDisliked(false);
+      showFlashNotification('Liked short video');
+    }
+  };
+
+  const handleDislike = (e) => {
+    e.stopPropagation();
+    if (!currentUser?.name) {
+      onOpenAuth();
+      return;
+    }
+    if (disliked) {
+      setDisliked(false);
+    } else {
+      setDisliked(true);
+      setLiked(false);
+    }
+  };
+
+  const cleanTitle = currentVideo.vid_name.replace(/\.[a-zA-Z0-9]+$/, '');
+
+  return (
+    <div 
+      className="shorts-viewer-overlay"
+      onWheel={handleWheel}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      <div className="shorts-viewer-content">
+        {/* Back Button */}
+        <button className="shorts-back-btn" onClick={onClose} title="Go Back">
+          <ChevronLeft size={24} />
+          <span>Back</span>
+        </button>
+
+        {/* Swipe Layout */}
+        <div className="shorts-player-layout">
+          {/* Main Video Box */}
+          <div className="shorts-video-container" onClick={togglePlay}>
+            <video
+              ref={videoRef}
+              className="shorts-video-element"
+              loop
+              autoPlay
+              playsInline
+            />
+
+            {/* Video Controls overlay */}
+            <div className="shorts-video-controls">
+              <button className="shorts-control-icon-btn" onClick={toggleMute}>
+                {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+              </button>
+            </div>
+
+            {/* Play/Pause Center Indicator */}
+            {!isPlaying && (
+              <div className="shorts-play-indicator">
+                <Play size={48} fill="#fff" stroke="none" />
+              </div>
+            )}
+
+            {/* Bottom-left Meta Info Overlay */}
+            <div className="shorts-meta-overlay" onClick={e => e.stopPropagation()}>
+              <div className="shorts-uploader-row">
+                <img 
+                  className="shorts-uploader-avatar" 
+                  src={currentVideo.uploader_img || './Userdatabase/ProfilePic/defaulta.jpg'} 
+                  alt={currentVideo.uploader_name} 
+                />
+                <span className="shorts-uploader-name">@{currentVideo.uploader_name}</span>
+                <button className="shorts-subscribe-btn">Subscribe</button>
+              </div>
+              <div className="shorts-meta-title" title={cleanTitle}>{cleanTitle}</div>
+            </div>
+          </div>
+
+          {/* Right Action Buttons Column */}
+          <div className="shorts-actions-column" onClick={e => e.stopPropagation()}>
+            <div className="shorts-action-item">
+              <button className={`shorts-action-btn-circle ${liked ? 'active-like' : ''}`} onClick={handleLike}>
+                <ThumbsUp size={22} fill={liked ? "currentColor" : "none"} />
+              </button>
+              <span className="shorts-action-label">{(currentVideo.likes || 0) + (liked ? 1 : 0)}</span>
+            </div>
+
+            <div className="shorts-action-item">
+              <button className={`shorts-action-btn-circle ${disliked ? 'active-dislike' : ''}`} onClick={handleDislike}>
+                <ThumbsDown size={22} fill={disliked ? "currentColor" : "none"} />
+              </button>
+              <span className="shorts-action-label">Dislike</span>
+            </div>
+
+            <div className="shorts-action-item" onClick={() => setShowComments(!showComments)}>
+              <button className={`shorts-action-btn-circle ${showComments ? 'active' : ''}`}>
+                <CornerUpLeft size={22} />
+              </button>
+              <span className="shorts-action-label">{currentVideo.comments || 0}</span>
+            </div>
+
+            <div className="shorts-action-item">
+              <button className="shorts-action-btn-circle nav-arrow" onClick={handlePrev} disabled={currentIndex === 0}>
+                <ChevronLeft size={22} style={{ transform: 'rotate(90deg)' }} />
+              </button>
+            </div>
+
+            <div className="shorts-action-item">
+              <button className="shorts-action-btn-circle nav-arrow" onClick={handleNext} disabled={currentIndex === shortsList.length - 1}>
+                <ChevronLeft size={22} style={{ transform: 'rotate(-90deg)' }} />
+              </button>
+            </div>
+          </div>
+
+          {/* Comments Sidebar Panel */}
+          {showComments && (
+            <div className="shorts-comments-panel" onClick={e => e.stopPropagation()}>
+              <div className="shorts-comments-header">
+                <h3>Comments</h3>
+                <button className="shorts-comments-close" onClick={() => setShowComments(false)}>
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="shorts-comments-body">
+                <CommentsSection
+                  key={currentVideo.vid_id}
+                  videoId={currentVideo.vid_id}
+                  currentUser={currentUser}
+                  onOpenAuth={onOpenAuth}
+                  onNavigateToProfile={onNavigateToProfile}
+                  showFlashNotification={showFlashNotification}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
