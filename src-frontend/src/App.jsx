@@ -2351,7 +2351,7 @@ function PlayerView({
   // Apply subtitle styles + cue positions on prefs change
   useEffect(() => { updateSubStyles(); applySubCuePositions(); }, [subPrefs]);
 
-  // Apply cue positions when video loads / track changes (retry until cues are ready)
+  // Apply cue positions when video loads (retry until cues are ready)
   useEffect(() => {
     const videoEl = videoRef.current;
     if (!videoEl) return;
@@ -2369,18 +2369,30 @@ function PlayerView({
     };
   }, [video?.vid_id, subPrefs]);
 
+  // Apply cue positions when active track or subtitles toggle status changes
+  useEffect(() => {
+    applySubCuePositions();
+    const t1 = setTimeout(applySubCuePositions, 100);
+    const t2 = setTimeout(applySubCuePositions, 500);
+    const t3 = setTimeout(applySubCuePositions, 1500);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, [subActiveIdx, subsActive, subPrefs]);
+
   // Activate the correct TextTrack when subtitle state changes
   useEffect(() => {
-    if (subActiveIdx < 0) return;
     const t = setTimeout(() => {
       const tt = videoRef.current?.textTracks;
-      if (!tt || subActiveIdx >= tt.length) return;
+      if (!tt) return;
       for (let i = 0; i < tt.length; i++) {
         tt[i].mode = (i === subActiveIdx && subsActive) ? 'showing' : 'hidden';
       }
     }, 100);
     return () => clearTimeout(t);
-  }, [subsActive, subActiveIdx, subtitleTracks]);
+  }, [subsActive, subActiveIdx, subtitleTracks, cachedVideo]);
 
   // Fetch subtitle info when video changes
   useEffect(() => {
@@ -2434,6 +2446,15 @@ function PlayerView({
     }, 600);
     return () => { if (saveStyleTimerRef.current) clearTimeout(saveStyleTimerRef.current); };
   }, [subPrefs, video?.vid_id]);
+
+  // Save subtitle styles to localStorage whenever they change
+  useEffect(() => {
+    if (subPrefs) {
+      localStorage.setItem('yt_sub_prefs', JSON.stringify(subPrefs));
+    }
+  }, [subPrefs]);
+
+
 
   const handleAddSubtitle = async () => {
     if (!video?.vid_id) return;

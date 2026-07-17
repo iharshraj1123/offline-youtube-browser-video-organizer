@@ -4230,9 +4230,15 @@ function handleServeSubtitle($pdo) {
         exit;
     }
 
+    $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+    if (!in_array($ext, ['vtt', 'srt'])) {
+        header('HTTP/1.1 403 Forbidden');
+        echo 'Invalid subtitle file extension';
+        exit;
+    }
+
     $delDouble = !empty($subtitles['style']['delDouble']);
 
-    $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
     if ($ext === 'srt') {
         $srtContent = file_get_contents($path);
         $vttContent = "WEBVTT\n\n" . preg_replace('/^(\d+)\s*$/m', '', $srtContent);
