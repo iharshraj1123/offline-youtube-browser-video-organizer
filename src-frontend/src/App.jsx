@@ -420,7 +420,7 @@ export default function App() {
 
 
   // Fetch Videos
-  const fetchVideos = async (q = '', category = 'all', sort = 'recent') => {
+  const fetchVideos = async (q = '', category = 'all', sort = 'mix') => {
     setLoading(true);
     try {
       const queryParams = new URLSearchParams({
@@ -1112,7 +1112,10 @@ function HomeView({ videos, loading, activeCategory, currentSort, onPillSelect, 
   const isAllMix = activeCategory === 'all' && currentSort === 'mix';
 
   // Separate videos into categories
-  const shortsVideos = useMemo(() => isAllMix ? videos.filter(isShort) : [], [videos, isAllMix]);
+  const shortsVideos = useMemo(() => {
+    if (!isAllMix) return [];
+    return videos.filter(isShort).sort(() => 0.5 - Math.random());
+  }, [videos, isAllMix]);
   const regularVideos = useMemo(() => isAllMix ? videos.filter(v => !isShort(v)) : videos, [videos, isAllMix]);
 
   // Infinite Scroll Listener
