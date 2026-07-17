@@ -333,6 +333,11 @@ export default function App() {
   };
 
   const handleSearchInputKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      e.target.blur();
+      setShowSuggestions(false);
+      return;
+    }
     if (!showSuggestions || suggestions.length === 0) return;
     if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -356,8 +361,6 @@ export default function App() {
         fetchVideoAndPlay(selected.vid_id, true);
         setShowSuggestions(false);
       }
-    } else if (e.key === 'Escape') {
-      setShowSuggestions(false);
     }
   };
 
@@ -373,7 +376,9 @@ export default function App() {
         e.preventDefault();
         const searchInput = document.querySelector('.search-input');
         if (searchInput) {
-          setMobileSearchActive(true);
+          if (window.innerWidth <= 768) {
+            setMobileSearchActive(true);
+          }
           setTimeout(() => {
             searchInput.focus();
           }, 50);

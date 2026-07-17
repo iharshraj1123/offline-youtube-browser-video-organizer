@@ -107,10 +107,16 @@ export function DownloaderView({ currentUser }) {
   const [subsLang, setSubsLang] = useState('en');
   const [presets, setPresets] = useState([
     { name: 'Server Downloads', path: '' },
+    { name: 'Download to device', path: '__device__' },
     { name: 'Custom...', path: '__custom__' }
   ]);
-  const [destinationPreset, setDestinationPreset] = useState();
-  const [customPath, setCustomPath] = useState('');
+  const [destinationPreset, setDestinationPreset] = useState(() => {
+    const saved = localStorage.getItem('downloader_destination_preset');
+    return saved !== null ? saved : 'Server Downloads';
+  });
+  const [customPath, setCustomPath] = useState(() => {
+    return localStorage.getItem('downloader_custom_path') || '';
+  });
   const [filenameTemplate, setFilenameTemplate] = useState('%(title)s.%(ext)s');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [throttle, setThrottle] = useState('');
@@ -146,6 +152,7 @@ export function DownloaderView({ currentUser }) {
         const updatedPresets = [
           ...dbPresets,
           { name: 'Server Downloads', path: '' },
+          { name: 'Download to device', path: '__device__' },
           { name: 'Custom...', path: '__custom__' }
         ];
 
@@ -153,8 +160,9 @@ export function DownloaderView({ currentUser }) {
 
         // Ensure the currently selected preset is valid
         setDestinationPreset(prev => {
-          const stillExists = updatedPresets.some(p => p.name === prev);
-          return !stillExists && updatedPresets.length > 0 ? updatedPresets[0].name : prev;
+          const checkVal = prev || localStorage.getItem('downloader_destination_preset') || '';
+          const stillExists = updatedPresets.some(p => p.name === checkVal);
+          return stillExists ? checkVal : (updatedPresets.length > 0 ? updatedPresets[0].name : '');
         });
       }
     } catch (e) {
@@ -166,6 +174,18 @@ export function DownloaderView({ currentUser }) {
     checkYtdlp();
     fetchDirectoryPresets();
   }, []);
+
+  useEffect(() => {
+    if (destinationPreset !== undefined) {
+      localStorage.setItem('downloader_destination_preset', destinationPreset);
+    }
+  }, [destinationPreset]);
+
+  useEffect(() => {
+    if (customPath !== undefined) {
+      localStorage.setItem('downloader_custom_path', customPath);
+    }
+  }, [customPath]);
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -325,13 +345,21 @@ export function DownloaderView({ currentUser }) {
 
     let destPath = '';
     const itemDest = item.destinationPreset || 'default';
+    let isDownloadToDevice = false;
+
     if (itemDest === 'default') {
-      if (destinationPreset === 'Custom...') {
+      if (destinationPreset === 'Download to device') {
+        isDownloadToDevice = true;
+        destPath = '';
+      } else if (destinationPreset === 'Custom...') {
         destPath = customPath;
       } else {
         const preset = presets.find(p => p.name === destinationPreset);
         if (preset) destPath = preset.path;
       }
+    } else if (itemDest === 'Download to device') {
+      isDownloadToDevice = true;
+      destPath = '';
     } else if (itemDest === 'Custom...') {
       destPath = item.customPath;
     } else {
@@ -359,7 +387,7 @@ export function DownloaderView({ currentUser }) {
       formData.append('destination', destPath);
       formData.append('filename', filenameTemplate);
       formData.append('extra_args', extraArgs);
-      formData.append('auto_index', autoIndex ? '1' : '0');
+      formData.append('auto_index', isDownloadToDevice ? '0' : (autoIndex ? '1' : '0'));
 
       const res = await fetch('./api/index.php?action=ytdlp_download', {
         method: 'POST',
@@ -400,6 +428,14 @@ export function DownloaderView({ currentUser }) {
                 setDownloadProgress(100);
                 setDownloadStatus('Completed!');
                 updateItem(item.id, { status: 'done', progress: 100, file: msg.file, size: msg.size_formatted, indexed: msg.indexed, vid_id: msg.vid_id });
+                if (isDownloadToDevice && msg.file) {
+                  const dlLink = document.createElement('a');
+                  dlLink.href = `./yt-dlp-downloads/${encodeURIComponent(msg.file)}`;
+                  dlLink.download = msg.file;
+                  document.body.appendChild(dlLink);
+                  dlLink.click();
+                  document.body.removeChild(dlLink);
+                }
               } else if (msg.type === 'error') {
                 setDownloadStatus('Error: ' + msg.message);
                 setError(msg.message);
@@ -446,6 +482,7 @@ export function DownloaderView({ currentUser }) {
 
   const getDestinationDisplay = () => {
     if (destinationPreset === 'Custom...') return customPath || 'Custom path...';
+    if (destinationPreset === 'Download to device') return 'Download to device';
     const preset = presets.find(p => p.name === destinationPreset);
     if (!preset) return destinationPreset;
     if (!preset.path) return 'Server Downloads folder';
