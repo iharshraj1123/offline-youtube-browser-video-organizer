@@ -1614,77 +1614,6 @@ export function ConverterView() {
             <span className="ffmpeg-install-hint">Install FFmpeg from <a href="https://ffmpeg.org" target="_blank" rel="noopener">ffmpeg.org</a></span>
           </>
         )}
-        {/* Trim & Crop settings */}
-        {videoSrc && (
-          <div className="trim-crop-bar">
-            <div className="tcb-row">
-              <div className="tcb-field">
-                <span className="tcb-label">Start</span>
-                <input type="text" className="tcb-input" value={settings.startTime}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    updateSetting('startTime', v);
-                    const s = parseTimeToSeconds(v);
-                    const d = parseTimeToSeconds(settings.duration);
-                    if (s > 0 && d > 0) {
-                      const maxEnd = trimDuration;
-                      const end = Math.min(s + d, maxEnd);
-                      const newD = end - s;
-                      updateSetting('duration', newD > 0.001 ? secondsToTimeStr(newD) : '');
-                    }
-                  }} placeholder="0:00.000" />
-              </div>
-              <div className="tcb-field">
-                <span className="tcb-label">End</span>
-                <input type="text" className="tcb-input" value={(() => {
-                  const s = parseTimeToSeconds(settings.startTime);
-                  const d = parseTimeToSeconds(settings.duration);
-                  if (d > 0) return secondsToTimeStr(Math.min(s + d, trimDuration));
-                  return '';
-                })()}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    const endSec = parseTimeToSeconds(v);
-                    const startSec = parseTimeToSeconds(settings.startTime);
-                    if (endSec > 0 && endSec > startSec) {
-                      const newDur = endSec - startSec;
-                      updateSetting('duration', newDur > 0.001 ? secondsToTimeStr(newDur) : '');
-                    }
-                  }} placeholder="0:00.000" />
-              </div>
-              <div className="tcb-field">
-                <span className="tcb-label">Dur</span>
-                <input type="text" className="tcb-input" value={settings.duration}
-                  onChange={(e) => updateSetting('duration', e.target.value)} placeholder="0:05.000" />
-              </div>
-              <button className="tcb-btn" onClick={() => { updateSetting('startTime', ''); updateSetting('duration', ''); }} title="Reset trim"><Trash2 size={12} /></button>
-            </div>
-            <div className="tcb-row">
-              <div className="tcb-field tcb-crop">
-                <span className="tcb-label">Crop</span>
-                <input type="number" className="tcb-input-sm" value={settings.cropW}
-                  onChange={(e) => updateSetting('cropW', e.target.value)} placeholder="W" min="0" />
-                <span className="tcb-dim">×</span>
-                <input type="number" className="tcb-input-sm" value={settings.cropH}
-                  onChange={(e) => updateSetting('cropH', e.target.value)} placeholder="H" min="0" />
-                <span className="tcb-dim">@</span>
-                <input type="number" className="tcb-input-sm" value={settings.cropX}
-                  onChange={(e) => updateSetting('cropX', e.target.value)} placeholder="X" min="0" />
-                <input type="number" className="tcb-input-sm" value={settings.cropY}
-                  onChange={(e) => updateSetting('cropY', e.target.value)} placeholder="Y" min="0" />
-              </div>
-              <label className="tcb-toggle" title="Lock aspect ratio when resizing">
-                <input type="checkbox" checked={cropLockAspect} onChange={(e) => setCropLockAspect(e.target.checked)} />
-                <span>Lock</span>
-              </label>
-              <label className="tcb-toggle" title="Deinterlace video">
-                <input type="checkbox" checked={settings.deinterlace} onChange={(e) => updateSetting('deinterlace', e.target.checked)} />
-                <span>Dei</span>
-              </label>
-              <button className="tcb-btn" onClick={() => { updateSetting('cropW', ''); updateSetting('cropH', ''); updateSetting('cropX', ''); updateSetting('cropY', ''); }} title="Reset crop"><Trash2 size={12} /></button>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* File Selection */}
@@ -1939,6 +1868,77 @@ export function ConverterView() {
                     </>
                   );
                 })()}
+              </div>
+            </div>
+          )}
+          {/* Trim & Crop settings */}
+          {videoSrc && (
+            <div className="trim-crop-bar">
+              <div className="tcb-row">
+                <div className="tcb-field">
+                  <span className="tcb-label">Start</span>
+                  <input type="text" className="tcb-input" value={settings.startTime}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      updateSetting('startTime', v);
+                      const s = parseTimeToSeconds(v);
+                      const d = parseTimeToSeconds(settings.duration);
+                      if (s > 0 && d > 0) {
+                        const maxEnd = trimDuration;
+                        const end = Math.min(s + d, maxEnd);
+                        const newD = end - s;
+                        updateSetting('duration', newD > 0.001 ? secondsToTimeStr(newD) : '');
+                      }
+                    }} placeholder="0:00.000" />
+                </div>
+                <div className="tcb-field">
+                  <span className="tcb-label">End</span>
+                  <input type="text" className="tcb-input" value={(() => {
+                    const s = parseTimeToSeconds(settings.startTime);
+                    const d = parseTimeToSeconds(settings.duration);
+                    if (d > 0) return secondsToTimeStr(Math.min(s + d, trimDuration));
+                    return '';
+                  })()}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      const endSec = parseTimeToSeconds(v);
+                      const startSec = parseTimeToSeconds(settings.startTime);
+                      if (endSec > 0 && endSec > startSec) {
+                        const newDur = endSec - startSec;
+                        updateSetting('duration', newDur > 0.001 ? secondsToTimeStr(newDur) : '');
+                      }
+                    }} placeholder="0:00.000" />
+                </div>
+                <div className="tcb-field">
+                  <span className="tcb-label">Dur</span>
+                  <input type="text" className="tcb-input" value={settings.duration}
+                    onChange={(e) => updateSetting('duration', e.target.value)} placeholder="0:05.000" />
+                </div>
+                <button className="tcb-btn" onClick={() => { updateSetting('startTime', ''); updateSetting('duration', ''); }} title="Reset trim"><Trash2 size={12} /></button>
+              </div>
+              <div className="tcb-row">
+                <div className="tcb-field tcb-crop">
+                  <span className="tcb-label">Crop</span>
+                  <input type="number" className="tcb-input-sm" value={settings.cropW}
+                    onChange={(e) => updateSetting('cropW', e.target.value)} placeholder="W" min="0" />
+                  <span className="tcb-dim">×</span>
+                  <input type="number" className="tcb-input-sm" value={settings.cropH}
+                    onChange={(e) => updateSetting('cropH', e.target.value)} placeholder="H" min="0" />
+                  <span className="tcb-dim">@</span>
+                  <input type="number" className="tcb-input-sm" value={settings.cropX}
+                    onChange={(e) => updateSetting('cropX', e.target.value)} placeholder="X" min="0" />
+                  <input type="number" className="tcb-input-sm" value={settings.cropY}
+                    onChange={(e) => updateSetting('cropY', e.target.value)} placeholder="Y" min="0" />
+                </div>
+                <label className="tcb-toggle" title="Lock aspect ratio when resizing">
+                  <input type="checkbox" checked={cropLockAspect} onChange={(e) => setCropLockAspect(e.target.checked)} />
+                  <span>Lock</span>
+                </label>
+                <label className="tcb-toggle" title="Deinterlace video">
+                  <input type="checkbox" checked={settings.deinterlace} onChange={(e) => updateSetting('deinterlace', e.target.checked)} />
+                  <span>Dei</span>
+                </label>
+                <button className="tcb-btn" onClick={() => { updateSetting('cropW', ''); updateSetting('cropH', ''); updateSetting('cropX', ''); updateSetting('cropY', ''); }} title="Reset crop"><Trash2 size={12} /></button>
               </div>
             </div>
           )}

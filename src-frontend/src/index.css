@@ -93,6 +93,10 @@ button {
   display: flex;
   align-items: center;
   gap: 4px;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .logo-icon {
@@ -224,6 +228,10 @@ button {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .main-sidebar.collapsed {
@@ -6607,6 +6615,11 @@ body.mini-player-dragging * {
   font-size: 11px;
   width: 100%;
   box-sizing: border-box;
+}
+
+.preview-section > :last-child {
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
 }
 
 .tcb-row {
