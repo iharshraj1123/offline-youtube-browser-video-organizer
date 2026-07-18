@@ -29,6 +29,19 @@ function isPhone() {
   return /Android|iPhone|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
+// Helper to detect portrait videos (Shorts)
+function isShort(vid) {
+  if (!vid) return false;
+  if (vid.tags) {
+    const tagList = vid.tags.split(',').map(t => t.trim().toLowerCase());
+    if (tagList.includes('shorts')) return true;
+  }
+  if (vid.height && vid.width && vid.height >= vid.width) {
+    return true;
+  }
+  return false;
+}
+
 // Translate file:/// urls to relative /c:/ or /d:/ apache drives
 function translateVideoUrl(url) {
   if (!url) return '';
@@ -245,7 +258,7 @@ export default function App() {
         .then(r => r.json())
         .then(allVideos => {
           const allShorts = Array.isArray(allVideos)
-            ? allVideos.filter(v => v.duration > 0 && v.duration <= 90)
+            ? allVideos.filter(isShort)
             : [];
           if (allShorts.length > 0) {
             const idx = allShorts.findIndex(v => String(v.vid_id) === String(shortId));
@@ -1163,18 +1176,6 @@ function HomeView({ videos, loading, activeCategory, currentSort, onPillSelect, 
     { id: 'most_liked', label: 'most liked', category: 'all', sort: 'likes' },
     { id: 'favourite', label: 'favourite', category: 'favourite', sort: 'recent' }
   ];
-
-  // Helper to detect portrait videos (Shorts)
-  const isShort = (vid) => {
-    if (vid.tags) {
-      const tagList = vid.tags.split(',').map(t => t.trim().toLowerCase());
-      if (tagList.includes('shorts')) return true;
-    }
-    if (vid.height && vid.width && vid.height >= vid.width) {
-      return true;
-    }
-    return false;
-  };
 
   const isAllMix = activeCategory === 'all' && currentSort === 'mix';
 
