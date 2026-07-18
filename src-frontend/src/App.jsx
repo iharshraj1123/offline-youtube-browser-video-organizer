@@ -2379,6 +2379,28 @@ function PlayerView({
   const [savingEdit, setSavingEdit] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
+  const [commentsList, setCommentsList] = useState([]);
+  const [showMobileCommentsDrawer, setShowMobileCommentsDrawer] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Fetch comments array whenever video changes to show count and top comments preview card
+  useEffect(() => {
+    if (video?.vid_id) {
+      fetch(`./api/index.php?action=get_comments&video_id=${video.vid_id}`)
+        .then(r => r.json())
+        .then(data => {
+          setCommentsList(Array.isArray(data) ? data : []);
+        })
+        .catch(() => setCommentsList([]));
+    }
+  }, [video?.vid_id]);
+
   // Casting States
   const [showCastMenu, setShowCastMenu] = useState(false);
   const [castMode, setCastMode] = useState(null); // 'select', 'legacy', 'modern'
@@ -5426,105 +5448,298 @@ function PlayerView({
       {!isMiniPlayer && (
         <>
           <div className="player-main-col">
-            {/* Video details metadata block */}
-            <div className="video-metadata-details">
-              <h1 className="video-detail-title">{video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}</h1>
+            {isMobile ? (
+              /* High-Fidelity YouTube Mobile Detail Layout */
+              <div className="video-metadata-details" style={{ padding: '12px 0 0 0' }}>
+                <h1 className="video-detail-title" style={{ fontSize: '18px', fontWeight: 'bold', margin: '0 0 8px 0', color: '#fff', lineHeight: '1.4' }}>
+                  {video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}
+                </h1>
 
-              <div className="video-detail-actions">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <img
-                    src={video.uploader_img}
-                    alt=""
-                    className="channel-avatar"
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => onNavigateToProfile && onNavigateToProfile(video.uploader_name)}
-                  />
-                  <div>
-                    <div
-                      className="video-uploadername-div"
-                      style={{ fontWeight: 'bold', fontSize: '15px', cursor: 'pointer' }}
-                      onClick={() => onNavigateToProfile && onNavigateToProfile(video.uploader_name)}
-                    >
-                      {video.uploader_name}
+                {/* Metadata Row / Trigger for Description sheet */}
+                <div 
+                  className="mobile-metadata-row" 
+                  onClick={() => setIsDescriptionExpanded(true)}
+                  style={{ fontSize: '13px', color: '#aaa', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '16px', cursor: 'pointer' }}
+                >
+                  <span style={{ color: '#ccc' }}>{video.views || 0} views</span>
+                  <span>•</span>
+                  <span style={{ color: '#ccc' }}>{formatUploadDate(video.upload_date)}</span>
+                  <span style={{ color: '#fff', fontWeight: 'bold', marginLeft: '4px' }}>...more</span>
+                </div>
+
+                {/* Mobile Channel Info / Uploader Row */}
+                <div className="mobile-uploader-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }} onClick={() => onNavigateToProfile && onNavigateToProfile(video.uploader_name)}>
+                    <img
+                      src={video.uploader_img || './Userdatabase/ProfilePic/defaulta.jpg'}
+                      alt=""
+                      className="channel-avatar"
+                      style={{ width: '36px', height: '36px', borderRadius: '50%', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.08)' }}
+                    />
+                    <div>
+                      <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#fff', cursor: 'pointer' }}>{video.uploader_name}</div>
+                      <div style={{ fontSize: '11px', color: '#aaa' }}>Channel Owner</div>
                     </div>
-                    <div className="video-uploadername-div-below" style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Channel Owner</div>
                   </div>
+                  <button 
+                    className="mobile-subscribe-btn" 
+                    style={{ 
+                      backgroundColor: '#fff', 
+                      color: '#0f0f0f', 
+                      border: 'none', 
+                      borderRadius: '18px', 
+                      padding: '8px 16px', 
+                      fontSize: '12px', 
+                      fontWeight: 'bold', 
+                      cursor: 'pointer' 
+                    }}
+                  >
+                    Subscribe
+                  </button>
                 </div>
 
-                <div className="detail-actions-right">
-                  {/* Split Pill Like/Dislike Button Group */}
-                  <div className="like-dislike-pill-group">
-                    <button className={`like-btn-pill ${liked ? 'active' : ''}`} onClick={handleLike}>
-                      <ThumbsUp size={16} fill={liked ? "currentColor" : "none"} /> <span>{likes}</span>
+                {/* Mobile Actions Button Slider (Scrollable Row) */}
+                <div className="mobile-actions-row" style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '6px', marginBottom: '16px', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                  {/* joined like/dislike pill */}
+                  <div className="like-dislike-pill-group" style={{ display: 'flex', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '18px', height: '36px', flexShrink: 0 }}>
+                    <button className={`like-btn-pill ${liked ? 'active' : ''}`} onClick={handleLike} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '0 14px', background: 'none', border: 'none', color: '#fff', fontSize: '12px', height: '100%', cursor: 'pointer' }}>
+                      <ThumbsUp size={14} fill={liked ? "currentColor" : "none"} /> <span>{likes}</span>
                     </button>
-                    <div className="pill-separator"></div>
-                    <button className={`dislike-btn-pill ${disliked ? 'active' : ''}`} onClick={handleDislike}>
-                      <ThumbsDown size={16} fill={disliked ? "currentColor" : "none"} /> <span>{dislikes}</span>
+                    <div style={{ width: '1px', height: '16px', backgroundColor: 'rgba(255,255,255,0.15)' }} />
+                    <button className={`dislike-btn-pill ${disliked ? 'active' : ''}`} onClick={handleDislike} style={{ display: 'flex', alignItems: 'center', padding: '0 14px', background: 'none', border: 'none', color: '#fff', height: '100%', cursor: 'pointer' }}>
+                      <ThumbsDown size={14} fill={disliked ? "currentColor" : "none"} />
                     </button>
                   </div>
 
-                  <button className="action-pill-btn" onClick={() => setShowEditModal(true)}>
-                    <Edit size={16} /> <span>Edit</span>
+                  <button className="action-pill-btn" onClick={() => setShowEditModal(true)} style={{ flexShrink: 0, height: '36px', padding: '0 14px', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>
+                    <Edit size={14} /> <span>Edit</span>
                   </button>
-                  <button className="action-pill-btn delete-pill-btn" onClick={handleDelete}>
-                    <Trash2 size={16} /> <span>Delete</span>
+                  <button className="action-pill-btn delete-pill-btn" onClick={handleDelete} style={{ flexShrink: 0, height: '36px', padding: '0 14px', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontWeight: 'bold' }}>
+                    <Trash2 size={14} /> <span>Delete</span>
                   </button>
-                  <button className="action-pill-btn" onClick={() => setShowSaveModal(true)}>
-                    <Bookmark size={16} /> <span>Save</span>
+                  <button className="action-pill-btn" onClick={() => setShowSaveModal(true)} style={{ flexShrink: 0, height: '36px', padding: '0 14px', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>
+                    <Bookmark size={14} /> <span>Save</span>
                   </button>
                 </div>
-              </div>
 
-              {/* Premium Glassmorphic Description Card */}
-              <div
-                className={`description-card ${isDescriptionExpanded ? 'expanded' : 'collapsed'}`}
-                onClick={() => { if (!isDescriptionExpanded) setIsDescriptionExpanded(true); }}
-                style={{ cursor: !isDescriptionExpanded ? 'pointer' : 'default' }}
-              >
-                <div className="description-meta">
-                  {video.views || 0} views • Uploaded at {formatUploadDate(video.upload_date)}
-                </div>
-                <div className="description-content-area">
-                  <p className="video-detail-description">
-                    {renderDescription(video.description)}
-                  </p>
-                  {video.tags && (
-                    <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                      {video.tags.split(',').map((tag, idx) => (
-                        <span key={idx} className="vid-timestamps" style={{ fontSize: '13px' }}>
-                          #{tag.trim()}
-                        </span>
-                      ))}
+                {/* Mobile Comments Preview Banner */}
+                <div 
+                  className="mobile-comments-preview-card" 
+                  onClick={() => setShowMobileCommentsDrawer(true)}
+                  style={{ 
+                    background: 'rgba(255,255,255,0.06)', 
+                    borderRadius: '12px', 
+                    padding: '12px', 
+                    marginBottom: '16px', 
+                    cursor: 'pointer' 
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff' }}>
+                      Comments <span style={{ color: '#aaa', fontWeight: 'normal', marginLeft: '6px', fontSize: '12px' }}>{commentsList.length}</span>
+                    </span>
+                    <ChevronDown size={16} style={{ color: '#aaa', transform: 'rotate(-90deg)' }} />
+                  </div>
+                  {commentsList.length > 0 ? (
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                      <img 
+                        src={commentsList[0].user_pic || './Userdatabase/ProfilePic/defaulta.jpg'} 
+                        alt="" 
+                        style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover' }}
+                      />
+                      <div style={{ fontSize: '12px', color: '#ccc', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: '1.4' }}>
+                        <span style={{ fontWeight: 'bold', color: '#fff', marginRight: '4px' }}>@{commentsList[0].user_name}</span>
+                        {commentsList[0].content}
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '12px', color: '#aaa' }}>
+                      No comments yet. Be the first to comment!
                     </div>
                   )}
                 </div>
-                <button
-                  className="description-toggle-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsDescriptionExpanded(!isDescriptionExpanded);
-                  }}
-                >
-                  {isDescriptionExpanded ? 'Show less' : '...Show more'}
-                </button>
               </div>
-            </div>
+            ) : (
+              /* Standard Desktop Detail Layout */
+              <div className="video-metadata-details">
+                <h1 className="video-detail-title">{video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}</h1>
 
-            {/* Native React Comments Section */}
-            <CommentsSection
-              key={video.vid_id}
-              videoId={video.vid_id}
-              currentUser={currentUser}
-              onOpenAuth={onOpenAuth}
-              onNavigateToProfile={onNavigateToProfile}
-              showFlashNotification={showFlashNotification}
-              onSeekVideo={(seconds) => {
-                if (videoRef.current) {
-                  videoRef.current.currentTime = seconds;
-                  setCurrentTime(seconds);
-                }
-              }}
-            />
+                <div className="video-detail-actions">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <img
+                      src={video.uploader_img}
+                      alt=""
+                      className="channel-avatar"
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => onNavigateToProfile && onNavigateToProfile(video.uploader_name)}
+                    />
+                    <div>
+                      <div
+                        className="video-uploadername-div"
+                        style={{ fontWeight: 'bold', fontSize: '15px', cursor: 'pointer' }}
+                        onClick={() => onNavigateToProfile && onNavigateToProfile(video.uploader_name)}
+                      >
+                        {video.uploader_name}
+                      </div>
+                      <div className="video-uploadername-div-below" style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Channel Owner</div>
+                    </div>
+                  </div>
+
+                  <div className="detail-actions-right">
+                    {/* Split Pill Like/Dislike Button Group */}
+                    <div className="like-dislike-pill-group">
+                      <button className={`like-btn-pill ${liked ? 'active' : ''}`} onClick={handleLike}>
+                        <ThumbsUp size={16} fill={liked ? "currentColor" : "none"} /> <span>{likes}</span>
+                      </button>
+                      <div className="pill-separator"></div>
+                      <button className={`dislike-btn-pill ${disliked ? 'active' : ''}`} onClick={handleDislike}>
+                        <ThumbsDown size={16} fill={disliked ? "currentColor" : "none"} /> <span>{dislikes}</span>
+                      </button>
+                    </div>
+
+                    <button className="action-pill-btn" onClick={() => setShowEditModal(true)}>
+                      <Edit size={16} /> <span>Edit</span>
+                    </button>
+                    <button className="action-pill-btn delete-pill-btn" onClick={handleDelete}>
+                      <Trash2 size={16} /> <span>Delete</span>
+                    </button>
+                    <button className="action-pill-btn" onClick={() => setShowSaveModal(true)}>
+                      <Bookmark size={16} /> <span>Save</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Premium Glassmorphic Description Card */}
+                <div
+                  className={`description-card ${isDescriptionExpanded ? 'expanded' : 'collapsed'}`}
+                  onClick={() => { if (!isDescriptionExpanded) setIsDescriptionExpanded(true); }}
+                  style={{ cursor: !isDescriptionExpanded ? 'pointer' : 'default' }}
+                >
+                  <div className="description-meta">
+                    {video.views || 0} views • Uploaded at {formatUploadDate(video.upload_date)}
+                  </div>
+                  <div className="description-content-area">
+                    <p className="video-detail-description">
+                      {renderDescription(video.description)}
+                    </p>
+                    {video.tags && (
+                      <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        {video.tags.split(',').map((tag, idx) => (
+                          <span key={idx} className="vid-timestamps" style={{ fontSize: '13px' }}>
+                            #{tag.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    className="description-toggle-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsDescriptionExpanded(!isDescriptionExpanded);
+                    }}
+                  >
+                    {isDescriptionExpanded ? 'Show less' : '...Show more'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Render Comments inline on desktop */}
+            {!isMobile && (
+              <CommentsSection
+                key={video.vid_id}
+                videoId={video.vid_id}
+                currentUser={currentUser}
+                onOpenAuth={onOpenAuth}
+                onNavigateToProfile={onNavigateToProfile}
+                showFlashNotification={showFlashNotification}
+                onSeekVideo={(seconds) => {
+                  if (videoRef.current) {
+                    videoRef.current.currentTime = seconds;
+                    setCurrentTime(seconds);
+                  }
+                }}
+              />
+            )}
+
+            {/* Mobile slide-up drawer for Comments */}
+            {isMobile && showMobileCommentsDrawer && (
+              <div 
+                className="mobile-drawer-overlay" 
+                onClick={() => setShowMobileCommentsDrawer(false)}
+                onTouchStart={e => e.stopPropagation()}
+                onTouchEnd={e => e.stopPropagation()}
+              >
+                <div className="mobile-drawer-content" onClick={e => e.stopPropagation()}>
+                  <div className="mobile-drawer-header">
+                    <span className="mobile-drawer-title">
+                      Comments <span className="mobile-drawer-count">{commentsList.length}</span>
+                    </span>
+                    <button className="mobile-drawer-close" onClick={() => setShowMobileCommentsDrawer(false)}>
+                      <X size={20} />
+                    </button>
+                  </div>
+                  <div className="mobile-drawer-body">
+                    <CommentsSection
+                      key={video.vid_id}
+                      videoId={video.vid_id}
+                      currentUser={currentUser}
+                      onOpenAuth={onOpenAuth}
+                      onNavigateToProfile={onNavigateToProfile}
+                      showFlashNotification={showFlashNotification}
+                      onSeekVideo={(seconds) => {
+                        if (videoRef.current) {
+                          videoRef.current.currentTime = seconds;
+                          setCurrentTime(seconds);
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Mobile slide-up drawer for Description */}
+            {isMobile && isDescriptionExpanded && (
+              <div 
+                className="mobile-drawer-overlay" 
+                onClick={() => setIsDescriptionExpanded(false)}
+                onTouchStart={e => e.stopPropagation()}
+                onTouchEnd={e => e.stopPropagation()}
+              >
+                <div className="mobile-drawer-content" onClick={e => e.stopPropagation()}>
+                  <div className="mobile-drawer-header">
+                    <span className="mobile-drawer-title">Description</span>
+                    <button className="mobile-drawer-close" onClick={() => setIsDescriptionExpanded(false)}>
+                      <X size={20} />
+                    </button>
+                  </div>
+                  <div className="mobile-drawer-body" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#fff', lineHeight: '1.4', wordBreak: 'break-word' }}>
+                      {video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#aaa' }}>
+                      {video.views || 0} views • Uploaded at {formatUploadDate(video.upload_date)}
+                    </div>
+                    <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '16px' }}>
+                      <p style={{ margin: 0, fontSize: '13.5px', color: '#ccc', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
+                        {renderDescription(video.description)}
+                      </p>
+                      {video.tags && (
+                        <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          {video.tags.split(',').map((tag, idx) => (
+                            <span key={idx} className="vid-timestamps" style={{ fontSize: '13px' }}>
+                              #{tag.trim()}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* RIGHT COLUMN: RECOMMENDATIONS & PLAYLIST QUEUE */}
