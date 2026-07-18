@@ -1483,8 +1483,19 @@ function ShortsPlayerView({ shortsList, initialIndex, onClose, onIndexChange, cu
     e.stopPropagation();
     clearTimeout(clickTimer.current); // cancel the pending single-click
     if (!document.fullscreenElement) {
-      playerLayoutRef.current?.requestFullscreen().catch(() => {});
+      playerLayoutRef.current?.requestFullscreen()
+        .then(() => {
+          if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('portrait').catch((err) => {
+              console.warn("Orientation lock not supported or failed:", err);
+            });
+          }
+        })
+        .catch(() => {});
     } else {
+      if (screen.orientation && screen.orientation.unlock) {
+        try { screen.orientation.unlock(); } catch (e) {}
+      }
       document.exitFullscreen();
     }
   };
@@ -1513,8 +1524,19 @@ function ShortsPlayerView({ shortsList, initialIndex, onClose, onIndexChange, cu
   const toggleFullscreen = (e) => {
     e.stopPropagation();
     if (!document.fullscreenElement) {
-      playerLayoutRef.current?.requestFullscreen().catch(() => {});
+      playerLayoutRef.current?.requestFullscreen()
+        .then(() => {
+          if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('portrait').catch((err) => {
+              console.warn("Orientation lock not supported or failed:", err);
+            });
+          }
+        })
+        .catch(() => {});
     } else {
+      if (screen.orientation && screen.orientation.unlock) {
+        try { screen.orientation.unlock(); } catch (e) {}
+      }
       document.exitFullscreen();
     }
   };
