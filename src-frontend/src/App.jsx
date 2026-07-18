@@ -1038,6 +1038,10 @@ export default function App() {
               onOpenAuth={() => setShowAuthModal(true)}
               onNavigateToProfile={() => setCurrentView('profile')}
               showFlashNotification={showFlashNotification}
+              playlists={playlists}
+              addVideoToPlaylist={addVideoToPlaylist}
+              removeVideoFromPlaylist={removeVideoFromPlaylist}
+              createPlaylist={createPlaylist}
             />
           )}
 
@@ -1341,7 +1345,20 @@ function ShortsCard({ video, onClick }) {
 // ----------------------------------------
 // SUB-COMPONENT: ShortsPlayerView
 // ----------------------------------------
-function ShortsPlayerView({ shortsList, initialIndex, onClose, onIndexChange, currentUser, onOpenAuth, onNavigateToProfile, showFlashNotification }) {
+function ShortsPlayerView({
+  shortsList,
+  initialIndex,
+  onClose,
+  onIndexChange,
+  currentUser,
+  onOpenAuth,
+  onNavigateToProfile,
+  showFlashNotification,
+  playlists = [],
+  addVideoToPlaylist,
+  removeVideoFromPlaylist,
+  createPlaylist
+}) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [showComments, setShowComments] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -1354,7 +1371,75 @@ function ShortsPlayerView({ shortsList, initialIndex, onClose, onIndexChange, cu
   const [flashIcon, setFlashIcon] = useState(null); // 'play' | 'pause' | null
   const [showDescription, setShowDescription] = useState(false);
 
+  // Edit / Delete / Save states
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDesc, setEditDesc] = useState('');
+  const [editTags, setEditTags] = useState('');
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [newPlaylistName, setNewPlaylistName] = useState('');
+
   const currentVideo = shortsList[currentIndex];
+
+  // Initialize edit fields
+  useEffect(() => {
+    if (currentVideo) {
+      setEditTitle(currentVideo.vid_name || '');
+      setEditDesc(currentVideo.description || '');
+      setEditTags(currentVideo.tags || '');
+    }
+  }, [currentIndex, currentVideo]);
+
+  // Video delete trigger
+  const handleDelete = async () => {
+    if (confirm("Are you sure you want to delete this video from the database index?")) {
+      try {
+        const res = await fetch('./api/index.php?action=delete_video', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ vid_id: currentVideo.vid_id })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showFlashNotification("Video deleted successfully");
+          onClose(); // Close the Shorts player and refresh
+        }
+      } catch (e) {
+        console.error("Error deleting video:", e);
+      }
+    }
+  };
+
+  // Metadata update trigger
+  const handleSaveMetadata = async (e) => {
+    e.preventDefault();
+    setSavingEdit(true);
+    try {
+      const res = await fetch('./api/index.php?action=update_metadata', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          vid_id: currentVideo.vid_id,
+          vid_name: editTitle,
+          description: editDesc,
+          tags: editTags
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        currentVideo.vid_name = editTitle;
+        currentVideo.description = editDesc;
+        currentVideo.tags = editTags;
+        setShowEditModal(false);
+        showFlashNotification("Metadata updated successfully");
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSavingEdit(false);
+    }
+  };
   const videoRef = useRef(null);
   const playerLayoutRef = useRef(null);
   const scrollContainerRef = useRef(null);
@@ -1762,12 +1847,148 @@ function ShortsPlayerView({ shortsList, initialIndex, onClose, onIndexChange, cu
               <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#fff', lineHeight: '1.4', wordBreak: 'break-word' }}>
                 {currentVideo.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}
               </div>
-              <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '12px' }}>
+
+              {/* Action Buttons: Edit, Delete, Save */}
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '12px' }}>
+                <button className="action-pill-btn" onClick={() => setShowEditModal(true)}>
+                  <Edit size={16} /> <span>Edit</span>
+                </button>
+                <button className="action-pill-btn delete-pill-btn" onClick={handleDelete}>
+                  <Trash2 size={16} /> <span>Delete</span>
+                </button>
+                <button className="action-pill-btn" onClick={() => setShowSaveModal(true)}>
+                  <Bookmark size={16} /> <span>Save</span>
+                </button>
+              </div>
+
+              <div style={{ paddingTop: '4px' }}>
                 <p style={{ margin: 0, fontSize: '13.5px', color: '#ccc', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
                   {currentVideo.description || 'No description provided.'}
                 </p>
               </div>
             </div>
+
+            {/* Metadata Editing Modal Overlay */}
+            {showEditModal && (
+              <div className="modal-overlay" style={{ zIndex: 1100 }}>
+                <div className="modal-content" style={{ background: 'rgba(20, 20, 20, 0.95)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div className="modal-header">
+                    <span className="modal-title">Edit Video Metadata</span>
+                    <button className="modal-close" onClick={() => setShowEditModal(false)}>&times;</button>
+                  </div>
+                  <form onSubmit={handleSaveMetadata} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div>
+                      <label className="form-label" style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: '#aaa' }}>Title</label>
+                      <input
+                        type="text"
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        className="search-input"
+                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px', color: '#fff' }}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="form-label" style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: '#aaa' }}>Description</label>
+                      <textarea
+                        rows="4"
+                        value={editDesc}
+                        onChange={(e) => setEditDesc(e.target.value)}
+                        className="search-input"
+                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px', color: '#fff', resize: 'vertical' }}
+                      />
+                    </div>
+                    <div>
+                      <label className="form-label" style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: '#aaa' }}>Tags (comma-separated)</label>
+                      <input
+                        type="text"
+                        value={editTags}
+                        onChange={(e) => setEditTags(e.target.value)}
+                        className="search-input"
+                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px', color: '#fff' }}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' }}>
+                      <button type="button" className="action-pill-btn" onClick={() => setShowEditModal(false)}>Cancel</button>
+                      <button type="submit" className="action-pill-btn" style={{ background: 'var(--primary-color)', color: '#fff' }} disabled={savingEdit}>
+                        {savingEdit ? 'Saving...' : 'Save Changes'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* Save to Playlist Modal Overlay */}
+            {showSaveModal && (
+              <div className="modal-overlay" style={{ zIndex: 1100 }}>
+                <div className="modal-content" style={{ maxWidth: '360px', padding: '24px', background: 'rgba(20, 20, 20, 0.95)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div className="modal-header" style={{ marginBottom: '20px' }}>
+                    <span className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px', fontWeight: '600' }}>
+                      <Bookmark size={20} style={{ color: 'var(--primary-color)' }} /> Save video to...
+                    </span>
+                    <button className="modal-close" onClick={() => setShowSaveModal(false)}>&times;</button>
+                  </div>
+
+                  {/* Playlists checklist */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '200px', overflowY: 'auto', paddingRight: '4px', marginBottom: '20px' }}>
+                    {playlists.map(pl => {
+                      const isSaved = pl.video_ids && pl.video_ids.includes(currentVideo.vid_id);
+                      return (
+                        <label key={pl.id} className="playlist-save-item" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', cursor: 'pointer', color: '#ccc' }}>
+                          <input
+                            type="checkbox"
+                            checked={isSaved}
+                            onChange={() => {
+                              if (isSaved) {
+                                removeVideoFromPlaylist(pl.id, currentVideo.vid_id);
+                              } else {
+                                addVideoToPlaylist(pl.id, currentVideo.vid_id);
+                              }
+                            }}
+                            style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                          />
+                          <span>{pl.playlist_name}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+
+                  {/* Create Playlist Form */}
+                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '16px' }}>
+                    <span style={{ display: 'block', fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '12px', fontWeight: '500' }}>Create a new playlist</span>
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      if (newPlaylistName.trim()) {
+                        const pl = await createPlaylist(newPlaylistName.trim());
+                        if (pl && pl.id) {
+                          await addVideoToPlaylist(pl.id, currentVideo.vid_id);
+                        }
+                        setNewPlaylistName('');
+                      }
+                    }} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <input
+                        type="text"
+                        placeholder="Enter playlist name..."
+                        value={newPlaylistName}
+                        onChange={(e) => setNewPlaylistName(e.target.value)}
+                        className="search-input"
+                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px', color: '#fff' }}
+                        required
+                      />
+                      <button
+                        type="submit"
+                        className="action-pill-btn"
+                        style={{ background: 'var(--primary-color)', color: '#fff', justifyContent: 'center', width: '100%' }}
+                        disabled={!newPlaylistName.trim()}
+                      >
+                        + Create Playlist
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
