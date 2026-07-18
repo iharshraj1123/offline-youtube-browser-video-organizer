@@ -2490,6 +2490,17 @@ function PlayerView({
   // Playback control states
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showMobileControls, setShowMobileControls] = useState(true);
+
+  // Auto-hide mobile controls after 3s when playing
+  useEffect(() => {
+    if (!isMobile || !showMobileControls || !isPlaying) return;
+    const timer = setTimeout(() => {
+      setShowMobileControls(false);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [showMobileControls, isPlaying, isMobile]);
+
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(parseInt(video.duration) || 0);
   const [volume, setVolume] = useState(() => parseFloat(localStorage.getItem('yt_volume') ?? '0.5'));
@@ -4447,7 +4458,14 @@ function PlayerView({
           onTimeUpdate={handleTimeUpdate}
           onLoadedMetadata={handleLoadedMetadata}
           onEnded={handleVideoEnded}
-          onClick={togglePlay}
+          onClick={(e) => {
+            if (isMobile) {
+              e.stopPropagation();
+              setShowMobileControls(prev => !prev);
+            } else {
+              togglePlay();
+            }
+          }}
           onDoubleClick={toggleFullscreen}
           onFocus={() => setIsVideoFocused(true)}
           onBlur={() => setIsVideoFocused(false)}
@@ -4910,11 +4928,16 @@ function PlayerView({
         )}
 
         {/* Controls Overlay */}
-        <div className="player-controls-overlay">
+        <div className={`player-controls-overlay ${isMobile && showMobileControls ? 'show-mobile-controls' : ''}`}>
           {isMobile ? (
             /* High-Fidelity YouTube Mobile Player Controls Overlay */
             <div 
               className="mobile-player-overlay-container" 
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  setShowMobileControls(false);
+                }
+              }} 
               style={{ 
                 position: 'absolute', 
                 top: 0, 
