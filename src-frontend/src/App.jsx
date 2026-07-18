@@ -4948,12 +4948,24 @@ function PlayerView({
                 flexDirection: 'column', 
                 justifyContent: 'space-between', 
                 padding: '12px', 
-                background: 'rgba(0, 0, 0, 0.45)', 
+                background: 'transparent', 
                 zIndex: 100 
               }}
             >
-              {/* Top Row: Down Arrow & Options */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+              {/* Top Row: Down Arrow & Options with Top Gradient Shadow */}
+              <div 
+                style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  width: '100%', 
+                  background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%)', 
+                  padding: '12px 12px 24px 12px', 
+                  margin: '-12px -12px 0 -12px',
+                  borderTopLeftRadius: 'inherit',
+                  borderTopRightRadius: 'inherit'
+                }}
+              >
                 {/* Back/Collapse Arrow */}
                 <button 
                   className="control-btn" 
@@ -5063,7 +5075,7 @@ function PlayerView({
               </div>
 
               {/* Bottom Row: Time display & Fullscreen */}
-              <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '4px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '4px', paddingBottom: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '0 4px' }}>
                   {/* Elapsed / Duration Badge */}
                   <div style={{ fontSize: '12px', color: '#fff', fontWeight: '500', background: 'rgba(0, 0, 0, 0.5)', padding: '4px 8px', borderRadius: '10px' }}>
@@ -5079,46 +5091,59 @@ function PlayerView({
                     {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
                   </button>
                 </div>
+              </div>
 
-                {/* Horizontal Progress Seek Slider */}
-                <div 
-                  ref={progressContainerRef}
-                  className="progress-bar-hit-area"
-                  onMouseDown={handleProgressMouseDown}
-                  onTouchStart={(e) => {
-                    e.stopPropagation();
-                    const touch = e.touches[0];
-                    const container = progressContainerRef.current;
-                    if (!container) return;
-                    const rect = container.getBoundingClientRect();
-                    const clickX = touch.clientX - rect.left;
-                    const pct = Math.max(0, Math.min(1, clickX / rect.width));
-                    const targetTime = pct * duration;
-                    setCurrentTime(targetTime);
-                    if (videoRef.current) videoRef.current.currentTime = targetTime;
-                  }}
-                  style={{ height: '16px', display: 'flex', alignItems: 'center', width: '100%', cursor: 'pointer' }}
-                >
-                  <div className="progress-timeline-container" style={{ height: '3px', background: 'rgba(255,255,255,0.2)', width: '100%', position: 'relative', borderRadius: '2px' }}>
-                    <div
-                      className="progress-bar-played"
-                      style={{ width: `${(currentTime / (duration || 1)) * 100}%`, height: '100%', background: 'var(--primary-color)', borderRadius: '2px' }}
-                    />
-                    <div
-                      className="progress-bar-knob"
-                      style={{ 
-                        left: `${(currentTime / (duration || 1)) * 100}%`, 
-                        position: 'absolute', 
-                        top: '50%', 
-                        transform: 'translate(-50%, -50%)', 
-                        width: '12px', 
-                        height: '12px', 
-                        borderRadius: '50%', 
-                        background: 'var(--primary-color)',
-                        boxShadow: '0 0 4px rgba(0,0,0,0.5)'
-                      }}
-                    />
-                  </div>
+              {/* Horizontal Progress Seek Slider (Absolute Bottom Edge) */}
+              <div 
+                ref={progressContainerRef}
+                className="progress-bar-hit-area"
+                onMouseDown={handleProgressMouseDown}
+                onTouchStart={(e) => {
+                  e.stopPropagation();
+                  const touch = e.touches[0];
+                  const container = progressContainerRef.current;
+                  if (!container) return;
+                  const rect = container.getBoundingClientRect();
+                  const clickX = touch.clientX - rect.left;
+                  const pct = Math.max(0, Math.min(1, clickX / rect.width));
+                  const targetTime = pct * duration;
+                  setCurrentTime(targetTime);
+                  if (videoRef.current) videoRef.current.currentTime = targetTime;
+                }}
+                style={{ 
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: '16px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  width: '100%', 
+                  cursor: 'pointer',
+                  margin: 0,
+                  padding: 0,
+                  zIndex: 105
+                }}
+              >
+                <div className="progress-timeline-container" style={{ height: '3px', background: 'rgba(255,255,255,0.2)', width: '100%', position: 'relative' }}>
+                  <div
+                    className="progress-bar-played"
+                    style={{ width: `${(currentTime / (duration || 1)) * 100}%`, height: '100%', background: 'var(--primary-color)' }}
+                  />
+                  <div
+                    className="progress-bar-knob"
+                    style={{ 
+                      left: `${(currentTime / (duration || 1)) * 100}%`, 
+                      position: 'absolute', 
+                      top: '50%', 
+                      transform: 'translate(-50%, -50%)', 
+                      width: '12px', 
+                      height: '12px', 
+                      borderRadius: '50%', 
+                      background: 'var(--primary-color)',
+                      boxShadow: '0 0 4px rgba(0,0,0,0.5)'
+                    }}
+                  />
                 </div>
               </div>
 
