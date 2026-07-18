@@ -1814,7 +1814,12 @@ function ShortsPlayerView({
 
         {/* Comments panel */}
         {showComments && (
-          <div className="shorts-comments-panel" onClick={e => e.stopPropagation()}>
+          <div 
+            className="shorts-comments-panel" 
+            onClick={e => e.stopPropagation()}
+            onTouchStart={e => e.stopPropagation()}
+            onTouchEnd={e => e.stopPropagation()}
+          >
             <div className="shorts-comments-header">
               <h3>Comments</h3>
               <button className="shorts-comments-close" onClick={() => setShowComments(false)}>
@@ -1836,7 +1841,12 @@ function ShortsPlayerView({
 
         {/* Description panel */}
         {showDescription && (
-          <div className="shorts-comments-panel" onClick={e => e.stopPropagation()}>
+          <div 
+            className="shorts-comments-panel" 
+            onClick={e => e.stopPropagation()}
+            onTouchStart={e => e.stopPropagation()}
+            onTouchEnd={e => e.stopPropagation()}
+          >
             <div className="shorts-comments-header">
               <h3>Description</h3>
               <button className="shorts-comments-close" onClick={() => setShowDescription(false)}>
@@ -1870,7 +1880,13 @@ function ShortsPlayerView({
 
             {/* Metadata Editing Modal Overlay */}
             {showEditModal && (
-              <div className="modal-overlay" style={{ zIndex: 1100 }}>
+              <div 
+                className="modal-overlay" 
+                style={{ zIndex: 1100 }}
+                onClick={e => e.stopPropagation()}
+                onTouchStart={e => e.stopPropagation()}
+                onTouchEnd={e => e.stopPropagation()}
+              >
                 <div className="modal-content" style={{ background: 'rgba(20, 20, 20, 0.95)', border: '1px solid rgba(255,255,255,0.08)' }}>
                   <div className="modal-header">
                     <span className="modal-title">Edit Video Metadata</span>
@@ -1921,7 +1937,13 @@ function ShortsPlayerView({
 
             {/* Save to Playlist Modal Overlay */}
             {showSaveModal && (
-              <div className="modal-overlay" style={{ zIndex: 1100 }}>
+              <div 
+                className="modal-overlay" 
+                style={{ zIndex: 1100 }}
+                onClick={e => e.stopPropagation()}
+                onTouchStart={e => e.stopPropagation()}
+                onTouchEnd={e => e.stopPropagation()}
+              >
                 <div className="modal-content" style={{ maxWidth: '360px', padding: '24px', background: 'rgba(20, 20, 20, 0.95)', border: '1px solid rgba(255,255,255,0.08)' }}>
                   <div className="modal-header" style={{ marginBottom: '20px' }}>
                     <span className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px', fontWeight: '600' }}>

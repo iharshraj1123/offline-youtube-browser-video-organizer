@@ -1206,6 +1206,22 @@ button {
     --sidebar-collapsed-width: 0px;
   }
 
+  /* Make modals scrollable on mobile when virtual keyboard is active */
+  .modal-overlay {
+    align-items: flex-start !important;
+    padding: 24px 12px !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modal-content {
+    margin: 0 auto !important;
+    padding: 20px !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
   .main-sidebar {
     transform: translateX(-100%);
   }
