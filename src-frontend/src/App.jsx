@@ -628,7 +628,7 @@ export default function App() {
   };
 
   const handlePlayShort = (shortVideo, allShorts) => {
-    fetch(`./api/index.php?action=view_video&id=${shortVideo.vid_id}`).catch(() => {});
+    fetch(`./api/index.php?action=view_video&id=${shortVideo.vid_id}`).catch(() => { });
     setShortsList(allShorts);
     const idx = allShorts.findIndex(v => v.vid_id === shortVideo.vid_id);
     setInitialShortIndex(idx >= 0 ? idx : 0);
@@ -1340,7 +1340,7 @@ function HomeView({ videos, loading, activeCategory, currentSort, onPillSelect, 
 function ShortsCard({ video, onClick }) {
   const cleanTitle = video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '');
   const thumbnailSrc = `./thumbnails/${video.vid_id}.jpg`;
-  
+
   return (
     <div className="shorts-card" onClick={onClick}>
       <div className="shorts-thumbnail-wrapper">
@@ -1490,7 +1490,7 @@ function ShortsPlayerView({
             onClick={() => {
               if (videoRef.current) {
                 videoRef.current.currentTime = seconds;
-                videoRef.current.play().catch(() => {});
+                videoRef.current.play().catch(() => { });
                 setIsPlaying(true);
                 showFlashNotification(`Seek to ${part}`);
               }
@@ -1566,7 +1566,7 @@ function ShortsPlayerView({
         vid.volume = volume;
         vid.muted = isMuted;
       }
-      vid.play().catch(() => {});
+      vid.play().catch(() => { });
     }
   }, [currentIndex, currentVideo]);
 
@@ -1677,10 +1677,10 @@ function ShortsPlayerView({
             });
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     } else {
       if (screen.orientation && screen.orientation.unlock) {
-        try { screen.orientation.unlock(); } catch (e) {}
+        try { screen.orientation.unlock(); } catch (e) { }
       }
       document.exitFullscreen();
     }
@@ -1731,10 +1731,10 @@ function ShortsPlayerView({
             });
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     } else {
       if (screen.orientation && screen.orientation.unlock) {
-        try { screen.orientation.unlock(); } catch (e) {}
+        try { screen.orientation.unlock(); } catch (e) { }
       }
       document.exitFullscreen();
     }
@@ -1846,8 +1846,8 @@ function ShortsPlayerView({
                       />
                       <span className="shorts-uploader-name">@{vid.uploader_name}</span>
                     </div>
-                    <div 
-                      className="shorts-meta-title clickable-title" 
+                    <div
+                      className="shorts-meta-title clickable-title"
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowDescription(!showDescription);
@@ -1902,8 +1902,8 @@ function ShortsPlayerView({
 
         {/* Comments panel */}
         {showComments && (
-          <div 
-            className="shorts-comments-panel" 
+          <div
+            className="shorts-comments-panel"
             onClick={e => e.stopPropagation()}
             onTouchStart={e => e.stopPropagation()}
             onTouchEnd={e => e.stopPropagation()}
@@ -1929,8 +1929,8 @@ function ShortsPlayerView({
 
         {/* Description panel */}
         {showDescription && (
-          <div 
-            className="shorts-comments-panel" 
+          <div
+            className="shorts-comments-panel"
             onClick={e => e.stopPropagation()}
             onTouchStart={e => e.stopPropagation()}
             onTouchEnd={e => e.stopPropagation()}
@@ -1968,8 +1968,8 @@ function ShortsPlayerView({
 
             {/* Metadata Editing Modal Overlay */}
             {showEditModal && (
-              <div 
-                className="modal-overlay" 
+              <div
+                className="modal-overlay"
                 style={{ zIndex: 1100 }}
                 onClick={e => e.stopPropagation()}
                 onTouchStart={e => e.stopPropagation()}
@@ -2025,8 +2025,8 @@ function ShortsPlayerView({
 
             {/* Save to Playlist Modal Overlay */}
             {showSaveModal && (
-              <div 
-                className="modal-overlay" 
+              <div
+                className="modal-overlay"
                 style={{ zIndex: 1100 }}
                 onClick={e => e.stopPropagation()}
                 onTouchStart={e => e.stopPropagation()}
@@ -2500,6 +2500,23 @@ function PlayerView({
     }, 3000);
     return () => clearTimeout(timer);
   }, [showMobileControls, isPlaying, isMobile]);
+
+  // Handle click outside video player wrapper to hide controls
+  useEffect(() => {
+    const handleGlobalClick = (e) => {
+      if (playerWrapperRef.current && !playerWrapperRef.current.contains(e.target)) {
+        if (isMobile) {
+          setShowMobileControls(false);
+        }
+      }
+    };
+    document.addEventListener('click', handleGlobalClick, true);
+    document.addEventListener('touchstart', handleGlobalClick, true);
+    return () => {
+      document.removeEventListener('click', handleGlobalClick, true);
+      document.removeEventListener('touchstart', handleGlobalClick, true);
+    };
+  }, [isMobile]);
 
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(parseInt(video.duration) || 0);
@@ -4930,51 +4947,50 @@ function PlayerView({
         {/* Controls Overlay */}
         <div className={`player-controls-overlay ${isMobile && showMobileControls ? 'show-mobile-controls' : ''}`}>
           {isMobile ? (
-            /* High-Fidelity YouTube Mobile Player Controls Overlay */
-            <div 
-              className="mobile-player-overlay-container" 
+            <>
+              /* High-Fidelity YouTube Mobile Player Controls Overlay */
+              <div
+                className="mobile-player-overlay-container"
               onClick={(e) => {
                 if (e.target === e.currentTarget) {
                   setShowMobileControls(false);
                 }
-              }} 
-              style={{ 
-                position: 'absolute', 
-                top: 0, 
-                left: 0, 
-                right: 0, 
-                bottom: 0, 
-                display: 'flex', 
-                flexDirection: 'column', 
-                justifyContent: 'space-between', 
-                padding: '12px', 
-                background: 'transparent', 
-                zIndex: 100 
+              }}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                background: 'transparent',
+                zIndex: 100
               }}
             >
               {/* Top Row: Down Arrow & Options with Top Gradient Shadow */}
-              <div 
-                style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center', 
-                  width: '100%', 
-                  background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%)', 
-                  padding: '12px 12px 24px 12px', 
-                  margin: '-12px -12px 0 -12px',
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  width: '100%',
+                  background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%)',
+                  paddingTop: '5px',
                   borderTopLeftRadius: 'inherit',
                   borderTopRightRadius: 'inherit'
                 }}
               >
                 {/* Back/Collapse Arrow */}
-                <button 
-                  className="control-btn" 
+                <button
+                  className="control-btn"
                   onClick={(e) => { e.stopPropagation(); onClose(); }}
                   style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '6px' }}
                 >
                   <ChevronDown size={24} />
                 </button>
-                
+
                 {/* Top-Right Controls */}
                 <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
                   <button
@@ -5014,7 +5030,7 @@ function PlayerView({
               {/* Center Controls: Skip Back, Play/Pause, Skip Forward */}
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '28px', width: '100%' }}>
                 {/* Skip Back / Prev */}
-                <button 
+                <button
                   className="mobile-player-circle-btn"
                   onClick={(e) => { e.stopPropagation(); handlePrevVideo(); }}
                   style={{
@@ -5034,7 +5050,7 @@ function PlayerView({
                 </button>
 
                 {/* Big Center Play/Pause */}
-                <button 
+                <button
                   className="mobile-player-circle-btn-large"
                   onClick={(e) => { e.stopPropagation(); togglePlay(); }}
                   style={{
@@ -5054,7 +5070,7 @@ function PlayerView({
                 </button>
 
                 {/* Skip Forward / Next */}
-                <button 
+                <button
                   className="mobile-player-circle-btn"
                   onClick={(e) => { e.stopPropagation(); handleNextVideo(); }}
                   style={{
@@ -5075,16 +5091,16 @@ function PlayerView({
               </div>
 
               {/* Bottom Row: Time display & Fullscreen */}
-              <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '4px', paddingBottom: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '4px', paddingBottom: '5px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '0 4px' }}>
                   {/* Elapsed / Duration Badge */}
                   <div style={{ fontSize: '12px', color: '#fff', fontWeight: '500', background: 'rgba(0, 0, 0, 0.5)', padding: '4px 8px', borderRadius: '10px' }}>
                     {formatTime(currentTime)} / {formatTime(duration)}
                   </div>
-                  
+
                   {/* Fullscreen Button */}
-                  <button 
-                    className="control-btn" 
+                  <button
+                    className="control-btn"
                     onClick={(e) => { e.stopPropagation(); toggleFullscreen(); }}
                     style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '4px' }}
                   >
@@ -5092,9 +5108,10 @@ function PlayerView({
                   </button>
                 </div>
               </div>
+            </div>
 
               {/* Horizontal Progress Seek Slider (Absolute Bottom Edge) */}
-              <div 
+              <div
                 ref={progressContainerRef}
                 className="progress-bar-hit-area"
                 onMouseDown={handleProgressMouseDown}
@@ -5110,44 +5127,46 @@ function PlayerView({
                   setCurrentTime(targetTime);
                   if (videoRef.current) videoRef.current.currentTime = targetTime;
                 }}
-                style={{ 
+                style={{
                   position: 'absolute',
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  height: '16px', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  width: '100%', 
+                  height: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  width: '100%',
                   cursor: 'pointer',
                   margin: 0,
                   padding: 0,
                   zIndex: 105
                 }}
               >
-                <div className="progress-timeline-container" style={{ height: '3px', background: 'rgba(255,255,255,0.2)', width: '100%', position: 'relative' }}>
+                <div className="progress-timeline-container" style={{ height: '3px', background: 'rgba(255,255,255,0.2)', width: '100%', position: 'absolute', bottom: '0' }}>
                   <div
                     className="progress-bar-played"
                     style={{ width: `${(currentTime / (duration || 1)) * 100}%`, height: '100%', background: 'var(--primary-color)' }}
                   />
                   <div
                     className="progress-bar-knob"
-                    style={{ 
-                      left: `${(currentTime / (duration || 1)) * 100}%`, 
-                      position: 'absolute', 
-                      top: '50%', 
-                      transform: 'translate(-50%, -50%)', 
-                      width: '12px', 
-                      height: '12px', 
-                      borderRadius: '50%', 
+                    style={{
+                      left: `${(currentTime / (duration || 1)) * 100}%`,
+                      position: 'absolute',
+                      top: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      width: '12px',
+                      height: '12px',
+                      borderRadius: '50%',
                       background: 'var(--primary-color)',
-                      boxShadow: '0 0 4px rgba(0,0,0,0.5)'
+                      boxShadow: '0 0 4px rgba(0,0,0,0.5)',
+                      opacity: showMobileControls ? 1 : 0,
+                      pointerEvents: showMobileControls ? 'auto' : 'none',
+                      transition: 'opacity 0.2s ease-in-out'
                     }}
                   />
                 </div>
               </div>
-
-            </div>
+            </>
           ) : (
             /* Standard Desktop Player Controls */
             <>
@@ -5698,8 +5717,8 @@ function PlayerView({
                 </h1>
 
                 {/* Metadata Row / Trigger for Description sheet */}
-                <div 
-                  className="mobile-metadata-row" 
+                <div
+                  className="mobile-metadata-row"
                   onClick={() => setIsDescriptionExpanded(true)}
                   style={{ fontSize: '13px', color: '#aaa', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '16px', cursor: 'pointer' }}
                 >
@@ -5723,17 +5742,17 @@ function PlayerView({
                       <div style={{ fontSize: '11px', color: '#aaa' }}>Channel Owner</div>
                     </div>
                   </div>
-                  <button 
-                    className="mobile-subscribe-btn" 
-                    style={{ 
-                      backgroundColor: '#fff', 
-                      color: '#0f0f0f', 
-                      border: 'none', 
-                      borderRadius: '18px', 
-                      padding: '8px 16px', 
-                      fontSize: '12px', 
-                      fontWeight: 'bold', 
-                      cursor: 'pointer' 
+                  <button
+                    className="mobile-subscribe-btn"
+                    style={{
+                      backgroundColor: '#fff',
+                      color: '#0f0f0f',
+                      border: 'none',
+                      borderRadius: '18px',
+                      padding: '8px 16px',
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer'
                     }}
                   >
                     Subscribe
@@ -5765,15 +5784,15 @@ function PlayerView({
                 </div>
 
                 {/* Mobile Comments Preview Banner */}
-                <div 
-                  className="mobile-comments-preview-card" 
+                <div
+                  className="mobile-comments-preview-card"
                   onClick={() => setShowMobileCommentsDrawer(true)}
-                  style={{ 
-                    background: 'rgba(255,255,255,0.06)', 
-                    borderRadius: '12px', 
-                    padding: '12px', 
-                    marginBottom: '16px', 
-                    cursor: 'pointer' 
+                  style={{
+                    background: 'rgba(255,255,255,0.06)',
+                    borderRadius: '12px',
+                    padding: '12px',
+                    marginBottom: '16px',
+                    cursor: 'pointer'
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
@@ -5784,9 +5803,9 @@ function PlayerView({
                   </div>
                   {commentsList.length > 0 ? (
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                      <img 
-                        src={commentsList[0].user_pic || './Userdatabase/ProfilePic/defaulta.jpg'} 
-                        alt="" 
+                      <img
+                        src={commentsList[0].user_pic || './Userdatabase/ProfilePic/defaulta.jpg'}
+                        alt=""
                         style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover' }}
                       />
                       <div style={{ fontSize: '12px', color: '#ccc', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: '1.4' }}>
@@ -5907,8 +5926,8 @@ function PlayerView({
 
             {/* Mobile slide-up drawer for Comments */}
             {isMobile && showMobileCommentsDrawer && (
-              <div 
-                className="mobile-drawer-overlay" 
+              <div
+                className="mobile-drawer-overlay"
                 onClick={() => setShowMobileCommentsDrawer(false)}
                 onTouchStart={e => e.stopPropagation()}
                 onTouchEnd={e => e.stopPropagation()}
@@ -5944,8 +5963,8 @@ function PlayerView({
 
             {/* Mobile slide-up drawer for Description */}
             {isMobile && isDescriptionExpanded && (
-              <div 
-                className="mobile-drawer-overlay" 
+              <div
+                className="mobile-drawer-overlay"
                 onClick={() => setIsDescriptionExpanded(false)}
                 onTouchStart={e => e.stopPropagation()}
                 onTouchEnd={e => e.stopPropagation()}
