@@ -232,11 +232,31 @@ export default function App() {
     // Check URL parameters on mount
     const params = new URLSearchParams(window.location.search);
     const videoId = params.get('v');
+    const shortId = params.get('sv');
     const page = params.get('page');
     const userParam = params.get('user');
 
     if (videoId) {
       fetchVideoAndPlay(videoId);
+    } else if (shortId) {
+      // Open Shorts viewer at the given short — fetch all videos first
+      fetchVideos();
+      fetch('./api/index.php?action=videos&q=&category=all&sort=mix')
+        .then(r => r.json())
+        .then(allVideos => {
+          const allShorts = Array.isArray(allVideos)
+            ? allVideos.filter(v => v.duration > 0 && v.duration <= 90)
+            : [];
+          if (allShorts.length > 0) {
+            const idx = allShorts.findIndex(v => String(v.vid_id) === String(shortId));
+            setShortsList(allShorts);
+            setInitialShortIndex(idx >= 0 ? idx : 0);
+            setCurrentView('shorts');
+          } else {
+            setCurrentView('home');
+          }
+        })
+        .catch(() => setCurrentView('home'));
     } else if (page === 'crawler') {
       setCurrentView('crawler');
     } else if (page === 'profile' && userParam) {
@@ -254,11 +274,19 @@ export default function App() {
     const handlePopState = () => {
       const p = new URLSearchParams(window.location.search);
       const vId = p.get('v');
+      const svId = p.get('sv');
       const pg = p.get('page');
       const usr = p.get('user');
 
       if (vId) {
         fetchVideoAndPlay(vId);
+      } else if (svId) {
+        // Navigate back into a specific short
+        setCurrentView(prev => {
+          // If already in shorts view just do nothing — the replaceState already handled URL
+          if (prev === 'shorts') return prev;
+          return 'shorts';
+        });
       } else if (pg === 'crawler') {
         setCurrentView('crawler');
         setPlayingVideo(null);
@@ -579,7 +607,13 @@ export default function App() {
     setShortsList(allShorts);
     const idx = allShorts.findIndex(v => v.vid_id === shortVideo.vid_id);
     setInitialShortIndex(idx >= 0 ? idx : 0);
+    window.history.pushState(null, '', `?sv=${shortVideo.vid_id}`);
     setCurrentView('shorts');
+  };
+
+  // Called by ShortsPlayerView when slide changes — update URL without pushing a new history entry
+  const handleShortIndexChange = (vid_id) => {
+    window.history.replaceState(null, '', `?sv=${vid_id}`);
   };
 
   // Load a video for playing
@@ -986,6 +1020,7 @@ export default function App() {
               shortsList={shortsList}
               initialIndex={initialShortIndex}
               onClose={handleGoHome}
+              onIndexChange={handleShortIndexChange}
               currentUser={user}
               onOpenAuth={() => setShowAuthModal(true)}
               onNavigateToProfile={() => setCurrentView('profile')}
@@ -1305,289 +1340,363 @@ function ShortsCard({ video, onClick }) {
 // ----------------------------------------
 // SUB-COMPONENT: ShortsPlayerView
 // ----------------------------------------
-function ShortsPlayerView({ shortsList, initialIndex, onClose, currentUser, onOpenAuth, onNavigateToProfile, showFlashNotification }) {
+function ShortsPlayerView({ shortsList, initialIndex, onClose, onIndexChange, currentUser, onOpenAuth, onNavigateToProfile, showFlashNotification }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [showComments, setShowComments] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
+  const [volume, setVolume] = useState(1);
+  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [flashIcon, setFlashIcon] = useState(null); // 'play' | 'pause' | null
 
   const currentVideo = shortsList[currentIndex];
   const videoRef = useRef(null);
   const playerLayoutRef = useRef(null);
+  const scrollContainerRef = useRef(null);
+  const pendingIndex = useRef(currentIndex);
+  const volumeHideTimer = useRef(null);
+  const flashTimer = useRef(null);
+  const clickTimer = useRef(null);
 
-  // Auto-play when video changes
+  // Scroll container to the target index smoothly
+  const scrollToIndex = (idx) => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    container.scrollTo({ top: idx * container.clientHeight, behavior: 'smooth' });
+  };
+
+  // On initial mount, jump to position without animation
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    container.scrollTop = initialIndex * container.clientHeight;
+  }, []);
+
+  // Sync video when index changes
   useEffect(() => {
     setIsPlaying(true);
     setLiked(false);
     setDisliked(false);
-    if (videoRef.current) {
-      videoRef.current.src = translateVideoUrl(currentVideo.link);
-      videoRef.current.load();
-      videoRef.current.play().catch(e => console.error("Auto-play blocked:", e));
+    const vid = videoRef.current;
+    if (vid) {
+      vid.src = translateVideoUrl(currentVideo.link);
+      vid.load();
+      vid.volume = volume;
+      vid.muted = isMuted;
+      vid.play().catch(() => {});
     }
   }, [currentIndex, currentVideo]);
 
-  const handleNext = () => {
-    if (currentIndex < shortsList.length - 1) {
-      setCurrentIndex(prev => prev + 1);
-    }
+  // Scroll listener: detect when the user lands on a new slide after natural scroll
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    let scrollTimer = null;
+    const onScroll = () => {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => {
+        const h = container.clientHeight;
+        const newIdx = Math.round(container.scrollTop / h);
+        if (newIdx !== pendingIndex.current && newIdx >= 0 && newIdx < shortsList.length) {
+          pendingIndex.current = newIdx;
+          setCurrentIndex(newIdx);
+          // Update URL to reflect naturally scrolled-to short
+          if (onIndexChange) onIndexChange(shortsList[newIdx].vid_id);
+        }
+      }, 80);
+    };
+    container.addEventListener('scroll', onScroll, { passive: true });
+    return () => { container.removeEventListener('scroll', onScroll); clearTimeout(scrollTimer); };
+  }, [shortsList, onIndexChange]);
+
+  const goTo = (idx) => {
+    if (idx < 0 || idx >= shortsList.length) return;
+    pendingIndex.current = idx;
+    setCurrentIndex(idx);
+    scrollToIndex(idx);
+    // Update URL to reflect the new short
+    if (onIndexChange) onIndexChange(shortsList[idx].vid_id);
   };
 
-  const handlePrev = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(prev => prev - 1);
-    }
-  };
+  const handleNext = () => goTo(currentIndex + 1);
+  const handlePrev = () => goTo(currentIndex - 1);
 
   // Keyboard navigation
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'ArrowDown') {
-        handleNext();
-        e.preventDefault();
-      } else if (e.key === 'ArrowUp') {
-        handlePrev();
-        e.preventDefault();
-      } else if (e.key === ' ') {
-        togglePlay();
-        e.preventDefault();
-      }
+    const onKey = (e) => {
+      if (e.key === 'ArrowDown') { handleNext(); e.preventDefault(); }
+      else if (e.key === 'ArrowUp') { handlePrev(); e.preventDefault(); }
+      else if (e.key === ' ') { togglePlay(); e.preventDefault(); }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, [currentIndex, shortsList, isPlaying]);
 
-  // Wheel scroll navigation (throttled)
-  const lastScrollTime = useRef(0);
-  const handleWheel = (e) => {
-    const now = Date.now();
-    if (now - lastScrollTime.current < 800) return;
-    if (e.deltaY > 50) {
-      handleNext();
-      lastScrollTime.current = now;
-    } else if (e.deltaY < -50) {
-      handlePrev();
-      lastScrollTime.current = now;
-    }
-  };
-
-  // Touch swipe support
+  // Touch swipe
   const touchStartY = useRef(0);
-  const handleTouchStart = (e) => {
-    touchStartY.current = e.touches[0].clientY;
-  };
+  const handleTouchStart = (e) => { touchStartY.current = e.touches[0].clientY; };
   const handleTouchEnd = (e) => {
-    const diffY = touchStartY.current - e.changedTouches[0].clientY;
-    if (Math.abs(diffY) > 50) {
-      if (diffY > 0) {
-        handleNext();
-      } else {
-        handlePrev();
-      }
-    }
+    const diff = touchStartY.current - e.changedTouches[0].clientY;
+    if (Math.abs(diff) > 60) diff > 0 ? handleNext() : handlePrev();
   };
 
-  // Listen to fullscreen changes (sync state if user presses Esc)
+  // Fullscreen sync
   useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    const onFS = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onFS);
+    return () => document.removeEventListener('fullscreenchange', onFS);
   }, []);
 
   const togglePlay = () => {
-    if (videoRef.current) {
-      if (videoRef.current.paused) {
-        videoRef.current.play();
-        setIsPlaying(true);
-      } else {
-        videoRef.current.pause();
-        setIsPlaying(false);
-      }
+    const vid = videoRef.current;
+    if (!vid) return;
+    if (vid.paused) {
+      vid.play();
+      setIsPlaying(true);
+      triggerFlash('play');
+    } else {
+      vid.pause();
+      setIsPlaying(false);
+      triggerFlash('pause');
+    }
+  };
+
+  const triggerFlash = (type) => {
+    clearTimeout(flashTimer.current);
+    setFlashIcon(type);
+    flashTimer.current = setTimeout(() => setFlashIcon(null), 900);
+  };
+
+  // Single click = play/pause; double click = fullscreen
+  const handleVideoClick = (e) => {
+    e.stopPropagation();
+    clearTimeout(clickTimer.current);
+    clickTimer.current = setTimeout(() => {
+      togglePlay();
+    }, 220);
+  };
+
+  const handleVideoDoubleClick = (e) => {
+    e.stopPropagation();
+    clearTimeout(clickTimer.current); // cancel the pending single-click
+    if (!document.fullscreenElement) {
+      playerLayoutRef.current?.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen();
     }
   };
 
   const toggleMute = (e) => {
     e.stopPropagation();
+    const newMuted = !isMuted;
+    setIsMuted(newMuted);
+    if (videoRef.current) videoRef.current.muted = newMuted;
+  };
+
+  const handleVolumeChange = (e) => {
+    e.stopPropagation();
+    const val = parseFloat(e.target.value);
+    setVolume(val);
     if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
+      videoRef.current.volume = val;
+      videoRef.current.muted = val === 0;
+      setIsMuted(val === 0);
     }
   };
 
+  const onVolumeEnter = () => { clearTimeout(volumeHideTimer.current); setShowVolumeSlider(true); };
+  const onVolumeLeave = () => { volumeHideTimer.current = setTimeout(() => setShowVolumeSlider(false), 400); };
+
   const toggleFullscreen = (e) => {
     e.stopPropagation();
-    const container = playerLayoutRef.current;
-    if (!container) return;
     if (!document.fullscreenElement) {
-      container.requestFullscreen().then(() => {
-        setIsFullscreen(true);
-      }).catch(err => {
-        console.error("Error enabling fullscreen:", err);
-      });
+      playerLayoutRef.current?.requestFullscreen().catch(() => {});
     } else {
       document.exitFullscreen();
-      setIsFullscreen(false);
     }
   };
 
   const handleLike = (e) => {
     e.stopPropagation();
-    if (!currentUser?.name) {
-      onOpenAuth();
-      return;
-    }
-    if (liked) {
-      setLiked(false);
-    } else {
-      setLiked(true);
-      setDisliked(false);
-      showFlashNotification('Liked short video');
-    }
+    if (!currentUser?.name) { onOpenAuth(); return; }
+    if (liked) setLiked(false);
+    else { setLiked(true); setDisliked(false); showFlashNotification('Liked short video'); }
   };
 
   const handleDislike = (e) => {
     e.stopPropagation();
-    if (!currentUser?.name) {
-      onOpenAuth();
-      return;
-    }
-    if (disliked) {
-      setDisliked(false);
-    } else {
-      setDisliked(true);
-      setLiked(false);
-    }
+    if (!currentUser?.name) { onOpenAuth(); return; }
+    if (disliked) setDisliked(false);
+    else { setDisliked(true); setLiked(false); }
   };
 
-  const cleanTitle = currentVideo.vid_name.replace(/\.[a-zA-Z0-9]+$/, '');
-
   return (
-    <div 
+    <div
       className="shorts-viewer-overlay"
-      onWheel={handleWheel}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="shorts-viewer-content">
-        {/* Back Button */}
-        <button className="shorts-back-btn" onClick={onClose} title="Go Back">
-          <ChevronLeft size={24} />
-          <span>Back</span>
-        </button>
+      {/* Back button — fixed over everything */}
+      <button className="shorts-back-btn" onClick={onClose} title="Go Back">
+        <ChevronLeft size={24} />
+        <span>Back</span>
+      </button>
 
-        {/* Swipe Layout */}
-        <div ref={playerLayoutRef} className="shorts-player-layout">
-          {/* Main Video Box */}
-          <div className="shorts-video-container" onClick={togglePlay}>
-            <video
-              ref={videoRef}
-              className="shorts-video-element"
-              loop
-              autoPlay
-              playsInline
-            />
+      {/* Outer layout */}
+      <div ref={playerLayoutRef} className="shorts-player-layout">
 
-            {/* Video Controls overlay */}
-            <div className="shorts-video-controls" style={{ display: 'flex', gap: '8px' }}>
-              <button className="shorts-control-icon-btn" onClick={toggleMute} title={isMuted ? "Unmute" : "Mute"}>
-                {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-              </button>
-              <button className="shorts-control-icon-btn" onClick={toggleFullscreen} title="Toggle Fullscreen">
-                {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
-              </button>
-            </div>
+        {/* Scroll-snap vertical strip */}
+        <div ref={scrollContainerRef} className="shorts-scroll-container">
+          {shortsList.map((vid, idx) => {
+            const isActive = idx === currentIndex;
+            const slideTitle = vid.vid_name.replace(/\.[a-zA-Z0-9]+$/, '');
+            return (
+              <div key={vid.vid_id} className="shorts-slide">
+                <div
+                  className="shorts-video-container"
+                  onClick={handleVideoClick}
+                  onDoubleClick={handleVideoDoubleClick}
+                >
 
-            {/* Play/Pause Center Indicator */}
-            {!isPlaying && (
-              <div className="shorts-play-indicator">
-                <Play size={48} fill="#fff" stroke="none" />
+                  {/* Active slide: live video */}
+                  {isActive && (
+                    <video ref={videoRef} className="shorts-video-element" loop autoPlay playsInline />
+                  )}
+                  {/* Inactive slides: thumbnail placeholder */}
+                  {!isActive && (
+                    <img
+                      src={`./thumbnails/${vid.vid_id}.jpg`}
+                      alt={slideTitle}
+                      className="shorts-video-element"
+                      style={{ objectFit: 'contain', background: '#000' }}
+                    />
+                  )}
+
+                  {/* Controls (volume + fullscreen) — only active */}
+                  {isActive && (
+                    <div className="shorts-video-controls" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <div
+                        className="shorts-volume-wrapper"
+                        onMouseEnter={onVolumeEnter}
+                        onMouseLeave={onVolumeLeave}
+                        onClick={e => e.stopPropagation()}
+                      >
+                        <button className="shorts-control-icon-btn" onClick={toggleMute} title={isMuted ? 'Unmute' : 'Mute'}>
+                          {isMuted || volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                        </button>
+                        {showVolumeSlider && (
+                          <div className="shorts-volume-popup">
+                            <input
+                              type="range"
+                              min="0" max="1" step="0.02"
+                              value={isMuted ? 0 : volume}
+                              onChange={handleVolumeChange}
+                              className="shorts-volume-slider"
+                            />
+                          </div>
+                        )}
+                      </div>
+                      <button className="shorts-control-icon-btn" onClick={toggleFullscreen} title="Fullscreen">
+                        {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Flash icon: shown briefly on tap, fades out */}
+                  {isActive && flashIcon && (
+                    <div className={`shorts-flash-indicator shorts-flash-${flashIcon}`}>
+                      {flashIcon === 'play'
+                        ? <Play size={56} fill="#fff" stroke="none" />
+                        : <Pause size={56} fill="#fff" stroke="none" />
+                      }
+                    </div>
+                  )}
+
+                  {/* Bottom-left meta */}
+                  <div className="shorts-meta-overlay" onClick={e => e.stopPropagation()}>
+                    <div className="shorts-uploader-row">
+                      <img
+                        className="shorts-uploader-avatar"
+                        src={vid.uploader_img || './Userdatabase/ProfilePic/defaulta.jpg'}
+                        alt={vid.uploader_name}
+                      />
+                      <span className="shorts-uploader-name">@{vid.uploader_name}</span>
+                      <button className="shorts-subscribe-btn">Subscribe</button>
+                    </div>
+                    <div className="shorts-meta-title" title={slideTitle}>{slideTitle}</div>
+                  </div>
+                </div>
               </div>
-            )}
-
-            {/* Bottom-left Meta Info Overlay */}
-            <div className="shorts-meta-overlay" onClick={e => e.stopPropagation()}>
-              <div className="shorts-uploader-row">
-                <img 
-                  className="shorts-uploader-avatar" 
-                  src={currentVideo.uploader_img || './Userdatabase/ProfilePic/defaulta.jpg'} 
-                  alt={currentVideo.uploader_name} 
-                />
-                <span className="shorts-uploader-name">@{currentVideo.uploader_name}</span>
-                <button className="shorts-subscribe-btn">Subscribe</button>
-              </div>
-              <div className="shorts-meta-title" title={cleanTitle}>{cleanTitle}</div>
-            </div>
-          </div>
-
-          {/* Right Action Buttons Column */}
-          <div className="shorts-actions-column" onClick={e => e.stopPropagation()}>
-            <div className="shorts-action-item">
-              <button className={`shorts-action-btn-circle ${liked ? 'active-like' : ''}`} onClick={handleLike}>
-                <ThumbsUp size={22} fill={liked ? "currentColor" : "none"} />
-              </button>
-              <span className="shorts-action-label">{(currentVideo.likes || 0) + (liked ? 1 : 0)}</span>
-            </div>
-
-            <div className="shorts-action-item">
-              <button className={`shorts-action-btn-circle ${disliked ? 'active-dislike' : ''}`} onClick={handleDislike}>
-                <ThumbsDown size={22} fill={disliked ? "currentColor" : "none"} />
-              </button>
-              <span className="shorts-action-label">Dislike</span>
-            </div>
-
-            <div className="shorts-action-item" onClick={() => setShowComments(!showComments)}>
-              <button className={`shorts-action-btn-circle ${showComments ? 'active' : ''}`}>
-                <MessageSquare size={22} fill={showComments ? "currentColor" : "none"} />
-              </button>
-              <span className="shorts-action-label">{currentVideo.comments || 0}</span>
-            </div>
-
-            <div className="shorts-action-item">
-              <button className="shorts-action-btn-circle nav-arrow" onClick={handlePrev} disabled={currentIndex === 0}>
-                <ChevronLeft size={22} style={{ transform: 'rotate(90deg)' }} />
-              </button>
-            </div>
-
-            <div className="shorts-action-item">
-              <button className="shorts-action-btn-circle nav-arrow" onClick={handleNext} disabled={currentIndex === shortsList.length - 1}>
-                <ChevronLeft size={22} style={{ transform: 'rotate(-90deg)' }} />
-              </button>
-            </div>
-          </div>
-
-          {/* Comments Sidebar Panel */}
-          {showComments && (
-            <div className="shorts-comments-panel" onClick={e => e.stopPropagation()}>
-              <div className="shorts-comments-header">
-                <h3>Comments</h3>
-                <button className="shorts-comments-close" onClick={() => setShowComments(false)}>
-                  <X size={20} />
-                </button>
-              </div>
-              <div className="shorts-comments-body">
-                <CommentsSection
-                  key={currentVideo.vid_id}
-                  videoId={currentVideo.vid_id}
-                  currentUser={currentUser}
-                  onOpenAuth={onOpenAuth}
-                  onNavigateToProfile={onNavigateToProfile}
-                  showFlashNotification={showFlashNotification}
-                />
-              </div>
-            </div>
-          )}
+            );
+          })}
         </div>
+
+        {/* Right action sidebar */}
+        <div className="shorts-actions-column" onClick={e => e.stopPropagation()}>
+          <div className="shorts-action-item">
+            <button className={`shorts-action-btn-circle ${liked ? 'active-like' : ''}`} onClick={handleLike}>
+              <ThumbsUp size={22} fill={liked ? 'currentColor' : 'none'} />
+            </button>
+            <span className="shorts-action-label">{(currentVideo.likes || 0) + (liked ? 1 : 0)}</span>
+          </div>
+
+          <div className="shorts-action-item">
+            <button className={`shorts-action-btn-circle ${disliked ? 'active-dislike' : ''}`} onClick={handleDislike}>
+              <ThumbsDown size={22} fill={disliked ? 'currentColor' : 'none'} />
+            </button>
+            <span className="shorts-action-label">Dislike</span>
+          </div>
+
+          <div className="shorts-action-item" onClick={() => setShowComments(!showComments)}>
+            <button className={`shorts-action-btn-circle ${showComments ? 'active' : ''}`}>
+              <MessageSquare size={22} fill={showComments ? 'currentColor' : 'none'} />
+            </button>
+            <span className="shorts-action-label">{currentVideo.comments || 0}</span>
+          </div>
+
+          <div className="shorts-action-item">
+            <button className="shorts-action-btn-circle nav-arrow" onClick={handlePrev} disabled={currentIndex === 0}>
+              <ChevronLeft size={22} style={{ transform: 'rotate(90deg)' }} />
+            </button>
+          </div>
+
+          <div className="shorts-action-item">
+            <button className="shorts-action-btn-circle nav-arrow" onClick={handleNext} disabled={currentIndex === shortsList.length - 1}>
+              <ChevronLeft size={22} style={{ transform: 'rotate(-90deg)' }} />
+            </button>
+          </div>
+        </div>
+
+        {/* Comments panel */}
+        {showComments && (
+          <div className="shorts-comments-panel" onClick={e => e.stopPropagation()}>
+            <div className="shorts-comments-header">
+              <h3>Comments</h3>
+              <button className="shorts-comments-close" onClick={() => setShowComments(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="shorts-comments-body">
+              <CommentsSection
+                key={currentVideo.vid_id}
+                videoId={currentVideo.vid_id}
+                currentUser={currentUser}
+                onOpenAuth={onOpenAuth}
+                onNavigateToProfile={onNavigateToProfile}
+                showFlashNotification={showFlashNotification}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-// ----------------------------------------
+
 // SUB-COMPONENT: VideoCard
 // ----------------------------------------
 function VideoCard({ video, onClick }) {
