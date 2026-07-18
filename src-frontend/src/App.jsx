@@ -4945,7 +4945,7 @@ function PlayerView({
         )}
 
         {/* Controls Overlay */}
-        <div className={`player-controls-overlay ${isMobile && showMobileControls ? 'show-mobile-controls' : ''}`}>
+        <div className={`player-controls-overlay ${isMobile ? 'mobile-overlay' : 'desktop-overlay'} ${isMobile && showMobileControls ? 'show-mobile-controls' : ''}`}>
           {isMobile ? (
             <>
               <div
@@ -5128,7 +5128,7 @@ function PlayerView({
                 }}
                 style={{
                   position: 'absolute',
-                  bottom: 0,
+                  bottom: isMobile && showMobileControls ? '10px' : '0px',
                   left: 0,
                   right: 0,
                   height: '16px',
@@ -5138,10 +5138,11 @@ function PlayerView({
                   cursor: 'pointer',
                   margin: 0,
                   padding: 0,
-                  zIndex: 105
+                  zIndex: 105,
+                  transition: 'bottom 0.2s ease-in-out'
                 }}
               >
-                <div className="progress-timeline-container" style={{ height: '3px', background: 'rgba(255,255,255,0.2)', width: '100%', position: 'absolute', bottom: '6px' }}>
+                <div className="progress-timeline-container" style={{ height: '3px', background: 'rgba(255,255,255,0.2)', width: '100%', position: 'absolute', bottom: '0' }}>
                   <div
                     className="progress-bar-played"
                     style={{ width: `${(currentTime / (duration || 1)) * 100}%`, height: '100%', background: 'var(--primary-color)' }}

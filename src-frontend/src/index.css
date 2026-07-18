@@ -784,13 +784,33 @@ button {
   bottom: 0;
   left: 0;
   right: 0;
+  z-index: 5;
+}
+
+/* Desktop controls overlay: hidden by default, shown on hover */
+.player-controls-overlay.desktop-overlay {
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
   display: flex;
   flex-direction: column;
-  z-index: 5;
+  padding: 5px 16px;
+  opacity: 0;
+  transition: opacity 0.3s;
   pointer-events: none;
 }
 
-.player-controls-overlay.show-mobile-controls {
+.video-player-wrapper:hover .player-controls-overlay.desktop-overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Mobile controls overlay: always opacity 1, pointer-events none by default */
+.player-controls-overlay.mobile-overlay {
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+
+.player-controls-overlay.mobile-overlay.show-mobile-controls {
   pointer-events: auto !important;
   top: 0 !important;
   bottom: 0 !important;
@@ -847,16 +867,7 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 16px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s;
-}
-
-.video-player-wrapper:hover .controls-row {
-  opacity: 1;
-  pointer-events: auto;
+  padding: 10px 0;
 }
 
 .controls-group {
@@ -1900,7 +1911,7 @@ body.mini-player-dragging * {
   cursor: none !important;
 }
 
-.video-player-wrapper.hide-controls .player-controls-overlay .controls-row {
+.video-player-wrapper.hide-controls .player-controls-overlay.desktop-overlay {
   opacity: 0 !important;
   pointer-events: none !important;
 }
