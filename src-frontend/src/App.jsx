@@ -2547,6 +2547,37 @@ function PlayerView({
   // Draggable position state for miniplayer
   const [miniPlayerPos, setMiniPlayerPos] = useState({ x: 0, y: 0 });
   const [isDraggingState, setIsDraggingState] = useState(false);
+  const [showMiniPlayerControls, setShowMiniPlayerControls] = useState(false);
+  const miniPlayerActivityTimeoutRef = useRef(null);
+
+  const triggerMiniPlayerActivity = () => {
+    setShowMiniPlayerControls(true);
+    if (miniPlayerActivityTimeoutRef.current) {
+      clearTimeout(miniPlayerActivityTimeoutRef.current);
+    }
+    miniPlayerActivityTimeoutRef.current = setTimeout(() => {
+      setShowMiniPlayerControls(false);
+    }, 2500);
+  };
+
+  const hideMiniPlayerControls = () => {
+    setShowMiniPlayerControls(false);
+    if (miniPlayerActivityTimeoutRef.current) {
+      clearTimeout(miniPlayerActivityTimeoutRef.current);
+    }
+  };
+
+  useEffect(() => {
+    if (!isMiniPlayer) {
+      hideMiniPlayerControls();
+    }
+    return () => {
+      if (miniPlayerActivityTimeoutRef.current) {
+        clearTimeout(miniPlayerActivityTimeoutRef.current);
+      }
+    };
+  }, [isMiniPlayer]);
+
   const dragStartPos = useRef({ x: 0, y: 0 });
   const isDragging = useRef(false);
   const volumeRef = useRef(volume);
@@ -4275,6 +4306,10 @@ function PlayerView({
   return (
     <div
       className={`player-page-container ${isTheaterMode ? 'theater-layout' : ''} ${isMiniPlayer ? 'mini-player' : ''} ${isDraggingState ? 'dragging' : ''}`}
+      onMouseEnter={isMiniPlayer ? triggerMiniPlayerActivity : undefined}
+      onMouseMove={isMiniPlayer ? triggerMiniPlayerActivity : undefined}
+      onMouseLeave={isMiniPlayer ? hideMiniPlayerControls : undefined}
+      onTouchStart={isMiniPlayer ? triggerMiniPlayerActivity : undefined}
       style={isMiniPlayer ? {
         transform: `translate(${miniPlayerPos.x}px, ${miniPlayerPos.y}px)`,
         cursor: isDraggingState ? 'grabbing' : 'grab'
@@ -4303,8 +4338,8 @@ function PlayerView({
                 justifyContent: 'center',
                 alignItems: 'center',
                 gap: '16px',
-                opacity: 0,
-                pointerEvents: 'none',
+                opacity: showMiniPlayerControls ? 1 : 0,
+                pointerEvents: showMiniPlayerControls ? 'auto' : 'none',
                 transition: 'opacity 0.2s ease-in-out',
                 cursor: isDraggingState ? 'grabbing' : 'grab'
               }}
@@ -4405,9 +4440,9 @@ function PlayerView({
                 color: '#fff',
                 cursor: 'pointer',
                 boxShadow: '0 2px 5px rgba(0,0,0,0.5)',
-                transition: 'background 0.2s',
-                opacity: 0,
-                pointerEvents: 'none'
+                transition: 'background 0.2s, opacity 0.2s ease-in-out',
+                opacity: showMiniPlayerControls ? 1 : 0,
+                pointerEvents: showMiniPlayerControls ? 'auto' : 'none'
               }}
               className="mini-player-close-btn"
               title="Close mini player"

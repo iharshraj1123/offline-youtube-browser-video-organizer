@@ -1832,16 +1832,7 @@ button {
   font-weight: bold;
 }
 
-.player-page-container.mini-player:hover .mini-player-overlay {
-  opacity: 1;
-}
-
-/* Hover controls and close button inside miniplayer */
-.player-page-container.mini-player:hover .mini-player-hover-controls,
-.player-page-container.mini-player:hover .mini-player-close-btn {
-  opacity: 1 !important;
-  pointer-events: auto !important;
-}
+/* Dark background overlay inside miniplayer on hover - managed by React state */
 
 /* While dragging: suppress hover transitions to eliminate flicker */
 .player-page-container.mini-player.dragging .mini-player-hover-controls,
