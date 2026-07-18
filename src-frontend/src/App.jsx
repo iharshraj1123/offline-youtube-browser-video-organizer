@@ -5128,7 +5128,7 @@ function PlayerView({
                 }}
                 style={{
                   position: 'absolute',
-                  bottom: isMobile && showMobileControls ? '10px' : '0px',
+                  bottom: '0px',
                   left: 0,
                   right: 0,
                   height: '16px',
@@ -5138,31 +5138,13 @@ function PlayerView({
                   cursor: 'pointer',
                   margin: 0,
                   padding: 0,
-                  zIndex: 105,
-                  transition: 'bottom 0.2s ease-in-out'
+                  zIndex: 105
                 }}
               >
                 <div className="progress-timeline-container" style={{ height: '3px', background: 'rgba(255,255,255,0.2)', width: '100%', position: 'absolute', bottom: '0' }}>
                   <div
                     className="progress-bar-played"
                     style={{ width: `${(currentTime / (duration || 1)) * 100}%`, height: '100%', background: 'var(--primary-color)' }}
-                  />
-                  <div
-                    className="progress-bar-knob"
-                    style={{
-                      left: `${(currentTime / (duration || 1)) * 100}%`,
-                      position: 'absolute',
-                      top: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      width: '12px',
-                      height: '12px',
-                      borderRadius: '50%',
-                      background: 'var(--primary-color)',
-                      boxShadow: '0 0 4px rgba(0,0,0,0.5)',
-                      opacity: showMobileControls ? 1 : 0,
-                      pointerEvents: showMobileControls ? 'auto' : 'none',
-                      transition: 'opacity 0.2s ease-in-out'
-                    }}
                   />
                 </div>
               </div>
