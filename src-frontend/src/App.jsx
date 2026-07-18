@@ -327,7 +327,7 @@ export default function App() {
         setPlayingVideo(null);
       } else {
         setCurrentView('home');
-        setPlayingVideo(null);
+        // Keep playingVideo active so it becomes a miniplayer
         fetchVideos();
       }
     };
@@ -4984,7 +4984,14 @@ function PlayerView({
                   {/* Back/Collapse Arrow */}
                   <button
                     className="control-btn"
-                    onClick={(e) => { e.stopPropagation(); onClose(); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.history.length > 1) {
+                        window.history.back();
+                      } else {
+                        setCurrentView('home');
+                      }
+                    }}
                     style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '6px' }}
                   >
                     <ChevronDown size={24} />
@@ -5693,7 +5700,7 @@ function PlayerView({
           <div className="player-main-col">
             {isMobile ? (
               /* High-Fidelity YouTube Mobile Detail Layout */
-              <div className="video-metadata-details" style={{ padding: '12px 0 0 0' }}>
+              <div className="video-metadata-details" style={{}}>
                 <h1 className="video-detail-title" style={{ fontSize: '18px', fontWeight: 'bold', margin: '0 0 8px 0', color: '#fff', lineHeight: '1.4' }}>
                   {video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}
                 </h1>
@@ -5711,7 +5718,7 @@ function PlayerView({
                 </div>
 
                 {/* Mobile Channel Info / Uploader Row */}
-                <div className="mobile-uploader-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <div className="mobile-uploader-row" style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }} onClick={() => onNavigateToProfile && onNavigateToProfile(video.uploader_name)}>
                     <img
                       src={video.uploader_img || './Userdatabase/ProfilePic/defaulta.jpg'}
@@ -5724,21 +5731,6 @@ function PlayerView({
                       <div style={{ fontSize: '11px', color: '#aaa' }}>Channel Owner</div>
                     </div>
                   </div>
-                  <button
-                    className="mobile-subscribe-btn"
-                    style={{
-                      backgroundColor: '#fff',
-                      color: '#0f0f0f',
-                      border: 'none',
-                      borderRadius: '18px',
-                      padding: '8px 16px',
-                      fontSize: '12px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Subscribe
-                  </button>
                 </div>
 
                 {/* Mobile Actions Button Slider (Scrollable Row) */}
