@@ -3945,8 +3945,8 @@ function PlayerView({
                 </button>
               </div>
 
-              {/* Bottom Left Row (Mute & Expand) - Absolute positioned to keep center clear */}
-              <div style={{ position: 'absolute', bottom: '12px', left: '12px', display: 'flex', gap: '10px', alignItems: 'center', pointerEvents: 'auto' }}>
+              {/* Bottom Left Row (Mute) - Absolute positioned to keep center clear */}
+              <div style={{ position: 'absolute', bottom: '12px', left: '12px', display: 'flex', alignItems: 'center', pointerEvents: 'auto' }}>
                 {/* Mute */}
                 <button
                   onClick={(e) => {
@@ -3958,7 +3958,10 @@ function PlayerView({
                 >
                   {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
                 </button>
+              </div>
 
+              {/* Bottom Right Row (Expand) - Absolute positioned to keep center clear */}
+              <div style={{ position: 'absolute', bottom: '12px', right: '12px', display: 'flex', alignItems: 'center', pointerEvents: 'auto' }}>
                 {/* Expand */}
                 <button
                   onClick={(e) => {
