@@ -1,8 +1,8 @@
 // c:\laragon\www\youtube\src-frontend\src\components\CommentsSection.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { ThumbsUp, ThumbsDown, MessageSquare, Trash2, Smile, Image, Play, ChevronDown, ChevronUp, Loader2, Paperclip, X, MoreVertical, Pencil, Share2 } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, MessageSquare, Trash2, Smile, Image, Play, ChevronDown, ChevronUp, Loader2, Paperclip, X, MoreVertical, Pencil, Share2, Mic, CornerUpLeft } from 'lucide-react';
 
-export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo, onNavigateToProfile, showFlashNotification }) {
+export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo, onNavigateToProfile, showFlashNotification, isMobile }) {
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -787,14 +787,17 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
   };
 
   return (
-    <div className="native-comments-section">
-      <div className="comments-section-header">
-        <h3>{comments.length} Comments</h3>
-      </div>
+    <div className="native-comments-section" style={isMobile ? { display: 'flex', flexDirection: 'column', height: '100%', borderTop: 'none', padding: 0 } : {}}>
+      {!isMobile && (
+        <div className="comments-section-header">
+          <h3>{comments.length} Comments</h3>
+        </div>
+      )}
 
       {/* Main Comment Box (Resembles modern YouTube growing input) */}
-      <form onSubmit={(e) => handlePostComment(e, null, null, '', 'main')} className="main-comment-form">
-        <div className="comment-layout-row">
+      {!isMobile && (
+        <form onSubmit={(e) => handlePostComment(e, null, null, '', 'main')} className="main-comment-form">
+          <div className="comment-layout-row">
           <img
             src={currentUser.pic || './Userdatabase/ProfilePic/defaulta.jpg'}
             alt={currentUser.name || 'Guest'}
@@ -906,9 +909,10 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
           </div>
         </div>
       </form>
+      )}
 
       {/* Accordion Threads List */}
-      <div className="comments-list-wrapper">
+      <div className="comments-list-wrapper" style={isMobile ? { flex: 1, overflowY: 'auto', padding: '0 16px' } : {}}>
         {comments.length > 0 ? (
           comments.map(com => {
             const hasReplies = com.replies && com.replies.length > 0;
@@ -916,17 +920,27 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
             return (
               <div key={`thread_${com.com_id}`} className="comment-thread-group">
                 {renderCommentNode(com, false, com.com_id)}
-
+ 
                 {hasReplies && (
                   <div className="thread-replies-accordion">
                     <button
                       onClick={() => toggleRepliesAccordion(com.com_id)}
                       className="accordion-toggle-btn"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', cursor: 'pointer', padding: '4px 0 8px 0', border: 'none', background: 'none' }}
                     >
-                      {isThreadExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                      <span>{isThreadExpanded ? "Hide" : `Show ${com.replies.length}`} replies</span>
+                      {isThreadExpanded ? (
+                        <>
+                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#3ea6ff' }}>Hide replies</span>
+                          <ChevronUp size={14} style={{ color: '#3ea6ff' }} />
+                        </>
+                      ) : (
+                        <>
+                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#3ea6ff' }}>{com.replies.length} replies</span>
+                          <span style={{ fontSize: '10px', color: '#3ea6ff', marginLeft: '2px' }}>▶</span>
+                        </>
+                      )}
                     </button>
-
+ 
                     {isThreadExpanded && (
                       <div className="accordion-content-panel">
                         {com.replies.map(child => renderCommentNode(child, true, com.com_id))}
@@ -941,6 +955,66 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
           <div className="no-comments-fallback">No comments yet. Start the discussion!</div>
         )}
       </div>
+
+      {/* Fixed bottom input bar for mobile */}
+      {isMobile && (
+        <form
+          onSubmit={(e) => handlePostComment(e, null, null, '', 'main')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            borderTop: '1px solid rgba(255,255,255,0.08)',
+            backgroundColor: '#0f0f0f',
+            flexShrink: 0
+          }}
+        >
+          <img
+            src={currentUser.pic || './Userdatabase/ProfilePic/defaulta.jpg'}
+            alt={currentUser.name || 'Guest'}
+            style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }}
+          />
+          <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <input
+              type="text"
+              placeholder={currentUser.name ? "Add a comment..." : "Please log in to comment..."}
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              disabled={!currentUser.name}
+              onClick={() => { if (!currentUser.name) onOpenAuth(); }}
+              style={{
+                width: '100%',
+                backgroundColor: '#212121',
+                border: 'none',
+                borderRadius: '20px',
+                color: '#fff',
+                padding: '10px 16px 10px 36px',
+                fontSize: '14px',
+                outline: 'none'
+              }}
+            />
+            <Mic size={16} style={{ position: 'absolute', left: '14px', color: '#aaa' }} />
+          </div>
+          {commentText.trim() && (
+            <button
+              type="submit"
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#3ea6ff',
+                cursor: 'pointer',
+                padding: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <CornerUpLeft size={20} />
+            </button>
+          )}
+        </form>
+      )}
 
       {/* Floating Hover User Cards */}
       {hoveredUser && (

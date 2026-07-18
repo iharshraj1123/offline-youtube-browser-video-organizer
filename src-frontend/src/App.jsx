@@ -7,7 +7,7 @@ import {
   Play, Pause, Volume2, VolumeX, Maximize, Minimize,
   Settings, Trash2, Edit, RefreshCw, Plus, Check, Loader2,
   ThumbsUp, ThumbsDown, Info, Mic, Bell, CornerUpLeft,
-  Repeat, Shuffle, Download, SkipBack, SkipForward, ListMusic, X, RotateCcw, RotateCw, Cast, Upload, Subtitles, AlertTriangle, Wand2, Flame, MessageSquare
+  Repeat, Shuffle, Download, SkipBack, SkipForward, ListMusic, X, RotateCcw, RotateCw, Cast, Upload, Subtitles, AlertTriangle, Wand2, Flame, MessageSquare, Sparkles
 } from 'lucide-react';
 import { AuthModal } from './components/AuthModal';
 import { CommentsSection } from './components/CommentsSection';
@@ -1922,6 +1922,7 @@ function ShortsPlayerView({
                 onOpenAuth={onOpenAuth}
                 onNavigateToProfile={onNavigateToProfile}
                 showFlashNotification={showFlashNotification}
+                isMobile={false}
               />
             </div>
           </div>
@@ -2378,6 +2379,7 @@ function PlayerView({
   const [editTags, setEditTags] = useState(video.tags);
   const [savingEdit, setSavingEdit] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [isMobileDescriptionFullyExpanded, setIsMobileDescriptionFullyExpanded] = useState(false);
 
   const [commentsList, setCommentsList] = useState([]);
   const [showMobileCommentsDrawer, setShowMobileCommentsDrawer] = useState(false);
@@ -5924,6 +5926,7 @@ function PlayerView({
                 onOpenAuth={onOpenAuth}
                 onNavigateToProfile={onNavigateToProfile}
                 showFlashNotification={showFlashNotification}
+                isMobile={false}
                 onSeekVideo={(seconds) => {
                   if (videoRef.current) {
                     videoRef.current.currentTime = seconds;
@@ -5942,15 +5945,36 @@ function PlayerView({
                 onTouchEnd={e => e.stopPropagation()}
               >
                 <div className="mobile-drawer-content" onClick={e => e.stopPropagation()}>
-                  <div className="mobile-drawer-header">
-                    <span className="mobile-drawer-title">
-                      Comments <span className="mobile-drawer-count">{commentsList.length}</span>
-                    </span>
+                  {/* Top Drag Handle */}
+                  <div style={{ width: '40px', height: '4px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '2px', margin: '8px auto 0 auto', flexShrink: 0 }} />
+
+                  {/* Header */}
+                  <div className="mobile-drawer-header" style={{ borderBottom: 'none', padding: '12px 16px 8px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="mobile-drawer-title" style={{ fontSize: '18px', fontWeight: 'bold' }}>Comments</span>
+                      <Info size={18} style={{ color: '#aaa', cursor: 'pointer' }} />
+                    </div>
                     <button className="mobile-drawer-close" onClick={() => setShowMobileCommentsDrawer(false)}>
                       <X size={20} />
                     </button>
                   </div>
-                  <div className="mobile-drawer-body">
+
+                  {/* Filter Pills */}
+                  <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '0 16px 12px 16px', flexShrink: 0, scrollbarWidth: 'none' }} className="no-scrollbar">
+                    <span style={{ fontSize: '13.5px', padding: '6px 12px', borderRadius: '8px', backgroundColor: '#fff', color: '#000', fontWeight: 'bold', whiteSpace: 'nowrap', cursor: 'pointer' }}>Top</span>
+                    <span style={{ fontSize: '13.5px', padding: '6px 12px', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', fontWeight: '500', whiteSpace: 'nowrap', cursor: 'pointer' }}>Topics</span>
+                    <span style={{ fontSize: '13.5px', padding: '6px 12px', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', fontWeight: '500', whiteSpace: 'nowrap', cursor: 'pointer' }}>Timed</span>
+                    <span style={{ fontSize: '13.5px', padding: '6px 12px', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', fontWeight: '500', whiteSpace: 'nowrap', cursor: 'pointer' }}>Newest</span>
+                  </div>
+
+                  {/* Guideline Box */}
+                  <div style={{ padding: '0 16px 12px 16px', flexShrink: 0 }}>
+                    <div style={{ padding: '10px 12px', fontSize: '12px', color: '#aaa', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '8px', lineHeight: '1.4' }}>
+                      Remember to keep comments respectful by following the YouTube Community Guidelines. <span style={{ color: '#3ea6ff', cursor: 'pointer' }}>Learn more</span>
+                    </div>
+                  </div>
+
+                  <div className="mobile-drawer-body" style={{ padding: 0 }}>
                     <CommentsSection
                       key={video.vid_id}
                       videoId={video.vid_id}
@@ -5958,6 +5982,7 @@ function PlayerView({
                       onOpenAuth={onOpenAuth}
                       onNavigateToProfile={onNavigateToProfile}
                       showFlashNotification={showFlashNotification}
+                      isMobile={true}
                       onSeekVideo={(seconds) => {
                         if (videoRef.current) {
                           videoRef.current.currentTime = seconds;
@@ -5974,38 +5999,136 @@ function PlayerView({
             {isMobile && isDescriptionExpanded && (
               <div
                 className="mobile-drawer-overlay"
-                onClick={() => setIsDescriptionExpanded(false)}
+                onClick={() => { setIsDescriptionExpanded(false); setIsMobileDescriptionFullyExpanded(false); }}
                 onTouchStart={e => e.stopPropagation()}
                 onTouchEnd={e => e.stopPropagation()}
               >
                 <div className="mobile-drawer-content" onClick={e => e.stopPropagation()}>
-                  <div className="mobile-drawer-header">
-                    <span className="mobile-drawer-title">Description</span>
-                    <button className="mobile-drawer-close" onClick={() => setIsDescriptionExpanded(false)}>
+                  {/* Top Drag Handle */}
+                  <div style={{ width: '40px', height: '4px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '2px', margin: '8px auto 0 auto', flexShrink: 0 }} />
+                  
+                  {/* Header */}
+                  <div className="mobile-drawer-header" style={{ borderBottom: 'none', padding: '12px 16px 8px 16px', flexShrink: 0 }}>
+                    <span className="mobile-drawer-title" style={{ fontSize: '18px', fontWeight: 'bold' }}>Description</span>
+                    <button className="mobile-drawer-close" onClick={() => { setIsDescriptionExpanded(false); setIsMobileDescriptionFullyExpanded(false); }}>
                       <X size={20} />
                     </button>
                   </div>
-                  <div className="mobile-drawer-body" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#fff', lineHeight: '1.4', wordBreak: 'break-word' }}>
+                  
+                  {/* Scrollable drawer body */}
+                  <div className="mobile-drawer-body" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', paddingBottom: '16px' }}>
+                    {/* Video Title */}
+                    <div style={{ fontSize: '16px', fontWeight: '800', color: '#fff', padding: '0 16px 12px 16px', lineHeight: '1.4' }}>
                       {video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}
                     </div>
-                    <div style={{ fontSize: '12px', color: '#aaa' }}>
-                      {video.views || 0} views • Uploaded at {formatUploadDate(video.upload_date)}
+                    
+                    {/* Stats Row */}
+                    <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px 16px' }}>
+                      <div style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: '12px', padding: '10px', textAlign: 'center' }}>
+                        <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#fff' }}>{video.likes || '0'}</div>
+                        <div style={{ fontSize: '11px', color: '#aaa', marginTop: '2px' }}>Likes</div>
+                      </div>
+                      <div style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: '12px', padding: '10px', textAlign: 'center' }}>
+                        <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#fff' }}>{Number(video.views || 0).toLocaleString()}</div>
+                        <div style={{ fontSize: '11px', color: '#aaa', marginTop: '2px' }}>Views</div>
+                      </div>
+                      <div style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: '12px', padding: '10px', textAlign: 'center' }}>
+                        <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#fff' }}>{new Date(video.upload_date).getFullYear()}</div>
+                        <div style={{ fontSize: '11px', color: '#aaa', marginTop: '2px' }}>{new Date(video.upload_date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</div>
+                      </div>
                     </div>
-                    <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '16px' }}>
-                      <p style={{ margin: 0, fontSize: '13.5px', color: '#ccc', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
-                        {renderDescription(video.description)}
-                      </p>
-                      {video.tags && (
-                        <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                          {video.tags.split(',').map((tag, idx) => (
-                            <span key={idx} className="vid-timestamps" style={{ fontSize: '13px' }}>
-                              #{tag.trim()}
-                            </span>
-                          ))}
+
+                    {/* Tags */}
+                    {video.tags && (
+                      <div style={{ display: 'flex', gap: '8px', padding: '0 16px 12px 16px', flexWrap: 'wrap' }}>
+                        {video.tags.split(',').map((tag, idx) => (
+                          <span key={idx} style={{ fontSize: '12px', padding: '6px 12px', borderRadius: '16px', backgroundColor: 'rgba(255,255,255,0.08)', color: '#3ea6ff', fontWeight: '500' }}>
+                            #{tag.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Description Card */}
+                    <div style={{ padding: '0 16px 16px 16px' }}>
+                      <div style={{
+                        backgroundColor: 'rgba(255,255,255,0.05)',
+                        borderRadius: '12px',
+                        padding: '14px',
+                        position: 'relative',
+                        overflow: 'hidden'
+                      }}>
+                        <div style={{
+                          maxHeight: isMobileDescriptionFullyExpanded ? 'none' : '65px',
+                          overflow: 'hidden',
+                          position: 'relative'
+                        }}>
+                          <p style={{ margin: 0, fontSize: '13.5px', color: '#e5e5e5', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
+                            {renderDescription(video.description)}
+                          </p>
+                          {!isMobileDescriptionFullyExpanded && (
+                            <div style={{
+                              position: 'absolute',
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              height: '35px',
+                              background: 'linear-gradient(transparent, #212123)',
+                              pointerEvents: 'none'
+                            }} />
+                          )}
                         </div>
-                      )}
+                        
+                        <button
+                          onClick={() => setIsMobileDescriptionFullyExpanded(!isMobileDescriptionFullyExpanded)}
+                          style={{
+                            width: '100%',
+                            padding: '10px 0',
+                            background: 'rgba(255,255,255,0.04)',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            borderRadius: '20px',
+                            color: '#fff',
+                            fontSize: '13.5px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            marginTop: '12px'
+                          }}
+                        >
+                          {isMobileDescriptionFullyExpanded ? 'Show less' : 'See more'}
+                        </button>
+                      </div>
                     </div>
+
+                    {/* Music Section (only when fully expanded) */}
+                    {isMobileDescriptionFullyExpanded && (
+                      <div style={{ padding: '8px 16px 16px 16px', borderTop: '1px solid rgba(255,255,255,0.08)', marginTop: '8px' }}>
+                        <div style={{ fontWeight: 'bold', fontSize: '17px', color: '#fff' }}>Music</div>
+                        <div style={{ fontSize: '13px', color: '#aaa', marginTop: '4px' }}>1 song</div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Gemini Summary bar at the bottom */}
+                  <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.08)', backgroundColor: '#0f0f0f', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
+                    <button
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        backgroundColor: '#212121',
+                        border: 'none',
+                        borderRadius: '24px',
+                        color: '#aaa',
+                        fontSize: '14px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => showFlashNotification('Summarising video with Gemini...')}
+                    >
+                      <Sparkles size={16} style={{ color: '#ab7eff' }} />
+                      <span>Summarise the video</span>
+                    </button>
                   </div>
                 </div>
               </div>
