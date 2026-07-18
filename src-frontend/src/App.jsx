@@ -1374,8 +1374,15 @@ function ShortsPlayerView({
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [showComments, setShowComments] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
-  const [isMuted, setIsMuted] = useState(false);
-  const [volume, setVolume] = useState(1);
+  const [isMuted, setIsMuted] = useState(() => {
+    if (isPhone() || window.innerWidth <= 768) return false;
+    return localStorage.getItem('yt_shorts_muted') === 'true';
+  });
+  const [volume, setVolume] = useState(() => {
+    if (isPhone() || window.innerWidth <= 768) return 1;
+    const saved = localStorage.getItem('yt_shorts_volume');
+    return saved !== null ? parseFloat(saved) : 1;
+  });
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
@@ -1552,8 +1559,13 @@ function ShortsPlayerView({
     if (vid) {
       vid.src = translateVideoUrl(currentVideo.link);
       vid.load();
-      vid.volume = volume;
-      vid.muted = isMuted;
+      if (isPhone() || window.innerWidth <= 768) {
+        vid.volume = 1;
+        vid.muted = false;
+      } else {
+        vid.volume = volume;
+        vid.muted = isMuted;
+      }
       vid.play().catch(() => {});
     }
   }, [currentIndex, currentVideo]);
@@ -1676,24 +1688,37 @@ function ShortsPlayerView({
 
   const toggleMute = (e) => {
     e.stopPropagation();
+    if (isPhone() || window.innerWidth <= 768) return;
     const newMuted = !isMuted;
     setIsMuted(newMuted);
+    localStorage.setItem('yt_shorts_muted', String(newMuted));
     if (videoRef.current) videoRef.current.muted = newMuted;
   };
 
   const handleVolumeChange = (e) => {
     e.stopPropagation();
+    if (isPhone() || window.innerWidth <= 768) return;
     const val = parseFloat(e.target.value);
     setVolume(val);
+    localStorage.setItem('yt_shorts_volume', String(val));
     if (videoRef.current) {
       videoRef.current.volume = val;
       videoRef.current.muted = val === 0;
       setIsMuted(val === 0);
+      localStorage.setItem('yt_shorts_muted', String(val === 0));
     }
   };
 
-  const onVolumeEnter = () => { clearTimeout(volumeHideTimer.current); setShowVolumeSlider(true); };
-  const onVolumeLeave = () => { volumeHideTimer.current = setTimeout(() => setShowVolumeSlider(false), 400); };
+  const onVolumeEnter = () => {
+    if (isPhone() || window.innerWidth <= 768) return;
+    clearTimeout(volumeHideTimer.current);
+    setShowVolumeSlider(true);
+  };
+
+  const onVolumeLeave = () => {
+    if (isPhone() || window.innerWidth <= 768) return;
+    volumeHideTimer.current = setTimeout(() => setShowVolumeSlider(false), 400);
+  };
 
   const toggleFullscreen = (e) => {
     e.stopPropagation();

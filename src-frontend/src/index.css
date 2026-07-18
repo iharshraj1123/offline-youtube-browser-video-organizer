@@ -9675,7 +9675,7 @@ body.mini-player-dragging * {
 
 .shorts-volume-popup {
   position: absolute;
-  bottom: calc(100% + 10px);
+  top: calc(100% + 10px);
   left: 50%;
   transform: translateX(-50%);
   background: rgba(18, 18, 18, 0.92);
