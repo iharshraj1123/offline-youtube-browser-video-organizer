@@ -2380,6 +2380,129 @@ function PlayerView({
   const [savingEdit, setSavingEdit] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [isMobileDescriptionFullyExpanded, setIsMobileDescriptionFullyExpanded] = useState(false);
+  const [commentsDrawerState, setCommentsDrawerState] = useState('normal');
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    if (!window.visualViewport) return;
+
+    const handleViewportChange = () => {
+      const vv = window.visualViewport;
+      const heightDiff = window.innerHeight - vv.height;
+      setKeyboardHeight(heightDiff > 80 ? heightDiff : 0);
+    };
+
+    window.visualViewport.addEventListener('resize', handleViewportChange);
+    window.visualViewport.addEventListener('scroll', handleViewportChange);
+    return () => {
+      window.visualViewport.removeEventListener('resize', handleViewportChange);
+      window.visualViewport.removeEventListener('scroll', handleViewportChange);
+    };
+  }, []);
+
+  // Gesture handling for Mobile Drawers
+  const drawerTouchRef = useRef({
+    startY: 0,
+    startHeight: 0,
+    activeDrawer: null,
+    currentHeight: 0
+  });
+
+  const handleDrawerTouchStart = (drawerName, e) => {
+    const touch = e.touches[0];
+    const drawerElement = e.currentTarget.closest('.mobile-drawer-content');
+    if (!drawerElement) return;
+
+    drawerTouchRef.current = {
+      startY: touch.clientY,
+      startHeight: drawerElement.getBoundingClientRect().height,
+      activeDrawer: drawerName,
+      currentHeight: drawerElement.getBoundingClientRect().height
+    };
+    
+    drawerElement.style.transition = 'none';
+  };
+
+  const handleDrawerTouchMove = (e) => {
+    const state = drawerTouchRef.current;
+    if (!state.activeDrawer) return;
+
+    const touch = e.touches[0];
+    const deltaY = touch.clientY - state.startY;
+    
+    const newHeight = Math.max(100, Math.min(window.innerHeight * 0.95, state.startHeight - deltaY));
+    
+    const drawerElement = e.currentTarget.closest('.mobile-drawer-content');
+    if (drawerElement) {
+      drawerElement.style.height = `${newHeight}px`;
+      drawerElement.style.maxHeight = `${newHeight}px`;
+    }
+    state.currentHeight = newHeight;
+  };
+
+  const handleDrawerTouchEnd = (e) => {
+    const state = drawerTouchRef.current;
+    if (!state.activeDrawer) return;
+
+    const drawerElement = e.currentTarget.closest('.mobile-drawer-content');
+    const deltaY = e.changedTouches[0].clientY - state.startY;
+
+    if (drawerElement) {
+      drawerElement.style.transition = 'height 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), max-height 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)';
+    }
+
+    const threshold = 100;
+
+    if (state.activeDrawer === 'description') {
+      if (deltaY > threshold) {
+        if (isMobileDescriptionFullyExpanded) {
+          setIsMobileDescriptionFullyExpanded(false);
+          if (drawerElement) {
+            drawerElement.style.height = '75vh';
+            drawerElement.style.maxHeight = '75vh';
+          }
+        } else {
+          setIsDescriptionExpanded(false);
+        }
+      } else if (deltaY < -threshold) {
+        setIsMobileDescriptionFullyExpanded(true);
+        if (drawerElement) {
+          drawerElement.style.height = '95vh';
+          drawerElement.style.maxHeight = '95vh';
+        }
+      } else {
+        if (drawerElement) {
+          drawerElement.style.height = isMobileDescriptionFullyExpanded ? '95vh' : '75vh';
+          drawerElement.style.maxHeight = isMobileDescriptionFullyExpanded ? '95vh' : '75vh';
+        }
+      }
+    } else if (state.activeDrawer === 'comments') {
+      if (deltaY > threshold) {
+        if (commentsDrawerState === 'maximized') {
+          setCommentsDrawerState('normal');
+          if (drawerElement) {
+            drawerElement.style.height = '75vh';
+            drawerElement.style.maxHeight = '75vh';
+          }
+        } else {
+          setShowMobileCommentsDrawer(false);
+        }
+      } else if (deltaY < -threshold) {
+        setCommentsDrawerState('maximized');
+        if (drawerElement) {
+          drawerElement.style.height = '95vh';
+          drawerElement.style.maxHeight = '95vh';
+        }
+      } else {
+        if (drawerElement) {
+          drawerElement.style.height = commentsDrawerState === 'maximized' ? '95vh' : '75vh';
+          drawerElement.style.maxHeight = commentsDrawerState === 'maximized' ? '95vh' : '75vh';
+        }
+      }
+    }
+
+    state.activeDrawer = null;
+  };
 
   const [commentsList, setCommentsList] = useState([]);
   const [showMobileCommentsDrawer, setShowMobileCommentsDrawer] = useState(false);
@@ -5944,12 +6067,37 @@ function PlayerView({
                 onTouchStart={e => e.stopPropagation()}
                 onTouchEnd={e => e.stopPropagation()}
               >
-                <div className="mobile-drawer-content" onClick={e => e.stopPropagation()}>
+                <div 
+                  className="mobile-drawer-content" 
+                  onClick={e => e.stopPropagation()}
+                  style={{
+                    height: commentsDrawerState === 'maximized' 
+                      ? `calc(95vh - ${keyboardHeight}px)` 
+                      : `calc(75vh - ${keyboardHeight}px)`,
+                    maxHeight: commentsDrawerState === 'maximized' 
+                      ? `calc(95vh - ${keyboardHeight}px)` 
+                      : `calc(75vh - ${keyboardHeight}px)`,
+                    bottom: `${keyboardHeight}px`,
+                    position: 'relative',
+                    transition: 'height 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), max-height 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), bottom 0.1s ease-out'
+                  }}
+                >
                   {/* Top Drag Handle */}
-                  <div style={{ width: '40px', height: '4px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '2px', margin: '8px auto 0 auto', flexShrink: 0 }} />
+                  <div 
+                    style={{ width: '40px', height: '4px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '2px', margin: '8px auto 0 auto', flexShrink: 0, cursor: 'ns-resize' }} 
+                    onTouchStart={(e) => handleDrawerTouchStart('comments', e)}
+                    onTouchMove={handleDrawerTouchMove}
+                    onTouchEnd={handleDrawerTouchEnd}
+                  />
 
                   {/* Header */}
-                  <div className="mobile-drawer-header" style={{ borderBottom: 'none', padding: '12px 16px 8px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+                  <div 
+                    className="mobile-drawer-header" 
+                    style={{ borderBottom: 'none', padding: '12px 16px 8px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, cursor: 'ns-resize' }}
+                    onTouchStart={(e) => handleDrawerTouchStart('comments', e)}
+                    onTouchMove={handleDrawerTouchMove}
+                    onTouchEnd={handleDrawerTouchEnd}
+                  >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span className="mobile-drawer-title" style={{ fontSize: '18px', fontWeight: 'bold' }}>Comments</span>
                       <Info size={18} style={{ color: '#aaa', cursor: 'pointer' }} />
@@ -5957,21 +6105,6 @@ function PlayerView({
                     <button className="mobile-drawer-close" onClick={() => setShowMobileCommentsDrawer(false)}>
                       <X size={20} />
                     </button>
-                  </div>
-
-                  {/* Filter Pills */}
-                  <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '0 16px 12px 16px', flexShrink: 0, scrollbarWidth: 'none' }} className="no-scrollbar">
-                    <span style={{ fontSize: '13.5px', padding: '6px 12px', borderRadius: '8px', backgroundColor: '#fff', color: '#000', fontWeight: 'bold', whiteSpace: 'nowrap', cursor: 'pointer' }}>Top</span>
-                    <span style={{ fontSize: '13.5px', padding: '6px 12px', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', fontWeight: '500', whiteSpace: 'nowrap', cursor: 'pointer' }}>Topics</span>
-                    <span style={{ fontSize: '13.5px', padding: '6px 12px', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', fontWeight: '500', whiteSpace: 'nowrap', cursor: 'pointer' }}>Timed</span>
-                    <span style={{ fontSize: '13.5px', padding: '6px 12px', borderRadius: '8px', backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', fontWeight: '500', whiteSpace: 'nowrap', cursor: 'pointer' }}>Newest</span>
-                  </div>
-
-                  {/* Guideline Box */}
-                  <div style={{ padding: '0 16px 12px 16px', flexShrink: 0 }}>
-                    <div style={{ padding: '10px 12px', fontSize: '12px', color: '#aaa', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '8px', lineHeight: '1.4' }}>
-                      Remember to keep comments respectful by following the YouTube Community Guidelines. <span style={{ color: '#3ea6ff', cursor: 'pointer' }}>Learn more</span>
-                    </div>
                   </div>
 
                   <div className="mobile-drawer-body" style={{ padding: 0 }}>
@@ -6003,12 +6136,31 @@ function PlayerView({
                 onTouchStart={e => e.stopPropagation()}
                 onTouchEnd={e => e.stopPropagation()}
               >
-                <div className="mobile-drawer-content" onClick={e => e.stopPropagation()}>
+                <div 
+                  className="mobile-drawer-content" 
+                  onClick={e => e.stopPropagation()}
+                  style={{
+                    height: isMobileDescriptionFullyExpanded ? '95vh' : '75vh',
+                    maxHeight: isMobileDescriptionFullyExpanded ? '95vh' : '75vh',
+                    transition: 'height 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), max-height 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)'
+                  }}
+                >
                   {/* Top Drag Handle */}
-                  <div style={{ width: '40px', height: '4px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '2px', margin: '8px auto 0 auto', flexShrink: 0 }} />
+                  <div 
+                    style={{ width: '40px', height: '4px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '2px', margin: '8px auto 0 auto', flexShrink: 0, cursor: 'ns-resize' }} 
+                    onTouchStart={(e) => handleDrawerTouchStart('description', e)}
+                    onTouchMove={handleDrawerTouchMove}
+                    onTouchEnd={handleDrawerTouchEnd}
+                  />
                   
                   {/* Header */}
-                  <div className="mobile-drawer-header" style={{ borderBottom: 'none', padding: '12px 16px 8px 16px', flexShrink: 0 }}>
+                  <div 
+                    className="mobile-drawer-header" 
+                    style={{ borderBottom: 'none', padding: '12px 16px 8px 16px', flexShrink: 0, cursor: 'ns-resize' }}
+                    onTouchStart={(e) => handleDrawerTouchStart('description', e)}
+                    onTouchMove={handleDrawerTouchMove}
+                    onTouchEnd={handleDrawerTouchEnd}
+                  >
                     <span className="mobile-drawer-title" style={{ fontSize: '18px', fontWeight: 'bold' }}>Description</span>
                     <button className="mobile-drawer-close" onClick={() => { setIsDescriptionExpanded(false); setIsMobileDescriptionFullyExpanded(false); }}>
                       <X size={20} />
@@ -6051,52 +6203,64 @@ function PlayerView({
 
                     {/* Description Card */}
                     <div style={{ padding: '0 16px 16px 16px' }}>
-                      <div style={{
-                        backgroundColor: 'rgba(255,255,255,0.05)',
-                        borderRadius: '12px',
-                        padding: '14px',
-                        position: 'relative',
-                        overflow: 'hidden'
-                      }}>
+                      {video.description && video.description.trim().length > 150 ? (
                         <div style={{
-                          maxHeight: isMobileDescriptionFullyExpanded ? 'none' : '65px',
-                          overflow: 'hidden',
-                          position: 'relative'
+                          backgroundColor: 'rgba(255,255,255,0.05)',
+                          borderRadius: '12px',
+                          padding: '14px',
+                          position: 'relative',
+                          overflow: 'hidden'
+                        }}>
+                          <div style={{
+                            maxHeight: isMobileDescriptionFullyExpanded ? 'none' : '65px',
+                            overflow: 'hidden',
+                            position: 'relative'
+                          }}>
+                            <p style={{ margin: 0, fontSize: '13.5px', color: '#e5e5e5', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
+                              {renderDescription(video.description)}
+                            </p>
+                            {!isMobileDescriptionFullyExpanded && (
+                              <div style={{
+                                position: 'absolute',
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                height: '35px',
+                                background: 'linear-gradient(transparent, #212123)',
+                                pointerEvents: 'none'
+                              }} />
+                            )}
+                          </div>
+                          
+                          <button
+                            onClick={() => setIsMobileDescriptionFullyExpanded(!isMobileDescriptionFullyExpanded)}
+                            style={{
+                              width: '100%',
+                              padding: '10px 0',
+                              background: 'rgba(255,255,255,0.04)',
+                              border: '1px solid rgba(255,255,255,0.08)',
+                              borderRadius: '20px',
+                              color: '#fff',
+                              fontSize: '13.5px',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              marginTop: '12px'
+                            }}
+                          >
+                            {isMobileDescriptionFullyExpanded ? 'Show less' : 'See more'}
+                          </button>
+                        </div>
+                      ) : (
+                        <div style={{
+                          backgroundColor: 'rgba(255,255,255,0.05)',
+                          borderRadius: '12px',
+                          padding: '14px'
                         }}>
                           <p style={{ margin: 0, fontSize: '13.5px', color: '#e5e5e5', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
-                            {renderDescription(video.description)}
+                            {renderDescription(video.description || '')}
                           </p>
-                          {!isMobileDescriptionFullyExpanded && (
-                            <div style={{
-                              position: 'absolute',
-                              bottom: 0,
-                              left: 0,
-                              right: 0,
-                              height: '35px',
-                              background: 'linear-gradient(transparent, #212123)',
-                              pointerEvents: 'none'
-                            }} />
-                          )}
                         </div>
-                        
-                        <button
-                          onClick={() => setIsMobileDescriptionFullyExpanded(!isMobileDescriptionFullyExpanded)}
-                          style={{
-                            width: '100%',
-                            padding: '10px 0',
-                            background: 'rgba(255,255,255,0.04)',
-                            border: '1px solid rgba(255,255,255,0.08)',
-                            borderRadius: '20px',
-                            color: '#fff',
-                            fontSize: '13.5px',
-                            fontWeight: 'bold',
-                            cursor: 'pointer',
-                            marginTop: '12px'
-                          }}
-                        >
-                          {isMobileDescriptionFullyExpanded ? 'Show less' : 'See more'}
-                        </button>
-                      </div>
+                      )}
                     </div>
 
                     {/* Music Section (only when fully expanded) */}

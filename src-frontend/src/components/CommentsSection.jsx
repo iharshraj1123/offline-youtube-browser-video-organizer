@@ -6,6 +6,40 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sortBy, setSortBy] = useState('top');
+
+  const sortedComments = React.useMemo(() => {
+    let list = [...comments];
+    if (sortBy === 'top') {
+      return list.sort((a, b) => {
+        const votesA = parseInt(a.upvotes || 0);
+        const votesB = parseInt(b.upvotes || 0);
+        if (votesB !== votesA) return votesB - votesA;
+        const dateA = new Date(a.com_date + 'T' + (a.com_time || '00:00:00')).getTime();
+        const dateB = new Date(b.com_date + 'T' + (b.com_time || '00:00:00')).getTime();
+        return dateB - dateA;
+      });
+    } else if (sortBy === 'newest') {
+      return list.sort((a, b) => {
+        const dateA = new Date(a.com_date + 'T' + (a.com_time || '00:00:00')).getTime();
+        const dateB = new Date(b.com_date + 'T' + (b.com_time || '00:00:00')).getTime();
+        return dateB - dateA;
+      });
+    } else if (sortBy === 'timed') {
+      const timedList = list.filter(com => {
+        const match = com.comment && com.comment.match(/\b(\d{1,2}):(\d{2})\b/);
+        return !!match;
+      });
+      return timedList.sort((a, b) => {
+        const matchA = a.comment.match(/\b(\d{1,2}):(\d{2})\b/);
+        const matchB = b.comment.match(/\b(\d{1,2}):(\d{2})\b/);
+        const secondsA = parseInt(matchA[1]) * 60 + parseInt(matchA[2]);
+        const secondsB = parseInt(matchB[1]) * 60 + parseInt(matchB[2]);
+        return secondsA - secondsB;
+      });
+    }
+    return list;
+  }, [comments, sortBy]);
 
   // More menu, editing states
   const [activeMenuId, setActiveMenuId] = useState(null);
@@ -794,6 +828,73 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
         </div>
       )}
 
+      {/* Mobile Filter Pills & Guidelines */}
+      {isMobile && (
+        <>
+          {/* Filter Pills */}
+          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '0 16px 12px 16px', flexShrink: 0, scrollbarWidth: 'none' }} className="no-scrollbar">
+            <button 
+              onClick={() => setSortBy('top')}
+              style={{
+                fontSize: '13.5px',
+                padding: '6px 12px',
+                borderRadius: '8px',
+                backgroundColor: sortBy === 'top' ? '#fff' : 'rgba(255,255,255,0.1)',
+                color: sortBy === 'top' ? '#000' : '#fff',
+                fontWeight: sortBy === 'top' ? 'bold' : '500',
+                whiteSpace: 'nowrap',
+                cursor: 'pointer',
+                border: 'none',
+                outline: 'none'
+              }}
+            >
+              Top
+            </button>
+            <button 
+              onClick={() => setSortBy('timed')}
+              style={{
+                fontSize: '13.5px',
+                padding: '6px 12px',
+                borderRadius: '8px',
+                backgroundColor: sortBy === 'timed' ? '#fff' : 'rgba(255,255,255,0.1)',
+                color: sortBy === 'timed' ? '#000' : '#fff',
+                fontWeight: sortBy === 'timed' ? 'bold' : '500',
+                whiteSpace: 'nowrap',
+                cursor: 'pointer',
+                border: 'none',
+                outline: 'none'
+              }}
+            >
+              Timed
+            </button>
+            <button 
+              onClick={() => setSortBy('newest')}
+              style={{
+                fontSize: '13.5px',
+                padding: '6px 12px',
+                borderRadius: '8px',
+                backgroundColor: sortBy === 'newest' ? '#fff' : 'rgba(255,255,255,0.1)',
+                color: sortBy === 'newest' ? '#000' : '#fff',
+                fontWeight: sortBy === 'newest' ? 'bold' : '500',
+                whiteSpace: 'nowrap',
+                cursor: 'pointer',
+                border: 'none',
+                outline: 'none'
+              }}
+            >
+              Newest
+            </button>
+          </div>
+
+          {/* Guideline Box */}
+          <div style={{ padding: '0 16px 12px 16px', flexShrink: 0 }}>
+            <div style={{ padding: '10px 12px', fontSize: '12px', color: '#aaa', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '8px', lineHeight: '1.4' }}>
+              Remember to keep comments respectful by following the YouTube Community Guidelines. <span style={{ color: '#3ea6ff', cursor: 'pointer' }}>Learn more</span>
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Main Comment Box (Resembles modern YouTube growing input) */}
       {!isMobile && (
         <form onSubmit={(e) => handlePostComment(e, null, null, '', 'main')} className="main-comment-form">
@@ -913,8 +1014,8 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
 
       {/* Accordion Threads List */}
       <div className="comments-list-wrapper" style={isMobile ? { flex: 1, overflowY: 'auto', padding: '0 16px' } : {}}>
-        {comments.length > 0 ? (
-          comments.map(com => {
+        {sortedComments.length > 0 ? (
+          sortedComments.map(com => {
             const hasReplies = com.replies && com.replies.length > 0;
             const isThreadExpanded = expandedThreads[com.com_id];
             return (
