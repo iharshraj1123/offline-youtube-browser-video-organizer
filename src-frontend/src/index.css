@@ -1206,29 +1206,31 @@ button {
     --sidebar-collapsed-width: 0px;
   }
 
-  /* Make modals full-screen and scrollable on mobile to handle virtual keyboards */
+  /* Make modals scrollable on mobile by making the overlay container scrollable */
   .modal-overlay {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
-    align-items: stretch !important;
-    justify-content: stretch !important;
-    padding: 0 !important;
-    overflow: hidden !important;
+    display: block !important; /* block layout allows vertical scrolling of children */
+    overflow-y: auto !important;
+    padding: 32px 12px !important;
+    box-sizing: border-box !important;
+    z-index: 1200 !important;
+    -webkit-overflow-scrolling: touch;
   }
 
   .modal-content {
-    margin: 0 !important;
+    margin: 20px auto !important; /* centers card horizontally, leaves scroll room in parent */
     padding: 20px !important;
     max-width: 100% !important;
     width: 100% !important;
-    height: 100% !important;
-    max-height: 100% !important;
-    border-radius: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    border-radius: 12px !important;
     box-sizing: border-box !important;
-    overflow-y: auto !important;
+    overflow: visible !important; /* let parent handle the scrolling! */
     display: flex !important;
     flex-direction: column !important;
   }

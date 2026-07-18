@@ -1538,6 +1538,10 @@ function ShortsPlayerView({
   // Keyboard navigation
   useEffect(() => {
     const onKey = (e) => {
+      // Ignore key events when the focus is inside input/textarea fields
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable)) {
+        return;
+      }
       if (e.key === 'ArrowDown') { handleNext(); e.preventDefault(); }
       else if (e.key === 'ArrowUp') { handlePrev(); e.preventDefault(); }
       else if (e.key === ' ') { togglePlay(); e.preventDefault(); }
