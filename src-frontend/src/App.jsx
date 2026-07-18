@@ -42,6 +42,18 @@ function isShort(vid) {
   return false;
 }
 
+// Convert MM:SS or HH:MM:SS timestamps to seconds
+function parseTimestampToSeconds(timestampStr) {
+  if (!timestampStr) return 0;
+  const parts = timestampStr.split(':').map(Number);
+  if (parts.length === 2) {
+    return parts[0] * 60 + parts[1];
+  } else if (parts.length === 3) {
+    return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  }
+  return 0;
+}
+
 // Translate file:/// urls to relative /c:/ or /d:/ apache drives
 function translateVideoUrl(url) {
   if (!url) return '';
@@ -1440,6 +1452,53 @@ function ShortsPlayerView({
       setSavingEdit(false);
     }
   };
+
+  const renderDescription = (text) => {
+    if (!text) return 'Enjoy!';
+    const combinedRegex = /(https?:\/\/[^\s]+)|(\d{1,2}:\d{2}(?::\d{2})?)/g;
+    const parts = text.split(combinedRegex);
+
+    return parts.map((part, index) => {
+      if (!part) return null;
+
+      if (part.startsWith('http://') || part.startsWith('https://')) {
+        return (
+          <a
+            key={index}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: '#3ea6ff', textDecoration: 'underline' }}
+          >
+            {part}
+          </a>
+        );
+      }
+
+      if (/^\d{1,2}:\d{2}(?::\d{2})?$/.test(part)) {
+        const seconds = parseTimestampToSeconds(part);
+        return (
+          <span
+            key={index}
+            onClick={() => {
+              if (videoRef.current) {
+                videoRef.current.currentTime = seconds;
+                videoRef.current.play().catch(() => {});
+                setIsPlaying(true);
+                showFlashNotification(`Seek to ${part}`);
+              }
+            }}
+            style={{ color: '#3ea6ff', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            {part}
+          </span>
+        );
+      }
+
+      return part;
+    });
+  };
+
   const videoRef = useRef(null);
   const playerLayoutRef = useRef(null);
   const scrollContainerRef = useRef(null);
@@ -1877,7 +1936,7 @@ function ShortsPlayerView({
 
               <div style={{ paddingTop: '4px' }}>
                 <p style={{ margin: 0, fontSize: '13.5px', color: '#ccc', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
-                  {currentVideo.description || 'No description provided.'}
+                  {renderDescription(currentVideo.description)}
                 </p>
               </div>
             </div>
@@ -2580,15 +2639,6 @@ function PlayerView({
     };
   }, []);
 
-  const parseTimestampToSeconds = (timestampStr) => {
-    const parts = timestampStr.split(':').map(Number);
-    if (parts.length === 2) {
-      return parts[0] * 60 + parts[1];
-    } else if (parts.length === 3) {
-      return parts[0] * 3600 + parts[1] * 60 + parts[2];
-    }
-    return 0;
-  };
 
   const formatUPnPTime = (seconds) => {
     if (isNaN(seconds) || seconds < 0) return '00:00:00';
