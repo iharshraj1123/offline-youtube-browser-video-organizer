@@ -4948,167 +4948,166 @@ function PlayerView({
         <div className={`player-controls-overlay ${isMobile && showMobileControls ? 'show-mobile-controls' : ''}`}>
           {isMobile ? (
             <>
-              /* High-Fidelity YouTube Mobile Player Controls Overlay */
               <div
                 className="mobile-player-overlay-container"
-              onClick={(e) => {
-                if (e.target === e.currentTarget) {
-                  setShowMobileControls(false);
-                }
-              }}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                background: 'transparent',
-                zIndex: 100
-              }}
-            >
-              {/* Top Row: Down Arrow & Options with Top Gradient Shadow */}
-              <div
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) {
+                    setShowMobileControls(false);
+                  }
+                }}
                 style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
                   display: 'flex',
+                  flexDirection: 'column',
                   justifyContent: 'space-between',
-                  alignItems: 'center',
-                  width: '100%',
-                  background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%)',
-                  paddingTop: '5px',
-                  borderTopLeftRadius: 'inherit',
-                  borderTopRightRadius: 'inherit'
+                  background: 'transparent',
+                  zIndex: 100
                 }}
               >
-                {/* Back/Collapse Arrow */}
-                <button
-                  className="control-btn"
-                  onClick={(e) => { e.stopPropagation(); onClose(); }}
-                  style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '6px' }}
-                >
-                  <ChevronDown size={24} />
-                </button>
-
-                {/* Top-Right Controls */}
-                <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
-                  <button
-                    className={`control-btn ${showCastMenu ? 'cast-active' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowCastMenu(!showCastMenu);
-                      setShowSettings(false);
-                    }}
-                    style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '4px' }}
-                  >
-                    <Cast size={20} />
-                  </button>
-                  {(subtitleTracks.length > 0 || cachedVideo?.vtt) && (
-                    <button
-                      className={`control-btn ${subsActive ? 'cc-active' : ''}`}
-                      onClick={(e) => { e.stopPropagation(); toggleSubtitles(); }}
-                      style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '4px' }}
-                    >
-                      <Subtitles size={20} />
-                    </button>
-                  )}
-                  <button
-                    className={`control-btn ${showSettings ? 'settings-active' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowSettings(!showSettings);
-                      setShowCastMenu(false);
-                    }}
-                    style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '4px' }}
-                  >
-                    <Settings size={20} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Center Controls: Skip Back, Play/Pause, Skip Forward */}
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '28px', width: '100%' }}>
-                {/* Skip Back / Prev */}
-                <button
-                  className="mobile-player-circle-btn"
-                  onClick={(e) => { e.stopPropagation(); handlePrevVideo(); }}
+                {/* Top Row: Down Arrow & Options with Top Gradient Shadow */}
+                <div
                   style={{
-                    width: '42px',
-                    height: '42px',
-                    borderRadius: '50%',
-                    background: 'rgba(0, 0, 0, 0.5)',
-                    border: 'none',
-                    color: '#fff',
                     display: 'flex',
+                    justifyContent: 'space-between',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer'
+                    width: '100%',
+                    background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%)',
+                    paddingTop: '5px',
+                    borderTopLeftRadius: 'inherit',
+                    borderTopRightRadius: 'inherit'
                   }}
                 >
-                  <SkipBack size={18} fill="currentColor" />
-                </button>
-
-                {/* Big Center Play/Pause */}
-                <button
-                  className="mobile-player-circle-btn-large"
-                  onClick={(e) => { e.stopPropagation(); togglePlay(); }}
-                  style={{
-                    width: '60px',
-                    height: '60px',
-                    borderRadius: '50%',
-                    background: 'rgba(0, 0, 0, 0.5)',
-                    border: 'none',
-                    color: '#fff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer'
-                  }}
-                >
-                  {isPlaying ? <Pause size={28} fill="currentColor" /> : <Play size={28} fill="currentColor" />}
-                </button>
-
-                {/* Skip Forward / Next */}
-                <button
-                  className="mobile-player-circle-btn"
-                  onClick={(e) => { e.stopPropagation(); handleNextVideo(); }}
-                  style={{
-                    width: '42px',
-                    height: '42px',
-                    borderRadius: '50%',
-                    background: 'rgba(0, 0, 0, 0.5)',
-                    border: 'none',
-                    color: '#fff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <SkipForward size={18} fill="currentColor" />
-                </button>
-              </div>
-
-              {/* Bottom Row: Time display & Fullscreen */}
-              <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '4px', paddingBottom: '5px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '0 4px' }}>
-                  {/* Elapsed / Duration Badge */}
-                  <div style={{ fontSize: '12px', color: '#fff', fontWeight: '500', background: 'rgba(0, 0, 0, 0.5)', padding: '4px 8px', borderRadius: '10px' }}>
-                    {formatTime(currentTime)} / {formatTime(duration)}
-                  </div>
-
-                  {/* Fullscreen Button */}
+                  {/* Back/Collapse Arrow */}
                   <button
                     className="control-btn"
-                    onClick={(e) => { e.stopPropagation(); toggleFullscreen(); }}
-                    style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '4px' }}
+                    onClick={(e) => { e.stopPropagation(); onClose(); }}
+                    style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '6px' }}
                   >
-                    {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+                    <ChevronDown size={24} />
+                  </button>
+
+                  {/* Top-Right Controls */}
+                  <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+                    <button
+                      className={`control-btn ${showCastMenu ? 'cast-active' : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowCastMenu(!showCastMenu);
+                        setShowSettings(false);
+                      }}
+                      style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '4px' }}
+                    >
+                      <Cast size={20} />
+                    </button>
+                    {(subtitleTracks.length > 0 || cachedVideo?.vtt) && (
+                      <button
+                        className={`control-btn ${subsActive ? 'cc-active' : ''}`}
+                        onClick={(e) => { e.stopPropagation(); toggleSubtitles(); }}
+                        style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '4px' }}
+                      >
+                        <Subtitles size={20} />
+                      </button>
+                    )}
+                    <button
+                      className={`control-btn ${showSettings ? 'settings-active' : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowSettings(!showSettings);
+                        setShowCastMenu(false);
+                      }}
+                      style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '4px' }}
+                    >
+                      <Settings size={20} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Center Controls: Skip Back, Play/Pause, Skip Forward */}
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '28px', width: '100%' }}>
+                  {/* Skip Back / Prev */}
+                  <button
+                    className="mobile-player-circle-btn"
+                    onClick={(e) => { e.stopPropagation(); handlePrevVideo(); }}
+                    style={{
+                      width: '42px',
+                      height: '42px',
+                      borderRadius: '50%',
+                      background: 'rgba(0, 0, 0, 0.5)',
+                      border: 'none',
+                      color: '#fff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <SkipBack size={18} fill="currentColor" />
+                  </button>
+
+                  {/* Big Center Play/Pause */}
+                  <button
+                    className="mobile-player-circle-btn-large"
+                    onClick={(e) => { e.stopPropagation(); togglePlay(); }}
+                    style={{
+                      width: '60px',
+                      height: '60px',
+                      borderRadius: '50%',
+                      background: 'rgba(0, 0, 0, 0.5)',
+                      border: 'none',
+                      color: '#fff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {isPlaying ? <Pause size={28} fill="currentColor" /> : <Play size={28} fill="currentColor" />}
+                  </button>
+
+                  {/* Skip Forward / Next */}
+                  <button
+                    className="mobile-player-circle-btn"
+                    onClick={(e) => { e.stopPropagation(); handleNextVideo(); }}
+                    style={{
+                      width: '42px',
+                      height: '42px',
+                      borderRadius: '50%',
+                      background: 'rgba(0, 0, 0, 0.5)',
+                      border: 'none',
+                      color: '#fff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <SkipForward size={18} fill="currentColor" />
                   </button>
                 </div>
+
+                {/* Bottom Row: Time display & Fullscreen */}
+                <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '4px', paddingBottom: '5px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '0 4px' }}>
+                    {/* Elapsed / Duration Badge */}
+                    <div style={{ fontSize: '12px', color: '#fff', fontWeight: '500', background: 'rgba(0, 0, 0, 0.5)', padding: '4px 8px', borderRadius: '10px' }}>
+                      {formatTime(currentTime)} / {formatTime(duration)}
+                    </div>
+
+                    {/* Fullscreen Button */}
+                    <button
+                      className="control-btn"
+                      onClick={(e) => { e.stopPropagation(); toggleFullscreen(); }}
+                      style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '4px' }}
+                    >
+                      {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
 
               {/* Horizontal Progress Seek Slider (Absolute Bottom Edge) */}
               <div
@@ -5142,7 +5141,7 @@ function PlayerView({
                   zIndex: 105
                 }}
               >
-                <div className="progress-timeline-container" style={{ height: '3px', background: 'rgba(255,255,255,0.2)', width: '100%', position: 'absolute', bottom: '0' }}>
+                <div className="progress-timeline-container" style={{ height: '3px', background: 'rgba(255,255,255,0.2)', width: '100%', position: 'absolute', bottom: '6px' }}>
                   <div
                     className="progress-bar-played"
                     style={{ width: `${(currentTime / (duration || 1)) * 100}%`, height: '100%', background: 'var(--primary-color)' }}
