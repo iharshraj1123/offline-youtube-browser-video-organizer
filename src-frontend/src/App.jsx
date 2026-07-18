@@ -145,9 +145,21 @@ export default function App() {
   // Mobile UI States
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [mobileSearchActive, setMobileSearchActive] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isTheaterMode, setIsTheaterMode] = useState(() => localStorage.getItem('yt_theater_mode') === 'true');
   const prevTheaterModeRef = useRef(null);
   const isMobileRef = useRef(window.matchMedia('(max-width: 768px)').matches);
+  const playlistsRef = useRef([]);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    playlistsRef.current = playlists;
+  }, [playlists]);
 
   // Auto-theater mode on mobile
   useEffect(() => {
@@ -221,6 +233,8 @@ export default function App() {
       if (data && !data.error) {
         if (updateUrl) {
           window.history.pushState(null, '', `?v=${videoId}`);
+          setActivePlaylist(null);
+          setCurrentPlaylistIndex(-1);
         }
         // Push to playback history (truncate forward entries)
         playHistoryRef.current = playHistoryRef.current.slice(0, historyIndexRef.current + 1);
@@ -260,6 +274,7 @@ export default function App() {
     const shortId = params.get('sv');
     const page = params.get('page');
     const userParam = params.get('user');
+    const listId = params.get('list');
 
     if (videoId) {
       fetchVideoAndPlay(videoId);
@@ -282,6 +297,8 @@ export default function App() {
           }
         })
         .catch(() => setCurrentView('home'));
+    } else if (listId) {
+      setCurrentView('playlist');
     } else if (page === 'crawler') {
       setCurrentView('crawler');
     } else if (page === 'profile' && userParam) {
@@ -302,16 +319,34 @@ export default function App() {
       const svId = p.get('sv');
       const pg = p.get('page');
       const usr = p.get('user');
+      const lst = p.get('list');
 
       if (vId) {
         fetchVideoAndPlay(vId);
+        if (lst) {
+          const playlist = playlistsRef.current.find(pl => String(pl.id) === String(lst));
+          if (playlist) {
+            setActivePlaylist(playlist);
+            const idx = (playlist.video_ids || []).findIndex(id => String(id) === String(vId));
+            setCurrentPlaylistIndex(idx >= 0 ? idx : 0);
+          }
+        } else {
+          setActivePlaylist(null);
+          setCurrentPlaylistIndex(-1);
+        }
       } else if (svId) {
         // Navigate back into a specific short
         setCurrentView(prev => {
-          // If already in shorts view just do nothing — the replaceState already handled URL
           if (prev === 'shorts') return prev;
           return 'shorts';
         });
+      } else if (lst) {
+        const playlist = playlistsRef.current.find(pl => String(pl.id) === String(lst));
+        if (playlist) {
+          setPlaylistView(playlist);
+          setCurrentView('playlist');
+          setPlayingVideo(null);
+        }
       } else if (pg === 'crawler') {
         setCurrentView('crawler');
         setPlayingVideo(null);
@@ -327,7 +362,6 @@ export default function App() {
         setPlayingVideo(null);
       } else {
         setCurrentView('home');
-        // Keep playingVideo active so it becomes a miniplayer
         fetchVideos();
       }
     };
@@ -515,6 +549,25 @@ export default function App() {
       const data = await res.json();
       if (Array.isArray(data)) {
         setPlaylists(data);
+
+        // Resolve playlist from URL params
+        const params = new URLSearchParams(window.location.search);
+        const listId = params.get('list');
+        const videoId = params.get('v');
+
+        if (listId) {
+          const playlist = data.find(p => String(p.id) === String(listId));
+          if (playlist) {
+            if (videoId) {
+              setActivePlaylist(playlist);
+              const idx = (playlist.video_ids || []).findIndex(id => String(id) === String(videoId));
+              setCurrentPlaylistIndex(idx >= 0 ? idx : 0);
+            } else {
+              setPlaylistView(playlist);
+              setCurrentView('playlist');
+            }
+          }
+        }
       }
     } catch (e) {
       console.error('Error fetching playlists:', e);
@@ -642,7 +695,7 @@ export default function App() {
   };
 
   // Load a video for playing
-  const handlePlayVideo = async (video, keepMiniPlayer = false, skipHistory = false) => {
+  const handlePlayVideo = async (video, keepMiniPlayer = false, skipHistory = false, playlistId = null) => {
     const shouldKeepMini = keepMiniPlayer;
 
     // Push to playback history (truncate forward entries)
@@ -654,7 +707,10 @@ export default function App() {
 
     // Update browser history URL if NOT keeping in miniplayer
     if (!shouldKeepMini) {
-      window.history.pushState(null, '', `?v=${video.vid_id}`);
+      const url = playlistId
+        ? `?v=${video.vid_id}&list=${playlistId}`
+        : `?v=${video.vid_id}`;
+      window.history.pushState(null, '', url);
     }
     localStorage.setItem('yt_last_playing_video_id', video.vid_id);
 
@@ -934,11 +990,6 @@ export default function App() {
               <span className="sidebar-item-label">Crawl Folders</span>
             </button>
 
-            <a href="/" className="sidebar-item" title="Local Server">
-              <span className="sidebar-item-icon"><Tv size={20} /></span>
-              <span className="sidebar-item-label">Local Server</span>
-            </a>
-
             <button
               className={`sidebar-item ${currentView === 'downloader' ? 'active' : ''}`}
               onClick={() => { handleGoToDownloader(); setMobileSidebarOpen(false); }}
@@ -963,6 +1014,10 @@ export default function App() {
           {/* Workspace Nav */}
           <div className="sidebar-section-label">Workspace</div>
           <nav className="sidebar-nav">
+            <a href="/" className="sidebar-item" title="Local Server">
+              <span className="sidebar-item-icon"><Tv size={20} /></span>
+              <span className="sidebar-item-label">Local Server</span>
+            </a>
             <a href="/Explorer/" className="sidebar-item" title="Explorer">
               <span className="sidebar-item-icon"><Folder size={20} /></span>
               <span className="sidebar-item-label">Explorer</span>
@@ -994,6 +1049,7 @@ export default function App() {
                   setPlaylistView(pl);
                   setCurrentView('playlist');
                   setMobileSidebarOpen(false);
+                  window.history.pushState(null, '', `?list=${pl.id}`);
                 }}
                 title={pl.playlist_name}
               >
@@ -1035,7 +1091,11 @@ export default function App() {
               activeCategory={activeCategory}
               currentSort={currentSort}
               onPillSelect={handlePillSelect}
-              onPlayVideo={handlePlayVideo}
+              onPlayVideo={(video) => {
+                setActivePlaylist(null);
+                setCurrentPlaylistIndex(-1);
+                handlePlayVideo(video);
+              }}
               onPlayShort={handlePlayShort}
             />
           )}
@@ -1063,9 +1123,18 @@ export default function App() {
               onVideoDeleted={handleGoHome}
               allVideos={videos}
               onPlayVideo={(video, pl, index, keepMiniPlayer, skipHistory) => {
-                if (pl !== undefined) setActivePlaylist(pl);
-                if (index !== undefined) setCurrentPlaylistIndex(index);
-                handlePlayVideo(video, keepMiniPlayer, skipHistory);
+                let targetPlaylistId = null;
+                if (pl !== undefined) {
+                  setActivePlaylist(pl);
+                  if (index !== undefined) setCurrentPlaylistIndex(index);
+                  targetPlaylistId = pl.id;
+                } else if (skipHistory && activePlaylist) {
+                  targetPlaylistId = activePlaylist.id;
+                } else {
+                  setCurrentPlaylistIndex(-1);
+                  targetPlaylistId = null;
+                }
+                handlePlayVideo(video, keepMiniPlayer, skipHistory, targetPlaylistId);
               }}
               isMiniPlayer={currentView !== 'player'}
               onExpand={() => {
@@ -1109,10 +1178,11 @@ export default function App() {
             <PlaylistView
               playlist={playlists.find(p => p.id === playlistView.id) || playlistView}
               allVideos={videos}
+              isMobile={isMobile}
               onPlayVideo={(video, pl, index) => {
                 setActivePlaylist(pl);
                 setCurrentPlaylistIndex(index);
-                handlePlayVideo(video);
+                handlePlayVideo(video, false, false, pl.id);
               }}
               onRemoveVideo={removeVideoFromPlaylist}
               onReorder={updatePlaylistOrder}
@@ -1124,7 +1194,7 @@ export default function App() {
                 if (listVideos.length > 0) {
                   setActivePlaylist(pl);
                   setCurrentPlaylistIndex(0);
-                  handlePlayVideo(listVideos[0]);
+                  handlePlayVideo(listVideos[0], false, false, pl.id);
                 }
               }}
             />
@@ -2381,24 +2451,45 @@ function PlayerView({
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [isMobileDescriptionFullyExpanded, setIsMobileDescriptionFullyExpanded] = useState(false);
   const [commentsDrawerState, setCommentsDrawerState] = useState('normal');
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [viewportStyle, setViewportStyle] = useState({});
+  const [isQueueCollapsed, setIsQueueCollapsed] = useState(false);
 
   useEffect(() => {
-    if (!window.visualViewport) return;
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (!isMobile || !window.visualViewport) {
+      setViewportStyle({});
+      return;
+    }
 
     const handleViewportChange = () => {
       const vv = window.visualViewport;
-      const heightDiff = window.innerHeight - vv.height;
-      setKeyboardHeight(heightDiff > 80 ? heightDiff : 0);
+      setViewportStyle({
+        position: 'fixed',
+        top: `${vv.offsetTop}px`,
+        left: `${vv.offsetLeft}px`,
+        width: `${vv.width}px`,
+        height: `${vv.height}px`,
+        bottom: 'auto',
+        right: 'auto'
+      });
     };
 
     window.visualViewport.addEventListener('resize', handleViewportChange);
     window.visualViewport.addEventListener('scroll', handleViewportChange);
+    handleViewportChange();
+
     return () => {
       window.visualViewport.removeEventListener('resize', handleViewportChange);
       window.visualViewport.removeEventListener('scroll', handleViewportChange);
     };
-  }, []);
+  }, [isMobile]);
 
   // Gesture handling for Mobile Drawers
   const drawerTouchRef = useRef({
@@ -2419,7 +2510,7 @@ function PlayerView({
       activeDrawer: drawerName,
       currentHeight: drawerElement.getBoundingClientRect().height
     };
-    
+
     drawerElement.style.transition = 'none';
   };
 
@@ -2429,9 +2520,10 @@ function PlayerView({
 
     const touch = e.touches[0];
     const deltaY = touch.clientY - state.startY;
-    
-    const newHeight = Math.max(100, Math.min(window.innerHeight * 0.95, state.startHeight - deltaY));
-    
+
+    const maxHeightLimit = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    const newHeight = Math.max(100, Math.min(maxHeightLimit * 0.95, state.startHeight - deltaY));
+
     const drawerElement = e.currentTarget.closest('.mobile-drawer-content');
     if (drawerElement) {
       drawerElement.style.height = `${newHeight}px`;
@@ -2458,8 +2550,8 @@ function PlayerView({
         if (isMobileDescriptionFullyExpanded) {
           setIsMobileDescriptionFullyExpanded(false);
           if (drawerElement) {
-            drawerElement.style.height = '75vh';
-            drawerElement.style.maxHeight = '75vh';
+            drawerElement.style.height = '75%';
+            drawerElement.style.maxHeight = '75%';
           }
         } else {
           setIsDescriptionExpanded(false);
@@ -2467,13 +2559,13 @@ function PlayerView({
       } else if (deltaY < -threshold) {
         setIsMobileDescriptionFullyExpanded(true);
         if (drawerElement) {
-          drawerElement.style.height = '95vh';
-          drawerElement.style.maxHeight = '95vh';
+          drawerElement.style.height = '95%';
+          drawerElement.style.maxHeight = '95%';
         }
       } else {
         if (drawerElement) {
-          drawerElement.style.height = isMobileDescriptionFullyExpanded ? '95vh' : '75vh';
-          drawerElement.style.maxHeight = isMobileDescriptionFullyExpanded ? '95vh' : '75vh';
+          drawerElement.style.height = isMobileDescriptionFullyExpanded ? '95%' : '75%';
+          drawerElement.style.maxHeight = isMobileDescriptionFullyExpanded ? '95%' : '75%';
         }
       }
     } else if (state.activeDrawer === 'comments') {
@@ -2481,8 +2573,8 @@ function PlayerView({
         if (commentsDrawerState === 'maximized') {
           setCommentsDrawerState('normal');
           if (drawerElement) {
-            drawerElement.style.height = '75vh';
-            drawerElement.style.maxHeight = '75vh';
+            drawerElement.style.height = '75%';
+            drawerElement.style.maxHeight = '75%';
           }
         } else {
           setShowMobileCommentsDrawer(false);
@@ -2490,13 +2582,13 @@ function PlayerView({
       } else if (deltaY < -threshold) {
         setCommentsDrawerState('maximized');
         if (drawerElement) {
-          drawerElement.style.height = '95vh';
-          drawerElement.style.maxHeight = '95vh';
+          drawerElement.style.height = '95%';
+          drawerElement.style.maxHeight = '95%';
         }
       } else {
         if (drawerElement) {
-          drawerElement.style.height = commentsDrawerState === 'maximized' ? '95vh' : '75vh';
-          drawerElement.style.maxHeight = commentsDrawerState === 'maximized' ? '95vh' : '75vh';
+          drawerElement.style.height = commentsDrawerState === 'maximized' ? '95%' : '75%';
+          drawerElement.style.maxHeight = commentsDrawerState === 'maximized' ? '95%' : '75%';
         }
       }
     }
@@ -2506,13 +2598,6 @@ function PlayerView({
 
   const [commentsList, setCommentsList] = useState([]);
   const [showMobileCommentsDrawer, setShowMobileCommentsDrawer] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   // Fetch comments array whenever video changes to show count and top comments preview card
   useEffect(() => {
@@ -5861,7 +5946,11 @@ function PlayerView({
             {isMobile ? (
               /* High-Fidelity YouTube Mobile Detail Layout */
               <div className="video-metadata-details" style={{}}>
-                <h1 className="video-detail-title" style={{ fontSize: '18px', fontWeight: 'bold', margin: '0 0 8px 0', color: '#fff', lineHeight: '1.4' }}>
+                <h1
+                  className="video-detail-title"
+                  onClick={() => setIsDescriptionExpanded(true)}
+                  style={{ fontSize: '18px', fontWeight: 'bold', margin: '0 0 8px 0', color: '#fff', lineHeight: '1.4', cursor: 'pointer' }}
+                >
                   {video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}
                 </h1>
 
@@ -6066,33 +6155,29 @@ function PlayerView({
                 onClick={() => setShowMobileCommentsDrawer(false)}
                 onTouchStart={e => e.stopPropagation()}
                 onTouchEnd={e => e.stopPropagation()}
+                style={viewportStyle}
               >
-                <div 
-                  className="mobile-drawer-content" 
+                <div
+                  className="mobile-drawer-content"
                   onClick={e => e.stopPropagation()}
                   style={{
-                    height: commentsDrawerState === 'maximized' 
-                      ? `calc(95vh - ${keyboardHeight}px)` 
-                      : `calc(75vh - ${keyboardHeight}px)`,
-                    maxHeight: commentsDrawerState === 'maximized' 
-                      ? `calc(95vh - ${keyboardHeight}px)` 
-                      : `calc(75vh - ${keyboardHeight}px)`,
-                    bottom: `${keyboardHeight}px`,
+                    height: commentsDrawerState === 'maximized' ? '95%' : '75%',
+                    maxHeight: commentsDrawerState === 'maximized' ? '95%' : '75%',
                     position: 'relative',
-                    transition: 'height 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), max-height 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), bottom 0.1s ease-out'
+                    transition: 'height 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), max-height 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)'
                   }}
                 >
                   {/* Top Drag Handle */}
-                  <div 
-                    style={{ width: '40px', height: '4px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '2px', margin: '8px auto 0 auto', flexShrink: 0, cursor: 'ns-resize' }} 
+                  <div
+                    style={{ width: '40px', height: '4px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '2px', margin: '8px auto 0 auto', flexShrink: 0, cursor: 'ns-resize' }}
                     onTouchStart={(e) => handleDrawerTouchStart('comments', e)}
                     onTouchMove={handleDrawerTouchMove}
                     onTouchEnd={handleDrawerTouchEnd}
                   />
 
                   {/* Header */}
-                  <div 
-                    className="mobile-drawer-header" 
+                  <div
+                    className="mobile-drawer-header"
                     style={{ borderBottom: 'none', padding: '12px 16px 8px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, cursor: 'ns-resize' }}
                     onTouchStart={(e) => handleDrawerTouchStart('comments', e)}
                     onTouchMove={handleDrawerTouchMove}
@@ -6135,27 +6220,28 @@ function PlayerView({
                 onClick={() => { setIsDescriptionExpanded(false); setIsMobileDescriptionFullyExpanded(false); }}
                 onTouchStart={e => e.stopPropagation()}
                 onTouchEnd={e => e.stopPropagation()}
+                style={viewportStyle}
               >
-                <div 
-                  className="mobile-drawer-content" 
+                <div
+                  className="mobile-drawer-content"
                   onClick={e => e.stopPropagation()}
                   style={{
-                    height: isMobileDescriptionFullyExpanded ? '95vh' : '75vh',
-                    maxHeight: isMobileDescriptionFullyExpanded ? '95vh' : '75vh',
+                    height: isMobileDescriptionFullyExpanded ? '95%' : '75%',
+                    maxHeight: isMobileDescriptionFullyExpanded ? '95%' : '75%',
                     transition: 'height 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), max-height 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)'
                   }}
                 >
                   {/* Top Drag Handle */}
-                  <div 
-                    style={{ width: '40px', height: '4px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '2px', margin: '8px auto 0 auto', flexShrink: 0, cursor: 'ns-resize' }} 
+                  <div
+                    style={{ width: '40px', height: '4px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '2px', margin: '8px auto 0 auto', flexShrink: 0, cursor: 'ns-resize' }}
                     onTouchStart={(e) => handleDrawerTouchStart('description', e)}
                     onTouchMove={handleDrawerTouchMove}
                     onTouchEnd={handleDrawerTouchEnd}
                   />
-                  
+
                   {/* Header */}
-                  <div 
-                    className="mobile-drawer-header" 
+                  <div
+                    className="mobile-drawer-header"
                     style={{ borderBottom: 'none', padding: '12px 16px 8px 16px', flexShrink: 0, cursor: 'ns-resize' }}
                     onTouchStart={(e) => handleDrawerTouchStart('description', e)}
                     onTouchMove={handleDrawerTouchMove}
@@ -6166,14 +6252,14 @@ function PlayerView({
                       <X size={20} />
                     </button>
                   </div>
-                  
+
                   {/* Scrollable drawer body */}
                   <div className="mobile-drawer-body" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', paddingBottom: '16px' }}>
                     {/* Video Title */}
                     <div style={{ fontSize: '16px', fontWeight: '800', color: '#fff', padding: '0 16px 12px 16px', lineHeight: '1.4' }}>
                       {video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}
                     </div>
-                    
+
                     {/* Stats Row */}
                     <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px 16px' }}>
                       <div style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: '12px', padding: '10px', textAlign: 'center' }}>
@@ -6231,7 +6317,7 @@ function PlayerView({
                               }} />
                             )}
                           </div>
-                          
+
                           <button
                             onClick={() => setIsMobileDescriptionFullyExpanded(!isMobileDescriptionFullyExpanded)}
                             style={{
@@ -6316,10 +6402,37 @@ function PlayerView({
                   background: 'rgba(255, 255, 255, 0.02)',
                   borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
                 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h3 style={{ fontSize: '15px', fontWeight: 'bold', color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                    <h3 
+                      onClick={isMobile ? () => setIsQueueCollapsed(!isQueueCollapsed) : undefined}
+                      style={{ 
+                        fontSize: '15px', 
+                        fontWeight: 'bold', 
+                        color: '#fff', 
+                        margin: 0, 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '8px', 
+                        minWidth: 0, 
+                        flex: 1,
+                        cursor: isMobile ? 'pointer' : 'default',
+                        userSelect: 'none'
+                      }}
+                    >
                       <ListMusic size={18} style={{ color: 'var(--primary-color)', flexShrink: 0 }} />
-                      <span>{activePlaylist.playlist_name}</span>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activePlaylist.playlist_name}</span>
+                      {isMobile && (
+                        <ChevronDown 
+                          size={16} 
+                          style={{ 
+                            color: '#aaa', 
+                            marginLeft: '4px', 
+                            flexShrink: 0, 
+                            transform: isQueueCollapsed ? 'rotate(0deg)' : 'rotate(180deg)',
+                            transition: 'transform 0.2s'
+                          }} 
+                        />
+                      )}
                     </h3>
                     <button
                       onClick={() => setActivePlaylist(null)}
@@ -6331,7 +6444,8 @@ function PlayerView({
                         fontSize: '12px',
                         padding: '2px 6px',
                         borderRadius: '4px',
-                        backgroundColor: 'rgba(255,255,255,0.05)'
+                        backgroundColor: 'rgba(255,255,255,0.05)',
+                        flexShrink: 0
                       }}
                       title="Close playlist queue"
                     >
@@ -6370,7 +6484,16 @@ function PlayerView({
                 </div>
 
                 {/* Scrollable Playlist Queue Video List */}
-                <div ref={playlistQueueRef} style={{ maxHeight: '380px', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+                <div 
+                  ref={playlistQueueRef} 
+                  style={{ 
+                    maxHeight: isMobile ? (isQueueCollapsed ? '0px' : '280px') : '380px', 
+                    overflowY: 'auto', 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    transition: 'max-height 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)'
+                  }}
+                >
                   {(activePlaylist.video_ids || []).map((id, idx) => {
                     const vid = allVideos.find(v => v.vid_id === parseInt(id));
                     if (!vid) return null;
@@ -6380,7 +6503,7 @@ function PlayerView({
                       <div
                         key={vid.vid_id}
                         data-current={isCurrent ? 'true' : undefined}
-                        draggable
+                        draggable={!isMobile}
                         onDragStart={(e) => handleDragStart(e, idx)}
                         onDragEnter={(e) => handleDragEnter(e, idx)}
                         onDragEnd={handleDragEnd}
@@ -6389,9 +6512,9 @@ function PlayerView({
                         style={{
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '12px',
-                          padding: '8px 16px',
-                          cursor: 'grab',
+                          gap: isMobile ? '8px' : '12px',
+                          padding: isMobile ? '8px 10px' : '8px 16px',
+                          cursor: isMobile ? 'pointer' : 'grab',
                           background: isCurrent ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
                           borderBottom: '1px solid rgba(255, 255, 255, 0.03)',
                           transition: 'background 0.2s',
@@ -6428,16 +6551,20 @@ function PlayerView({
 
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{
-                            fontSize: '13px',
+                            fontSize: isMobile ? '12px' : '13px',
                             fontWeight: isCurrent ? 'bold' : 'normal',
                             color: isCurrent ? 'var(--primary-color)' : '#fff',
-                            whiteSpace: 'nowrap',
+                            whiteSpace: isMobile ? 'normal' : 'nowrap',
+                            display: isMobile ? '-webkit-box' : 'block',
+                            WebkitLineClamp: isMobile ? 2 : undefined,
+                            WebkitBoxOrient: isMobile ? 'vertical' : undefined,
                             overflow: 'hidden',
-                            textOverflow: 'ellipsis'
+                            textOverflow: 'ellipsis',
+                            lineHeight: '1.3'
                           }}>
                             {cleanTitle}
                           </div>
-                          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                          <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {vid.uploader_name}
                           </div>
                         </div>
@@ -7067,7 +7194,7 @@ function CrawlerView() {
 // ----------------------------------------
 // SUB-VIEW: PlaylistView
 // ----------------------------------------
-function PlaylistView({ playlist, allVideos, onPlayVideo, onRemoveVideo, onReorder, onDeletePlaylist, onPlayPlaylist }) {
+function PlaylistView({ playlist, allVideos, onPlayVideo, onRemoveVideo, onReorder, onDeletePlaylist, onPlayPlaylist, isMobile }) {
   const playlistVideos = (playlist.video_ids || [])
     .map(id => allVideos.find(v => v.vid_id === parseInt(id)))
     .filter(Boolean);
@@ -7076,14 +7203,17 @@ function PlaylistView({ playlist, allVideos, onPlayVideo, onRemoveVideo, onReord
   const dragOverItem = useRef(null);
 
   const handleDragStart = (e, position) => {
+    if (isMobile) return;
     dragItem.current = position;
   };
 
   const handleDragEnter = (e, position) => {
+    if (isMobile) return;
     dragOverItem.current = position;
   };
 
   const handleDragEnd = () => {
+    if (isMobile) return;
     const copyListItems = [...playlistVideos];
     const dragItemContent = copyListItems[dragItem.current];
     copyListItems.splice(dragItem.current, 1);
@@ -7096,22 +7226,22 @@ function PlaylistView({ playlist, allVideos, onPlayVideo, onRemoveVideo, onReord
   };
 
   return (
-    <div className="crawler-container" style={{ maxWidth: '1000px', margin: '0 auto', padding: '24px' }}>
-      <div className="crawler-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '20px' }}>
+    <div className="crawler-container" style={{ maxWidth: '1000px', margin: '0 auto', padding: isMobile ? '12px 8px' : '24px' }}>
+      <div className="crawler-header" style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'flex-start', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '20px' }}>
         <div>
-          <h1 className="crawler-title" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <ListMusic size={28} style={{ color: 'var(--primary-color)' }} /> {playlist.playlist_name}
+          <h1 className="crawler-title" style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: isMobile ? '20px' : '24px', margin: 0 }}>
+            <ListMusic size={isMobile ? 24 : 28} style={{ color: 'var(--primary-color)' }} /> {playlist.playlist_name}
           </h1>
-          <p className="crawler-desc" style={{ marginTop: '6px' }}>
-            {playlistVideos.length} {playlistVideos.length === 1 ? 'video' : 'videos'} • Drag & drop items to reorder playlist queue
+          <p className="crawler-desc" style={{ marginTop: '6px', fontSize: isMobile ? '12px' : '14px' }}>
+            {playlistVideos.length} {playlistVideos.length === 1 ? 'video' : 'videos'} {isMobile ? '' : '• Drag & drop items to reorder playlist queue'}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '12px', width: isMobile ? '100%' : 'auto' }}>
           {playlistVideos.length > 0 && (
             <button
               className="btn-primary"
               onClick={() => onPlayPlaylist(playlist)}
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '20px', fontWeight: 'bold' }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 20px', borderRadius: '20px', fontWeight: 'bold', flex: isMobile ? 1 : 'none' }}
             >
               <Play size={18} fill="currentColor" /> Play All
             </button>
@@ -7124,7 +7254,7 @@ function PlaylistView({ playlist, allVideos, onPlayVideo, onRemoveVideo, onReord
                   onDeletePlaylist(playlist.id);
                 }
               }}
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '20px', backgroundColor: '#cc0000', color: '#fff', border: 'none', cursor: 'pointer' }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 20px', borderRadius: '20px', backgroundColor: '#cc0000', color: '#fff', border: 'none', cursor: 'pointer', flex: isMobile ? 1 : 'none' }}
             >
               <Trash2 size={18} /> Delete Playlist
             </button>
@@ -7133,21 +7263,19 @@ function PlaylistView({ playlist, allVideos, onPlayVideo, onRemoveVideo, onReord
       </div>
 
       {playlistVideos.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '80px 20px', color: '#aaa' }}>
-          <ListMusic size={64} style={{ marginBottom: '16px', opacity: 0.5 }} />
-          <p style={{ fontSize: '16px' }}>This playlist has no videos yet.</p>
-          <p style={{ fontSize: '14px', color: '#666', marginTop: '6px' }}>To add videos, click the "Save" button below any video player.</p>
+        <div style={{ textAlign: 'center', padding: isMobile ? '40px 10px' : '80px 20px', color: '#aaa' }}>
+          <ListMusic size={isMobile ? 48 : 64} style={{ marginBottom: '16px', opacity: 0.5 }} />
+          <p style={{ fontSize: isMobile ? '14px' : '16px' }}>This playlist has no videos yet.</p>
+          <p style={{ fontSize: isMobile ? '12px' : '14px', color: '#666', marginTop: '6px' }}>To add videos, click the "Save" button below any video player.</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '20px' }}>
           {playlistVideos.map((vid, idx) => {
             const cleanTitle = (vid.vid_name || '').replace(/\.[a-zA-Z0-9]+$/, '');
-            const hasThumbnail = vid.thumbnail && vid.thumbnail !== '0';
-            const thumbnailSrc = hasThumbnail ? `./api/index.php?action=thumbnail&id=${vid.vid_id}` : '';
             return (
               <div
                 key={vid.vid_id}
-                draggable
+                draggable={!isMobile}
                 onDragStart={(e) => handleDragStart(e, idx)}
                 onDragEnter={(e) => handleDragEnter(e, idx)}
                 onDragEnd={handleDragEnd}
@@ -7155,25 +7283,26 @@ function PlaylistView({ playlist, allVideos, onPlayVideo, onRemoveVideo, onReord
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '16px',
+                  gap: isMobile ? '10px' : '16px',
                   background: 'rgba(255, 255, 255, 0.03)',
                   border: '1px solid rgba(255, 255, 255, 0.05)',
-                  padding: '12px 16px',
+                  padding: isMobile ? '8px 10px' : '12px 16px',
                   borderRadius: '8px',
-                  cursor: 'grab',
+                  cursor: isMobile ? 'pointer' : 'grab',
                   transition: 'background 0.2s, transform 0.1s'
                 }}
                 className="playlist-item-row"
+                onClick={isMobile ? () => onPlayVideo(vid, playlist, idx) : undefined}
               >
-                <div style={{ color: '#666', fontSize: '14px', fontWeight: 'bold', width: '20px', textAlign: 'center' }}>
+                <div style={{ color: '#666', fontSize: isMobile ? '12px' : '14px', fontWeight: 'bold', width: isMobile ? '16px' : '20px', textAlign: 'center', flexShrink: 0 }}>
                   {idx + 1}
                 </div>
 
                 <div
-                  onClick={() => onPlayVideo(vid, playlist, idx)}
+                  onClick={!isMobile ? () => onPlayVideo(vid, playlist, idx) : undefined}
                   style={{
-                    width: '120px',
-                    height: '68px',
+                    width: isMobile ? '96px' : '120px',
+                    height: isMobile ? '54px' : '68px',
                     borderRadius: '6px',
                     overflow: 'hidden',
                     background: '#000',
@@ -7203,20 +7332,36 @@ function PlaylistView({ playlist, allVideos, onPlayVideo, onRemoveVideo, onReord
 
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <h3
-                    onClick={() => onPlayVideo(vid, playlist, idx)}
-                    style={{ fontSize: '15px', fontWeight: '600', color: '#fff', cursor: 'pointer', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                    onClick={!isMobile ? () => onPlayVideo(vid, playlist, idx) : undefined}
+                    style={{
+                      fontSize: isMobile ? '13px' : '15px',
+                      fontWeight: '600',
+                      color: '#fff',
+                      cursor: 'pointer',
+                      margin: 0,
+                      whiteSpace: isMobile ? 'normal' : 'nowrap',
+                      display: isMobile ? '-webkit-box' : 'block',
+                      WebkitLineClamp: isMobile ? 2 : undefined,
+                      WebkitBoxOrient: isMobile ? 'vertical' : undefined,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      lineHeight: '1.3'
+                    }}
                   >
                     {cleanTitle}
                   </h3>
-                  <span style={{ fontSize: '12px', color: '#aaa', marginTop: '4px', display: 'inline-block' }}>
+                  <span style={{ fontSize: isMobile ? '11px' : '12px', color: '#aaa', marginTop: '4px', display: 'inline-block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
                     {vid.uploader_name}
                   </span>
                 </div>
 
                 <button
                   className="btn-secondary"
-                  onClick={() => onRemoveVideo(playlist.id, vid.vid_id)}
-                  style={{ padding: '8px', borderRadius: '50%', border: 'none', backgroundColor: 'transparent', color: '#aaa', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  onClick={(e) => {
+                    if (isMobile) e.stopPropagation();
+                    onRemoveVideo(playlist.id, vid.vid_id);
+                  }}
+                  style={{ padding: '8px', borderRadius: '50%', border: 'none', backgroundColor: 'transparent', color: '#aaa', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
                   title="Remove from playlist"
                 >
                   <Trash2 size={16} />
