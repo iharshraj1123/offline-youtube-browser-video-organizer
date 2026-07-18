@@ -1352,6 +1352,7 @@ function ShortsPlayerView({ shortsList, initialIndex, onClose, onIndexChange, cu
   const [disliked, setDisliked] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [flashIcon, setFlashIcon] = useState(null); // 'play' | 'pause' | null
+  const [showDescription, setShowDescription] = useState(false);
 
   const currentVideo = shortsList[currentIndex];
   const videoRef = useRef(null);
@@ -1671,9 +1672,18 @@ function ShortsPlayerView({ shortsList, initialIndex, onClose, onIndexChange, cu
                         alt={vid.uploader_name}
                       />
                       <span className="shorts-uploader-name">@{vid.uploader_name}</span>
-                      <button className="shorts-subscribe-btn">Subscribe</button>
                     </div>
-                    <div className="shorts-meta-title" title={slideTitle}>{slideTitle}</div>
+                    <div 
+                      className="shorts-meta-title clickable-title" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowDescription(!showDescription);
+                        setShowComments(false);
+                      }}
+                      title="View description"
+                    >
+                      {slideTitle}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1697,7 +1707,7 @@ function ShortsPlayerView({ shortsList, initialIndex, onClose, onIndexChange, cu
             <span className="shorts-action-label">Dislike</span>
           </div>
 
-          <div className="shorts-action-item" onClick={() => setShowComments(!showComments)}>
+          <div className="shorts-action-item" onClick={() => { setShowComments(!showComments); setShowDescription(false); }}>
             <button className={`shorts-action-btn-circle ${showComments ? 'active' : ''}`}>
               <MessageSquare size={22} fill={showComments ? 'currentColor' : 'none'} />
             </button>
@@ -1735,6 +1745,28 @@ function ShortsPlayerView({ shortsList, initialIndex, onClose, onIndexChange, cu
                 onNavigateToProfile={onNavigateToProfile}
                 showFlashNotification={showFlashNotification}
               />
+            </div>
+          </div>
+        )}
+
+        {/* Description panel */}
+        {showDescription && (
+          <div className="shorts-comments-panel" onClick={e => e.stopPropagation()}>
+            <div className="shorts-comments-header">
+              <h3>Description</h3>
+              <button className="shorts-comments-close" onClick={() => setShowDescription(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="shorts-comments-body" style={{ padding: '16px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#fff', lineHeight: '1.4', wordBreak: 'break-word' }}>
+                {currentVideo.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}
+              </div>
+              <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '12px' }}>
+                <p style={{ margin: 0, fontSize: '13.5px', color: '#ccc', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
+                  {currentVideo.description || 'No description provided.'}
+                </p>
+              </div>
             </div>
           </div>
         )}

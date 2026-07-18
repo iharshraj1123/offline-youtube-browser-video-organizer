@@ -9506,6 +9506,17 @@ body.mini-player-dragging * {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
+.shorts-meta-title.clickable-title {
+  cursor: pointer;
+  transition: opacity 0.2s, text-decoration 0.2s;
+}
+
+.shorts-meta-title.clickable-title:hover {
+  text-decoration: underline;
+  opacity: 0.9;
+}
+
+
 /* Actions Column on the right */
 .shorts-actions-column {
   display: flex;
