@@ -4911,194 +4911,388 @@ function PlayerView({
 
         {/* Controls Overlay */}
         <div className="player-controls-overlay">
-          {/* Progress Slider with Hover Preview & Dragging */}
-          <div
-            ref={progressContainerRef}
-            className="progress-bar-hit-area"
-            onMouseDown={handleProgressMouseDown}
-            onMouseMove={handleProgressMouseMove}
-            onMouseLeave={handleProgressMouseLeave}
-          >
-            <div className="progress-timeline-container">
-              <div
-                className="progress-bar-played"
-                style={{ width: `${(currentTime / (duration || 1)) * 100}%` }}
-              ></div>
-              <div
-                className="progress-bar-knob"
-                style={{ left: `${(currentTime / (duration || 1)) * 100}%` }}
-              ></div>
-            </div>
-
-            {/* Hover Preview Tooltip (real frame via canvas) */}
-            <div
-              className="timeline-hover-preview"
-              style={{
-                left: `${hoverX}px`,
-                display: (showHoverPreview && hoverTime !== null) ? 'flex' : 'none'
+          {isMobile ? (
+            /* High-Fidelity YouTube Mobile Player Controls Overlay */
+            <div 
+              className="mobile-player-overlay-container" 
+              style={{ 
+                position: 'absolute', 
+                top: 0, 
+                left: 0, 
+                right: 0, 
+                bottom: 0, 
+                display: 'flex', 
+                flexDirection: 'column', 
+                justifyContent: 'space-between', 
+                padding: '12px', 
+                background: 'rgba(0, 0, 0, 0.45)', 
+                zIndex: 100 
               }}
             >
-              <canvas
-                ref={previewCanvasRef}
-                width={160}
-                height={90}
-                className="hover-preview-thumb"
-              />
-              <div className="hover-preview-time">{formatTime(hoverTime || 0)}</div>
-            </div>
-
-            {/* Hidden video element for frame extraction */}
-            <video
-              ref={previewVideoRef}
-              src={showHoverPreview ? (cachedVideo?.mp4 || translateVideoUrl(video.link)) : ''}
-              style={{ display: 'none' }}
-              muted
-              preload="metadata"
-              onLoadedMetadata={handlePreviewMetadataLoaded}
-              onSeeked={() => {
-                const pv = previewVideoRef.current;
-                const canvas = previewCanvasRef.current;
-                if (!pv || !canvas) return;
-                const ctx = canvas.getContext('2d');
-                const cw = canvas.width;
-                const ch = canvas.height;
-                // Draw preserving aspect ratio with letterboxing
-                const vidAspect = pv.videoWidth / pv.videoHeight;
-                const canvasAspect = cw / ch;
-                let drawW, drawH, offsetX, offsetY;
-                if (vidAspect > canvasAspect) {
-                  drawW = cw;
-                  drawH = cw / vidAspect;
-                  offsetX = 0;
-                  offsetY = (ch - drawH) / 2;
-                } else {
-                  drawH = ch;
-                  drawW = ch * vidAspect;
-                  offsetX = (cw - drawW) / 2;
-                  offsetY = 0;
-                }
-                ctx.clearRect(0, 0, cw, ch);
-                ctx.fillStyle = '#000';
-                ctx.fillRect(0, 0, cw, ch);
-                ctx.drawImage(pv, offsetX, offsetY, drawW, drawH);
-              }}
-            />
-          </div>
-
-          {/* Buttons Row */}
-          <div className="controls-row">
-            <div className="controls-group">
-              <button
-                className="control-btn"
-                title="Previous video"
-                onClick={handlePrevVideo}
-              >
-                <SkipBack size={20} fill="currentColor" />
-              </button>
-
-              <button className="control-btn" onClick={togglePlay}>
-                {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
-              </button>
-
-              <button
-                className="control-btn"
-                title="Next video"
-                onClick={handleNextVideo}
-              >
-                <SkipForward size={20} fill="currentColor" />
-              </button>
-
-              <div className="volume-container">
-                <button className="control-btn" onClick={toggleMute}>
-                  {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+              {/* Top Row: Down Arrow & Options */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                {/* Back/Collapse Arrow */}
+                <button 
+                  className="control-btn" 
+                  onClick={(e) => { e.stopPropagation(); onClose(); }}
+                  style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '6px' }}
+                >
+                  <ChevronDown size={24} />
                 </button>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  value={isMuted ? 0 : volume}
-                  className="volume-slider"
-                  onChange={handleVolumeChange}
+                
+                {/* Top-Right Controls */}
+                <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+                  <button
+                    className={`control-btn ${showCastMenu ? 'cast-active' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowCastMenu(!showCastMenu);
+                      setShowSettings(false);
+                    }}
+                    style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '4px' }}
+                  >
+                    <Cast size={20} />
+                  </button>
+                  {(subtitleTracks.length > 0 || cachedVideo?.vtt) && (
+                    <button
+                      className={`control-btn ${subsActive ? 'cc-active' : ''}`}
+                      onClick={(e) => { e.stopPropagation(); toggleSubtitles(); }}
+                      style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '4px' }}
+                    >
+                      <Subtitles size={20} />
+                    </button>
+                  )}
+                  <button
+                    className={`control-btn ${showSettings ? 'settings-active' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowSettings(!showSettings);
+                      setShowCastMenu(false);
+                    }}
+                    style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '4px' }}
+                  >
+                    <Settings size={20} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Center Controls: Skip Back, Play/Pause, Skip Forward */}
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '28px', width: '100%' }}>
+                {/* Skip Back / Prev */}
+                <button 
+                  className="mobile-player-circle-btn"
+                  onClick={(e) => { e.stopPropagation(); handlePrevVideo(); }}
                   style={{
-                    background: `linear-gradient(to right, var(--primary-color) 0%, var(--primary-color) ${(isMuted ? 0 : volume) * 100}%, #666 ${(isMuted ? 0 : volume) * 100}%, #666 100%)`
+                    width: '42px',
+                    height: '42px',
+                    borderRadius: '50%',
+                    background: 'rgba(0, 0, 0, 0.5)',
+                    border: 'none',
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <SkipBack size={18} fill="currentColor" />
+                </button>
+
+                {/* Big Center Play/Pause */}
+                <button 
+                  className="mobile-player-circle-btn-large"
+                  onClick={(e) => { e.stopPropagation(); togglePlay(); }}
+                  style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    background: 'rgba(0, 0, 0, 0.5)',
+                    border: 'none',
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {isPlaying ? <Pause size={28} fill="currentColor" /> : <Play size={28} fill="currentColor" />}
+                </button>
+
+                {/* Skip Forward / Next */}
+                <button 
+                  className="mobile-player-circle-btn"
+                  onClick={(e) => { e.stopPropagation(); handleNextVideo(); }}
+                  style={{
+                    width: '42px',
+                    height: '42px',
+                    borderRadius: '50%',
+                    background: 'rgba(0, 0, 0, 0.5)',
+                    border: 'none',
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <SkipForward size={18} fill="currentColor" />
+                </button>
+              </div>
+
+              {/* Bottom Row: Time display & Fullscreen */}
+              <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '4px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '0 4px' }}>
+                  {/* Elapsed / Duration Badge */}
+                  <div style={{ fontSize: '12px', color: '#fff', fontWeight: '500', background: 'rgba(0, 0, 0, 0.5)', padding: '4px 8px', borderRadius: '10px' }}>
+                    {formatTime(currentTime)} / {formatTime(duration)}
+                  </div>
+                  
+                  {/* Fullscreen Button */}
+                  <button 
+                    className="control-btn" 
+                    onClick={(e) => { e.stopPropagation(); toggleFullscreen(); }}
+                    style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '4px' }}
+                  >
+                    {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+                  </button>
+                </div>
+
+                {/* Horizontal Progress Seek Slider */}
+                <div 
+                  ref={progressContainerRef}
+                  className="progress-bar-hit-area"
+                  onMouseDown={handleProgressMouseDown}
+                  onTouchStart={(e) => {
+                    e.stopPropagation();
+                    const touch = e.touches[0];
+                    const container = progressContainerRef.current;
+                    if (!container) return;
+                    const rect = container.getBoundingClientRect();
+                    const clickX = touch.clientX - rect.left;
+                    const pct = Math.max(0, Math.min(1, clickX / rect.width));
+                    const targetTime = pct * duration;
+                    setCurrentTime(targetTime);
+                    if (videoRef.current) videoRef.current.currentTime = targetTime;
+                  }}
+                  style={{ height: '16px', display: 'flex', alignItems: 'center', width: '100%', cursor: 'pointer' }}
+                >
+                  <div className="progress-timeline-container" style={{ height: '3px', background: 'rgba(255,255,255,0.2)', width: '100%', position: 'relative', borderRadius: '2px' }}>
+                    <div
+                      className="progress-bar-played"
+                      style={{ width: `${(currentTime / (duration || 1)) * 100}%`, height: '100%', background: 'var(--primary-color)', borderRadius: '2px' }}
+                    />
+                    <div
+                      className="progress-bar-knob"
+                      style={{ 
+                        left: `${(currentTime / (duration || 1)) * 100}%`, 
+                        position: 'absolute', 
+                        top: '50%', 
+                        transform: 'translate(-50%, -50%)', 
+                        width: '12px', 
+                        height: '12px', 
+                        borderRadius: '50%', 
+                        background: 'var(--primary-color)',
+                        boxShadow: '0 0 4px rgba(0,0,0,0.5)'
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          ) : (
+            /* Standard Desktop Player Controls */
+            <>
+              {/* Progress Slider with Hover Preview & Dragging */}
+              <div
+                ref={progressContainerRef}
+                className="progress-bar-hit-area"
+                onMouseDown={handleProgressMouseDown}
+                onMouseMove={handleProgressMouseMove}
+                onMouseLeave={handleProgressMouseLeave}
+              >
+                <div className="progress-timeline-container">
+                  <div
+                    className="progress-bar-played"
+                    style={{ width: `${(currentTime / (duration || 1)) * 100}%` }}
+                  ></div>
+                  <div
+                    className="progress-bar-knob"
+                    style={{ left: `${(currentTime / (duration || 1)) * 100}%` }}
+                  ></div>
+                </div>
+
+                {/* Hover Preview Tooltip (real frame via canvas) */}
+                <div
+                  className="timeline-hover-preview"
+                  style={{
+                    left: `${hoverX}px`,
+                    display: (showHoverPreview && hoverTime !== null) ? 'flex' : 'none'
+                  }}
+                >
+                  <canvas
+                    ref={previewCanvasRef}
+                    width={160}
+                    height={90}
+                    className="hover-preview-thumb"
+                  />
+                  <div className="hover-preview-time">{formatTime(hoverTime || 0)}</div>
+                </div>
+
+                {/* Hidden video element for frame extraction */}
+                <video
+                  ref={previewVideoRef}
+                  src={showHoverPreview ? (cachedVideo?.mp4 || translateVideoUrl(video.link)) : ''}
+                  style={{ display: 'none' }}
+                  muted
+                  preload="metadata"
+                  onLoadedMetadata={handlePreviewMetadataLoaded}
+                  onSeeked={() => {
+                    const pv = previewVideoRef.current;
+                    const canvas = previewCanvasRef.current;
+                    if (!pv || !canvas) return;
+                    const ctx = canvas.getContext('2d');
+                    const cw = canvas.width;
+                    const ch = canvas.height;
+                    // Draw preserving aspect ratio with letterboxing
+                    const vidAspect = pv.videoWidth / pv.videoHeight;
+                    const canvasAspect = cw / ch;
+                    let drawW, drawH, offsetX, offsetY;
+                    if (vidAspect > canvasAspect) {
+                      drawW = cw;
+                      drawH = cw / vidAspect;
+                      offsetX = 0;
+                      offsetY = (ch - drawH) / 2;
+                    } else {
+                      drawH = ch;
+                      drawW = ch * vidAspect;
+                      offsetX = (cw - drawW) / 2;
+                      offsetY = 0;
+                    }
+                    ctx.clearRect(0, 0, cw, ch);
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(0, 0, cw, ch);
+                    ctx.drawImage(pv, offsetX, offsetY, drawW, drawH);
                   }}
                 />
               </div>
 
-              <div className="time-display">
-                {formatTime(currentTime)} / {formatTime(duration)}
-              </div>
-            </div>
+              {/* Buttons Row */}
+              <div className="controls-row">
+                <div className="controls-group">
+                  <button
+                    className="control-btn"
+                    title="Previous video"
+                    onClick={handlePrevVideo}
+                  >
+                    <SkipBack size={20} fill="currentColor" />
+                  </button>
 
-            <div className="controls-group">
-              {!isFullscreen && (
-                <button
-                  className={`control-btn theater-mode ${isTheaterMode ? 'active' : ''}`}
-                  onClick={() => {
-                    setIsTheaterMode(prev => {
-                      const newVal = !prev;
-                      localStorage.setItem('yt_theater_mode', newVal);
-                      if (newVal) {
-                        setIsSidebarCollapsed(true);
-                        localStorage.setItem('yt_sidebar_collapsed', 'true');
-                      }
-                      showFlashNotification(`Theater Mode: ${newVal ? 'ON' : 'OFF'}`);
-                      return newVal;
-                    });
-                  }}
-                  title="Theater Mode (t)"
-                >
-                  {isTheaterMode ? (
-                    <svg fill="none" height="22" viewBox="0 0 24 24" width="22"><path d="M21.20 3.01L21 3H3L2.79 3.01C2.30 3.06 1.84 3.29 1.51 3.65C1.18 4.02 .99 4.50 1 5V19L1.01 19.20C1.05 19.66 1.26 20.08 1.58 20.41C1.91 20.73 2.33 20.94 2.79 20.99L3 21H21L21.20 20.98C21.66 20.94 22.08 20.73 22.41 20.41C22.73 20.08 22.94 19.66 22.99 19.20L23 19V5C23.00 4.50 22.81 4.02 22.48 3.65C22.15 3.29 21.69 3.06 21.20 3.01ZM3 15V5H21V15H3ZM16.87 6.72H16.86L16.79 6.79L13.58 10L16.79 13.20C16.88 13.30 16.99 13.37 17.11 13.43C17.23 13.48 17.37 13.51 17.50 13.51C17.63 13.51 17.76 13.48 17.89 13.43C18.01 13.38 18.12 13.31 18.21 13.21C18.31 13.12 18.38 13.01 18.43 12.89C18.48 12.76 18.51 12.63 18.51 12.50C18.51 12.37 18.48 12.23 18.43 12.11C18.37 11.99 18.30 11.88 18.20 11.79L16.41 10L18.20 8.20L18.27 8.13C18.42 7.93 18.50 7.69 18.49 7.45C18.47 7.20 18.37 6.97 18.20 6.79C18.02 6.62 17.79 6.52 17.55 6.50C17.30 6.49 17.06 6.57 16.87 6.72ZM5.79 6.79C5.60 6.98 5.50 7.23 5.50 7.5C5.50 7.76 5.60 8.01 5.79 8.20L7.58 10L5.79 11.79L5.72 11.86C5.57 12.06 5.49 12.30 5.50 12.54C5.51 12.79 5.62 13.02 5.79 13.20C5.97 13.37 6.20 13.48 6.45 13.49C6.69 13.50 6.93 13.42 7.13 13.27L7.20 13.20L10.41 10L7.20 6.79C7.01 6.60 6.76 6.50 6.5 6.50C6.23 6.50 5.98 6.60 5.79 6.79ZM3 19V17H21V19H3Z" fill="currentColor" /></svg>
-                  ) : (
-                    <svg height="22" viewBox="0 0 24 24" width="22"><path d="M21.20 3.01L21 3H3L2.79 3.01C2.30 3.06 1.84 3.29 1.51 3.65C1.18 4.02 .99 4.50 1 5V19L1.01 19.20C1.05 19.66 1.26 20.08 1.58 20.41C1.91 20.73 2.33 20.94 2.79 20.99L3 21H21L21.20 20.98C21.66 20.94 22.08 20.73 22.41 20.41C22.73 20.08 22.94 19.66 22.99 19.20L23 19V5C23.00 4.50 22.81 4.02 22.48 3.65C22.15 3.29 21.69 3.06 21.20 3.01ZM3 15V5H21V15H3ZM7.87 6.72L7.79 6.79L4.58 10L7.79 13.20C7.88 13.30 7.99 13.37 8.11 13.43C8.23 13.48 8.37 13.51 8.50 13.51C8.63 13.51 8.76 13.48 8.89 13.43C9.01 13.38 9.12 13.31 9.21 13.21C9.31 13.12 9.38 13.01 9.43 12.89C9.48 12.76 9.51 12.63 9.51 12.50C9.51 12.37 9.48 12.23 9.43 12.11C9.37 11.99 9.30 11.88 9.20 11.79L7.41 10L9.20 8.20L9.27 8.13C9.42 7.93 9.50 7.69 9.48 7.45C9.47 7.20 9.36 6.97 9.19 6.80C9.02 6.63 8.79 6.52 8.54 6.51C8.30 6.49 8.06 6.57 7.87 6.72ZM14.79 6.79C14.60 6.98 14.50 7.23 14.50 7.5C14.50 7.76 14.60 8.01 14.79 8.20L16.58 10L14.79 11.79L14.72 11.86C14.57 12.06 14.49 12.30 14.50 12.54C14.51 12.79 14.62 13.02 14.79 13.20C14.97 13.37 15.20 13.48 15.45 13.49C15.69 13.50 15.93 13.42 16.13 13.27L16.20 13.20L19.41 10L16.20 6.79C16.01 6.60 15.76 6.50 15.5 6.50C15.23 6.50 14.98 6.60 14.79 6.79ZM3 19V17H21V19H3Z" fill="currentColor" /></svg>
+                  <button className="control-btn" onClick={togglePlay}>
+                    {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
+                  </button>
+
+                  <button
+                    className="control-btn"
+                    title="Next video"
+                    onClick={handleNextVideo}
+                  >
+                    <SkipForward size={20} fill="currentColor" />
+                  </button>
+
+                  <div className="volume-container">
+                    <button className="control-btn" onClick={toggleMute}>
+                      {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                    </button>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.05"
+                      value={isMuted ? 0 : volume}
+                      className="volume-slider"
+                      onChange={handleVolumeChange}
+                      style={{
+                        background: `linear-gradient(to right, var(--primary-color) 0%, var(--primary-color) ${(isMuted ? 0 : volume) * 100}%, #666 ${(isMuted ? 0 : volume) * 100}%, #666 100%)`
+                      }}
+                    />
+                  </div>
+
+                  <div className="time-display">
+                    {formatTime(currentTime)} / {formatTime(duration)}
+                  </div>
+                </div>
+
+                <div className="controls-group">
+                  {!isFullscreen && (
+                    <button
+                      className={`control-btn theater-mode ${isTheaterMode ? 'active' : ''}`}
+                      onClick={() => {
+                        setIsTheaterMode(prev => {
+                          const newVal = !prev;
+                          localStorage.setItem('yt_theater_mode', newVal);
+                          if (newVal) {
+                            setIsSidebarCollapsed(true);
+                            localStorage.setItem('yt_sidebar_collapsed', 'true');
+                          }
+                          showFlashNotification(`Theater Mode: ${newVal ? 'ON' : 'OFF'}`);
+                          return newVal;
+                        });
+                      }}
+                      title="Theater Mode (t)"
+                    >
+                      {isTheaterMode ? (
+                        <svg fill="none" height="22" viewBox="0 0 24 24" width="22"><path d="M21.20 3.01L21 3H3L2.79 3.01C2.30 3.06 1.84 3.29 1.51 3.65C1.18 4.02 .99 4.50 1 5V19L1.01 19.20C1.05 19.66 1.26 20.08 1.58 20.41C1.91 20.73 2.33 20.94 2.79 20.99L3 21H21L21.20 20.98C21.66 20.94 22.08 20.73 22.41 20.41C22.73 20.08 22.94 19.66 22.99 19.20L23 19V5C23.00 4.50 22.81 4.02 22.48 3.65C22.15 3.29 21.69 3.06 21.20 3.01ZM3 15V5H21V15H3ZM16.87 6.72H16.86L16.79 6.79L13.58 10L16.79 13.20C16.88 13.30 16.99 13.37 17.11 13.43C17.23 13.48 17.37 13.51 17.50 13.51C17.63 13.51 17.76 13.48 17.89 13.43C18.01 13.38 18.12 13.31 18.21 13.21C18.31 13.12 18.38 13.01 18.43 12.89C18.48 12.76 18.51 12.63 18.51 12.50C18.51 12.37 18.48 12.23 18.43 12.11C18.37 11.99 18.30 11.88 18.20 11.79L16.41 10L18.20 8.20L18.27 8.13C18.42 7.93 18.50 7.69 18.49 7.45C18.47 7.20 18.37 6.97 18.20 6.79C18.02 6.62 17.79 6.52 17.55 6.50C17.30 6.49 17.06 6.57 16.87 6.72ZM5.79 6.79C5.60 6.98 5.50 7.23 5.50 7.5C5.50 7.76 5.60 8.01 5.79 8.20L7.58 10L5.79 11.79L5.72 11.86C5.57 12.06 5.49 12.30 5.50 12.54C5.51 12.79 5.62 13.02 5.79 13.20C5.97 13.37 6.20 13.48 6.45 13.49C6.69 13.50 6.93 13.42 7.13 13.27L7.20 13.20L10.41 10L7.20 6.79C7.01 6.60 6.76 6.50 6.5 6.50C6.23 6.50 5.98 6.60 5.79 6.79ZM3 19V17H21V19H3Z" fill="currentColor" /></svg>
+                      ) : (
+                        <svg height="22" viewBox="0 0 24 24" width="22"><path d="M21.20 3.01L21 3H3L2.79 3.01C2.30 3.06 1.84 3.29 1.51 3.65C1.18 4.02 .99 4.50 1 5V19L1.01 19.20C1.05 19.66 1.26 20.08 1.58 20.41C1.91 20.73 2.33 20.94 2.79 20.99L3 21H21L21.20 20.98C21.66 20.94 22.08 20.73 22.41 20.41C22.73 20.08 22.94 19.66 22.99 19.20L23 19V5C23.00 4.50 22.81 4.02 22.48 3.65C22.15 3.29 21.69 3.06 21.20 3.01ZM3 15V5H21V15H3ZM7.87 6.72L7.79 6.79L4.58 10L7.79 13.20C7.88 13.30 7.99 13.37 8.11 13.43C8.23 13.48 8.37 13.51 8.50 13.51C8.63 13.51 8.76 13.48 8.89 13.43C9.01 13.38 9.12 13.31 9.21 13.21C9.31 13.12 9.38 13.01 9.43 12.89C9.48 12.76 9.51 12.63 9.51 12.50C9.51 12.37 9.48 12.23 9.43 12.11C9.37 11.99 9.30 11.88 9.20 11.79L7.41 10L9.20 8.20L9.27 8.13C9.42 7.93 9.50 7.69 9.48 7.45C9.47 7.20 9.36 6.97 9.19 6.80C9.02 6.63 8.79 6.52 8.54 6.51C8.30 6.49 8.06 6.57 7.87 6.72ZM14.79 6.79C14.60 6.98 14.50 7.23 14.50 7.5C14.50 7.76 14.60 8.01 14.79 8.20L16.58 10L14.79 11.79L14.72 11.86C14.57 12.06 14.49 12.30 14.50 12.54C14.51 12.79 14.62 13.02 14.79 13.20C14.97 13.37 15.20 13.48 15.45 13.49C15.69 13.50 15.93 13.42 16.13 13.27L16.20 13.20L19.41 10L16.20 6.79C16.01 6.60 15.76 6.50 15.5 6.50C15.23 6.50 14.98 6.60 14.79 6.79ZM3 19V17H21V19H3Z" fill="currentColor" /></svg>
+                      )}
+                    </button>
                   )}
-                </button>
-              )}
-              <button
-                className={`control-btn ${showCastMenu ? 'cast-active' : ''}`}
-                onClick={() => {
-                  setShowCastMenu(!showCastMenu);
-                  setShowSettings(false);
-                }}
-                title="Cast"
-              >
-                <Cast size={20} />
-              </button>
-              {cachedVideo && mkvStreams && (
-                <button
-                  className="control-btn"
-                  onClick={() => setShowMkvModal(true)}
-                  title="Change audio / subtitles"
-                >
-                  <ListMusic size={18} />
-                </button>
-              )}
-              {(subtitleTracks.length > 0 || cachedVideo?.vtt) && (
-                <button
-                  className={`control-btn ${subsActive ? 'cc-active' : ''}`}
-                  onClick={toggleSubtitles}
-                  title="Subtitles"
-                >
-                  <Subtitles size={20} />
-                </button>
-              )}
-              <button
-                className={`control-btn ${showSettings ? 'settings-active' : ''}`}
-                onClick={() => {
-                  setShowSettings(!showSettings);
-                  setShowCastMenu(false);
-                }}
-                title="Settings"
-              >
-                <Settings size={20} />
-              </button>
-              <button className="control-btn" onClick={toggleFullscreen} title="Fullscreen (f)">
-                {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
-              </button>
-            </div>
-          </div>
+                  <button
+                    className={`control-btn ${showCastMenu ? 'cast-active' : ''}`}
+                    onClick={() => {
+                      setShowCastMenu(!showCastMenu);
+                      setShowSettings(false);
+                    }}
+                    title="Cast"
+                  >
+                    <Cast size={20} />
+                  </button>
+                  {cachedVideo && mkvStreams && (
+                    <button
+                      className="control-btn"
+                      onClick={() => setShowMkvModal(true)}
+                      title="Change audio / subtitles"
+                    >
+                      <ListMusic size={18} />
+                    </button>
+                  )}
+                  {(subtitleTracks.length > 0 || cachedVideo?.vtt) && (
+                    <button
+                      className={`control-btn ${subsActive ? 'cc-active' : ''}`}
+                      onClick={toggleSubtitles}
+                      title="Subtitles"
+                    >
+                      <Subtitles size={20} />
+                    </button>
+                  )}
+                  <button
+                    className={`control-btn ${showSettings ? 'settings-active' : ''}`}
+                    onClick={() => {
+                      setShowSettings(!showSettings);
+                      setShowCastMenu(false);
+                    }}
+                    title="Settings"
+                  >
+                    <Settings size={20} />
+                  </button>
+                  <button className="control-btn" onClick={toggleFullscreen} title="Fullscreen (f)">
+                    {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Cast Device Selector Dropdown */}
