@@ -1360,6 +1360,7 @@ function ShortsPlayerView({ shortsList, initialIndex, onClose, onIndexChange, cu
   const volumeHideTimer = useRef(null);
   const flashTimer = useRef(null);
   const clickTimer = useRef(null);
+  const isResizing = useRef(false);
 
   // Scroll container to the target index smoothly
   const scrollToIndex = (idx) => {
@@ -1373,6 +1374,27 @@ function ShortsPlayerView({ shortsList, initialIndex, onClose, onIndexChange, cu
     const container = scrollContainerRef.current;
     if (!container) return;
     container.scrollTop = initialIndex * container.clientHeight;
+  }, []);
+
+  // Handle window resizing or fullscreen changes to lock the scroll position to the current video
+  useEffect(() => {
+    const handleResize = () => {
+      const container = scrollContainerRef.current;
+      if (!container) return;
+      isResizing.current = true;
+      // Instantly correct scroll position to match current index height
+      container.scrollTop = pendingIndex.current * container.clientHeight;
+      setTimeout(() => {
+        isResizing.current = false;
+      }, 250);
+    };
+
+    window.addEventListener('resize', handleResize);
+    document.addEventListener('fullscreenchange', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      document.removeEventListener('fullscreenchange', handleResize);
+    };
   }, []);
 
   // Sync video when index changes
@@ -1396,8 +1418,10 @@ function ShortsPlayerView({ shortsList, initialIndex, onClose, onIndexChange, cu
     if (!container) return;
     let scrollTimer = null;
     const onScroll = () => {
+      if (isResizing.current) return;
       clearTimeout(scrollTimer);
       scrollTimer = setTimeout(() => {
+        if (isResizing.current) return;
         const h = container.clientHeight;
         const newIdx = Math.round(container.scrollTop / h);
         if (newIdx !== pendingIndex.current && newIdx >= 0 && newIdx < shortsList.length) {
@@ -1599,7 +1623,7 @@ function ShortsPlayerView({ shortsList, initialIndex, onClose, onIndexChange, cu
 
                   {/* Controls (volume + fullscreen) — only active */}
                   {isActive && (
-                    <div className="shorts-video-controls" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <div className="shorts-video-controls" onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                       <div
                         className="shorts-volume-wrapper"
                         onMouseEnter={onVolumeEnter}
