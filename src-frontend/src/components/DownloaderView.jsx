@@ -316,6 +316,7 @@ export function DownloaderView({ currentUser }) {
           formats: avail,
           quality: itemQuality,
           status: 'ready',
+          saveName: data.title || '',
         } : item));
       }
     } catch (e) {
@@ -335,7 +336,6 @@ export function DownloaderView({ currentUser }) {
   };
 
   const downloadItem = async (item) => {
-    setQueueActive(true);
     setCurrentDownloadId(item.id);
     setDownloadProgress(0);
     setDownloadSpeed('');
@@ -385,7 +385,11 @@ export function DownloaderView({ currentUser }) {
       formData.append('source_url', item.cleanedUrl);
       formData.append('format', formatArg);
       formData.append('destination', destPath);
-      formData.append('filename', filenameTemplate);
+      let finalFilename = filenameTemplate;
+      if (item.saveName && item.saveName.trim()) {
+        finalFilename = `${item.saveName.trim()}.%(ext)s`;
+      }
+      formData.append('filename', finalFilename);
       formData.append('extra_args', extraArgs);
       formData.append('auto_index', isDownloadToDevice ? '0' : (autoIndex ? '1' : '0'));
 
@@ -453,22 +457,21 @@ export function DownloaderView({ currentUser }) {
     }
 
     setCurrentDownloadId(null);
-    const remaining = fetchedItems.filter(f => f.status === 'ready').length;
-    if (remaining === 0) {
-      setQueueActive(false);
-      setDownloadStatus('');
-    }
   };
 
   const handleDownloadAll = async () => {
     const ready = [...fetchedItems.filter(f => f.status === 'ready')];
     if (ready.length === 0) return;
-    for (const item of ready) {
-      await downloadItem(item);
+    setQueueActive(true);
+    try {
+      for (const item of ready) {
+        await downloadItem(item);
+      }
+    } finally {
+      setQueueActive(false);
+      setCurrentDownloadId(null);
+      setDownloadStatus('');
     }
-    setQueueActive(false);
-    setCurrentDownloadId(null);
-    setDownloadStatus('');
   };
 
   const handleDownloadSingle = (item) => {
@@ -623,6 +626,19 @@ export function DownloaderView({ currentUser }) {
                     {item.status === 'ready' ? 'Ready' : item.status === 'done' ? 'Done' : item.status === 'failed' ? 'Failed' : item.status === 'downloading' ? `${item.progress.toFixed(1)}%` : 'Fetching...'}
                   </span>
                 </div>
+                {item.status === 'ready' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '4px 0' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>Save name:</span>
+                    <input
+                      type="text"
+                      className="input-sm"
+                      style={{ flex: 1, fontSize: '12px', padding: '2px 6px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '4px', color: '#fff' }}
+                      value={item.saveName || ''}
+                      onChange={(e) => updateItem(item.id, { saveName: e.target.value })}
+                      placeholder="Custom filename (without extension)..."
+                    />
+                  </div>
+                )}
                 <div className="video-meta" style={{ fontSize: '12px', marginBottom: 0 }}>
                   <span><User size={12} /> {item.uploader}</span>
                   {item.durationString && <span><Clock size={12} /> {item.durationString}</span>}

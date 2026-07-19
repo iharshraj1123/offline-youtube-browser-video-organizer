@@ -104,6 +104,77 @@ class Database {
         try {
             $pdo->exec("ALTER TABLE `replies` ADD `attachment_type` varchar(20) DEFAULT NULL");
         } catch (Exception $e) {}
+        try {
+            $pdo->exec("ALTER TABLE `video_metadatas` ADD COLUMN `vid_name_normalized` TEXT NULL AFTER `vid_name`");
+        } catch (Exception $e) {}
+        try {
+            $stmt = $pdo->query("SELECT vid_id, vid_name FROM video_metadatas WHERE vid_name_normalized IS NULL OR vid_name_normalized = ''");
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            if (!empty($rows)) {
+                $updateStmt = $pdo->prepare("UPDATE video_metadatas SET vid_name_normalized = :normalized WHERE vid_id = :id");
+                foreach ($rows as $row) {
+                    $norm = normalizeSearchText($row['vid_name']);
+                    $updateStmt->execute([':normalized' => $norm, ':id' => $row['vid_id']]);
+                }
+            }
+        } catch (Exception $e) {}
         $updated = true;
     }
+}
+
+function getJapaneseKanjiReadings($text) {
+    static $kanjiMap = null;
+    if ($kanjiMap === null) {
+        $dictPath = __DIR__ . '/utils/kanji_romaji.json';
+        if (file_exists($dictPath)) {
+            $jsonData = file_get_contents($dictPath);
+            $kanjiMap = json_decode($jsonData, true) ?: [];
+        } else {
+            $kanjiMap = [];
+        }
+    }
+    
+    if (empty($kanjiMap)) return '';
+
+    $readings = [];
+    $len = mb_strlen($text);
+    for ($i = 0; $i < $len; $i++) {
+        $char = mb_substr($text, $i, 1);
+        if (isset($kanjiMap[$char])) {
+            $readings[] = $kanjiMap[$char];
+        }
+    }
+    return implode(' ', $readings);
+}
+
+function normalizeSearchText($text) {
+    if ($text === null) return '';
+    $originalLower = mb_strtolower($text);
+    
+    // First, strip single quotes/apostrophes completely to join letters (e.g. let's -> lets)
+    $originalLower = str_replace(["'", "’", "`"], "", $originalLower);
+    
+    // Replace all other punctuation and symbols with spaces
+    $originalClean = preg_replace('/[\p{P}\p{S}]/u', ' ', $originalLower);
+    $originalClean = preg_replace('/\s+/', ' ', $originalClean);
+    
+    $transliterated = '';
+    if (class_exists('Transliterator')) {
+        $translit = Transliterator::create("Any-Latin; Latin-ASCII; Lower()")->transliterate($text);
+        if ($translit !== false) {
+            $translit = str_replace(["'", "’", "`"], "", $translit);
+            // Replace punctuation and symbols with spaces in transliteration too
+            $translitClean = preg_replace('/[\p{P}\p{S}]/u', ' ', $translit);
+            // Additionally strip any remaining non-ASCII characters
+            $translitClean = preg_replace('/[^a-z0-9\s]/', '', $translitClean);
+            $transliterated = preg_replace('/\s+/', ' ', $translitClean);
+        }
+    }
+    
+    // Append Japanese Kanji Romaji readings
+    $jpKanjiReadings = getJapaneseKanjiReadings($text);
+    
+    $combined = trim($originalClean . ' ' . $transliterated . ' ' . $jpKanjiReadings);
+    $words = array_unique(explode(' ', $combined));
+    return trim(implode(' ', $words));
 }

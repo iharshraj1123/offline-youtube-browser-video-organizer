@@ -334,17 +334,24 @@ function handleSearchSuggestions($pdo) {
         exit;
     }
     
-    $keywords = preg_split('/\s+/', trim($search));
+    $normalizedSearch = normalizeSearchText($search);
+    $keywords = preg_split('/\s+/', trim($normalizedSearch));
     $keywordConditions = [];
+    $scoreTerms = [];
     $params = [];
     $i = 0;
     foreach ($keywords as $keyword) {
         if (trim($keyword) !== '') {
             $paramKey1 = ':search_kw_name_' . $i;
             $paramKey2 = ':search_kw_tag_' . $i;
-            $keywordConditions[] = "(vid_name LIKE $paramKey1 OR tags LIKE $paramKey2)";
+            $keywordConditions[] = "(vid_name_normalized LIKE $paramKey1 OR tags LIKE $paramKey2)";
             $params[$paramKey1] = '%' . $keyword . '%';
             $params[$paramKey2] = '%' . $keyword . '%';
+            
+            $paramScoreKey = ':score_kw_' . $i;
+            $scoreTerms[] = "(CASE WHEN vid_name_normalized LIKE $paramScoreKey THEN 1 ELSE 0 END)";
+            $params[$paramScoreKey] = '%' . $keyword . '%';
+            
             $i++;
         }
     }
@@ -356,18 +363,27 @@ function handleSearchSuggestions($pdo) {
     
     $whereSQL = implode(' AND ', $keywordConditions);
     
+    $relevanceScoreExpr = "0";
+    if (!empty($scoreTerms)) {
+        $relevanceScoreExpr = implode(' + ', $scoreTerms);
+    }
+    
     // Sort matching suggestions: prioritized prefix match of the whole query first, then general match
     $stmt = $pdo->prepare("
         SELECT vid_id, vid_name 
         FROM video_metadatas 
         WHERE ($whereSQL)
         ORDER BY 
-          CASE WHEN vid_name LIKE :prefix THEN 0 ELSE 1 END,
+          CASE WHEN vid_name_normalized LIKE :prefix THEN 0 
+               WHEN vid_name_normalized LIKE :contains THEN 1
+               ELSE 2 END,
+          ($relevanceScoreExpr) DESC,
           upload_date DESC 
         LIMIT 50
     ");
     
-    $params[':prefix'] = $search . '%';
+    $params[':prefix'] = $normalizedSearch . '%';
+    $params[':contains'] = '%' . $normalizedSearch . '%';
     
     $stmt->execute($params);
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -386,25 +402,46 @@ function handleGetVideos($pdo) {
     $params = [];
 
     // Search query filter: split into individual keywords for space-insensitive/order-insensitive matching
+    $relevanceOrder = "";
     if (!empty($search)) {
-        $keywords = preg_split('/\s+/', trim($search));
+        $normalizedSearch = normalizeSearchText($search);
+        $keywords = preg_split('/\s+/', trim($normalizedSearch));
         $keywordConditions = [];
+        $scoreTerms = [];
         $i = 0;
         foreach ($keywords as $keyword) {
             if (trim($keyword) !== '') {
                 $paramKey1 = ':search_kw_name_' . $i;
                 $paramKey2 = ':search_kw_tag_' . $i;
                 $paramKey3 = ':search_kw_desc_' . $i;
-                $keywordConditions[] = "(vid_name LIKE $paramKey1 OR tags LIKE $paramKey2 OR description LIKE $paramKey3)";
+                $keywordConditions[] = "(vid_name_normalized LIKE $paramKey1 OR tags LIKE $paramKey2 OR description LIKE $paramKey3)";
                 $params[$paramKey1] = '%' . $keyword . '%';
                 $params[$paramKey2] = '%' . $keyword . '%';
                 $params[$paramKey3] = '%' . $keyword . '%';
+                
+                $paramScoreKey = ':score_kw_' . $i;
+                $scoreTerms[] = "(CASE WHEN vid_name_normalized LIKE $paramScoreKey THEN 1 ELSE 0 END)";
+                $params[$paramScoreKey] = '%' . $keyword . '%';
+                
                 $i++;
             }
         }
         if (!empty($keywordConditions)) {
             $whereClauses[] = '(' . implode(' AND ', $keywordConditions) . ')';
         }
+
+        $relevanceScoreExpr = "0";
+        if (!empty($scoreTerms)) {
+            $relevanceScoreExpr = implode(' + ', $scoreTerms);
+        }
+
+        $relevanceOrder = "CASE WHEN vid_name_normalized = :exact_query THEN 0 ELSE 1 END,
+            CASE WHEN vid_name_normalized LIKE :prefix_query THEN 0 ELSE 1 END,
+            CASE WHEN vid_name_normalized LIKE :contains_query THEN 0 ELSE 1 END,
+            ($relevanceScoreExpr) DESC, ";
+        $params[':exact_query'] = $normalizedSearch;
+        $params[':prefix_query'] = $normalizedSearch . '%';
+        $params[':contains_query'] = '%' . $normalizedSearch . '%';
     }
 
     // Category filter
@@ -441,6 +478,8 @@ function handleGetVideos($pdo) {
         $orderBy = "RAND()";
     }
 
+    $orderBy = $relevanceOrder . $orderBy;
+
     $sql = "SELECT * FROM video_metadatas WHERE $whereSQL ORDER BY $orderBy";
 
     $stmt = $pdo->prepare($sql);
@@ -448,6 +487,7 @@ function handleGetVideos($pdo) {
     $videos = $stmt->fetchAll();
 
     echo json_encode($videos);
+    exit;
 }
 
 function handleGetVideo($pdo) {
@@ -631,13 +671,14 @@ function processSingleVideo($pdo, $file, $uploaderInfo, $ffmpegPath, $videoExten
 
     $insertStmt = $pdo->prepare("
         INSERT INTO video_metadatas 
-        (vid_name, link, uploader_id, uploader_name, uploader_img, likes, dislikes, duration, views, upload_date, upload_time, tags, subtitles, description, comments, filesize, width, height, aspect_ratio, bitrate, framerate, codec)
+        (vid_name, vid_name_normalized, link, uploader_id, uploader_name, uploader_img, likes, dislikes, duration, views, upload_date, upload_time, tags, subtitles, description, comments, filesize, width, height, aspect_ratio, bitrate, framerate, codec)
         VALUES 
-        (:vid_name, :link, :uploader_id, :uploader_name, :uploader_img, 0, 0, :duration, 0, :upload_date, :upload_time, :tags, 'null', :description, 0, :filesize, :width, :height, :aspect_ratio, :bitrate, :framerate, :codec)
+        (:vid_name, :vid_name_normalized, :link, :uploader_id, :uploader_name, :uploader_img, 0, 0, :duration, 0, :upload_date, :upload_time, :tags, 'null', :description, 0, :filesize, :width, :height, :aspect_ratio, :bitrate, :framerate, :codec)
     ");
 
     $insertStmt->execute([
         ':vid_name' => $filename,
+        ':vid_name_normalized' => normalizeSearchText($filename),
         ':link' => $link,
         ':uploader_id' => $uploaderInfo['id'],
         ':uploader_name' => $uploaderInfo['name'],
@@ -645,7 +686,7 @@ function processSingleVideo($pdo, $file, $uploaderInfo, $ffmpegPath, $videoExten
         ':duration' => $meta['duration'],
         ':upload_date' => $upload_date,
         ':upload_time' => $upload_time,
-        ':tags' => (!empty($meta['width']) && !empty($meta['height']) && (int)$meta['height'] >= (int)$meta['width']) ? 'shorts' : '',
+        ':tags' => (!empty($meta['width']) && !empty($meta['height']) && (int)$meta['height'] >= (int)$meta['width'] && !in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), ['mp3', 'm4a', 'wav', 'flac', 'ogg', 'aac', 'wma', 'opus', 'mka'])) ? 'shorts' : '',
         ':description' => $description,
         ':filesize' => $meta['filesize'],
         ':width' => $meta['width'],
@@ -815,11 +856,12 @@ function handleUpdateMetadata($pdo) {
 
     $stmt = $pdo->prepare("
         UPDATE video_metadatas 
-        SET vid_name = :title, description = :description, tags = :tags 
+        SET vid_name = :title, vid_name_normalized = :normalized, description = :description, tags = :tags 
         WHERE vid_id = :id
     ");
     $stmt->execute([
         ':title' => $title,
+        ':normalized' => normalizeSearchText($title),
         ':description' => $description,
         ':tags' => $tags,
         ':id' => $id
@@ -3526,6 +3568,7 @@ function handleYtdlpInfo() {
 }
 
 function handleYtdlpDownload($pdo = null) {
+    $downloadStartTime = time();
     $url = $_POST['url'] ?? '';
     $sourceUrl = $_POST['source_url'] ?? $url;
     $cleanUrl = cleanSourceUrl($sourceUrl);
@@ -3608,7 +3651,11 @@ function handleYtdlpDownload($pdo = null) {
         foreach (glob($outputDir . DIRECTORY_SEPARATOR . '*') ?: [] as $cand) {
             if (basename($cand) === basename($infoFile)) continue;
             $t = @filemtime($cand);
-            if ($t !== false && $t > $newestTime) { $newestTime = $t; $newest = $cand; }
+            // Only consider files created/modified during this download session (allow 10s buffer)
+            if ($t !== false && $t >= ($downloadStartTime - 10) && $t > $newestTime) {
+                $newestTime = $t;
+                $newest = $cand;
+            }
         }
         if ($newest) $destinationFile = $newest;
     }

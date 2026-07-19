@@ -8,6 +8,7 @@ USE `youtube-v2`;
 CREATE TABLE IF NOT EXISTS `video_metadatas` (
     `vid_id` int(11) NOT NULL AUTO_INCREMENT,
     `vid_name` text NOT NULL,
+    `vid_name_normalized` text DEFAULT NULL,
     `link` text NOT NULL,
     `uploader_id` int(11) NOT NULL,
     `uploader_name` text NOT NULL,
@@ -137,5 +138,5 @@ CREATE TABLE IF NOT EXISTS `chats` (
 CREATE TABLE IF NOT EXISTS `crawler_presets` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `preset_name` VARCHAR(100) NOT NULL,
-    `target_url` TEXT NOT NULL,
+    `target_url` TEXT NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

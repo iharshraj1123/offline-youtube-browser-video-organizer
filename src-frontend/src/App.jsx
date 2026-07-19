@@ -32,6 +32,12 @@ function isPhone() {
 // Helper to detect portrait videos (Shorts)
 function isShort(vid) {
   if (!vid) return false;
+
+  // Exclude audio formats from being identified as shorts
+  const nameOrLink = (vid.vid_name || vid.link || '').toLowerCase();
+  const isAudio = /\.(mp3|m4a|wav|flac|ogg|aac|wma|opus|mka)$/i.test(nameOrLink);
+  if (isAudio) return false;
+
   if (vid.tags) {
     const tagList = vid.tags.split(',').map(t => t.trim().toLowerCase());
     if (tagList.includes('shorts')) return true;
@@ -117,6 +123,7 @@ export default function App() {
   // App views: 'home' | 'player' | 'crawler'
   const [currentView, setCurrentView] = useState('home');
   const [videos, setVideos] = useState([]);
+  const [watchNextVideos, setWatchNextVideos] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // States
@@ -192,6 +199,13 @@ export default function App() {
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
   const suggestionsContainerRef = useRef(null);
 
+  // Refs to avoid stale closures in listeners
+  const filtersRef = useRef({ searchQuery: '', activeCategory: 'all', currentSort: 'mix' });
+  filtersRef.current = { searchQuery, activeCategory, currentSort };
+
+  const fetchVideosRef = useRef(null);
+  const fetchVideoAndPlayRef = useRef(null);
+
   // User details from cookies
   const [user, setUser] = useState(() => {
     const name = getCookie('loggedusername') || null;
@@ -246,6 +260,7 @@ export default function App() {
         setCurrentView('home');
         setPlayingVideo(null);
         fetchVideos();
+        fetchWatchNextVideos();
       }
     } catch (e) {
       console.error('Error fetching video details:', e);
@@ -256,6 +271,7 @@ export default function App() {
       setLoading(false);
     }
   };
+  fetchVideoAndPlayRef.current = fetchVideoAndPlay;
 
   useEffect(() => {
     // Read session cookies if available
@@ -266,6 +282,7 @@ export default function App() {
     setUser({ name, pic, privilege, num });
 
     fetchVideos();
+    fetchWatchNextVideos();
     fetchPlaylists();
 
     // Check URL parameters on mount
@@ -322,7 +339,7 @@ export default function App() {
       const lst = p.get('list');
 
       if (vId) {
-        fetchVideoAndPlay(vId);
+        if (fetchVideoAndPlayRef.current) fetchVideoAndPlayRef.current(vId);
         if (lst) {
           const playlist = playlistsRef.current.find(pl => String(pl.id) === String(lst));
           if (playlist) {
@@ -345,24 +362,20 @@ export default function App() {
         if (playlist) {
           setPlaylistView(playlist);
           setCurrentView('playlist');
-          setPlayingVideo(null);
         }
       } else if (pg === 'crawler') {
         setCurrentView('crawler');
-        setPlayingVideo(null);
       } else if (pg === 'profile' && usr) {
         setProfileUsername(usr);
         setCurrentView('profile');
-        setPlayingVideo(null);
       } else if (pg === 'downloader') {
         setCurrentView('downloader');
-        setPlayingVideo(null);
       } else if (pg === 'converter') {
         setCurrentView('converter');
-        setPlayingVideo(null);
       } else {
         setCurrentView('home');
-        fetchVideos();
+        const { searchQuery: q, activeCategory: cat, currentSort: srt } = filtersRef.current;
+        if (fetchVideosRef.current) fetchVideosRef.current(q, cat, srt);
       }
     };
 
@@ -511,7 +524,7 @@ export default function App() {
 
 
   // Fetch Videos
-  const fetchVideos = async (q = '', category = 'all', sort = 'mix') => {
+  const fetchVideos = async (q = searchQuery, category = activeCategory, sort = currentSort) => {
     setLoading(true);
     try {
       const queryParams = new URLSearchParams({
@@ -529,12 +542,55 @@ export default function App() {
       setLoading(false);
     }
   };
+  fetchVideosRef.current = fetchVideos;
+
+  // Fetch Watch Next sidebar videos — separate from home feed
+  // Default: sorted by recent. On search: search results sorted by upload_date DESC.
+  const fetchWatchNextVideos = async (q = '', sort = 'recent') => {
+    try {
+      const queryParams = new URLSearchParams({
+        action: 'videos',
+        q,
+        category: 'all',
+        sort
+      });
+      const res = await fetch(`./api/index.php?${queryParams.toString()}`);
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        setWatchNextVideos(data);
+      }
+    } catch (e) {
+      console.error('Error fetching watch-next videos:', e);
+    }
+  };
 
   // Trigger search
-  const handleSearchSubmit = (e) => {
+  const handleSearchSubmit = async (e) => {
     e.preventDefault();
-    fetchVideos(searchQuery, activeCategory, currentSort);
     setMobileSearchActive(false);
+    fetchVideos(searchQuery, activeCategory, currentSort);
+
+    const q = searchQuery.trim();
+    if (!q) return;
+
+    // Build a temporary in-memory playlist from search results sorted by upload date
+    try {
+      const queryParams = new URLSearchParams({ action: 'videos', q, category: 'all', sort: 'recent' });
+      const res = await fetch(`./api/index.php?${queryParams.toString()}`);
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        const tempPlaylist = {
+          id: '__search__',
+          playlist_name: `🔍 "${q}"`,
+          video_ids: data.map(v => v.vid_id),
+          _isTemp: true
+        };
+        setActivePlaylist(tempPlaylist);
+        setCurrentPlaylistIndex(0);
+      }
+    } catch (e) {
+      console.error('Error building search playlist:', e);
+    }
   };
 
   const handlePillSelect = (category, sort) => {
@@ -707,8 +763,10 @@ export default function App() {
 
     // Update browser history URL if NOT keeping in miniplayer
     if (!shouldKeepMini) {
-      const url = playlistId
-        ? `?v=${video.vid_id}&list=${playlistId}`
+      // Never put temp search playlist into the URL
+      const realPlaylistId = playlistId && playlistId !== '__search__' ? playlistId : null;
+      const url = realPlaylistId
+        ? `?v=${video.vid_id}&list=${realPlaylistId}`
         : `?v=${video.vid_id}`;
       window.history.pushState(null, '', url);
     }
@@ -840,6 +898,11 @@ export default function App() {
                   onClick={() => {
                     setSearchQuery('');
                     fetchVideos('', activeCategory, currentSort);
+                    // Reset Watch Next to recent when search is cleared
+                    fetchWatchNextVideos('', 'recent');
+                    // Dismiss temporary search playlist if active
+                    setActivePlaylist(prev => prev?._isTemp ? null : prev);
+                    setCurrentPlaylistIndex(-1);
                   }}
                 >
                   &times;
@@ -1121,7 +1184,7 @@ export default function App() {
             <PlayerView
               video={playingVideo}
               onVideoDeleted={handleGoHome}
-              allVideos={videos}
+              allVideos={watchNextVideos.length > 0 ? watchNextVideos : videos}
               onPlayVideo={(video, pl, index, keepMiniPlayer, skipHistory) => {
                 let targetPlaylistId = null;
                 if (pl !== undefined) {
@@ -1129,8 +1192,10 @@ export default function App() {
                   if (index !== undefined) setCurrentPlaylistIndex(index);
                   targetPlaylistId = pl.id;
                 } else if (skipHistory && activePlaylist) {
+                  // Preserve active playlist (including temp search playlists) during prev/next nav
                   targetPlaylistId = activePlaylist.id;
                 } else {
+                  // Clicking Watch Next outside the queue: keep temp playlist visible but deindex
                   setCurrentPlaylistIndex(-1);
                   targetPlaylistId = null;
                 }
@@ -1167,6 +1232,39 @@ export default function App() {
               showFlashNotification={showFlashNotification}
               showNotification={showNotification}
               notifKey={notifKey}
+              onSaveTempPlaylist={async (name) => {
+                // Save the temp search playlist as a real playlist
+                if (!activePlaylist?._isTemp) return;
+                try {
+                  const res = await fetch('./api/index.php?action=create_playlist', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                  });
+                  const data = await res.json();
+                  if (data.status === 'success' && data.id) {
+                    const videoIds = activePlaylist.video_ids || [];
+                    await fetch('./api/index.php?action=update_playlist_videos', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ playlist_id: data.id, video_ids: videoIds })
+                    });
+                    await fetchPlaylists();
+                    const saved = playlists.find(p => p.id === data.id) || { ...activePlaylist, id: data.id, playlist_name: name, _isTemp: false };
+                    setActivePlaylist({ ...activePlaylist, id: data.id, playlist_name: name, _isTemp: false });
+                    showFlashNotification(`Saved as "${name}"`);
+                  } else {
+                    showFlashNotification('Error saving playlist');
+                  }
+                } catch (e) {
+                  console.error('Error saving temp playlist:', e);
+                  showFlashNotification('Error saving playlist');
+                }
+              }}
+              onUpdateTempPlaylist={(newVideoIds) => {
+                if (!activePlaylist?._isTemp) return;
+                setActivePlaylist(prev => ({ ...prev, video_ids: newVideoIds }));
+              }}
             />
           )}
 
@@ -2432,7 +2530,8 @@ function PlayerView({
   playlists, activePlaylist, setActivePlaylist, currentPlaylistIndex, setCurrentPlaylistIndex,
   addVideoToPlaylist, removeVideoFromPlaylist, createPlaylist, updatePlaylistOrder,
   isSidebarCollapsed, setIsSidebarCollapsed, currentUser, onOpenAuth, onNavigateToProfile, showFlashNotification,
-  showNotification, notifKey, playHistoryRef, historyIndexRef
+  showNotification, notifKey, playHistoryRef, historyIndexRef,
+  onSaveTempPlaylist, onUpdateTempPlaylist
 }) {
   const [likes, setLikes] = useState(parseInt(video.likes) || 0);
   const [dislikes, setDislikes] = useState(parseInt(video.dislikes) || 0);
@@ -2455,6 +2554,10 @@ function PlayerView({
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [viewportStyle, setViewportStyle] = useState({});
   const [isQueueCollapsed, setIsQueueCollapsed] = useState(false);
+  const [showSaveInput, setShowSaveInput] = useState(false);
+  const [savePlaylistName, setSavePlaylistName] = useState('');
+  const [showAddPicker, setShowAddPicker] = useState(false);
+  const [addPickerQuery, setAddPickerQuery] = useState('');
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -5598,13 +5701,21 @@ function PlayerView({
 
         {/* Cast Device Selector Dropdown */}
         {showCastMenu && (
-          <div className="player-cast-dropdown" ref={(el) => {
-            castDropdownRef.current = el;
-            if (el && castMode === 'legacy' && prevCastModeRef.current !== 'legacy') {
-              setTimeout(() => { el.scrollTop = el.scrollHeight; }, 50);
-            }
-            prevCastModeRef.current = castMode;
-          }} onClick={(e) => e.stopPropagation()}>
+          <>
+            {isMobile && (
+              <div 
+                className="mobile-menu-backdrop" 
+                onClick={() => setShowCastMenu(false)} 
+                style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(0,0,0,0.5)' }} 
+              />
+            )}
+            <div className="player-cast-dropdown" ref={(el) => {
+              castDropdownRef.current = el;
+              if (el && castMode === 'legacy' && prevCastModeRef.current !== 'legacy') {
+                setTimeout(() => { el.scrollTop = el.scrollHeight; }, 50);
+              }
+              prevCastModeRef.current = castMode;
+            }} onClick={(e) => e.stopPropagation()}>
             {!castMode ? (
               <div className="cast-menu-list">
                 <div className="cast-menu-header">Cast to Device</div>
@@ -5702,11 +5813,20 @@ function PlayerView({
               </div>
             ) : null}
           </div>
+          </>
         )}
 
         {/* YouTube Style Settings Dropdown */}
         {showSettings && (
-          <div className="player-settings-dropdown" ref={settingsDropdownRef} onClick={(e) => e.stopPropagation()}>
+          <>
+            {isMobile && (
+              <div 
+                className="mobile-menu-backdrop" 
+                onClick={() => setShowSettings(false)} 
+                style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(0,0,0,0.5)' }} 
+              />
+            )}
+            <div className="player-settings-dropdown" ref={settingsDropdownRef} onClick={(e) => e.stopPropagation()}>
             {settingsSubmenu === 'main' ? (
               <div className="settings-menu-list">
                 <div className="settings-menu-item" onClick={() => { setShowSubSettings(!showSubSettings); setShowSettings(false); }}>
@@ -5796,6 +5916,7 @@ function PlayerView({
               </div>
             )}
           </div>
+          </>
         )}
 
         {showNotification && (
@@ -6263,7 +6384,7 @@ function PlayerView({
                     {/* Stats Row */}
                     <div style={{ display: 'flex', gap: '8px', padding: '0 16px 16px 16px' }}>
                       <div style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: '12px', padding: '10px', textAlign: 'center' }}>
-                        <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#fff' }}>{video.likes || '0'}</div>
+                        <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#fff' }}>{likes}</div>
                         <div style={{ fontSize: '11px', color: '#aaa', marginTop: '2px' }}>Likes</div>
                       </div>
                       <div style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: '12px', padding: '10px', textAlign: 'center' }}>
@@ -6396,37 +6517,37 @@ function PlayerView({
                 marginBottom: '20px',
                 boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
               }}>
-                {/* Playlist Queue Header */}
+                 {/* Playlist Queue Header */}
                 <div style={{
-                  padding: '16px',
+                  padding: '12px 16px',
                   background: 'rgba(255, 255, 255, 0.02)',
                   borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
                 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                  {/* Row 1: name + action buttons */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', minWidth: 0 }}>
                     <h3 
                       onClick={isMobile ? () => setIsQueueCollapsed(!isQueueCollapsed) : undefined}
                       style={{ 
-                        fontSize: '15px', 
+                        fontSize: '14px', 
                         fontWeight: 'bold', 
                         color: '#fff', 
                         margin: 0, 
                         display: 'flex', 
                         alignItems: 'center', 
-                        gap: '8px', 
+                        gap: '6px', 
                         minWidth: 0, 
                         flex: 1,
                         cursor: isMobile ? 'pointer' : 'default',
                         userSelect: 'none'
                       }}
                     >
-                      <ListMusic size={18} style={{ color: 'var(--primary-color)', flexShrink: 0 }} />
+                      <ListMusic size={16} style={{ color: 'var(--primary-color)', flexShrink: 0 }} />
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activePlaylist.playlist_name}</span>
                       {isMobile && (
                         <ChevronDown 
-                          size={16} 
+                          size={14} 
                           style={{ 
                             color: '#aaa', 
-                            marginLeft: '4px', 
                             flexShrink: 0, 
                             transform: isQueueCollapsed ? 'rotate(0deg)' : 'rotate(180deg)',
                             transition: 'transform 0.2s'
@@ -6434,26 +6555,110 @@ function PlayerView({
                         />
                       )}
                     </h3>
-                    <button
-                      onClick={() => setActivePlaylist(null)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#aaa',
-                        cursor: 'pointer',
-                        fontSize: '12px',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        backgroundColor: 'rgba(255,255,255,0.05)',
-                        flexShrink: 0
-                      }}
-                      title="Close playlist queue"
-                    >
-                      Clear Queue
-                    </button>
+
+                    {/* Action buttons row */}
+                    <div style={{ display: 'flex', gap: '4px', flexShrink: 0, alignItems: 'center' }}>
+                      {activePlaylist._isTemp && (
+                        <>
+                          {/* + button */}
+                          <button
+                            onClick={() => { setShowAddPicker(!showAddPicker); setShowSaveInput(false); setAddPickerQuery(''); }}
+                            title="Add video"
+                            style={{ background: showAddPicker ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.06)', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '16px', lineHeight: 1, padding: '2px 7px', borderRadius: '4px', fontWeight: 'bold' }}
+                          >+</button>
+                          {/* Save button */}
+                          <button
+                            onClick={() => { setShowSaveInput(!showSaveInput); setShowAddPicker(false); if (!showSaveInput) setSavePlaylistName(activePlaylist.playlist_name.replace(/^🔍\s*"?|"?$/g, '').trim()); }}
+                            title="Save as playlist"
+                            style={{ background: showSaveInput ? 'var(--primary-color)' : 'rgba(255,255,255,0.06)', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '11px', padding: '2px 7px', borderRadius: '4px', fontWeight: 'bold' }}
+                          >Save</button>
+                        </>
+                      )}
+                      {/* Clear button */}
+                      <button
+                        onClick={() => setActivePlaylist(null)}
+                        style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: '11px', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.05)', flexShrink: 0 }}
+                        title="Close playlist queue"
+                      >
+                        Clear
+                      </button>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+
+                  {/* Save input row */}
+                  {activePlaylist._isTemp && showSaveInput && (
+                    <div style={{ display: 'flex', gap: '6px', marginTop: '8px', alignItems: 'center' }}>
+                      <input
+                        autoFocus
+                        type="text"
+                        value={savePlaylistName}
+                        onChange={e => setSavePlaylistName(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' && savePlaylistName.trim()) {
+                            onSaveTempPlaylist(savePlaylistName.trim());
+                            setShowSaveInput(false);
+                          } else if (e.key === 'Escape') {
+                            setShowSaveInput(false);
+                          }
+                        }}
+                        placeholder="Playlist name..."
+                        style={{ flex: 1, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', padding: '5px 10px', fontSize: '13px', outline: 'none' }}
+                      />
+                      <button
+                        onClick={() => { if (savePlaylistName.trim()) { onSaveTempPlaylist(savePlaylistName.trim()); setShowSaveInput(false); } }}
+                        disabled={!savePlaylistName.trim()}
+                        style={{ background: 'var(--primary-color)', border: 'none', borderRadius: '6px', color: '#fff', padding: '5px 12px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', opacity: savePlaylistName.trim() ? 1 : 0.4 }}
+                      >✓</button>
+                    </div>
+                  )}
+
+                  {/* Add video picker */}
+                  {activePlaylist._isTemp && showAddPicker && (
+                    <div style={{ marginTop: '8px' }}>
+                      <input
+                        autoFocus
+                        type="text"
+                        value={addPickerQuery}
+                        onChange={e => setAddPickerQuery(e.target.value)}
+                        placeholder="Search to add..."
+                        style={{ width: '100%', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: '#fff', padding: '5px 10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
+                      />
+                      <div style={{ maxHeight: '160px', overflowY: 'auto', marginTop: '4px', borderRadius: '6px', background: 'rgba(0,0,0,0.4)' }}>
+                        {allVideos
+                          .filter(v => {
+                            if ((activePlaylist.video_ids || []).includes(v.vid_id)) return false;
+                            if (!addPickerQuery.trim()) return true;
+                            const q = addPickerQuery.toLowerCase();
+                            return (v.vid_name || '').toLowerCase().includes(q) || (v.uploader_name || '').toLowerCase().includes(q);
+                          })
+                          .slice(0, 20)
+                          .map(v => (
+                            <div
+                              key={v.vid_id}
+                              onClick={() => {
+                                const newIds = [...(activePlaylist.video_ids || []), v.vid_id];
+                                onUpdateTempPlaylist(newIds);
+                                setAddPickerQuery('');
+                                setShowAddPicker(false);
+                              }}
+                              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+                              className="queue-item"
+                            >
+                              <img src={`./thumbnails/${v.vid_id}.jpg`} onError={e => e.target.style.display='none'} alt="" style={{ width: '40px', height: '24px', objectFit: 'cover', borderRadius: '3px', flexShrink: 0 }} />
+                              <div style={{ minWidth: 0 }}>
+                                <div style={{ fontSize: '12px', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{(v.vid_name||'').replace(/\.[a-zA-Z0-9]+$/, '')}</div>
+                                <div style={{ fontSize: '10px', color: '#aaa' }}>{v.uploader_name}</div>
+                              </div>
+                            </div>
+                          ))
+                        }
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Row 2: count + shuffle/loop */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
                       {currentPlaylistIndex + 1} / {(activePlaylist.video_ids || []).length} videos
                     </span>
                     <div style={{ display: 'flex', gap: '12px' }}>
@@ -6568,6 +6773,29 @@ function PlayerView({
                             {vid.uploader_name}
                           </div>
                         </div>
+
+                        {/* Remove button — only on temp playlists */}
+                        {activePlaylist._isTemp && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const newIds = (activePlaylist.video_ids || []).filter((_, i) => i !== idx);
+                              // If removed item was currently playing, deindex
+                              if (isCurrent) onUpdateTempPlaylist(newIds);
+                              else onUpdateTempPlaylist(newIds);
+                              if (isCurrent && currentPlaylistIndex >= newIds.length) {
+                                setCurrentPlaylistIndex(Math.max(0, newIds.length - 1));
+                              } else if (!isCurrent && idx < currentPlaylistIndex) {
+                                setCurrentPlaylistIndex(prev => Math.max(0, prev - 1));
+                              }
+                            }}
+                            style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', padding: '2px 4px', borderRadius: '3px', flexShrink: 0, fontSize: '14px', lineHeight: 1 }}
+                            className="queue-remove-btn"
+                            title="Remove from queue"
+                          >
+                            ×
+                          </button>
+                        )}
                       </div>
                     );
                   })}
@@ -6748,7 +6976,7 @@ function CrawlerView() {
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
-          setPresetFolders(data.map(p => ({ name: p.preset_name, path: p.target_url })));
+          setPresetFolders(data.map(p => ({ id: p.id, name: p.preset_name, path: p.target_url })));
         }
       })
       .catch(console.error);
@@ -6766,7 +6994,7 @@ function CrawlerView() {
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          setPresetFolders(prev => [...prev, { name: newPresetName, path: newPresetPath }]);
+          setPresetFolders(prev => [...prev, { id: data.id, name: newPresetName, path: newPresetPath }]);
           setNewPresetName('');
           setNewPresetPath('');
           setLogs(prev => [...prev, { type: 'success', text: `Added directory preset: "${newPresetName}"` }]);
@@ -6775,11 +7003,32 @@ function CrawlerView() {
       .catch(err => console.error(err));
   };
 
-  const handleRemovePreset = (name) => {
-    const updated = presetFolders.filter(p => p.name !== name);
-    setPresetFolders(updated);
-    localStorage.setItem('yt_crawler_presets', JSON.stringify(updated));
-    setLogs(prev => [...prev, { type: 'info', text: `Removed directory preset: "${name}"` }]);
+  const handleRemovePreset = (id, name) => {
+    if (!id) {
+      const updated = presetFolders.filter(p => p.name !== name);
+      setPresetFolders(updated);
+      setLogs(prev => [...prev, { type: 'info', text: `Removed directory preset (local): "${name}"` }]);
+      return;
+    }
+
+    fetch('./api/index.php?action=delete_preset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setPresetFolders(prev => prev.filter(p => p.id !== id));
+          setLogs(prev => [...prev, { type: 'info', text: `Removed directory preset: "${name}"` }]);
+        } else {
+          setLogs(prev => [...prev, { type: 'error', text: `Failed to remove directory preset: "${name}"` }]);
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        setLogs(prev => [...prev, { type: 'error', text: `Error removing preset: ${err.message}` }]);
+      });
   };
 
   const handleMigrateDates = async () => {
@@ -6997,7 +7246,7 @@ function CrawlerView() {
         <h2 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '12px' }}>Select a Directory Preset</h2>
         <div className="crawler-presets">
           {presetFolders.map((preset) => (
-            <div key={preset.name} className="preset-card">
+            <div key={preset.id || preset.name} className="preset-card">
               <span className="preset-name">
                 <Folder size={18} className="logo-icon" /> {preset.name}
               </span>
@@ -7013,7 +7262,7 @@ function CrawlerView() {
                 <button
                   className="btn-secondary"
                   style={{ fontSize: '11px', padding: '4px 8px', backgroundColor: '#cc0000', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                  onClick={() => handleRemovePreset(preset.name)}
+                  onClick={() => handleRemovePreset(preset.id, preset.name)}
                 >
                   Remove
                 </button>
