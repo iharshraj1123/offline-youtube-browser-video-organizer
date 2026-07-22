@@ -2005,6 +2005,7 @@ function ShortsPlayerView({
   const [showDescription, setShowDescription] = useState(false);
   const [shortsIsZoomed, setShortsIsZoomed] = useState(false);
   const [hideShortsUi, setHideShortsUi] = useState(false);
+  const [showStatsModal, setShowStatsModal] = useState(false);
   const isPinchingRef = useRef(false);
   const pinchEndTimeRef = useRef(0);
   const touchStartDist = useRef(0);
@@ -2781,7 +2782,7 @@ function ShortsPlayerView({
                 </div>
               </div>
 
-              {/* Action Buttons: Edit, Delete, Save */}
+              {/* Action Buttons: Edit, Delete, Save, Stats */}
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '12px' }}>
                 <button className="action-pill-btn" onClick={() => setShowEditModal(true)}>
                   <Edit size={16} /> <span>Edit</span>
@@ -2792,7 +2793,43 @@ function ShortsPlayerView({
                 <button className="action-pill-btn" onClick={() => setShowSaveModal(true)}>
                   <Bookmark size={16} /> <span>Save</span>
                 </button>
+                <button
+                  className={`action-pill-btn ${showStatsModal ? 'active-pill-btn' : ''}`}
+                  onClick={() => setShowStatsModal(!showStatsModal)}
+                  title="Toggle Stats for Nerds"
+                >
+                  <Info size={16} /> <span>Stats for nerds</span>
+                </button>
               </div>
+
+              {/* Stats for Nerds Card */}
+              {showStatsModal && (
+                <div style={{
+                  background: 'rgba(0, 0, 0, 0.45)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  borderRadius: '12px',
+                  padding: '14px 16px',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                  fontSize: '13px',
+                  color: '#ddd'
+                }}>
+                  <div style={{ fontWeight: '700', fontSize: '14px', color: '#fff', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '6px', marginBottom: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>Stats for Nerds</span>
+                    <Info size={16} style={{ color: 'var(--primary-color, #ff0000)' }} />
+                  </div>
+                  <div><strong>Resolution:</strong> {currentVideo.width && currentVideo.height ? `${currentVideo.width}x${currentVideo.height}` : '1080x1920'}</div>
+                  <div><strong>Aspect Ratio:</strong> {currentVideo.aspect_ratio || '9:16'}</div>
+                  <div><strong>File Size:</strong> {currentVideo.filesize ? `${(currentVideo.filesize / (1024 * 1024)).toFixed(2)} MB` : 'N/A'}</div>
+                  <div><strong>Bitrate:</strong> {currentVideo.bitrate ? `${currentVideo.bitrate} kbps` : 'N/A'}</div>
+                  <div><strong>Frame Rate:</strong> {currentVideo.framerate ? `${Math.round(currentVideo.framerate)} fps` : '30 fps'}</div>
+                  <div><strong>Codec:</strong> {currentVideo.codec || 'h264'}</div>
+                  <div style={{ wordBreak: 'break-all' }}><strong>Source:</strong> {currentVideo.link}</div>
+                </div>
+              )}
 
               <div style={{ paddingTop: '4px' }}>
                 <p style={{ margin: 0, fontSize: '13.5px', color: '#ccc', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
