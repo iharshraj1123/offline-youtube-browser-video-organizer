@@ -50,24 +50,24 @@ A standalone offline video player, library indexer, and custom social space. Bui
 
 ```
 youtube/
-├── api/
+├── backend/
 │   ├── index.php          # Main API router (all endpoints)
 │   ├── db.php             # PDO database connection wrapper
 │   ├── .env.example       # Database credentials template
 │   └── utils/             # Helper functions
-├── src-frontend/
+├── frontend/
 │   ├── src/
 │   │   ├── App.jsx        # Main SPA (App + PlayerView components)
 │   │   └── index.css      # All styles (glassmorphic design system)
-│   └── vite.config.js     # Vite config (outputs to parent dir)
-├── assets/                # Compiled JS/CSS bundles (Vite output)
+│   └── vite.config.js     # Vite config (outputs to public dir)
+├── public/                # Static files, compiled JS/CSS bundles (Vite output)
+│   ├── assets/            # Compiled bundles
+│   └── index.html         # SPA entry point
 ├── thumbnails/            # FFmpeg-generated video thumbnails
 ├── uploads/               # User-uploaded avatars and attachments
 ├── Userdatabase/          # Default profile pictures
 ├── schema.sql             # Full database schema
-├── index.html             # Vite entry point
-├── .htaccess              # Apache MIME types + DLNA headers
-└── favicon.ico
+└── .htaccess              # Apache MIME types, DLNA headers, rewrite rules
 ```
 
 ## Installation
@@ -114,9 +114,9 @@ youtube/
 
 4. **Configure database credentials**:
    ```bash
-   cp api/.env.example api/.env
+   cp backend/.env.example backend/.env
    ```
-   Edit `api/.env` with your MySQL credentials:
+   Edit `backend/.env` with your MySQL credentials:
    ```
    DB_HOST=localhost
    DB_USER=root
@@ -126,11 +126,11 @@ youtube/
 
 5. **Build the frontend**:
    ```bash
-   cd src-frontend
+   cd frontend
    npm install
    npm run build
    ```
-   Vite compiles and outputs the production bundle to the parent directory (`../`).
+   Vite compiles and outputs the production bundle to the public directory (`../public`).
 
 6. **Start the server** and visit:
    - Laragon: `http://youtube.test/`
@@ -175,7 +175,7 @@ Add your video directories to the database by calling the scan API, or place you
 
 ## API Endpoints
 
-All endpoints are served through `api/index.php?action=<action>`. Key actions:
+All endpoints are served through `api/index.php?action=<action>` (rewritten internally to `backend/index.php?action=<action>`). Key actions:
 
 | Action | Method | Description |
 |--------|--------|-------------|

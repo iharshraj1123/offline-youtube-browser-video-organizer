@@ -7,10 +7,10 @@ export default defineConfig({
   // Use relative paths for built assets so it works perfectly in Apache subdirectories
   base: './',
   build: {
-    // Output directly to the parent directory (youtube) so Apache can serve it
-    outDir: '../',
-    // Do NOT delete files in the parent directory during build because it contains our PHP api/ files!
-    emptyOutDir: false,
+    // Output directly to the public directory so Apache can serve it
+    outDir: '../public',
+    // Clean public directory before build to keep old assets from piling up
+    emptyOutDir: true,
   },
   server: {
     // Configure proxy during development so local React calls to /api/ reach XAMPP Apache

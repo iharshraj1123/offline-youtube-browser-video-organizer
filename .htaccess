@@ -23,3 +23,25 @@
 <IfModule mod_negotiation.c>
     Options -MultiViews
 </IfModule>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # 1. Route API calls to backend/
+    RewriteRule ^api/(.*)$ backend/$1 [L,QSA]
+
+    # 2. Rewrite root path accesses directly to the public folder
+    RewriteRule ^$ public/ [L]
+
+    # 3. Serve physical files if they exist in the root
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    # 4. Serve physical directories if they exist in the root (e.g. thumbnails/, uploads/)
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # 5. Otherwise, rewrite transparently to the public/ folder
+    RewriteCond %{REQUEST_URI} !^/backend/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

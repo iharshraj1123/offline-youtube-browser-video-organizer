@@ -1,8 +1,8 @@
 <?php
-// c:\laragon\www\youtube\api\db.php
+// c:\laragon\www\youtube\backend\db.php
 //
-// Loads DB credentials from api/.env (gitignored).
-// To set up: copy api/.env.example to api/.env and fill in your credentials.
+// Loads DB credentials from backend/.env (gitignored).
+// To set up: copy backend/.env.example to backend/.env and fill in your credentials.
 
 class Database {
     private static $pdo = null;
@@ -81,7 +81,7 @@ class Database {
                 header('HTTP/1.1 500 Internal Server Error');
                 header('Content-Type: application/json');
                 echo json_encode([
-                    'error'   => 'Database connection failed. Check api/.env credentials.',
+                    'error'   => 'Database connection failed. Check backend/.env credentials.',
                     'details' => $e2->getMessage()
                 ]);
                 exit;
@@ -117,6 +117,34 @@ class Database {
                     $updateStmt->execute([':normalized' => $norm, ':id' => $row['vid_id']]);
                 }
             }
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("CREATE TABLE IF NOT EXISTS `exclusion_lists` (
+                `id` int(11) NOT NULL AUTO_INCREMENT,
+                `list_name` varchar(100) NOT NULL,
+                `video_ids` longtext NOT NULL DEFAULT '',
+                `exclude_pills` longtext NOT NULL DEFAULT '[]',
+                `exclude_next` varchar(20) NOT NULL DEFAULT 'none',
+                `exclude_search_suggestions` tinyint(1) NOT NULL DEFAULT 0,
+                `exclude_watch_next` tinyint(1) NOT NULL DEFAULT 0,
+                `exclude_search_results` tinyint(1) NOT NULL DEFAULT 0,
+                `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("CREATE TABLE IF NOT EXISTS `category_pills` (
+                `id` varchar(100) NOT NULL,
+                `label` varchar(100) NOT NULL,
+                `filter_type` varchar(50) NOT NULL DEFAULT 'all',
+                `filter_val` varchar(500) NOT NULL DEFAULT '',
+                `sort_by` varchar(50) NOT NULL DEFAULT 'recent',
+                `media_type` varchar(50) NOT NULL DEFAULT 'only_videos',
+                `exclude_shorts` tinyint(1) NOT NULL DEFAULT 0,
+                `sort_order` int(11) NOT NULL DEFAULT 0,
+                `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
         } catch (Exception $e) {}
         $updated = true;
     }

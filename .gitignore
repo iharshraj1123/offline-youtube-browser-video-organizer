@@ -1,10 +1,10 @@
 # Dependency Directories
 node_modules/
-src-frontend/node_modules/
+frontend/node_modules/
 
 # Local Dev/Build outputs
 dist/
-src-frontend/dist/
+frontend/dist/
 
 # IDE and System Files
 .vscode/

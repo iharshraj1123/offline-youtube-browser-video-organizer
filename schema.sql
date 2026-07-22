@@ -140,3 +140,17 @@ CREATE TABLE IF NOT EXISTS `crawler_presets` (
     `preset_name` VARCHAR(100) NOT NULL,
     `target_url` TEXT NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table 8: exclusion_lists (Privacy & Sensitive Content Exclusions)
+CREATE TABLE IF NOT EXISTS `exclusion_lists` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `list_name` varchar(100) NOT NULL,
+    `video_ids` longtext NOT NULL DEFAULT '',
+    `exclude_pills` longtext NOT NULL DEFAULT '[]',
+    `exclude_next` varchar(20) NOT NULL DEFAULT 'none',
+    `exclude_search_suggestions` tinyint(1) NOT NULL DEFAULT 0,
+    `exclude_watch_next` tinyint(1) NOT NULL DEFAULT 0,
+    `exclude_search_results` tinyint(1) NOT NULL DEFAULT 0,
+    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -89,6 +89,9 @@ try {
         case 'search_suggestions':
             handleSearchSuggestions($pdo);
             break;
+        case 'rebuild_search_index':
+            handleRebuildSearchIndex($pdo);
+            break;
         case 'playlists':
             handleGetPlaylists($pdo);
             break;
@@ -106,6 +109,24 @@ try {
             break;
         case 'update_playlist_videos':
             handleUpdatePlaylistVideos($pdo);
+            break;
+        case 'exclusion_lists':
+            handleGetExclusionLists($pdo);
+            break;
+        case 'save_exclusion_list':
+            handleSaveExclusionList($pdo);
+            break;
+        case 'delete_exclusion_list':
+            handleDeleteExclusionList($pdo);
+            break;
+        case 'get_pills':
+            handleGetPills($pdo);
+            break;
+        case 'save_pills':
+            handleSavePills($pdo);
+            break;
+        case 'get_excluded_ids':
+            handleGetExcludedIds($pdo);
             break;
         case 'login':
             handleLogin($pdo);
@@ -368,9 +389,17 @@ function handleSearchSuggestions($pdo) {
         $relevanceScoreExpr = implode(' + ', $scoreTerms);
     }
     
+    // Exclude sensitive / restricted videos from search suggestions unless include_all=1 is passed
+    if (empty($_GET['include_all'])) {
+        $excludedSug = getExcludedVideoIds($pdo, 'search_suggestions');
+        if (!empty($excludedSug)) {
+            $whereSQL .= " AND vid_id NOT IN (" . implode(',', $excludedSug) . ")";
+        }
+    }
+
     // Sort matching suggestions: prioritized prefix match of the whole query first, then general match
     $stmt = $pdo->prepare("
-        SELECT vid_id, vid_name 
+        SELECT vid_id, vid_name, link 
         FROM video_metadatas 
         WHERE ($whereSQL)
         ORDER BY 
@@ -392,13 +421,56 @@ function handleSearchSuggestions($pdo) {
     exit;
 }
 
+function handleRebuildSearchIndex($pdo) {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        throw new Exception('POST method required');
+    }
+    
+    $privilege = $_COOKIE['loggeduserprivilege'] ?? 'USER';
+    if ($privilege !== 'ADMIN') {
+        throw new Exception('Admin privileges required to rebuild index');
+    }
+
+    $stmt = $pdo->query("SELECT vid_id, vid_name FROM video_metadatas");
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $updateStmt = $pdo->prepare("UPDATE video_metadatas SET vid_name_normalized = :normalized WHERE vid_id = :id");
+    
+    $count = 0;
+    $pdo->beginTransaction();
+    try {
+        foreach ($rows as $row) {
+            $norm = normalizeSearchText($row['vid_name']);
+            $updateStmt->execute([':normalized' => $norm, ':id' => $row['vid_id']]);
+            $count++;
+        }
+        $pdo->commit();
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+
+    header('Content-Type: application/json');
+    echo json_encode(['success' => true, 'count' => $count]);
+    exit;
+}
+
 function handleGetVideos($pdo) {
     $search = $_GET['q'] ?? '';
     $category = $_GET['category'] ?? 'all';
     $sort = $_GET['sort'] ?? 'recent'; // 'recent', 'mix'
+    $filterType = $_GET['filter_type'] ?? '';
+    $filterVal = $_GET['filter_val'] ?? '';
+    $mediaType = $_GET['media_type'] ?? 'only_videos';
+    $excludeShorts = ($_GET['exclude_shorts'] ?? '0') === '1';
 
     // Exclude row 10 (playlist compatibility seed) and ID 330, etc. (blacklist in legacy)
     $whereClauses = ['vid_id != 10'];
+    if ($excludeShorts) {
+        $whereClauses[] = "NOT ((height IS NOT NULL AND height >= width AND duration > 0 AND duration <= 60) OR tags LIKE '%shorts%')";
+    } else if ($mediaType === 'only_shorts') {
+        $whereClauses[] = "((height IS NOT NULL AND height >= width AND duration > 0 AND duration <= 60) OR tags LIKE '%shorts%')";
+    }
     $params = [];
 
     // Search query filter: split into individual keywords for space-insensitive/order-insensitive matching
@@ -444,28 +516,52 @@ function handleGetVideos($pdo) {
         $params[':contains_query'] = '%' . $normalizedSearch . '%';
     }
 
-    // Category filter
-    if ($category !== 'all') {
-        if ($category === 'video songs') {
-            $whereClauses[] = '(link LIKE :cat_link)';
-            $params[':cat_link'] = '%/Video songs/%';
-        } else if ($category === 'downloads') {
-            $whereClauses[] = '(link LIKE :cat_link1 OR link LIKE :cat_link2 OR link LIKE :cat_link3)';
-            $params[':cat_link1'] = '%/Downloads/%';
-            $params[':cat_link2'] = '%/downloaded videos/%';
-            $params[':cat_link3'] = '%/downloaded videos new/%';
-        } else if ($category === 'favourite') {
-            $whereClauses[] = '(tags LIKE :cat_tag OR vid_name LIKE :cat_name)';
-            $params[':cat_tag'] = '%favourite%';
-            $params[':cat_name'] = '%favourite%';
-        } else {
-            $whereClauses[] = '(tags LIKE :cat_tag OR vid_name LIKE :cat_name)';
-            $params[':cat_tag'] = '%' . $category . '%';
-            $params[':cat_name'] = '%' . $category . '%';
+    // Category / Custom filter
+    if (!empty($filterType) && $filterType !== 'all') {
+        if ($filterType === 'folder') {
+            if (stripos($filterVal, 'download') !== false) {
+                $whereClauses[] = '(LOWER(link) LIKE :custom_folder1 OR link LIKE :custom_folder2 OR link LIKE :custom_folder3)';
+                $params[':custom_folder1'] = '%download%';
+                $params[':custom_folder2'] = '%/Downloads/%';
+                $params[':custom_folder3'] = '%/downloaded videos/%';
+            } else {
+                $whereClauses[] = '(link LIKE :custom_folder OR REPLACE(link, "\\\\", "/") LIKE :custom_folder_alt)';
+                $params[':custom_folder'] = $filterVal;
+                $params[':custom_folder_alt'] = $filterVal;
+            }
+        } else if ($filterType === 'tag' || $filterType === 'category') {
+            if (!empty($filterVal)) {
+                $whereClauses[] = '(tags LIKE :custom_tag OR vid_name LIKE :custom_name)';
+                $params[':custom_tag'] = '%' . $filterVal . '%';
+                $params[':custom_name'] = '%' . $filterVal . '%';
+            }
+        } else if ($filterType === 'sql') {
+            if (!empty($filterVal)) {
+                $whereClauses[] = '(' . $filterVal . ')';
+            }
         }
     }
 
     $whereSQL = implode(' AND ', $whereClauses);
+
+    // Apply privacy / sensitive content exclusions
+    if (!empty($_GET['is_watch_next'])) {
+        $ex = getExcludedVideoIds($pdo, 'watch_next');
+        if (!empty($ex)) {
+            $whereSQL .= ($whereSQL ? ' AND ' : '') . 'vid_id NOT IN (' . implode(',', $ex) . ')';
+        }
+    } else if (!empty($search)) {
+        $ex = getExcludedVideoIds($pdo, 'search_results');
+        if (!empty($ex)) {
+            $whereSQL .= ($whereSQL ? ' AND ' : '') . 'vid_id NOT IN (' . implode(',', $ex) . ')';
+        }
+    } else {
+        $activePill = $_GET['pill_id'] ?? $_GET['category'] ?? 'all';
+        $ex = getExcludedVideoIds($pdo, 'pills', $activePill);
+        if (!empty($ex)) {
+            $whereSQL .= ($whereSQL ? ' AND ' : '') . 'vid_id NOT IN (' . implode(',', $ex) . ')';
+        }
+    }
 
     $orderBy = "upload_date DESC, upload_time DESC, vid_id DESC";
     if ($sort === 'oldest') {
@@ -476,6 +572,14 @@ function handleGetVideos($pdo) {
         $orderBy = "CAST(views AS UNSIGNED) DESC, upload_date DESC";
     } else if ($sort === 'mix') {
         $orderBy = "RAND()";
+    } else if ($sort === 'alpha_asc') {
+        $orderBy = "vid_name ASC";
+    } else if ($sort === 'alpha_desc') {
+        $orderBy = "vid_name DESC";
+    } else if ($sort === 'shortest') {
+        $orderBy = "CAST(duration AS UNSIGNED) ASC, upload_date DESC";
+    } else if ($sort === 'longest') {
+        $orderBy = "CAST(duration AS UNSIGNED) DESC, upload_date DESC";
     }
 
     $orderBy = $relevanceOrder . $orderBy;
@@ -4448,4 +4552,259 @@ function handleGetFonts() {
     
     echo json_encode(['fonts' => array_values($fonts)]);
     exit;
+}
+
+// ----------------------------------------------------
+// Privacy & Sensitive Content Exclusion List Helpers
+// ----------------------------------------------------
+
+function getExcludedVideoIds($pdo, $context, $extraParam = null) {
+    try {
+        $stmt = $pdo->query("SELECT * FROM exclusion_lists");
+        $lists = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $excludedMap = [];
+        foreach ($lists as $list) {
+            $idsRaw = $list['video_ids'] ?? '';
+            $ids = array_filter(array_map('intval', preg_split('/[\s,]+/', $idsRaw)));
+            if (empty($ids)) continue;
+
+            $shouldExclude = false;
+            if ($context === 'search_suggestions' && !empty($list['exclude_search_suggestions'])) {
+                $shouldExclude = true;
+            } else if ($context === 'watch_next' && !empty($list['exclude_watch_next'])) {
+                $shouldExclude = true;
+            } else if ($context === 'search_results' && !empty($list['exclude_search_results'])) {
+                $shouldExclude = true;
+            } else if ($context === 'pills') {
+                $pillId = $extraParam ?: 'all';
+                $pills = json_decode($list['exclude_pills'] ?? '[]', true);
+                if (is_array($pills) && (in_array('*', $pills) || in_array('ALL_PILLS', $pills) || in_array('all_pills', $pills) || in_array($pillId, $pills) || in_array('all', $pills))) {
+                    $shouldExclude = true;
+                }
+            } else if ($context === 'next_play') {
+                $mode = $list['exclude_next'] ?? 'none';
+                if ($extraParam === 'random' && ($mode === 'random_next' || $mode === 'both')) {
+                    $shouldExclude = true;
+                } else if ($extraParam === 'normal' && ($mode === 'normal_next' || $mode === 'both')) {
+                    $shouldExclude = true;
+                } else if ($mode === 'both' || $mode === 'random_next' || $mode === 'normal_next') {
+                    $shouldExclude = true;
+                }
+            }
+
+            if ($shouldExclude) {
+                foreach ($ids as $id) {
+                    $excludedMap[$id] = true;
+                }
+            }
+        }
+        return array_keys($excludedMap);
+    } catch (Exception $e) {
+        return [];
+    }
+}
+
+function handleGetExclusionLists($pdo) {
+    try {
+        $stmt = $pdo->query("SELECT * FROM exclusion_lists ORDER BY id DESC");
+        $lists = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($lists as &$l) {
+            $l['exclude_pills'] = json_decode($l['exclude_pills'] ?? '[]', true) ?: [];
+            $l['exclude_search_suggestions'] = (int)($l['exclude_search_suggestions'] ?? 0);
+            $l['exclude_watch_next'] = (int)($l['exclude_watch_next'] ?? 0);
+            $l['exclude_search_results'] = (int)($l['exclude_search_results'] ?? 0);
+        }
+        echo json_encode($lists);
+    } catch (Exception $e) {
+        echo json_encode([]);
+    }
+    exit;
+}
+
+function handleSaveExclusionList($pdo) {
+    $rawInput = file_get_contents('php://input');
+    $data = json_decode($rawInput, true) ?: $_POST;
+
+    $id = isset($data['id']) ? (int)$data['id'] : 0;
+    $listName = trim($data['list_name'] ?? '');
+    if ($listName === '') {
+        echo json_encode(['error' => 'List name is required']);
+        exit;
+    }
+
+    $videoIds = is_array($data['video_ids'] ?? null) 
+        ? implode(',', array_filter(array_map('intval', $data['video_ids'])))
+        : trim($data['video_ids'] ?? '');
+
+    $excludePills = is_array($data['exclude_pills'] ?? null)
+        ? json_encode(array_values($data['exclude_pills']))
+        : (is_string($data['exclude_pills'] ?? null) ? $data['exclude_pills'] : '[]');
+
+    $excludeNext = in_array($data['exclude_next'] ?? '', ['none', 'random_next', 'normal_next', 'both'])
+        ? $data['exclude_next']
+        : 'none';
+
+    $excludeSearchSug = !empty($data['exclude_search_suggestions']) ? 1 : 0;
+    $excludeWatchNext = !empty($data['exclude_watch_next']) ? 1 : 0;
+    $excludeSearchResults = !empty($data['exclude_search_results']) ? 1 : 0;
+
+    if ($id > 0) {
+        $stmt = $pdo->prepare("UPDATE exclusion_lists SET 
+            list_name = :name,
+            video_ids = :vids,
+            exclude_pills = :pills,
+            exclude_next = :next,
+            exclude_search_suggestions = :sug,
+            exclude_watch_next = :wn,
+            exclude_search_results = :sr
+            WHERE id = :id");
+        $stmt->execute([
+            ':name' => $listName,
+            ':vids' => $videoIds,
+            ':pills' => $excludePills,
+            ':next' => $excludeNext,
+            ':sug' => $excludeSearchSug,
+            ':wn' => $excludeWatchNext,
+            ':sr' => $excludeSearchResults,
+            ':id' => $id
+        ]);
+    } else {
+        $stmt = $pdo->prepare("INSERT INTO exclusion_lists 
+            (list_name, video_ids, exclude_pills, exclude_next, exclude_search_suggestions, exclude_watch_next, exclude_search_results)
+            VALUES (:name, :vids, :pills, :next, :sug, :wn, :sr)");
+        $stmt->execute([
+            ':name' => $listName,
+            ':vids' => $videoIds,
+            ':pills' => $excludePills,
+            ':next' => $excludeNext,
+            ':sug' => $excludeSearchSug,
+            ':wn' => $excludeWatchNext,
+            ':sr' => $excludeSearchResults
+        ]);
+        $id = (int)$pdo->lastInsertId();
+    }
+
+    echo json_encode(['success' => true, 'id' => $id]);
+    exit;
+}
+
+function handleDeleteExclusionList($pdo) {
+    $rawInput = file_get_contents('php://input');
+    $data = json_decode($rawInput, true) ?: $_POST;
+    $id = (int)($data['id'] ?? $_GET['id'] ?? 0);
+
+    if ($id > 0) {
+        $stmt = $pdo->prepare("DELETE FROM exclusion_lists WHERE id = :id");
+        $stmt->execute([':id' => $id]);
+    }
+
+    echo json_encode(['success' => true]);
+    exit;
+}
+
+function handleGetExcludedIds($pdo) {
+    $result = [
+        'search_suggestions' => getExcludedVideoIds($pdo, 'search_suggestions'),
+        'watch_next' => getExcludedVideoIds($pdo, 'watch_next'),
+        'search_results' => getExcludedVideoIds($pdo, 'search_results'),
+        'next_play_random' => getExcludedVideoIds($pdo, 'next_play', 'random'),
+        'next_play_normal' => getExcludedVideoIds($pdo, 'next_play', 'normal'),
+        'all_next_play' => getExcludedVideoIds($pdo, 'next_play', 'both')
+    ];
+    echo json_encode($result);
+    exit;
+}
+
+function handleGetPills($pdo) {
+    header('Content-Type: application/json');
+    try {
+        $stmt = $pdo->query("SELECT * FROM category_pills ORDER BY sort_order ASC, created_at ASC");
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (empty($rows)) {
+            $defaults = [
+                ['id' => 'all', 'label' => 'all', 'category' => 'all', 'sort' => 'mix', 'filterType' => 'all', 'filterVal' => '', 'sortBy' => 'mix', 'mediaType' => 'mixed', 'excludeShortsInVideoSection' => false],
+                ['id' => 'recent', 'label' => 'recent', 'category' => 'all', 'sort' => 'recent', 'filterType' => 'all', 'filterVal' => '', 'sortBy' => 'recent', 'mediaType' => 'only_videos', 'excludeShortsInVideoSection' => false],
+                ['id' => 'oldest', 'label' => 'oldest', 'category' => 'all', 'sort' => 'oldest', 'filterType' => 'all', 'filterVal' => '', 'sortBy' => 'oldest', 'mediaType' => 'only_videos', 'excludeShortsInVideoSection' => false],
+                ['id' => 'downloads', 'label' => 'downloads', 'category' => 'downloads', 'sort' => 'recent', 'filterType' => 'folder', 'filterVal' => '%download%', 'sortBy' => 'recent', 'mediaType' => 'only_videos', 'excludeShortsInVideoSection' => false],
+                ['id' => 'hot', 'label' => 'hot', 'category' => 'all', 'sort' => 'hot', 'filterType' => 'all', 'filterVal' => '', 'sortBy' => 'hot', 'mediaType' => 'only_videos', 'excludeShortsInVideoSection' => false],
+                ['id' => 'most_liked', 'label' => 'most liked', 'category' => 'all', 'sort' => 'likes', 'filterType' => 'all', 'filterVal' => '', 'sortBy' => 'likes', 'mediaType' => 'only_videos', 'excludeShortsInVideoSection' => false],
+                ['id' => 'favourite', 'label' => 'favourite', 'category' => 'favourite', 'sort' => 'recent', 'filterType' => 'tag', 'filterVal' => 'favourite', 'sortBy' => 'recent', 'mediaType' => 'only_videos', 'excludeShortsInVideoSection' => false]
+            ];
+            echo json_encode($defaults);
+            exit;
+        }
+
+        $pills = array_map(function($row) {
+            return [
+                'id' => $row['id'],
+                'label' => $row['label'],
+                'category' => $row['id'],
+                'sort' => $row['sort_by'],
+                'filterType' => $row['filter_type'],
+                'filterVal' => $row['filter_val'],
+                'sortBy' => $row['sort_by'],
+                'mediaType' => $row['media_type'],
+                'excludeShortsInVideoSection' => (bool)$row['exclude_shorts']
+            ];
+        }, $rows);
+
+        echo json_encode($pills);
+        exit;
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['error' => $e->getMessage()]);
+        exit;
+    }
+}
+
+function handleSavePills($pdo) {
+    header('Content-Type: application/json');
+    try {
+        $input = json_decode(file_get_contents('php://input'), true);
+        $pills = is_array($input) ? $input : (isset($input['pills']) ? $input['pills'] : []);
+
+        if (!is_array($pills)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid pills array']);
+            exit;
+        }
+
+        $pdo->beginTransaction();
+        $pdo->exec("DELETE FROM category_pills");
+
+        $stmt = $pdo->prepare("INSERT INTO category_pills (id, label, filter_type, filter_val, sort_by, media_type, exclude_shorts, sort_order) VALUES (:id, :label, :filter_type, :filter_val, :sort_by, :media_type, :exclude_shorts, :sort_order)");
+
+        foreach ($pills as $idx => $pill) {
+            $id = !empty($pill['id']) ? $pill['id'] : strtolower(trim(preg_replace('/[^a-zA-Z0-9_]+/', '_', $pill['label'] ?? 'pill_' . $idx)));
+            $label = $pill['label'] ?? $id;
+            $filterType = $pill['filterType'] ?? 'all';
+            $filterVal = $pill['filterVal'] ?? '';
+            $sortBy = $pill['sortBy'] ?? ($pill['sort'] ?? 'recent');
+            $mediaType = $pill['mediaType'] ?? 'only_videos';
+            $excludeShorts = !empty($pill['excludeShortsInVideoSection']) ? 1 : 0;
+
+            $stmt->execute([
+                ':id' => $id,
+                ':label' => $label,
+                ':filter_type' => $filterType,
+                ':filter_val' => $filterVal,
+                ':sort_by' => $sortBy,
+                ':media_type' => $mediaType,
+                ':exclude_shorts' => $excludeShorts,
+                ':sort_order' => $idx
+            ]);
+        }
+
+        $pdo->commit();
+        echo json_encode(['status' => 'success', 'count' => count($pills)]);
+        exit;
+    } catch (Exception $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        http_response_code(500);
+        echo json_encode(['error' => $e->getMessage()]);
+        exit;
+    }
 }

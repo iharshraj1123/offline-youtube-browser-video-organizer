@@ -3,17 +3,18 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Menu, Search, Video, Compass, Folder, Newspaper,
-  Tv, ListTodo, Bookmark, ChevronDown, ChevronLeft,
+  Tv, ListTodo, Bookmark, ChevronDown, ChevronLeft, ChevronRight,
   Play, Pause, Volume2, VolumeX, Maximize, Minimize,
   Settings, Trash2, Edit, RefreshCw, Plus, Check, Loader2,
   ThumbsUp, ThumbsDown, Info, Mic, Bell, CornerUpLeft,
-  Repeat, Shuffle, Download, SkipBack, SkipForward, ListMusic, X, RotateCcw, RotateCw, Cast, Upload, Subtitles, AlertTriangle, Wand2, Flame, MessageSquare, Sparkles
+  Repeat, Shuffle, Download, SkipBack, SkipForward, ListMusic, X, RotateCcw, RotateCw, Cast, Upload, Subtitles, AlertTriangle, Wand2, Flame, MessageSquare, Sparkles, Eye, EyeOff
 } from 'lucide-react';
 import { AuthModal } from './components/AuthModal';
 import { CommentsSection } from './components/CommentsSection';
 import { ProfileView } from './components/ProfileView';
 import { DownloaderView } from './components/DownloaderView';
 import { ConverterView } from './components/ConverterView';
+import { SettingsView } from './components/SettingsView';
 
 // Cookie Helper
 function getCookie(name) {
@@ -121,6 +122,7 @@ function formatUploadDate(dateStr) {
 
 export default function App() {
   // App views: 'home' | 'player' | 'crawler'
+  const [isInitialRouting, setIsInitialRouting] = useState(true);
   const [currentView, setCurrentView] = useState('home');
   const [videos, setVideos] = useState([]);
   const [watchNextVideos, setWatchNextVideos] = useState([]);
@@ -131,6 +133,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [currentSort, setCurrentSort] = useState('mix'); // 'recent' | 'mix'
+  const [activePillId, setActivePillId] = useState('all');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     return localStorage.getItem('yt_sidebar_collapsed') === 'true';
   });
@@ -162,6 +165,66 @@ export default function App() {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Listen for OS system theme changes dynamically if set to System Default
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = () => {
+      const savedTheme = localStorage.getItem('yt_theme') || 'system';
+      if (savedTheme === 'system') {
+        const computedTheme = mediaQuery.matches ? 'dark' : 'light';
+        const savedAccent = localStorage.getItem('yt_accent_color') || 'red';
+        const root = document.documentElement;
+        
+        let primary = '#ff0000';
+        let hover = '#cc0000';
+        if (savedAccent === 'blue') {
+          primary = '#00f0ff';
+          hover = '#00b8cc';
+        } else if (savedAccent === 'purple') {
+          primary = '#b829ff';
+          hover = '#8f12cc';
+        } else if (savedAccent === 'green') {
+          primary = '#10b981';
+          hover = '#059669';
+        } else if (savedAccent === 'gold') {
+          primary = '#f59e0b';
+          hover = '#d97706';
+        }
+        root.style.setProperty('--primary-color', primary);
+        root.style.setProperty('--primary-hover', hover);
+        root.style.setProperty('--accent-color', primary);
+
+        if (computedTheme === 'light') {
+          root.style.setProperty('--bg-color', '#f8f9fa');
+          root.style.setProperty('--card-bg', '#ffffff');
+          root.style.setProperty('--sidebar-bg', '#0f0f0f'); // Sidebar remains dark theme!
+          root.style.setProperty('--bg-secondary', '#ffffff');
+          root.style.setProperty('--text-color', '#1a1a1a');
+          root.style.setProperty('--text-secondary', '#606060');
+          root.style.setProperty('--text-primary', '#1a1a1a');
+          root.style.setProperty('--border-color', '#e5e7eb');
+          root.style.setProperty('--glass-bg', 'rgba(255, 255, 255, 0.8)');
+          root.style.setProperty('--glass-border', 'rgba(0, 0, 0, 0.06)');
+          root.style.setProperty('--hover-color', '#f3f4f6');
+        } else {
+          root.style.setProperty('--bg-color', '#0f0f0f');
+          root.style.setProperty('--card-bg', '#1f1f1f');
+          root.style.setProperty('--sidebar-bg', '#0f0f0f');
+          root.style.setProperty('--bg-secondary', '#1a1a1a');
+          root.style.setProperty('--text-color', '#f1f1f1');
+          root.style.setProperty('--text-secondary', '#aaa');
+          root.style.setProperty('--text-primary', '#f1f1f1');
+          root.style.setProperty('--border-color', '#3f3f3f');
+          root.style.setProperty('--glass-bg', 'rgba(31, 31, 31, 0.7)');
+          root.style.setProperty('--glass-border', 'rgba(255, 255, 255, 0.05)');
+          root.style.setProperty('--hover-color', '#272727');
+        }
+      }
+    };
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
   useEffect(() => {
@@ -274,6 +337,80 @@ export default function App() {
   fetchVideoAndPlayRef.current = fetchVideoAndPlay;
 
   useEffect(() => {
+    // Apply saved appearance preferences on load
+    const savedTheme = localStorage.getItem('yt_theme') || 'system';
+    const savedAccent = localStorage.getItem('yt_accent_color') || 'red';
+    const root = document.documentElement;
+    let primary = '#ff0000';
+    let hover = '#cc0000';
+    if (savedAccent === 'blue') {
+      primary = '#00f0ff';
+      hover = '#00b8cc';
+    } else if (savedAccent === 'purple') {
+      primary = '#b829ff';
+      hover = '#8f12cc';
+    } else if (savedAccent === 'green') {
+      primary = '#10b981';
+      hover = '#059669';
+    } else if (savedAccent === 'gold') {
+      primary = '#f59e0b';
+      hover = '#d97706';
+    }
+    root.style.setProperty('--primary-color', primary);
+    root.style.setProperty('--primary-hover', hover);
+    root.style.setProperty('--accent-color', primary);
+
+    let themeToApply = savedTheme;
+    if (savedTheme === 'system') {
+      themeToApply = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    if (themeToApply === 'oled') {
+      root.style.setProperty('--bg-color', '#000000');
+      root.style.setProperty('--card-bg', '#0c0c0c');
+      root.style.setProperty('--sidebar-bg', '#000000');
+      root.style.setProperty('--bg-secondary', '#080808');
+      root.style.setProperty('--text-color', '#f1f1f1');
+      root.style.setProperty('--text-secondary', '#aaa');
+      root.style.setProperty('--text-primary', '#f1f1f1');
+      root.style.setProperty('--border-color', '#222222');
+      root.style.setProperty('--glass-bg', 'rgba(12, 12, 12, 0.8)');
+      root.style.setProperty('--glass-border', 'rgba(255, 255, 255, 0.03)');
+      root.style.setProperty('--hover-color', '#151515');
+    } else if (themeToApply === 'light') {
+      root.style.setProperty('--bg-color', '#f8f9fa');
+      root.style.setProperty('--card-bg', '#ffffff');
+      root.style.setProperty('--sidebar-bg', '#0f0f0f'); // Sidebar remains dark theme!
+      root.style.setProperty('--bg-secondary', '#ffffff');
+      root.style.setProperty('--text-color', '#1a1a1a');
+      root.style.setProperty('--text-secondary', '#606060');
+      root.style.setProperty('--text-primary', '#1a1a1a');
+      root.style.setProperty('--border-color', '#e5e7eb');
+      root.style.setProperty('--glass-bg', 'rgba(255, 255, 255, 0.8)');
+      root.style.setProperty('--glass-border', 'rgba(0, 0, 0, 0.06)');
+      root.style.setProperty('--hover-color', '#f3f4f6');
+    } else {
+      root.style.setProperty('--bg-color', '#0f0f0f');
+      root.style.setProperty('--card-bg', '#1f1f1f');
+      root.style.setProperty('--sidebar-bg', '#0f0f0f');
+      root.style.setProperty('--bg-secondary', '#1a1a1a');
+      root.style.setProperty('--text-color', '#f1f1f1');
+      root.style.setProperty('--text-secondary', '#aaa');
+      root.style.setProperty('--text-primary', '#f1f1f1');
+      root.style.setProperty('--border-color', '#3f3f3f');
+      root.style.setProperty('--glass-bg', 'rgba(31, 31, 31, 0.7)');
+      root.style.setProperty('--glass-border', 'rgba(255, 255, 255, 0.05)');
+      root.style.setProperty('--hover-color', '#272727');
+    }
+
+    // Apply card hover CSS variables from settings
+    const cardZoomOn = localStorage.getItem('yt_card_zoom') !== 'false';
+    const cardGlowOn = localStorage.getItem('yt_card_glow') === 'true';
+    const cardHoverColor = localStorage.getItem('yt_card_hover_color') || 'none';
+    root.style.setProperty('--card-hover-transform', cardZoomOn ? 'translateY(-4px) scale(1.02)' : 'translateY(-2px)');
+    root.style.setProperty('--card-hover-shadow', cardGlowOn ? '0 8px 32px rgba(0,0,0,0.35)' : 'none');
+    root.style.setProperty('--card-hover-bg', cardHoverColor !== 'none' ? cardHoverColor : 'transparent');
+
     // Read session cookies if available
     const name = getCookie('loggedusername') || null;
     const pic = getCookie('loggeduserpic') || './Userdatabase/ProfilePic/defaulta.jpg';
@@ -281,8 +418,6 @@ export default function App() {
     const num = getCookie('loggedusernum') ? parseInt(getCookie('loggedusernum')) : null;
     setUser({ name, pic, privilege, num });
 
-    fetchVideos();
-    fetchWatchNextVideos();
     fetchPlaylists();
 
     // Check URL parameters on mount
@@ -293,10 +428,14 @@ export default function App() {
     const userParam = params.get('user');
     const listId = params.get('list');
 
+    const finishRouting = () => setIsInitialRouting(false);
+
     if (videoId) {
-      fetchVideoAndPlay(videoId);
+      // Start background fetches for sidebar recommendations
+      fetchVideos();
+      fetchWatchNextVideos();
+      fetchVideoAndPlay(videoId).finally(finishRouting);
     } else if (shortId) {
-      // Open Shorts viewer at the given short — fetch all videos first
       fetchVideos();
       fetch('./api/index.php?action=videos&q=&category=all&sort=mix')
         .then(r => r.json())
@@ -313,20 +452,29 @@ export default function App() {
             setCurrentView('home');
           }
         })
-        .catch(() => setCurrentView('home'));
-    } else if (listId) {
-      setCurrentView('playlist');
-    } else if (page === 'crawler') {
-      setCurrentView('crawler');
-    } else if (page === 'profile' && userParam) {
-      setProfileUsername(userParam);
-      setCurrentView('profile');
-    } else if (page === 'downloader') {
-      setCurrentView('downloader');
-    } else if (page === 'converter') {
-      setCurrentView('converter');
+        .catch(() => setCurrentView('home'))
+        .finally(finishRouting);
     } else {
-      setCurrentView('home');
+      fetchVideos();
+      fetchWatchNextVideos();
+
+      if (listId) {
+        setCurrentView('playlist');
+      } else if (page === 'crawler') {
+        setCurrentView('crawler');
+      } else if (page === 'profile' && userParam) {
+        setProfileUsername(userParam);
+        setCurrentView('profile');
+      } else if (page === 'downloader') {
+        setCurrentView('downloader');
+      } else if (page === 'converter') {
+        setCurrentView('converter');
+      } else if (page === 'settings') {
+        setCurrentView('settings');
+      } else {
+        setCurrentView('home');
+      }
+      finishRouting();
     }
 
     // Popstate listener (for browser back/forward buttons)
@@ -372,6 +520,8 @@ export default function App() {
         setCurrentView('downloader');
       } else if (pg === 'converter') {
         setCurrentView('converter');
+      } else if (pg === 'settings') {
+        setCurrentView('settings');
       } else {
         setCurrentView('home');
         const { searchQuery: q, activeCategory: cat, currentSort: srt } = filtersRef.current;
@@ -524,15 +674,31 @@ export default function App() {
 
 
   // Fetch Videos
-  const fetchVideos = async (q = searchQuery, category = activeCategory, sort = currentSort) => {
+  const fetchVideos = async (
+    q = searchQuery,
+    category = activeCategory,
+    sort = currentSort,
+    filterType = '',
+    filterVal = '',
+    pillId = activePillId,
+    mediaType = 'only_videos',
+    excludeShortsInVideoSection = false
+  ) => {
     setLoading(true);
     try {
       const queryParams = new URLSearchParams({
         action: 'videos',
         q,
         category,
-        sort
+        sort,
+        pill_id: pillId || 'all',
+        media_type: mediaType || 'only_videos',
+        exclude_shorts: excludeShortsInVideoSection ? '1' : '0'
       });
+      if (filterType && filterType !== 'all') {
+        queryParams.set('filter_type', filterType);
+        queryParams.set('filter_val', filterVal);
+      }
       const res = await fetch(`./api/index.php?${queryParams.toString()}`);
       const data = await res.json();
       setVideos(data);
@@ -552,7 +718,8 @@ export default function App() {
         action: 'videos',
         q,
         category: 'all',
-        sort
+        sort,
+        is_watch_next: '1'
       });
       const res = await fetch(`./api/index.php?${queryParams.toString()}`);
       const data = await res.json();
@@ -593,10 +760,18 @@ export default function App() {
     }
   };
 
-  const handlePillSelect = (category, sort) => {
+  const handlePillSelect = (pill) => {
+    const pillId = pill.id || pill.category || 'all';
+    const category = pill.category || 'all';
+    const sort = pill.sortBy || pill.sort || 'recent';
+    const filterType = pill.filterType || '';
+    const filterVal = pill.filterVal || '';
+    const mediaType = pill.mediaType || 'only_videos';
+    const excludeShortsInVideoSection = Boolean(pill.excludeShortsInVideoSection);
+    setActivePillId(pillId);
     setActiveCategory(category);
     setCurrentSort(sort);
-    fetchVideos(searchQuery, category, sort);
+    fetchVideos(searchQuery, category, sort, filterType, filterVal, pillId, mediaType, excludeShortsInVideoSection);
   };
 
   const fetchPlaylists = async () => {
@@ -838,6 +1013,36 @@ export default function App() {
     }
   };
 
+  if (isInitialRouting) {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100vw',
+        height: '100vh',
+        backgroundColor: '#0f0f0f',
+        color: '#fff',
+        flexDirection: 'column',
+        gap: '16px'
+      }}>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          borderRadius: '50%',
+          border: '3px solid rgba(255,255,255,0.1)',
+          borderTopColor: '#ff0000',
+          animation: 'spin 1s linear infinite'
+        }} />
+        <style>{`
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
   return (
     <div className="app-container">
       {/* HEADER COMPONENT */}
@@ -925,7 +1130,15 @@ export default function App() {
                       setShowSuggestions(false);
                     }}
                   >
-                    <Search size={14} className="suggestion-icon" />
+                    <div className="suggestion-thumbnail-container">
+                      <img 
+                        src={`./thumbnails/${sug.vid_id}.jpg`} 
+                        onError={(e) => { e.target.classList.add('hide-thumb'); }} 
+                        alt="" 
+                        className="suggestion-thumbnail" 
+                      />
+                      <Search size={14} className="suggestion-fallback-icon" />
+                    </div>
                     <span>{sug.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}</span>
                   </div>
                 ))}
@@ -987,9 +1200,16 @@ export default function App() {
             </button>
             {showUserDropdown && (
               <div className="user-menu-dropdown">
-                <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)', fontSize: '13px', color: '#aaa' }}>
-                  Signed in as <strong style={{ color: '#fff', display: 'block', textOverflow: 'ellipsis', overflow: 'hidden' }}>{user.name}</strong>
+                <div className="user-menu-header">
+                  <img src={user.pic} alt="" className="user-menu-avatar" />
+                  <div className="user-menu-info">
+                    <span className="user-menu-name">{user.name}</span>
+                    <span className="user-menu-role">{user.privilege === 'ADMIN' ? 'Administrator' : 'User Account'}</span>
+                  </div>
                 </div>
+                
+                <div className="user-menu-divider" />
+                
                 <button
                   className="user-menu-item"
                   onClick={() => {
@@ -997,10 +1217,34 @@ export default function App() {
                     handleGoToProfile(user.name);
                   }}
                 >
-                  <Info size={16} /> Channel Details
+                  <div className="user-menu-item-left">
+                    <Info size={16} className="menu-item-icon" />
+                    <span>Channel Details</span>
+                  </div>
+                  <ChevronRight size={14} className="menu-item-arrow" />
                 </button>
-                <button className="user-menu-item" onClick={handleLogout}>
-                  <CornerUpLeft size={16} /> Sign Out
+                
+                <button
+                  className="user-menu-item"
+                  onClick={() => {
+                    setShowUserDropdown(false);
+                    setCurrentView('settings');
+                    window.history.pushState(null, '', '?page=settings');
+                  }}
+                >
+                  <div className="user-menu-item-left">
+                    <Settings size={16} className="menu-item-icon" />
+                    <span>Settings</span>
+                  </div>
+                  <ChevronRight size={14} className="menu-item-arrow" />
+                </button>
+                
+                <button className="user-menu-item logout" onClick={handleLogout}>
+                  <div className="user-menu-item-left">
+                    <CornerUpLeft size={16} className="menu-item-icon" />
+                    <span>Sign Out</span>
+                  </div>
+                  <ChevronRight size={14} className="menu-item-arrow" />
                 </button>
               </div>
             )}
@@ -1151,8 +1395,7 @@ export default function App() {
             <HomeView
               videos={videos}
               loading={loading}
-              activeCategory={activeCategory}
-              currentSort={currentSort}
+              activePillId={activePillId}
               onPillSelect={handlePillSelect}
               onPlayVideo={(video) => {
                 setActivePlaylist(null);
@@ -1314,6 +1557,13 @@ export default function App() {
           {currentView === 'converter' && (
             <ConverterView />
           )}
+
+          {currentView === 'settings' && (
+            <SettingsView 
+              currentUser={user}
+              showFlashNotification={showFlashNotification}
+            />
+          )}
         </main>
       </div>
 
@@ -1333,6 +1583,11 @@ export default function App() {
           initialTab={authModalTab}
         />
       )}
+      {showNotification && (
+        <div key={notifKey} className="player-notification-banner">
+          {showNotification}
+        </div>
+      )}
     </div>
   );
 }
@@ -1340,9 +1595,66 @@ export default function App() {
 // ----------------------------------------
 // SUB-VIEW: HomeView
 // ----------------------------------------
-function HomeView({ videos, loading, activeCategory, currentSort, onPillSelect, onPlayVideo, onPlayShort }) {
+const DEFAULT_PILLS = [
+  { id: 'all', label: 'all', category: 'all', sort: 'mix', filterType: 'all', filterVal: '', sortBy: 'mix', mediaType: 'mixed', excludeShortsInVideoSection: false },
+  { id: 'recent', label: 'recent', category: 'all', sort: 'recent', filterType: 'all', filterVal: '', sortBy: 'recent', mediaType: 'only_videos', excludeShortsInVideoSection: false },
+  { id: 'oldest', label: 'oldest', category: 'all', sort: 'oldest', filterType: 'all', filterVal: '', sortBy: 'oldest', mediaType: 'only_videos', excludeShortsInVideoSection: false },
+  { id: 'downloads', label: 'downloads', category: 'downloads', sort: 'recent', filterType: 'folder', filterVal: '%download%', sortBy: 'recent', mediaType: 'only_videos', excludeShortsInVideoSection: false },
+  { id: 'hot', label: 'hot', category: 'all', sort: 'hot', filterType: 'all', filterVal: '', sortBy: 'hot', mediaType: 'only_videos', excludeShortsInVideoSection: false },
+  { id: 'most_liked', label: 'most liked', category: 'all', sort: 'likes', filterType: 'all', filterVal: '', sortBy: 'likes', mediaType: 'only_videos', excludeShortsInVideoSection: false },
+  { id: 'favourite', label: 'favourite', category: 'favourite', sort: 'recent', filterType: 'tag', filterVal: 'favourite', sortBy: 'recent', mediaType: 'only_videos', excludeShortsInVideoSection: false }
+];
+
+function HomeView({ videos, loading, activePillId, onPillSelect, onPlayVideo, onPlayShort }) {
   const [visibleCount, setVisibleCount] = useState(24);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [staticPills, setStaticPills] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem('yt_cached_db_pills') || localStorage.getItem('yt_cached_db_pills');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) { }
+    return DEFAULT_PILLS;
+  });
+
+  const fetchPills = async () => {
+    try {
+      // Migrate legacy localStorage pills to DB if present
+      const localPills = localStorage.getItem('yt_custom_pills');
+      if (localPills) {
+        try {
+          const parsed = JSON.parse(localPills);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            await fetch('./api/index.php?action=save_pills', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(parsed)
+            });
+          }
+        } catch (e) { }
+        localStorage.removeItem('yt_custom_pills');
+      }
+
+      const res = await fetch('./api/index.php?action=get_pills');
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        setStaticPills(data);
+        sessionStorage.setItem('yt_cached_db_pills', JSON.stringify(data));
+        localStorage.setItem('yt_cached_db_pills', JSON.stringify(data));
+      }
+    } catch (e) {
+      console.error('Error fetching pills from DB:', e);
+    }
+  };
+
+  useEffect(() => {
+    fetchPills();
+    const handler = () => fetchPills();
+    window.addEventListener('yt-pills-changed', handler);
+    return () => window.removeEventListener('yt-pills-changed', handler);
+  }, []);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -1350,36 +1662,53 @@ function HomeView({ videos, loading, activeCategory, currentSort, onPillSelect, 
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const staticPills = [
-    { id: 'all', label: 'all', category: 'all', sort: 'mix' },
-    { id: 'recent', label: 'recent', category: 'all', sort: 'recent' },
-    { id: 'oldest', label: 'oldest', category: 'all', sort: 'oldest' },
-    { id: 'video_songs', label: 'video songs', category: 'video songs', sort: 'recent' },
-    { id: 'downloads', label: 'downloads', category: 'downloads', sort: 'recent' },
-    { id: 'hot', label: 'hot', category: 'all', sort: 'hot' },
-    { id: 'most_liked', label: 'most liked', category: 'all', sort: 'likes' },
-    { id: 'favourite', label: 'favourite', category: 'favourite', sort: 'recent' }
-  ];
+  useEffect(() => {
+    const handler = () => {
+      try {
+        const stored = localStorage.getItem('yt_custom_pills');
+        setStaticPills(stored ? JSON.parse(stored) : DEFAULT_PILLS);
+      } catch(e) { setStaticPills(DEFAULT_PILLS); }
+    };
+    window.addEventListener('yt-pills-changed', handler);
+    return () => window.removeEventListener('yt-pills-changed', handler);
+  }, []);
 
-  const isAllMix = activeCategory === 'all' && currentSort === 'mix';
+  const activePill = useMemo(() => {
+    return staticPills.find(p => p.id === activePillId) || DEFAULT_PILLS.find(p => p.id === activePillId) || { mediaType: 'only_videos', excludeShortsInVideoSection: false };
+  }, [staticPills, activePillId]);
+
+  const activeMediaType = activePill.mediaType || 'only_videos';
+  const excludeShortsInVideoSection = Boolean(activePill.excludeShortsInVideoSection);
+  const shouldRenderShortsShelf = activeMediaType === 'mixed' || activeMediaType === 'only_shorts';
 
   // Separate videos into categories
   const shortsVideos = useMemo(() => {
-    if (!isAllMix) return [];
-    return videos.filter(isShort).sort(() => 0.5 - Math.random());
-  }, [videos, isAllMix]);
-  const regularVideos = useMemo(() => isAllMix ? videos.filter(v => !isShort(v)) : videos, [videos, isAllMix]);
+    if (!shouldRenderShortsShelf) return [];
+    const filtered = videos.filter(isShort);
+    if (activePill.sortBy === 'mix') {
+      return filtered.sort(() => 0.5 - Math.random());
+    }
+    return filtered;
+  }, [videos, shouldRenderShortsShelf, activePill]);
+
+  const regularVideos = useMemo(() => {
+    if (activeMediaType === 'only_shorts' || activeMediaType === 'force_shorts') return [];
+    if (excludeShortsInVideoSection || activeMediaType === 'mixed') {
+      return videos.filter(v => !isShort(v));
+    }
+    return videos;
+  }, [videos, activeMediaType, excludeShortsInVideoSection]);
 
   // Infinite Scroll Listener
   useEffect(() => {
     const handleScroll = () => {
       if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 300) {
-        setVisibleCount(prev => Math.min(prev + 24, regularVideos.length));
+        setVisibleCount(prev => Math.min(prev + 24, regularVideos.length || shortsVideos.length || videos.length));
       }
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [regularVideos]);
+  }, [regularVideos, shortsVideos, videos]);
 
   // Reset infinite scroll count when filter/videos changes
   useEffect(() => {
@@ -1390,10 +1719,50 @@ function HomeView({ videos, loading, activeCategory, currentSort, onPillSelect, 
   const visibleVideos = useMemo(() => videos.slice(0, visibleCount), [videos, visibleCount]);
 
   const renderInterleavedContent = () => {
-    if (!isAllMix || shortsVideos.length === 0) {
+    // 1. FORCE SHORTS: Render ALL videos in the shelf as ShortsCards and play as Shorts
+    if (activeMediaType === 'force_shorts') {
+      return (
+        <div className="shorts-section" style={{ marginTop: 0 }}>
+          <div className="shorts-header">
+            <span className="shorts-header-icon">
+              <Flame size={20} fill="var(--primary-color)" stroke="none" />
+            </span>
+            <span>Force Shorts (All Videos)</span>
+          </div>
+          <div className="shorts-shelf" style={{ flexWrap: 'wrap', gap: '16px' }}>
+            {visibleVideos.map((vid) => (
+              <ShortsCard key={vid.vid_id} video={vid} onClick={() => onPlayShort(vid, videos)} />
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // 2. ONLY SHORTS: Render only actual Shorts in shelf format
+    if (activeMediaType === 'only_shorts') {
+      const shortsToDisplay = shortsVideos.length > 0 ? shortsVideos : videos.filter(isShort);
+      return (
+        <div className="shorts-section" style={{ marginTop: 0 }}>
+          <div className="shorts-header">
+            <span className="shorts-header-icon">
+              <Flame size={20} fill="var(--primary-color)" stroke="none" />
+            </span>
+            <span>Shorts</span>
+          </div>
+          <div className="shorts-shelf" style={{ flexWrap: 'wrap', gap: '16px' }}>
+            {shortsToDisplay.slice(0, visibleCount).map((vid) => (
+              <ShortsCard key={vid.vid_id} video={vid} onClick={() => onPlayShort(vid, shortsToDisplay)} />
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // 3. ONLY VIDEOS / MIXED (when no shorts available): Standard video grid
+    if (!shouldRenderShortsShelf || shortsVideos.length === 0) {
       return (
         <div className="video-grid">
-          {visibleVideos.map((vid) => (
+          {visibleRegularVideos.map((vid) => (
             <VideoCard key={vid.vid_id} video={vid} onClick={() => onPlayVideo(vid)} />
           ))}
         </div>
@@ -1462,12 +1831,12 @@ function HomeView({ videos, loading, activeCategory, currentSort, onPillSelect, 
       {/* Category Selection Bar */}
       <div className="category-bar">
         {staticPills.map((pill) => {
-          const isActive = activeCategory === pill.category && currentSort === pill.sort;
+          const isActive = activePillId === pill.id;
           return (
             <button
               key={pill.id}
               className={`category-pill ${isActive ? 'active' : ''}`}
-              onClick={() => onPillSelect(pill.category, pill.sort)}
+              onClick={() => onPillSelect(pill)}
             >
               {pill.label}
             </button>
@@ -1557,6 +1926,20 @@ function ShortsPlayerView({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [flashIcon, setFlashIcon] = useState(null); // 'play' | 'pause' | null
   const [showDescription, setShowDescription] = useState(false);
+  const [shortsIsZoomed, setShortsIsZoomed] = useState(false);
+  const [hideShortsUi, setHideShortsUi] = useState(false);
+  const isPinchingRef = useRef(false);
+  const pinchEndTimeRef = useRef(0);
+  const touchStartDist = useRef(0);
+
+  const toggleShortsUi = (e) => {
+    if (e) e.stopPropagation();
+    setHideShortsUi(prev => {
+      const next = !prev;
+      showFlashNotification(next ? 'UI Hidden' : 'UI Restored');
+      return next;
+    });
+  };
 
   // Edit / Delete / Save states
   const [showEditModal, setShowEditModal] = useState(false);
@@ -1625,6 +2008,37 @@ function ShortsPlayerView({
       console.error(err);
     } finally {
       setSavingEdit(false);
+    }
+  };
+
+  const formatFullDate = (dateStr) => {
+    if (!dateStr) return '';
+    try {
+      const cleanStr = dateStr.includes('T') ? dateStr : dateStr + 'T' + (currentVideo?.upload_time || '00:00:00');
+      const d = new Date(cleanStr);
+      if (isNaN(d.getTime())) return dateStr;
+      const formatted = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+      const now = new Date();
+      const diffMs = now - d;
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+      let relative = '';
+      if (diffDays > 365) {
+        const yrs = Math.floor(diffDays / 365);
+        relative = `${yrs} ${yrs === 1 ? 'year' : 'years'} ago`;
+      } else if (diffDays > 30) {
+        const mos = Math.floor(diffDays / 30);
+        relative = `${mos} ${mos === 1 ? 'month' : 'months'} ago`;
+      } else if (diffDays > 0) {
+        relative = `${diffDays} ${diffDays === 1 ? 'day' : 'days'} ago`;
+      } else if (diffDays === 0) {
+        relative = 'Today';
+      }
+
+      return relative ? `${formatted} (${relative})` : formatted;
+    } catch (e) {
+      return dateStr;
     }
   };
 
@@ -1789,12 +2203,85 @@ function ShortsPlayerView({
     return () => window.removeEventListener('keydown', onKey);
   }, [currentIndex, shortsList, isPlaying]);
 
-  // Touch swipe
+  // Touch & Mouse drag vertical swipe + Pinch Zoom
   const touchStartY = useRef(0);
-  const handleTouchStart = (e) => { touchStartY.current = e.touches[0].clientY; };
+  const isMouseDown = useRef(false);
+  const mouseStartY = useRef(0);
+  const mouseDragDiff = useRef(0);
+
+  const handleTouchStart = (e) => {
+    if (e.touches.length === 2) {
+      isPinchingRef.current = true;
+      const d = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      touchStartDist.current = d;
+    } else if (e.touches.length === 1) {
+      if (Date.now() - pinchEndTimeRef.current > 400) {
+        touchStartY.current = e.touches[0].clientY;
+      }
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (e.touches.length === 2) {
+      isPinchingRef.current = true;
+      const d = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const diff = d - touchStartDist.current;
+      if (Math.abs(diff) > 35) {
+        if (diff > 0 && !shortsIsZoomed) {
+          setShortsIsZoomed(true);
+          showFlashNotification('Zoomed to Fill Screen Vertically');
+          touchStartDist.current = d;
+        } else if (diff < 0 && shortsIsZoomed) {
+          setShortsIsZoomed(false);
+          showFlashNotification('Original Aspect Ratio (Fit)');
+          touchStartDist.current = d;
+        }
+      }
+    }
+  };
+
   const handleTouchEnd = (e) => {
-    const diff = touchStartY.current - e.changedTouches[0].clientY;
-    if (Math.abs(diff) > 60) diff > 0 ? handleNext() : handlePrev();
+    if (isPinchingRef.current || e.touches.length > 0 || Date.now() - pinchEndTimeRef.current < 400) {
+      pinchEndTimeRef.current = Date.now();
+      if (e.touches.length === 0) {
+        isPinchingRef.current = false;
+      }
+      return;
+    }
+
+    if (e.changedTouches.length === 1) {
+      const diff = touchStartY.current - e.changedTouches[0].clientY;
+      if (Math.abs(diff) > 60) diff > 0 ? handleNext() : handlePrev();
+    }
+  };
+
+  const handleMouseDown = (e) => {
+    if (e.button !== 0) return;
+    if (e.target && e.target.closest('button, input, textarea, a, select, .shorts-comments-panel, .shorts-actions-column')) return;
+    isMouseDown.current = true;
+    mouseStartY.current = e.clientY;
+    mouseDragDiff.current = 0;
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isMouseDown.current) return;
+    mouseDragDiff.current = mouseStartY.current - e.clientY;
+  };
+
+  const handleMouseUp = () => {
+    if (!isMouseDown.current) return;
+    isMouseDown.current = false;
+    const diff = mouseDragDiff.current;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) handleNext();
+      else handlePrev();
+    }
   };
 
   // Fullscreen sync
@@ -1827,6 +2314,15 @@ function ShortsPlayerView({
   // Single click = play/pause; double click = fullscreen
   const handleVideoClick = (e) => {
     e.stopPropagation();
+    if (hideShortsUi) {
+      setHideShortsUi(false);
+      showFlashNotification('UI Restored');
+      return;
+    }
+    if (Math.abs(mouseDragDiff.current) > 10) {
+      mouseDragDiff.current = 0;
+      return;
+    }
     clearTimeout(clickTimer.current);
     clickTimer.current = setTimeout(() => {
       togglePlay();
@@ -1926,13 +2422,28 @@ function ShortsPlayerView({
     <div
       className="shorts-viewer-overlay"
       onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
     >
       {/* Back button — fixed over everything */}
-      <button className="shorts-back-btn" onClick={onClose} title="Go Back">
-        <ChevronLeft size={24} />
-        <span>Back</span>
-      </button>
+      {!hideShortsUi && (
+        <button className="shorts-back-btn" onClick={onClose} title="Go Back">
+          <ChevronLeft size={24} />
+          <span>Back</span>
+        </button>
+      )}
+
+      {/* Floating Unhide Button when UI is hidden */}
+      {hideShortsUi && (
+        <button className="shorts-unhide-ui-btn" onClick={toggleShortsUi} title="Show UI">
+          <EyeOff size={22} />
+          <span>Show UI</span>
+        </button>
+      )}
 
       {/* Outer layout */}
       <div ref={playerLayoutRef} className="shorts-player-layout">
@@ -1952,7 +2463,18 @@ function ShortsPlayerView({
 
                   {/* Active slide: live video */}
                   {isActive && (
-                    <video ref={videoRef} className="shorts-video-element" loop autoPlay playsInline />
+                    <video
+                      ref={videoRef}
+                      className="shorts-video-element"
+                      loop
+                      autoPlay
+                      playsInline
+                      style={{
+                        objectFit: shortsIsZoomed ? 'cover' : 'contain',
+                        objectPosition: 'center center',
+                        transition: 'object-fit 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)'
+                      }}
+                    />
                   )}
                   {/* Inactive slides: thumbnail placeholder */}
                   {!isActive && (
@@ -1964,11 +2486,11 @@ function ShortsPlayerView({
                     />
                   )}
 
-                  {/* Controls (volume + fullscreen) — only active */}
-                  {isActive && (
+                  {/* Controls (volume + fullscreen) — only active and when UI is not hidden */}
+                  {isActive && !hideShortsUi && (
                     <div className="shorts-video-controls" onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                       <div
-                        className="shorts-volume-wrapper"
+                        className={`shorts-volume-wrapper ${showVolumeSlider ? 'expanded' : ''}`}
                         onMouseEnter={onVolumeEnter}
                         onMouseLeave={onVolumeLeave}
                         onClick={e => e.stopPropagation()}
@@ -1976,17 +2498,18 @@ function ShortsPlayerView({
                         <button className="shorts-control-icon-btn" onClick={toggleMute} title={isMuted ? 'Unmute' : 'Mute'}>
                           {isMuted || volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
                         </button>
-                        {showVolumeSlider && (
-                          <div className="shorts-volume-popup">
-                            <input
-                              type="range"
-                              min="0" max="1" step="0.02"
-                              value={isMuted ? 0 : volume}
-                              onChange={handleVolumeChange}
-                              className="shorts-volume-slider"
-                            />
-                          </div>
-                        )}
+                        <div className="shorts-volume-slider-container">
+                          <input
+                            type="range"
+                            min="0" max="1" step="0.02"
+                            value={isMuted ? 0 : volume}
+                            onChange={handleVolumeChange}
+                            className="shorts-volume-slider-horizontal"
+                            style={{
+                              background: `linear-gradient(to right, var(--primary-color, #ff0000) 0%, var(--primary-color, #ff0000) ${(isMuted ? 0 : volume) * 100}%, rgba(255, 255, 255, 0.3) ${(isMuted ? 0 : volume) * 100}%, rgba(255, 255, 255, 0.3) 100%)`
+                            }}
+                          />
+                        </div>
                       </div>
                       <button className="shorts-control-icon-btn" onClick={toggleFullscreen} title="Fullscreen">
                         {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
@@ -2005,27 +2528,29 @@ function ShortsPlayerView({
                   )}
 
                   {/* Bottom-left meta */}
-                  <div className="shorts-meta-overlay" onClick={e => e.stopPropagation()}>
-                    <div className="shorts-uploader-row">
-                      <img
-                        className="shorts-uploader-avatar"
-                        src={vid.uploader_img || './Userdatabase/ProfilePic/defaulta.jpg'}
-                        alt={vid.uploader_name}
-                      />
-                      <span className="shorts-uploader-name">@{vid.uploader_name}</span>
+                  {!hideShortsUi && (
+                    <div className="shorts-meta-overlay" onClick={e => e.stopPropagation()}>
+                      <div className="shorts-uploader-row">
+                        <img
+                          className="shorts-uploader-avatar"
+                          src={vid.uploader_img || './Userdatabase/ProfilePic/defaulta.jpg'}
+                          alt={vid.uploader_name}
+                        />
+                        <span className="shorts-uploader-name">@{vid.uploader_name}</span>
+                      </div>
+                      <div
+                        className="shorts-meta-title clickable-title"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowDescription(!showDescription);
+                          setShowComments(false);
+                        }}
+                        title="View description"
+                      >
+                        {slideTitle}
+                      </div>
                     </div>
-                    <div
-                      className="shorts-meta-title clickable-title"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowDescription(!showDescription);
-                        setShowComments(false);
-                      }}
-                      title="View description"
-                    >
-                      {slideTitle}
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             );
@@ -2033,40 +2558,43 @@ function ShortsPlayerView({
         </div>
 
         {/* Right action sidebar */}
-        <div className="shorts-actions-column" onClick={e => e.stopPropagation()}>
-          <div className="shorts-action-item">
-            <button className={`shorts-action-btn-circle ${liked ? 'active-like' : ''}`} onClick={handleLike}>
-              <ThumbsUp size={22} fill={liked ? 'currentColor' : 'none'} />
-            </button>
-            <span className="shorts-action-label">{(currentVideo.likes || 0) + (liked ? 1 : 0)}</span>
-          </div>
+        {!hideShortsUi && (
+          <div className="shorts-actions-column" onClick={e => e.stopPropagation()}>
+            <div className="shorts-action-item">
+              <button className={`shorts-action-btn-circle ${liked ? 'active-like' : ''}`} onClick={handleLike}>
+                <ThumbsUp size={22} fill={liked ? 'currentColor' : 'none'} />
+              </button>
+              <span className="shorts-action-label">{(currentVideo.likes || 0) + (liked ? 1 : 0)}</span>
+            </div>
 
-          <div className="shorts-action-item">
-            <button className={`shorts-action-btn-circle ${disliked ? 'active-dislike' : ''}`} onClick={handleDislike}>
-              <ThumbsDown size={22} fill={disliked ? 'currentColor' : 'none'} />
-            </button>
-            <span className="shorts-action-label">Dislike</span>
-          </div>
 
-          <div className="shorts-action-item" onClick={() => { setShowComments(!showComments); setShowDescription(false); }}>
-            <button className={`shorts-action-btn-circle ${showComments ? 'active' : ''}`}>
-              <MessageSquare size={22} fill={showComments ? 'currentColor' : 'none'} />
-            </button>
-            <span className="shorts-action-label">{currentVideo.comments || 0}</span>
-          </div>
+            <div className="shorts-action-item" onClick={() => { setShowComments(!showComments); setShowDescription(false); }}>
+              <button className={`shorts-action-btn-circle ${showComments ? 'active' : ''}`}>
+                <MessageSquare size={22} fill={showComments ? 'currentColor' : 'none'} />
+              </button>
+              <span className="shorts-action-label">{currentVideo.comments || 0}</span>
+            </div>
 
-          <div className="shorts-action-item">
-            <button className="shorts-action-btn-circle nav-arrow" onClick={handlePrev} disabled={currentIndex === 0}>
-              <ChevronLeft size={22} style={{ transform: 'rotate(90deg)' }} />
-            </button>
-          </div>
+            <div className="shorts-action-item">
+              <button className="shorts-action-btn-circle" onClick={toggleShortsUi} title="Hide UI">
+                <Eye size={22} />
+              </button>
+              <span className="shorts-action-label">Hide UI</span>
+            </div>
 
-          <div className="shorts-action-item">
-            <button className="shorts-action-btn-circle nav-arrow" onClick={handleNext} disabled={currentIndex === shortsList.length - 1}>
-              <ChevronLeft size={22} style={{ transform: 'rotate(-90deg)' }} />
-            </button>
+            <div className="shorts-action-item">
+              <button className="shorts-action-btn-circle nav-arrow" onClick={handlePrev} disabled={currentIndex === 0}>
+                <ChevronLeft size={22} style={{ transform: 'rotate(90deg)' }} />
+              </button>
+            </div>
+
+            <div className="shorts-action-item">
+              <button className="shorts-action-btn-circle nav-arrow" onClick={handleNext} disabled={currentIndex === shortsList.length - 1}>
+                <ChevronLeft size={22} style={{ transform: 'rotate(-90deg)' }} />
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Comments panel */}
         {showComments && (
@@ -2111,8 +2639,34 @@ function ShortsPlayerView({
               </button>
             </div>
             <div className="shorts-comments-body" style={{ padding: '16px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#fff', lineHeight: '1.4', wordBreak: 'break-word' }}>
-                {currentVideo.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}
+              {/* Header Box: Title + Upload Date + Views */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: '12px',
+                padding: '14px 16px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                border: '1px solid rgba(255, 255, 255, 0.08)'
+              }}>
+                <div style={{ fontSize: '15px', fontWeight: '700', color: '#fff', lineHeight: '1.4', wordBreak: 'break-word' }}>
+                  {currentVideo.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', fontSize: '13px', color: '#aaa', fontWeight: '500' }}>
+                  <span>{currentVideo.views ? Number(currentVideo.views).toLocaleString() + ' views' : '0 views'}</span>
+                  {currentVideo.upload_date && (
+                    <>
+                      <span>•</span>
+                      <span>{formatFullDate(currentVideo.upload_date)}</span>
+                    </>
+                  )}
+                  {currentVideo.likes ? (
+                    <>
+                      <span>•</span>
+                      <span>{Number(currentVideo.likes).toLocaleString()} likes</span>
+                    </>
+                  ) : null}
+                </div>
               </div>
 
               {/* Action Buttons: Edit, Delete, Save */}
@@ -2369,6 +2923,7 @@ function VideoCard({ video, onClick }) {
       className="video-card"
       onClick={onClick}
       onMouseEnter={() => {
+        if (localStorage.getItem('yt_hover_play') === 'false') return;
         if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
         hoverTimeoutRef.current = setTimeout(() => {
           setIsHovered(true);
@@ -2558,6 +3113,77 @@ function PlayerView({
   const [savePlaylistName, setSavePlaylistName] = useState('');
   const [showAddPicker, setShowAddPicker] = useState(false);
   const [addPickerQuery, setAddPickerQuery] = useState('');
+
+  // Mobile double-tap seek states & handlers
+  const [doubleTapOverlay, setDoubleTapOverlay] = useState(null);
+  const doubleTapTimerRef = useRef(null);
+  const lastTapRef = useRef({ time: 0, x: 0, count: 0 });
+  const doubleTapFadeTimerRef = useRef(null);
+
+  const handleMobileVideoTouch = (e) => {
+    if (e.target && e.target.closest('button, input, select, textarea, .control-btn, .mobile-progress-container, .player-controls')) {
+      return;
+    }
+
+    const now = Date.now();
+    const touch = e.changedTouches ? e.changedTouches[0] : (e.clientX ? e : null);
+    if (!touch) return;
+
+    const targetElem = (playerWrapperRef.current && (isFullscreen || document.fullscreenElement)) ? playerWrapperRef.current : (e.currentTarget || e.target);
+    const rect = targetElem.getBoundingClientRect();
+    const touchX = touch.clientX - rect.left;
+    const thirdWidth = rect.width / 3;
+    const zone = touchX < thirdWidth ? 'left' : (touchX >= thirdWidth * 2 ? 'right' : 'middle');
+    const skipSec = parseInt(localStorage.getItem('yt_skip_interval')) || 10;
+
+    const timeDiff = now - lastTapRef.current.time;
+    const isSameZone = zone === lastTapRef.current.zone;
+
+    if (timeDiff < 280 && isSameZone) {
+      clearTimeout(doubleTapTimerRef.current);
+      const newCount = (lastTapRef.current.count || 1) + 1;
+      lastTapRef.current = { time: now, zone, count: newCount };
+
+      const totalSkip = skipSec * (newCount - 1);
+      if (zone === 'left') {
+        if (videoRef.current) {
+          const newTime = Math.max(0, videoRef.current.currentTime - skipSec);
+          videoRef.current.currentTime = newTime;
+          setCurrentTime(newTime);
+        }
+        setDoubleTapOverlay({
+          type: 'rewind',
+          seconds: totalSkip,
+          key: Date.now()
+        });
+      } else if (zone === 'right') {
+        if (videoRef.current) {
+          const newTime = Math.min(duration, videoRef.current.currentTime + skipSec);
+          videoRef.current.currentTime = newTime;
+          setCurrentTime(newTime);
+        }
+        setDoubleTapOverlay({
+          type: 'forward',
+          seconds: totalSkip,
+          key: Date.now()
+        });
+      } else if (zone === 'middle') {
+        toggleFullscreen(e);
+      }
+
+      clearTimeout(doubleTapFadeTimerRef.current);
+      doubleTapFadeTimerRef.current = setTimeout(() => {
+        setDoubleTapOverlay(null);
+        lastTapRef.current = { time: 0, zone: null, count: 0 };
+      }, 700);
+    } else {
+      lastTapRef.current = { time: now, zone, count: 1 };
+      doubleTapTimerRef.current = setTimeout(() => {
+        togglePlay();
+        setShowMobileControls(true);
+      }, 240);
+    }
+  };
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -2833,7 +3459,15 @@ function PlayerView({
 
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(parseInt(video.duration) || 0);
-  const [volume, setVolume] = useState(() => parseFloat(localStorage.getItem('yt_volume') ?? '0.5'));
+  const [volume, setVolume] = useState(() => {
+    if (localStorage.getItem('yt_persist_volume') === 'false') return 0.5;
+    return parseFloat(localStorage.getItem('yt_volume') ?? '0.5');
+  });
+  const saveVolume = (vol) => {
+    if (localStorage.getItem('yt_persist_volume') !== 'false') {
+      localStorage.setItem('yt_volume', vol);
+    }
+  };
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -2841,7 +3475,7 @@ function PlayerView({
   useEffect(() => {
     if (window.matchMedia('(hover: none)').matches) {
       setVolume(1);
-      localStorage.setItem('yt_volume', '1');
+      saveVolume(1);
     }
   }, []);
 
@@ -2897,12 +3531,22 @@ function PlayerView({
 
   // Phone pinch-to-zoom state
   const isPhoneRef = useRef(isPhone());
-  const [phoneZoom, setPhoneZoom] = useState(0); // 0=fit, 1=fill, >1=zoomed
-  const phoneZoomRef = useRef(0);
-  const pinchRef = useRef({ active: false, startDist: 0, startZoom: 0 });
-  const pinchOriginRef = useRef({ x: 50, y: 50 });
-  const snappedToFillRef = useRef(false);
   const targetOrientationRef = useRef('landscape');
+  const [playPageZoomed, setPlayPageZoomed] = useState(false);
+  const [playPageDeepZoom, setPlayPageDeepZoom] = useState(1);
+  const playPageZoomedRef = useRef(false);
+  const playPageDeepZoomRef = useRef(1);
+  const playPagePinchRef = useRef({ active: false, startDist: 0, startZoomed: false, startDeepZoom: 1 });
+
+  useEffect(() => {
+    playPageZoomedRef.current = playPageZoomed;
+    playPageDeepZoomRef.current = playPageDeepZoom;
+  }, [playPageZoomed, playPageDeepZoom]);
+
+  useEffect(() => {
+    setPlayPageZoomed(false);
+    setPlayPageDeepZoom(1);
+  }, [video?.vid_id]);
 
   const handleMouseDown = (e) => {
     if (!isMiniPlayer) return;
@@ -3955,7 +4599,7 @@ function PlayerView({
     const vol = parseFloat(e.target.value);
     setVolume(vol);
     setIsMuted(vol === 0);
-    localStorage.setItem('yt_volume', vol);
+    saveVolume(vol);
     if (videoRef.current) {
       videoRef.current.volume = vol;
       videoRef.current.muted = vol === 0;
@@ -4206,8 +4850,8 @@ function PlayerView({
   // Phone pinch-to-zoom: reset on fullscreen exit
   useEffect(() => {
     if (!isFullscreen) {
-      setPhoneZoom(0);
-      phoneZoomRef.current = 0;
+      setPlayPageZoomed(false);
+      setPlayPageDeepZoom(1);
     }
   }, [isFullscreen]);
 
@@ -4223,55 +4867,55 @@ function PlayerView({
     };
 
     const onTouchStart = (e) => {
-      if (!isFullscreen || e.touches.length !== 2) return;
+      if (e.touches.length !== 2) return;
       e.preventDefault();
       const dist = getTouchDistance(e.touches);
-      const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-      const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-      const rect = wrapper.getBoundingClientRect();
-      pinchRef.current = {
+      playPagePinchRef.current = {
         active: true,
         startDist: dist,
-        startZoom: phoneZoomRef.current,
+        startZoomed: playPageZoomedRef.current,
+        startDeepZoom: playPageDeepZoomRef.current,
+        actionLocked: false,
       };
-      snappedToFillRef.current = false;
-      // Before content fit, always center-focused
-      if (phoneZoomRef.current < 1) {
-        pinchOriginRef.current = { x: 50, y: 50 };
-      } else {
-        pinchOriginRef.current = {
-          x: ((cx - rect.left) / rect.width) * 100,
-          y: ((cy - rect.top) / rect.height) * 100,
-        };
-      }
     };
 
     const onTouchMove = (e) => {
-      if (!pinchRef.current.active || e.touches.length !== 2) return;
+      if (!playPagePinchRef.current.active || e.touches.length !== 2 || playPagePinchRef.current.actionLocked) return;
       e.preventDefault();
       const dist = getTouchDistance(e.touches);
-      const ratio = dist / pinchRef.current.startDist;
-      let newZoom = Math.max(0, pinchRef.current.startZoom + (ratio - 1) * 1.8);
+      const startDist = playPagePinchRef.current.startDist || 1;
+      const diff = dist - startDist;
+      const ratio = dist / startDist;
+      const { startZoomed, startDeepZoom } = playPagePinchRef.current;
 
-      // Snap to fill level (1.0) with haptic feedback
-      const FILL = 1;
-      const SNAP_THRESHOLD = 0.3;
-      const inSnapZone = newZoom >= FILL - SNAP_THRESHOLD && newZoom <= FILL + SNAP_THRESHOLD;
-      const startedBelow = pinchRef.current.startZoom < FILL - SNAP_THRESHOLD;
-      const startedAbove = pinchRef.current.startZoom > FILL + SNAP_THRESHOLD;
-      if (inSnapZone && !snappedToFillRef.current && (startedBelow || startedAbove)) {
-        newZoom = FILL;
-        snappedToFillRef.current = true;
-        if (navigator.vibrate) navigator.vibrate([15, 30, 15]);
+      if (!startZoomed) {
+        // Pinching out from normal fit -> Snap to Fill Screen and lock gesture
+        if (diff > 35) {
+          setPlayPageZoomed(true);
+          showFlashNotification('Zoomed to Fill Screen');
+          if (navigator.vibrate) navigator.vibrate([15, 30, 15]);
+          playPagePinchRef.current.actionLocked = true;
+        }
+      } else {
+        // Already in Fill Screen when gesture started
+        if (startDeepZoom > 1 || ratio > 1.08) {
+          // Deep Zoom in/out centered
+          const newDeep = Math.min(2.5, Math.max(1, startDeepZoom * ratio));
+          setPlayPageDeepZoom(newDeep);
+        } else if (diff < -35 && startDeepZoom <= 1.05) {
+          // Pinching in from Fill Screen -> Snap back to Fit and lock gesture
+          setPlayPageZoomed(false);
+          setPlayPageDeepZoom(1);
+          showFlashNotification('Original Aspect Ratio (Fit)');
+          if (navigator.vibrate) navigator.vibrate([15, 30, 15]);
+          playPagePinchRef.current.actionLocked = true;
+        }
       }
-
-      phoneZoomRef.current = newZoom;
-      setPhoneZoom(newZoom);
     };
 
     const onTouchEnd = (e) => {
       if (e.touches.length < 2) {
-        pinchRef.current.active = false;
+        playPagePinchRef.current.active = false;
       }
     };
 
@@ -4392,30 +5036,32 @@ function PlayerView({
         e.preventDefault();
         toggleFullscreen();
       }
-      // Arrow Left/Right: seek ±5s (always active on player page)
+      // Arrow Left/Right: seek ±skipSec (always active on player page)
       if (e.code === 'ArrowLeft') {
         e.preventDefault();
         if (videoRef.current) {
-          const newTime = Math.max(0, videoRef.current.currentTime - 5);
+          const skipSec = parseInt(localStorage.getItem('yt_skip_interval')) || 10;
+          const newTime = Math.max(0, videoRef.current.currentTime - skipSec);
           videoRef.current.currentTime = newTime;
           setCurrentTime(newTime);
           if (castDevice) {
             handleRemoteSeek(newTime);
           } else {
-            showFlashNotification(`⏪ ${formatTime(newTime)}`);
+            showFlashNotification(`-${skipSec}s`);
           }
         }
       }
       if (e.code === 'ArrowRight') {
         e.preventDefault();
         if (videoRef.current) {
-          const newTime = Math.min(duration, videoRef.current.currentTime + 5);
+          const skipSec = parseInt(localStorage.getItem('yt_skip_interval')) || 10;
+          const newTime = Math.min(duration, videoRef.current.currentTime + skipSec);
           videoRef.current.currentTime = newTime;
           setCurrentTime(newTime);
           if (castDevice) {
             handleRemoteSeek(newTime);
           } else {
-            showFlashNotification(`⏩ ${formatTime(newTime)}`);
+            showFlashNotification(`+${skipSec}s`);
           }
         }
       }
@@ -4428,7 +5074,7 @@ function PlayerView({
         if (videoRef.current) { videoRef.current.volume = newVol; videoRef.current.muted = false; }
         setIsMuted(false);
         setVolume(newVol);
-        localStorage.setItem('yt_volume', newVol);
+        saveVolume(newVol);
         showFlashNotification(`Volume: ${Math.round(newVol * 100)}%`);
       }
       if (e.code === 'ArrowDown') {
@@ -4438,7 +5084,7 @@ function PlayerView({
         if (videoRef.current) { videoRef.current.volume = newVol; videoRef.current.muted = newVol === 0; }
         setIsMuted(newVol === 0);
         setVolume(newVol);
-        localStorage.setItem('yt_volume', newVol);
+        saveVolume(newVol);
         showFlashNotification(`Volume: ${Math.round(newVol * 100)}%`);
       }
       //}
@@ -4633,6 +5279,44 @@ function PlayerView({
         ref={playerWrapperRef}
         className={`video-player-wrapper ${isFullscreen && !userActive ? 'hide-controls' : ''}`}
       >
+        {/* Fullscreen Only Flash Notification Banner */}
+        {isFullscreen && showNotification && (
+          <div key={notifKey} className="fullscreen-player-flash-notification">
+            {showNotification}
+          </div>
+        )}
+
+        {/* YouTube Double-Tap Seek & Fullscreen Ripple Overlay */}
+        {doubleTapOverlay && (
+          <div className={`double-tap-ripple-overlay ripple-${doubleTapOverlay.type}`} key={doubleTapOverlay.key}>
+            <div className="double-tap-content">
+              {doubleTapOverlay.type === 'rewind' && (
+                <>
+                  <div className="double-tap-icons">
+                    <RotateCcw size={28} />
+                  </div>
+                  <span className="double-tap-label">-{doubleTapOverlay.seconds} seconds</span>
+                </>
+              )}
+              {doubleTapOverlay.type === 'forward' && (
+                <>
+                  <div className="double-tap-icons">
+                    <RotateCw size={28} />
+                  </div>
+                  <span className="double-tap-label">+{doubleTapOverlay.seconds} seconds</span>
+                </>
+              )}
+              {doubleTapOverlay.type === 'fullscreen' && (
+                <>
+                  <div className="double-tap-icons">
+                    <Maximize size={28} />
+                  </div>
+                  <span className="double-tap-label">{doubleTapOverlay.label}</span>
+                </>
+              )}
+            </div>
+          </div>
+        )}
         {isMiniPlayer && (
           <>
             {/* Hover Controls Panel */}
@@ -4793,27 +5477,13 @@ function PlayerView({
           className="html5-video"
           crossOrigin="anonymous"
           style={(() => {
-            if (!isFullscreen || !isPhoneRef.current) return {};
-            const v = videoRef.current;
-            const screenW = window.innerWidth;
-            const screenH = window.innerHeight;
-            const videoAspect = (v && v.videoWidth && v.videoHeight)
-              ? v.videoWidth / v.videoHeight
-              : (16 / 9);
-            const renderedW = Math.min(screenW, screenH * videoAspect);
-            const renderedH = Math.min(screenH, screenW / videoAspect);
-            const fillScale = Math.max(screenW / renderedW, screenH / renderedH);
-            let scale;
-            if (phoneZoom <= 1) {
-              scale = 1 + phoneZoom * (fillScale - 1);
-            } else {
-              scale = fillScale * phoneZoom;
-            }
+            if (!isPhoneRef.current && !isMobile) return {};
             return {
-              objectFit: 'contain',
-              transform: `scale(${scale})`,
-              transformOrigin: phoneZoom < 1 ? '50% 50%' : `${pinchOriginRef.current.x}% ${pinchOriginRef.current.y}%`,
-              transition: pinchRef.current.active ? 'none' : 'transform 0.3s ease',
+              objectFit: playPageZoomed ? 'cover' : 'contain',
+              objectPosition: 'center center',
+              transform: playPageDeepZoom > 1 ? `scale(${playPageDeepZoom})` : 'none',
+              transformOrigin: '50% 50%',
+              transition: playPagePinchRef.current.active ? 'none' : 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), object-fit 0.3s ease',
             };
           })()}
           autoPlay={!castDevice}
@@ -4824,14 +5494,20 @@ function PlayerView({
           onLoadedMetadata={handleLoadedMetadata}
           onEnded={handleVideoEnded}
           onClick={(e) => {
-            if (isMobile) {
+            const isTouchDevice = isMobile || isFullscreen || isPhoneRef.current || ('ontouchstart' in window) || (window.innerWidth <= 1024);
+            if (isTouchDevice) {
               e.stopPropagation();
-              setShowMobileControls(prev => !prev);
+              handleMobileVideoTouch(e);
             } else {
               togglePlay();
             }
           }}
-          onDoubleClick={toggleFullscreen}
+          onDoubleClick={(e) => {
+            const isTouchDevice = isMobile || isFullscreen || isPhoneRef.current || ('ontouchstart' in window) || (window.innerWidth <= 1024);
+            if (!isTouchDevice) {
+              toggleFullscreen(e);
+            }
+          }}
           onFocus={() => setIsVideoFocused(true)}
           onBlur={() => setIsVideoFocused(false)}
           tabIndex={0}
@@ -5298,8 +5974,9 @@ function PlayerView({
             <>
               <div
                 className="mobile-player-overlay-container"
+                onTouchEnd={handleMobileVideoTouch}
                 onClick={(e) => {
-                  if (e.target === e.currentTarget) {
+                  if (e.target === e.currentTarget && !isMobile) {
                     setShowMobileControls(false);
                   }
                 }}
@@ -5919,11 +6596,6 @@ function PlayerView({
           </>
         )}
 
-        {showNotification && (
-          <div key={notifKey} className="player-notification-banner">
-            {showNotification}
-          </div>
-        )}
       </div>
 
       {/* Transcode Confirmation Modal */}
