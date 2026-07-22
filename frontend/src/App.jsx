@@ -549,14 +549,23 @@ export default function App() {
   // Debounced search suggestions fetcher
   useEffect(() => {
     setActiveSuggestionIndex(-1);
-    if (searchQuery.trim() === '') {
+    const trimmed = searchQuery.trim();
+    if (trimmed === '') {
+      setSuggestions([]);
+      return;
+    }
+
+    const isShortsSearch = searchQuery.startsWith('/s ');
+    const queryTerm = isShortsSearch ? searchQuery.slice(3).trim() : trimmed;
+
+    if (queryTerm === '') {
       setSuggestions([]);
       return;
     }
 
     const delayDebounceFn = setTimeout(async () => {
       try {
-        const res = await fetch(`./api/index.php?action=search_suggestions&q=${encodeURIComponent(searchQuery)}`);
+        const res = await fetch(`./api/index.php?action=search_suggestions&q=${encodeURIComponent(queryTerm)}`);
         const data = await res.json();
         setSuggestions(data);
       } catch (e) {
@@ -611,9 +620,13 @@ export default function App() {
       if (activeSuggestionIndex >= 0 && activeSuggestionIndex < suggestions.length) {
         e.preventDefault();
         const selected = suggestions[activeSuggestionIndex];
-        // Don't update search input text, just play the video (user request)
-        fetchVideoAndPlay(selected.vid_id, true);
         setShowSuggestions(false);
+        setMobileSearchActive(false);
+        if (searchQuery.startsWith('/s ')) {
+          handleOpenShortById(selected.vid_id);
+        } else {
+          fetchVideoAndPlay(selected.vid_id, true);
+        }
       }
     }
   };
@@ -735,6 +748,30 @@ export default function App() {
   const handleSearchSubmit = async (e) => {
     e.preventDefault();
     setMobileSearchActive(false);
+    setShowSuggestions(false);
+
+    if (searchQuery.startsWith('/s ')) {
+      const q = searchQuery.slice(3).trim();
+      if (!q) return;
+
+      try {
+        const res = await fetch(`./api/index.php?action=videos&q=${encodeURIComponent(q)}&category=all&sort=recent&media_type=only_shorts`);
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          handlePlayShort(data[0], data);
+        } else {
+          const fallbackRes = await fetch(`./api/index.php?action=videos&q=${encodeURIComponent(q)}&category=all&sort=recent`);
+          const fallbackData = await fallbackRes.json();
+          if (Array.isArray(fallbackData) && fallbackData.length > 0) {
+            handleOpenShortById(fallbackData[0].vid_id);
+          }
+        }
+      } catch (err) {
+        console.error('Error in shorts search submit:', err);
+      }
+      return;
+    }
+
     fetchVideos(searchQuery, activeCategory, currentSort);
 
     const q = searchQuery.trim();
@@ -918,6 +955,37 @@ export default function App() {
     setInitialShortIndex(idx >= 0 ? idx : 0);
     window.history.pushState(null, '', `?sv=${shortVideo.vid_id}`);
     setCurrentView('shorts');
+  };
+
+  const handleOpenShortById = async (videoId) => {
+    try {
+      fetch(`./api/index.php?action=view_video&id=${videoId}`).catch(() => { });
+      window.history.pushState(null, '', `?sv=${videoId}`);
+
+      const res = await fetch('./api/index.php?action=videos&q=&category=all&sort=mix');
+      const allVideos = await res.json();
+      const allShorts = Array.isArray(allVideos) ? allVideos.filter(isShort) : [];
+
+      let list = allShorts;
+      let idx = list.findIndex(v => String(v.vid_id) === String(videoId));
+
+      if (idx === -1) {
+        const vRes = await fetch(`./api/index.php?action=video&id=${videoId}`);
+        const singleVid = await vRes.json();
+        if (singleVid && !singleVid.error) {
+          list = [singleVid, ...allShorts];
+          idx = 0;
+        }
+      }
+
+      if (list.length > 0) {
+        setShortsList(list);
+        setInitialShortIndex(idx >= 0 ? idx : 0);
+        setCurrentView('shorts');
+      }
+    } catch (e) {
+      console.error('Error opening short by id:', e);
+    }
   };
 
   // Called by ShortsPlayerView when slide changes — update URL without pushing a new history entry
@@ -1126,8 +1194,13 @@ export default function App() {
                     className={`suggestion-item ${index === activeSuggestionIndex ? 'active' : ''}`}
                     onMouseDown={(e) => {
                       e.preventDefault();
-                      fetchVideoAndPlay(sug.vid_id, true);
                       setShowSuggestions(false);
+                      setMobileSearchActive(false);
+                      if (searchQuery.startsWith('/s ')) {
+                        handleOpenShortById(sug.vid_id);
+                      } else {
+                        fetchVideoAndPlay(sug.vid_id, true);
+                      }
                     }}
                   >
                     <div className="suggestion-thumbnail-container">
@@ -1140,6 +1213,9 @@ export default function App() {
                       <Search size={14} className="suggestion-fallback-icon" />
                     </div>
                     <span>{sug.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}</span>
+                    {searchQuery.startsWith('/s ') && (
+                      <span className="suggestion-shorts-badge">Shorts</span>
+                    )}
                   </div>
                 ))}
               </div>

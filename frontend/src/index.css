@@ -1783,6 +1783,20 @@ button {
   color: var(--text-primary);
 }
 
+.suggestion-shorts-badge {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: #ff4e45;
+  background: rgba(255, 78, 69, 0.15);
+  border: 1px solid rgba(255, 78, 69, 0.3);
+  padding: 2px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
 .suggestion-thumbnail-container {
   position: relative;
   width: 48px;
