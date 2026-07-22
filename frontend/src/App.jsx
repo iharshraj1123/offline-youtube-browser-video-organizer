@@ -1503,6 +1503,7 @@ export default function App() {
             <PlayerView
               video={playingVideo}
               onVideoDeleted={handleGoHome}
+              onOpenShortById={handleOpenShortById}
               allVideos={watchNextVideos.length > 0 ? watchNextVideos : videos}
               onPlayVideo={(video, pl, index, keepMiniPlayer, skipHistory) => {
                 let targetPlaylistId = null;
@@ -3192,7 +3193,7 @@ function SidebarVideoCard({ vid, onPlayVideo }) {
 }
 
 function PlayerView({
-  video, onVideoDeleted, allVideos, onPlayVideo, isMiniPlayer, onExpand, onClose, isTheaterMode, setIsTheaterMode, onPlayRandom,
+  video, onVideoDeleted, onOpenShortById, allVideos, onPlayVideo, isMiniPlayer, onExpand, onClose, isTheaterMode, setIsTheaterMode, onPlayRandom,
   playlists, activePlaylist, setActivePlaylist, currentPlaylistIndex, setCurrentPlaylistIndex,
   addVideoToPlaylist, removeVideoFromPlaylist, createPlaylist, updatePlaylistOrder,
   isSidebarCollapsed, setIsSidebarCollapsed, currentUser, onOpenAuth, onNavigateToProfile, showFlashNotification,
@@ -3206,6 +3207,13 @@ function PlayerView({
   const [showSettings, setShowSettings] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState('');
+
+  // Fullscreen '/' search overlay state
+  const [showFsSearch, setShowFsSearch] = useState(false);
+  const [fsSearchQuery, setFsSearchQuery] = useState('');
+  const [fsSuggestions, setFsSuggestions] = useState([]);
+  const [fsActiveSugIndex, setFsActiveSugIndex] = useState(-1);
+  const fsSearchInputRef = useRef(null);
 
   // Metadata edit modal
   const [showEditModal, setShowEditModal] = useState(false);
@@ -4958,13 +4966,93 @@ function PlayerView({
     };
   }, []);
 
-  // Phone pinch-to-zoom: reset on fullscreen exit
+  // Phone pinch-to-zoom: reset on fullscreen exit + clear FS search state
   useEffect(() => {
     if (!isFullscreen) {
       setPlayPageZoomed(false);
       setPlayPageDeepZoom(1);
+      setShowFsSearch(false);
+      setFsSearchQuery('');
+      setFsSuggestions([]);
     }
   }, [isFullscreen]);
+
+  // Fullscreen search suggestions fetcher
+  useEffect(() => {
+    setFsActiveSugIndex(-1);
+    const trimmed = fsSearchQuery.trim();
+    if (!trimmed || !showFsSearch) {
+      setFsSuggestions([]);
+      return;
+    }
+
+    const isShortsQuery = fsSearchQuery.startsWith('/s ');
+    const queryTerm = isShortsQuery ? fsSearchQuery.slice(3).trim() : trimmed;
+
+    if (!queryTerm) {
+      setFsSuggestions([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`./api/index.php?action=search_suggestions&q=${encodeURIComponent(queryTerm)}`);
+        const data = await res.json();
+        setFsSuggestions(Array.isArray(data) ? data : []);
+      } catch (e) {
+        console.error('Error fetching fullscreen suggestions:', e);
+      }
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [fsSearchQuery, showFsSearch]);
+
+  const handleFsSearchKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      setShowFsSearch(false);
+      setFsSearchQuery('');
+      setFsSuggestions([]);
+      return;
+    }
+    if (fsSuggestions.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      e.stopPropagation();
+      setFsActiveSugIndex(prev => (prev + 1) % fsSuggestions.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      e.stopPropagation();
+      setFsActiveSugIndex(prev => (prev - 1 + fsSuggestions.length) % fsSuggestions.length);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      e.stopPropagation();
+      if (fsActiveSugIndex >= 0 && fsActiveSugIndex < fsSuggestions.length) {
+        handleSelectFsSuggestion(fsSuggestions[fsActiveSugIndex]);
+      } else if (fsSuggestions.length > 0) {
+        handleSelectFsSuggestion(fsSuggestions[0]);
+      }
+    }
+  };
+
+  const handleSelectFsSuggestion = (sug) => {
+    setShowFsSearch(false);
+    setFsSearchQuery('');
+    setFsSuggestions([]);
+    if (fsSearchQuery.startsWith('/s ')) {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => { });
+      }
+      if (onOpenShortById) {
+        onOpenShortById(sug.vid_id);
+      }
+    } else {
+      if (onPlayVideo) {
+        onPlayVideo(sug, undefined, undefined, false, false);
+      }
+    }
+  };
 
   // Phone pinch-to-zoom: attach/detach touch listeners
   useEffect(() => {
@@ -5046,7 +5134,15 @@ function PlayerView({
   // Hotkeys listener
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+      if (showFsSearch || (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA' || document.activeElement.isContentEditable))) {
+        return;
+      }
+      if ((e.code === 'Slash' || e.key === '/') && isFullscreen) {
+        e.preventDefault();
+        setShowFsSearch(true);
+        setTimeout(() => {
+          if (fsSearchInputRef.current) fsSearchInputRef.current.focus();
+        }, 50);
         return;
       }
       if (e.code === 'KeyL') {
@@ -5390,6 +5486,69 @@ function PlayerView({
         ref={playerWrapperRef}
         className={`video-player-wrapper ${isFullscreen && !userActive ? 'hide-controls' : ''}`}
       >
+        {/* Fullscreen Search Modal Overlay (Triggered by '/' key in Fullscreen) */}
+        {isFullscreen && showFsSearch && (
+          <div className="fullscreen-search-overlay" onClick={(e) => e.stopPropagation()}>
+            <div className="fullscreen-search-box">
+              <Search size={20} className="fullscreen-search-icon" />
+              <input
+                ref={fsSearchInputRef}
+                type="text"
+                className="fullscreen-search-input"
+                placeholder="Search videos... (e.g. /s for Shorts)"
+                value={fsSearchQuery}
+                onChange={(e) => setFsSearchQuery(e.target.value)}
+                onKeyDown={handleFsSearchKeyDown}
+                autoFocus
+              />
+              {fsSearchQuery && (
+                <button
+                  className="fullscreen-search-clear-btn"
+                  onClick={() => { setFsSearchQuery(''); setFsSuggestions([]); }}
+                >
+                  <X size={18} />
+                </button>
+              )}
+              <button
+                className="fullscreen-search-close-btn"
+                onClick={() => { setShowFsSearch(false); setFsSearchQuery(''); setFsSuggestions([]); }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {fsSuggestions.length > 0 && (
+              <div className="fullscreen-suggestions-dropdown">
+                {fsSuggestions.map((sug, idx) => (
+                  <div
+                    key={sug.vid_id}
+                    className={`fullscreen-suggestion-item ${idx === fsActiveSugIndex ? 'active' : ''}`}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleSelectFsSuggestion(sug);
+                    }}
+                  >
+                    <div className="fullscreen-suggestion-thumb">
+                      <img
+                        src={`./thumbnails/${sug.vid_id}.jpg`}
+                        alt=""
+                        onError={(e) => e.target.classList.add('hide-thumb')}
+                      />
+                      <Search size={14} className="suggestion-fallback-icon" />
+                    </div>
+                    <span className="fullscreen-suggestion-title">
+                      {sug.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}
+                    </span>
+                    {fsSearchQuery.startsWith('/s ') && (
+                      <span className="suggestion-shorts-badge">Shorts</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Fullscreen Only Flash Notification Banner */}
         {isFullscreen && showNotification && (
           <div key={notifKey} className="fullscreen-player-flash-notification">
