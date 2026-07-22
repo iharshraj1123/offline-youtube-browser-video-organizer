@@ -154,3 +154,18 @@ CREATE TABLE IF NOT EXISTS `exclusion_lists` (
     `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table 9: category_pills (Category Pills Storage)
+CREATE TABLE IF NOT EXISTS `category_pills` (
+    `id` varchar(100) NOT NULL,
+    `label` varchar(100) NOT NULL,
+    `filter_type` varchar(50) NOT NULL DEFAULT 'all',
+    `filter_val` text DEFAULT NULL,
+    `sort_by` varchar(50) NOT NULL DEFAULT 'recent',
+    `media_type` varchar(50) NOT NULL DEFAULT 'only_videos',
+    `exclude_shorts` tinyint(1) NOT NULL DEFAULT 0,
+    `sort_order` int(11) NOT NULL DEFAULT 0,
+    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
