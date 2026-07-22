@@ -2360,11 +2360,50 @@ function ShortsPlayerView({
     }
   };
 
-  // Fullscreen sync
+  // Fullscreen sync + Always lock & enforce portrait orientation for Shorts, overriding OS/system auto-rotate changes
   useEffect(() => {
-    const onFS = () => setIsFullscreen(!!document.fullscreenElement);
-    document.addEventListener('fullscreenchange', onFS);
-    return () => document.removeEventListener('fullscreenchange', onFS);
+    let relockTimer = null;
+
+    const enforcePortrait = () => {
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('portrait').catch(() => { });
+      }
+    };
+
+    const handleOrientationChange = () => {
+      if (relockTimer) clearTimeout(relockTimer);
+      const tryLock = () => {
+        enforcePortrait();
+      };
+      relockTimer = setTimeout(() => {
+        tryLock();
+        setTimeout(tryLock, 50);
+        setTimeout(tryLock, 100);
+        setTimeout(tryLock, 200);
+        setTimeout(tryLock, 400);
+      }, 0);
+    };
+
+    const handleFullscreenChange = () => {
+      const inFs = !!document.fullscreenElement;
+      setIsFullscreen(inFs);
+      enforcePortrait();
+    };
+
+    // Lock portrait on mount
+    enforcePortrait();
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    window.addEventListener('orientationchange', handleOrientationChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      window.removeEventListener('orientationchange', handleOrientationChange);
+      if (relockTimer) clearTimeout(relockTimer);
+      if (screen.orientation && screen.orientation.unlock) {
+        try { screen.orientation.unlock(); } catch (e) { }
+      }
+    };
   }, []);
 
   const togglePlay = () => {
@@ -2412,17 +2451,15 @@ function ShortsPlayerView({
       playerLayoutRef.current?.requestFullscreen()
         .then(() => {
           if (screen.orientation && screen.orientation.lock) {
-            screen.orientation.lock('portrait').catch((err) => {
-              console.warn("Orientation lock not supported or failed:", err);
-            });
+            screen.orientation.lock('portrait').catch(() => { });
           }
         })
         .catch(() => { });
     } else {
-      if (screen.orientation && screen.orientation.unlock) {
-        try { screen.orientation.unlock(); } catch (e) { }
+      document.exitFullscreen().catch(() => { });
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('portrait').catch(() => { });
       }
-      document.exitFullscreen();
     }
   };
 
@@ -2466,17 +2503,15 @@ function ShortsPlayerView({
       playerLayoutRef.current?.requestFullscreen()
         .then(() => {
           if (screen.orientation && screen.orientation.lock) {
-            screen.orientation.lock('portrait').catch((err) => {
-              console.warn("Orientation lock not supported or failed:", err);
-            });
+            screen.orientation.lock('portrait').catch(() => { });
           }
         })
         .catch(() => { });
     } else {
-      if (screen.orientation && screen.orientation.unlock) {
-        try { screen.orientation.unlock(); } catch (e) { }
+      document.exitFullscreen().catch(() => { });
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('portrait').catch(() => { });
       }
-      document.exitFullscreen();
     }
   };
 
