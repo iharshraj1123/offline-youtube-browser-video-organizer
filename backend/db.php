@@ -177,6 +177,15 @@ function getJapaneseKanjiReadings($text) {
 
 function normalizeSearchText($text) {
     if ($text === null) return '';
+    
+    // Decompose Unicode compatibility characters (styled math fonts, fullwidth letters, etc.)
+    if (class_exists('Normalizer')) {
+        $normalizedText = Normalizer::normalize($text, Normalizer::FORM_KD);
+        if ($normalizedText !== false) {
+            $text = $normalizedText;
+        }
+    }
+    
     $originalLower = mb_strtolower($text);
     
     // First, strip single quotes/apostrophes completely to join letters (e.g. let's -> lets)
@@ -188,7 +197,7 @@ function normalizeSearchText($text) {
     
     $transliterated = '';
     if (class_exists('Transliterator')) {
-        $translit = Transliterator::create("Any-Latin; Latin-ASCII; Lower()")->transliterate($text);
+        $translit = Transliterator::create("NFKD; Any-Latin; Latin-ASCII; Lower()")->transliterate($text);
         if ($translit !== false) {
             $translit = str_replace(["'", "’", "`"], "", $translit);
             // Replace punctuation and symbols with spaces in transliteration too
