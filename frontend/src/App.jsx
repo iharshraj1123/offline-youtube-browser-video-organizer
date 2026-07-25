@@ -1077,13 +1077,11 @@ export default function App() {
     }
   };
 
-  // Trigger home redirect
+  // Trigger home redirect (preserves homepage state: active pill, search query, filters)
   const handleGoHome = () => {
     window.history.pushState(null, '', window.location.pathname);
     setCurrentView('home');
-    setSearchQuery('');
-    const allPill = getPillById('all');
-    handlePillSelect(allPill);
+    fetchVideos();
   };
 
   // Trigger crawler redirect
