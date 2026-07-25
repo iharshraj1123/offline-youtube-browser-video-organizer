@@ -3351,11 +3351,6 @@ function PlayerView({
         });
       } else if (zone === 'middle') {
         toggleFullscreen(e);
-        setDoubleTapOverlay({
-          type: 'fullscreen',
-          label: (isFullscreen || document.fullscreenElement) ? 'Exit Fullscreen' : 'Fullscreen',
-          key: Date.now()
-        });
       }
 
       clearTimeout(doubleTapFadeTimerRef.current);
