@@ -5726,7 +5726,10 @@ function PlayerView({
               </div>
 
               {/* Expand Button Row */}
-              <div className="mini-player-expand-container">
+              <div
+                className="mini-player-expand-container"
+                style={isMobile ? { position: 'absolute', top: '8px', left: '8px', bottom: 'auto', right: 'auto', display: 'flex', alignItems: 'center', pointerEvents: 'auto', zIndex: 70 } : { position: 'absolute', bottom: '12px', right: '12px', display: 'flex', alignItems: 'center', pointerEvents: 'auto', zIndex: 70 }}
+              >
                 {/* Expand */}
                 <button
                   onClick={(e) => {

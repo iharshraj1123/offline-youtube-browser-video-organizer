@@ -2049,10 +2049,10 @@ body.mini-player-dragging * {
   }
 
   .mini-player-expand-container {
-    top: 8px;
-    left: 8px;
-    bottom: auto;
-    right: auto;
+    top: 8px !important;
+    left: 8px !important;
+    bottom: auto !important;
+    right: auto !important;
   }
 }
 
@@ -2063,6 +2063,7 @@ body.mini-player-dragging * {
   display: flex;
   align-items: center;
   pointer-events: auto;
+  z-index: 70;
 }
 
 /* ===================== SETTINGS SPIN ANIMATION ===================== */
