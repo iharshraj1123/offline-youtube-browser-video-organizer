@@ -10214,21 +10214,21 @@ body.mini-player-dragging * {
 
 .double-tap-ripple-overlay.ripple-rewind {
   left: 0;
-  width: 33.33%;
+  width: 30%;
   border-top-right-radius: 60% 100%;
   border-bottom-right-radius: 60% 100%;
 }
 
 .double-tap-ripple-overlay.ripple-forward {
   right: 0;
-  width: 33.33%;
+  width: 30%;
   border-top-left-radius: 60% 100%;
   border-bottom-left-radius: 60% 100%;
 }
 
 .double-tap-ripple-overlay.ripple-fullscreen {
-  left: 33.33%;
-  width: 33.34%;
+  left: 30%;
+  width: 40%;
   border-radius: 50%;
 }
 

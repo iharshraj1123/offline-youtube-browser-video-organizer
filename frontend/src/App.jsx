@@ -3313,8 +3313,9 @@ function PlayerView({
     const targetElem = (playerWrapperRef.current && (isFullscreen || document.fullscreenElement)) ? playerWrapperRef.current : (e.currentTarget || e.target);
     const rect = targetElem.getBoundingClientRect();
     const touchX = touch.clientX - rect.left;
-    const thirdWidth = rect.width / 3;
-    const zone = touchX < thirdWidth ? 'left' : (touchX >= thirdWidth * 2 ? 'right' : 'middle');
+    const leftThreshold = rect.width * 0.30;
+    const rightThreshold = rect.width * 0.70;
+    const zone = touchX < leftThreshold ? 'left' : (touchX >= rightThreshold ? 'right' : 'middle');
     const skipSec = parseInt(localStorage.getItem('yt_skip_interval')) || 10;
 
     const timeDiff = now - lastTapRef.current.time;
@@ -3350,6 +3351,11 @@ function PlayerView({
         });
       } else if (zone === 'middle') {
         toggleFullscreen(e);
+        setDoubleTapOverlay({
+          type: 'fullscreen',
+          label: (isFullscreen || document.fullscreenElement) ? 'Exit Fullscreen' : 'Fullscreen',
+          key: Date.now()
+        });
       }
 
       clearTimeout(doubleTapFadeTimerRef.current);
@@ -5829,19 +5835,8 @@ function PlayerView({
           onLoadedMetadata={handleLoadedMetadata}
           onEnded={handleVideoEnded}
           onClick={(e) => {
-            const isTouchDevice = isMobile || isFullscreen || isPhoneRef.current || ('ontouchstart' in window) || (window.innerWidth <= 1024);
-            if (isTouchDevice) {
-              e.stopPropagation();
-              handleMobileVideoTouch(e);
-            } else {
-              togglePlay();
-            }
-          }}
-          onDoubleClick={(e) => {
-            const isTouchDevice = isMobile || isFullscreen || isPhoneRef.current || ('ontouchstart' in window) || (window.innerWidth <= 1024);
-            if (!isTouchDevice) {
-              toggleFullscreen(e);
-            }
+            e.stopPropagation();
+            handleMobileVideoTouch(e);
           }}
           onFocus={() => setIsVideoFocused(true)}
           onBlur={() => setIsVideoFocused(false)}
