@@ -1032,12 +1032,12 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
                       {isThreadExpanded ? (
                         <>
                           <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#3ea6ff' }}>Hide replies</span>
-                          <ChevronUp size={14} style={{ color: '#3ea6ff' }} />
+                          <ChevronUp size={14} style={{ color: '#3ea6ff', marginTop: '1px' }} />
                         </>
                       ) : (
                         <>
                           <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#3ea6ff' }}>{com.replies.length} {com.replies.length === 1 ? 'reply' : 'replies'}</span>
-                          <ChevronDown size={14} style={{ color: '#3ea6ff' }} />
+                          <ChevronDown size={14} style={{ color: '#3ea6ff', marginTop: '2px' }} />
                         </>
                       )}
                     </button>
