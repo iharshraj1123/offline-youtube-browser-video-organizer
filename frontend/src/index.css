@@ -2047,6 +2047,22 @@ body.mini-player-dragging * {
     width: 26px;
     height: 26px;
   }
+
+  .mini-player-expand-container {
+    top: 8px;
+    left: 8px;
+    bottom: auto;
+    right: auto;
+  }
+}
+
+.mini-player-expand-container {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  pointer-events: auto;
 }
 
 /* ===================== SETTINGS SPIN ANIMATION ===================== */

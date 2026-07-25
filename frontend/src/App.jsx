@@ -5725,8 +5725,8 @@ function PlayerView({
                 </button>
               </div>
 
-              {/* Bottom Right Row (Expand) - Absolute positioned to keep center clear */}
-              <div style={{ position: 'absolute', bottom: '12px', right: '12px', display: 'flex', alignItems: 'center', pointerEvents: 'auto' }}>
+              {/* Expand Button Row */}
+              <div className="mini-player-expand-container">
                 {/* Expand */}
                 <button
                   onClick={(e) => {
