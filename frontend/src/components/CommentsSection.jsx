@@ -1036,8 +1036,8 @@ export function CommentsSection({ videoId, currentUser, onOpenAuth, onSeekVideo,
                         </>
                       ) : (
                         <>
-                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#3ea6ff' }}>{com.replies.length} replies</span>
-                          <span style={{ fontSize: '10px', color: '#3ea6ff', marginLeft: '2px' }}>▶</span>
+                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#3ea6ff' }}>{com.replies.length} {com.replies.length === 1 ? 'reply' : 'replies'}</span>
+                          <ChevronDown size={14} style={{ color: '#3ea6ff' }} />
                         </>
                       )}
                     </button>
