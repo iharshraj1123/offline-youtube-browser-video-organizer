@@ -120,6 +120,30 @@ function formatUploadDate(dateStr) {
   return dateStr;
 }
 
+const DEFAULT_PILLS = [
+  { id: 'all', label: 'all', category: 'all', sort: 'mix', filterType: 'all', filterVal: '', sortBy: 'mix', mediaType: 'mixed', excludeShortsInVideoSection: false },
+  { id: 'recent', label: 'recent', category: 'all', sort: 'recent', filterType: 'all', filterVal: '', sortBy: 'recent', mediaType: 'only_videos', excludeShortsInVideoSection: false },
+  { id: 'oldest', label: 'oldest', category: 'all', sort: 'oldest', filterType: 'all', filterVal: '', sortBy: 'oldest', mediaType: 'only_videos', excludeShortsInVideoSection: false },
+  { id: 'downloads', label: 'downloads', category: 'downloads', sort: 'recent', filterType: 'folder', filterVal: '%download%', sortBy: 'recent', mediaType: 'only_videos', excludeShortsInVideoSection: false },
+  { id: 'hot', label: 'hot', category: 'all', sort: 'hot', filterType: 'all', filterVal: '', sortBy: 'hot', mediaType: 'only_videos', excludeShortsInVideoSection: false },
+  { id: 'most_liked', label: 'most liked', category: 'all', sort: 'likes', filterType: 'all', filterVal: '', sortBy: 'likes', mediaType: 'only_videos', excludeShortsInVideoSection: false },
+  { id: 'favourite', label: 'favourite', category: 'favourite', sort: 'recent', filterType: 'tag', filterVal: 'favourite', sortBy: 'recent', mediaType: 'only_videos', excludeShortsInVideoSection: false }
+];
+
+function getPillById(pillId) {
+  try {
+    const cached = sessionStorage.getItem('yt_cached_db_pills') || localStorage.getItem('yt_cached_db_pills');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        const found = parsed.find(p => p.id === pillId);
+        if (found) return found;
+      }
+    }
+  } catch (e) { }
+  return DEFAULT_PILLS.find(p => p.id === pillId) || DEFAULT_PILLS[0];
+}
+
 export default function App() {
   // App views: 'home' | 'player' | 'crawler'
   const [isInitialRouting, setIsInitialRouting] = useState(true);
@@ -691,26 +715,32 @@ export default function App() {
     q = searchQuery,
     category = activeCategory,
     sort = currentSort,
-    filterType = '',
-    filterVal = '',
+    filterType = null,
+    filterVal = null,
     pillId = activePillId,
-    mediaType = 'only_videos',
-    excludeShortsInVideoSection = false
+    mediaType = null,
+    excludeShortsInVideoSection = null
   ) => {
     setLoading(true);
     try {
+      const activePill = getPillById(pillId || activePillId);
+      const resolvedFilterType = filterType !== null ? filterType : (activePill.filterType || '');
+      const resolvedFilterVal = filterVal !== null ? filterVal : (activePill.filterVal || '');
+      const resolvedMediaType = mediaType !== null ? mediaType : (activePill.mediaType || 'only_videos');
+      const resolvedExcludeShorts = excludeShortsInVideoSection !== null ? excludeShortsInVideoSection : Boolean(activePill.excludeShortsInVideoSection);
+
       const queryParams = new URLSearchParams({
         action: 'videos',
         q,
         category,
         sort,
-        pill_id: pillId || 'all',
-        media_type: mediaType || 'only_videos',
-        exclude_shorts: excludeShortsInVideoSection ? '1' : '0'
+        pill_id: pillId || activePillId || 'all',
+        media_type: resolvedMediaType,
+        exclude_shorts: resolvedExcludeShorts ? '1' : '0'
       });
-      if (filterType && filterType !== 'all') {
-        queryParams.set('filter_type', filterType);
-        queryParams.set('filter_val', filterVal);
+      if (resolvedFilterType && resolvedFilterType !== 'all') {
+        queryParams.set('filter_type', resolvedFilterType);
+        queryParams.set('filter_val', resolvedFilterVal);
       }
       const res = await fetch(`./api/index.php?${queryParams.toString()}`);
       const data = await res.json();
@@ -1051,7 +1081,9 @@ export default function App() {
   const handleGoHome = () => {
     window.history.pushState(null, '', window.location.pathname);
     setCurrentView('home');
-    fetchVideos();
+    setSearchQuery('');
+    const allPill = getPillById('all');
+    handlePillSelect(allPill);
   };
 
   // Trigger crawler redirect
@@ -1672,15 +1704,7 @@ export default function App() {
 // ----------------------------------------
 // SUB-VIEW: HomeView
 // ----------------------------------------
-const DEFAULT_PILLS = [
-  { id: 'all', label: 'all', category: 'all', sort: 'mix', filterType: 'all', filterVal: '', sortBy: 'mix', mediaType: 'mixed', excludeShortsInVideoSection: false },
-  { id: 'recent', label: 'recent', category: 'all', sort: 'recent', filterType: 'all', filterVal: '', sortBy: 'recent', mediaType: 'only_videos', excludeShortsInVideoSection: false },
-  { id: 'oldest', label: 'oldest', category: 'all', sort: 'oldest', filterType: 'all', filterVal: '', sortBy: 'oldest', mediaType: 'only_videos', excludeShortsInVideoSection: false },
-  { id: 'downloads', label: 'downloads', category: 'downloads', sort: 'recent', filterType: 'folder', filterVal: '%download%', sortBy: 'recent', mediaType: 'only_videos', excludeShortsInVideoSection: false },
-  { id: 'hot', label: 'hot', category: 'all', sort: 'hot', filterType: 'all', filterVal: '', sortBy: 'hot', mediaType: 'only_videos', excludeShortsInVideoSection: false },
-  { id: 'most_liked', label: 'most liked', category: 'all', sort: 'likes', filterType: 'all', filterVal: '', sortBy: 'likes', mediaType: 'only_videos', excludeShortsInVideoSection: false },
-  { id: 'favourite', label: 'favourite', category: 'favourite', sort: 'recent', filterType: 'tag', filterVal: 'favourite', sortBy: 'recent', mediaType: 'only_videos', excludeShortsInVideoSection: false }
-];
+
 
 function HomeView({ videos, loading, activePillId, onPillSelect, onPlayVideo, onPlayShort }) {
   const [visibleCount, setVisibleCount] = useState(24);
