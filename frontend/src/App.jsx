@@ -80,9 +80,12 @@ function translateVideoUrl(url) {
     return '/' + drive.toLowerCase() + ':/';
   });
 
-  // Escape hashes inside file paths so they are not treated as URL fragments, preserving media fragments
+  // Preserve media fragments like #t=5
+  cleanUrl = cleanUrl.replaceAll('#t=', '___MEDIA_FRAGMENT_TIME___');
+  // Escape percent signs and hashes so Apache URL-decodes them back to literal characters on disk
+  cleanUrl = cleanUrl.replaceAll('%', '%25');
   cleanUrl = cleanUrl.replaceAll('#', '%23');
-  cleanUrl = cleanUrl.replaceAll('%23t=', '#t=');
+  cleanUrl = cleanUrl.replaceAll('___MEDIA_FRAGMENT_TIME___', '#t=');
 
   return cleanUrl;
 }
