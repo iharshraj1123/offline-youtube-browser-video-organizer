@@ -47,7 +47,9 @@ class FFmpegService {
         $ffmpeg = self::getFFmpegPath();
         if (!$ffmpeg) return null;
         $p = str_replace('"', '', $ffmpeg);
-        return str_replace('ffmpeg.exe', 'ffprobe.exe', $p);
+        $probe = str_replace('ffmpeg.exe', 'ffprobe.exe', $p);
+        if (file_exists($probe)) return '"' . $probe . '"';
+        return 'ffprobe';
     }
 
     public static function forceDelete($path) {
@@ -64,13 +66,22 @@ class FFmpegService {
     public static function getTempHardlink($sourcePath) {
         $tmpDir = self::getTempDir();
         if (!is_dir($tmpDir)) @mkdir($tmpDir, 0777, true);
-        $safeName = preg_replace('/[^\x20-\x7A]/', '_', basename($sourcePath));
-        if (empty($safeName)) $safeName = 'input_' . uniqid();
-        $tempPath = $tmpDir . '/' . uniqid('hl_') . '_' . $safeName;
-        $result = @exec('fsutil hardlink create ' . escapeshellarg($tempPath) . ' ' . escapeshellarg($sourcePath) . ' 2>&1');
-        if ($result !== false && file_exists($tempPath)) return $tempPath;
-        $result = @copy($sourcePath, $tempPath);
-        if ($result !== false && file_exists($tempPath)) return $tempPath;
+        $ext = pathinfo($sourcePath, PATHINFO_EXTENSION);
+        $safeExt = !empty($ext) ? '.' . preg_replace('/[^a-zA-Z0-9]/', '', $ext) : '.mp4';
+        $tempPath = $tmpDir . '/' . uniqid('hl_') . $safeExt;
+        
+        if (DIRECTORY_SEPARATOR === '\\') {
+            @exec('mklink /H ' . escapeshellarg($tempPath) . ' ' . escapeshellarg($sourcePath) . ' 2>NUL');
+            if (file_exists($tempPath)) return $tempPath;
+            @exec('fsutil hardlink create ' . escapeshellarg($tempPath) . ' ' . escapeshellarg($sourcePath) . ' 2>NUL');
+            if (file_exists($tempPath)) return $tempPath;
+        } else {
+            @link($sourcePath, $tempPath);
+            if (file_exists($tempPath)) return $tempPath;
+        }
+        if (@copy($sourcePath, $tempPath)) {
+            return $tempPath;
+        }
         return null;
     }
 
@@ -166,14 +177,26 @@ class FFmpegService {
             }
         }
 
-        $tempLink = self::getTempHardlink($input);
-        $probePath = $tempLink ? $tempLink : $input;
-        $cmd = $ffprobe . ' -v quiet -print_format json -show_format -show_streams -show_chapters ' . escapeshellarg($probePath) . ' 2>&1';
+        // Try direct ffprobe first
+        $cmd = $ffprobe . ' -v error -print_format json -show_format -show_streams -show_chapters ' . escapeshellarg($input) . ' 2>&1';
         $output = []; $code = -1;
         exec($cmd, $output, $code);
-        if ($tempLink && file_exists($tempLink)) self::forceDelete($tempLink);
+
+        // If direct ffprobe failed or returned empty (e.g. Unicode path issues on Windows), try with clean ASCII link/copy
+        $tempLink = null;
         if ($code !== 0 || empty($output)) {
-            return ['error' => 'Failed to probe file. Make sure it is a valid media file.'];
+            $tempLink = self::getTempHardlink($input);
+            if ($tempLink) {
+                $cmd = $ffprobe . ' -v error -print_format json -show_format -show_streams -show_chapters ' . escapeshellarg($tempLink) . ' 2>&1';
+                $output = []; $code = -1;
+                exec($cmd, $output, $code);
+                self::forceDelete($tempLink);
+            }
+        }
+
+        if ($code !== 0 || empty($output)) {
+            $detail = !empty($output) ? ': ' . implode(' ', array_slice($output, 0, 3)) : '';
+            return ['error' => 'Failed to probe file. Make sure it is a valid media file' . $detail];
         }
 
         $json = json_decode(implode('', $output), true);

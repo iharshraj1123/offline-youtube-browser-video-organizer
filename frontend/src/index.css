@@ -5748,6 +5748,203 @@ body.mini-player-dragging * {
   padding: 16px;
 }
 
+/* Cookie Status Badge & Modal */
+.cookie-status-badge {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.cookie-status-badge:hover {
+  background: var(--hover-color, rgba(255, 255, 255, 0.1));
+  border-color: var(--primary-color, #ff0000);
+}
+
+.cookie-status-badge .cookie-badge-cog {
+  opacity: 0.6;
+  margin-left: 2px;
+}
+
+.cookie-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+.cookie-modal-content {
+  background: var(--card-bg, #1a1a1e);
+  border: 1px solid var(--border-color, #333);
+  border-radius: 14px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+}
+
+.cookie-modal-header {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color, #333);
+}
+
+.cookie-modal-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-color);
+}
+
+.cookie-modal-header .btn-close-modal {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  border-radius: 4px;
+}
+
+.cookie-modal-header .btn-close-modal:hover {
+  color: var(--text-color);
+  background: var(--hover-color, rgba(255, 255, 255, 0.1));
+}
+
+.cookie-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cookie-card-status {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cookie-card-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.cookie-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+}
+
+.cookie-tab-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cookie-tab-btn.active {
+  background: var(--primary-color);
+  color: #fff;
+  font-weight: 500;
+}
+
+.cookie-tab-btn:not(.active):hover {
+  color: var(--text-color);
+  background: var(--hover-color);
+}
+
+.cookie-dropzone {
+  border: 2px dashed var(--border-color);
+  border-radius: 10px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.cookie-dropzone:hover {
+  border-color: var(--primary-color);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.cookie-textarea {
+  width: 100%;
+  height: 120px;
+  background: var(--bg-color, #121214);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-color);
+  font-family: monospace;
+  font-size: 12px;
+  padding: 10px;
+  resize: vertical;
+}
+
+.cookie-textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.cookie-helper-box {
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.cookie-helper-box strong {
+  color: #60a5fa;
+}
+
+.cookie-modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 .history-header {
   display: flex;
   justify-content: space-between;

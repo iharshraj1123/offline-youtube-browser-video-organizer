@@ -26,8 +26,12 @@ uploads/**/*
 thumbnails/*
 !thumbnails/.gitkeep
 
-# Local scripts / testing
-testing/
-
-# yt-dlp downloads
+# yt-dlp downloads and backups
 yt-dlp-downloads/*
+backend/bin/*_backup*.exe
+backend/bin/*_v*.exe
+backend/bin/cookies.txt
+
+# Environment files
+.env
+backend/.env

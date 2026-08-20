@@ -200,6 +200,15 @@ try {
         case 'ytdlp_update':
             handleYtdlpUpdate();
             break;
+        case 'ytdlp_cookie_status':
+            handleYtdlpCookieStatus();
+            break;
+        case 'ytdlp_save_cookies':
+            handleYtdlpSaveCookies();
+            break;
+        case 'ytdlp_delete_cookies':
+            handleYtdlpDeleteCookies();
+            break;
         case 'ytdlp_info':
             handleYtdlpInfo();
             break;
@@ -3582,36 +3591,332 @@ function getYtdlpPath() {
     return null;
 }
 
+function getYtdlpLatestRelease() {
+    $url = 'https://api.github.com/repos/yt-dlp/yt-dlp/releases/latest';
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_USERAGENT, 'PHP-yt-dlp-checker');
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode === 200 && !empty($response)) {
+        $data = json_decode($response, true);
+        if ($data && !empty($data['tag_name'])) {
+            return $data;
+        }
+    }
+    return null;
+}
+
 function handleYtdlpVerify() {
     $path = getYtdlpPath();
     if (!$path) {
         echo json_encode(['installed' => false, 'version' => null, 'update_available' => false, 'error' => 'yt-dlp not found']);
         exit;
     }
+
     $versionOutput = []; $returnVar = -1;
     @exec("$path --version 2>NUL", $versionOutput, $returnVar);
-    $currentVersion = $returnVar === 0 ? trim($versionOutput[0] ?? '') : null;
-    $updateOutput = [];
-    @exec("$path -U 2>&1", $updateOutput, $returnVar);
-    $updateAvailable = false; $updateMessage = '';
-    foreach ($updateOutput as $line) {
-        if (stripos($line, 'update') !== false || stripos($line, 'already up to date') !== false) {
-            $updateMessage = trim($line);
-            if (stripos($line, 'already up to date') === false) $updateAvailable = true;
+    $currentVersion = ($returnVar === 0 && !empty($versionOutput)) ? trim($versionOutput[0]) : null;
+
+    $latestRelease = getYtdlpLatestRelease();
+    $updateAvailable = false;
+    $updateMessage = '';
+    $latestVersion = null;
+
+    if ($latestRelease && !empty($latestRelease['tag_name'])) {
+        $latestVersion = trim($latestRelease['tag_name']);
+        if (!empty($currentVersion)) {
+            if (version_compare($latestVersion, $currentVersion, '>')) {
+                $updateAvailable = true;
+                $updateMessage = "New version ($latestVersion) is available (current: $currentVersion).";
+            } else {
+                $updateAvailable = false;
+                $updateMessage = "yt-dlp is up to date ($currentVersion).";
+            }
+        } else {
+            $updateAvailable = true;
+            $updateMessage = "Latest version ($latestVersion) available.";
         }
+    } else {
+        $updateAvailable = false;
+        $updateMessage = "Could not check latest release on GitHub.";
     }
-    echo json_encode(['installed' => true, 'version' => $currentVersion, 'update_available' => $updateAvailable, 'update_message' => $updateMessage]);
+
+    echo json_encode([
+        'installed' => true,
+        'version' => $currentVersion,
+        'latest_version' => $latestVersion ?? $currentVersion,
+        'update_available' => $updateAvailable,
+        'update_message' => $updateMessage
+    ]);
     exit;
 }
 
 function handleYtdlpUpdate() {
+    $binDir = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'bin';
+    if (!is_dir($binDir)) {
+        @mkdir($binDir, 0777, true);
+    }
+
+    $isWin = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+    $exeName = $isWin ? 'yt-dlp.exe' : 'yt-dlp';
+    $targetFile = $binDir . DIRECTORY_SEPARATOR . $exeName;
+    $backupFile = $binDir . DIRECTORY_SEPARATOR . ($isWin ? 'yt-dlp_backup.exe' : 'yt-dlp_backup');
+    $tempFile = $binDir . DIRECTORY_SEPARATOR . ($isWin ? 'yt-dlp_new_' . time() . '.exe' : 'yt-dlp_new_' . time());
+
+    // 1. Get current version if installed
     $path = getYtdlpPath();
-    if (!$path) { echo json_encode(['success' => false, 'error' => 'yt-dlp not found']); exit; }
+    $oldVersion = 'unknown';
+    if ($path) {
+        $vOut = []; $vRet = -1;
+        @exec("$path --version 2>NUL", $vOut, $vRet);
+        if ($vRet === 0 && !empty($vOut)) {
+            $oldVersion = trim($vOut[0]);
+        }
+    }
+
+    // 2. Fetch latest release info to get direct download URL for binary
+    $latestRelease = getYtdlpLatestRelease();
+    $downloadUrl = null;
+
+    if ($latestRelease && !empty($latestRelease['assets']) && is_array($latestRelease['assets'])) {
+        foreach ($latestRelease['assets'] as $asset) {
+            if (strtolower($asset['name'] ?? '') === strtolower($exeName)) {
+                $downloadUrl = $asset['browser_download_url'] ?? null;
+                break;
+            }
+        }
+    }
+
+    if (!$downloadUrl) {
+        $downloadUrl = 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/' . $exeName;
+    }
+
+    // 3. Download new binary to temporary file first (do NOT directly replace)
+    $ch = curl_init($downloadUrl);
+    $fp = fopen($tempFile, 'wb');
+    if (!$fp) {
+        echo json_encode(['success' => false, 'error' => 'Unable to write to bin directory. Check file permissions.']);
+        exit;
+    }
+
+    curl_setopt($ch, CURLOPT_FILE, $fp);
+    curl_setopt($ch, CURLOPT_HEADER, 0);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 300);
+    curl_setopt($ch, CURLOPT_USERAGENT, 'PHP-yt-dlp-updater');
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlErr = curl_error($ch);
+    curl_close($ch);
+    fclose($fp);
+
+    if ($httpCode !== 200 || !file_exists($tempFile) || filesize($tempFile) < 1000000) {
+        if (file_exists($tempFile)) @unlink($tempFile);
+        $errMsg = !empty($curlErr) ? $curlErr : "HTTP status $httpCode";
+        echo json_encode(['success' => false, 'error' => "Failed to download new yt-dlp binary ($errMsg)."]);
+        exit;
+    }
+
+    if (!$isWin) {
+        @chmod($tempFile, 0755);
+    }
+
+    // 4. Validate the downloaded binary by executing --version
+    $testOut = []; $testRet = -1;
+    $testCmd = '"' . $tempFile . '" --version 2>&1';
+    @exec($testCmd, $testOut, $testRet);
+    $downloadedVersion = ($testRet === 0 && !empty($testOut)) ? trim($testOut[0]) : null;
+
+    if (!$downloadedVersion) {
+        @unlink($tempFile);
+        echo json_encode(['success' => false, 'error' => 'Downloaded binary failed execution test. Raw output: ' . implode("\n", $testOut)]);
+        exit;
+    }
+
+    // 5. Keep the previous/last downloaded executable as backup before replacing
+    if (file_exists($targetFile)) {
+        @copy($targetFile, $backupFile);
+        if ($oldVersion !== 'unknown') {
+            $verBackup = $binDir . DIRECTORY_SEPARATOR . ($isWin ? "yt-dlp_v{$oldVersion}.exe" : "yt-dlp_v{$oldVersion}");
+            @copy($targetFile, $verBackup);
+        }
+    }
+
+    // 6. Replace target binary with newly verified binary
+    $copySuccess = @copy($tempFile, $targetFile);
+    if (!$copySuccess) {
+        @unlink($targetFile);
+        $copySuccess = @copy($tempFile, $targetFile);
+    }
+    if (!$isWin && file_exists($targetFile)) {
+        @chmod($targetFile, 0755);
+    }
+    @unlink($tempFile);
+
+    if (!$copySuccess || !file_exists($targetFile)) {
+        echo json_encode(['success' => false, 'error' => 'Failed to replace target executable. Check if yt-dlp is currently running.']);
+        exit;
+    }
+
+    // 7. Verify installed target binary
+    $finalOut = []; $finalRet = -1;
+    @exec('"' . $targetFile . '" --version 2>&1', $finalOut, $finalRet);
+    $finalVersion = ($finalRet === 0 && !empty($finalOut)) ? trim($finalOut[0]) : $downloadedVersion;
+
+    $backupName = file_exists($backupFile) ? basename($backupFile) : null;
+    $msg = "Successfully updated yt-dlp from {$oldVersion} to {$finalVersion}.";
+    if ($backupName) {
+        $msg .= " Previous binary backed up as {$backupName}.";
+    }
+
+    echo json_encode([
+        'success' => true,
+        'version' => $finalVersion,
+        'old_version' => $oldVersion,
+        'backup_file' => $backupName,
+        'message' => $msg
+    ]);
+    exit;
+}
+
+function getSystemDefaultBrowser() {
+    $isWin = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+    if (!$isWin) return 'chrome';
+
     $output = []; $returnVar = -1;
-    @exec("$path -U 2>&1", $output, $returnVar);
-    $versionOutput = [];
-    @exec("$path --version 2>NUL", $versionOutput, $returnVar);
-    echo json_encode(['success' => $returnVar === 0, 'version' => $returnVar === 0 ? trim($versionOutput[0] ?? '') : null, 'message' => implode("\n", $output)]);
+    @exec('reg query "HKCU\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\http\\UserChoice" /v ProgId 2>NUL', $output, $returnVar);
+    if ($returnVar === 0 && !empty($output)) {
+        $raw = implode(' ', $output);
+        if (stripos($raw, 'Firefox') !== false) return 'firefox';
+        if (stripos($raw, 'Chrome') !== false) return 'chrome';
+        if (stripos($raw, 'MSEdge') !== false || stripos($raw, 'Edge') !== false) return 'edge';
+        if (stripos($raw, 'Brave') !== false) return 'brave';
+        if (stripos($raw, 'Opera') !== false) return 'opera';
+        if (stripos($raw, 'Vivaldi') !== false) return 'vivaldi';
+    }
+    return 'chrome';
+}
+
+function getYtdlpJsRuntimeArgs() {
+    static $jsArgs = null;
+    if ($jsArgs !== null) return $jsArgs;
+
+    $output = []; $returnVar = -1;
+    @exec('node -v 2>NUL', $output, $returnVar);
+    if ($returnVar === 0 && !empty($output)) {
+        $jsArgs = ' --js-runtimes node';
+        return $jsArgs;
+    }
+
+    $whereOut = []; $whereRet = -1;
+    @exec('where node 2>NUL', $whereOut, $whereRet);
+    if ($whereRet === 0 && !empty($whereOut)) {
+        $nodePath = trim($whereOut[0]);
+        $jsArgs = ' --js-runtimes node:' . escapeshellarg($nodePath);
+        return $jsArgs;
+    }
+
+    $jsArgs = '';
+    return $jsArgs;
+}
+
+function getYtdlpCookieFilePath() {
+    return dirname(__FILE__) . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'cookies.txt';
+}
+
+function getYtdlpCookieArgs($mode = 'default', $browser = null) {
+    $cookieFile = getYtdlpCookieFilePath();
+    $validBrowsers = ['chrome', 'firefox', 'edge', 'brave', 'opera', 'vivaldi', 'chromium', 'safari'];
+
+    if ($mode === 'none' || $mode === 'disabled') {
+        return '';
+    }
+
+    if ($mode === 'file') {
+        if (file_exists($cookieFile) && filesize($cookieFile) > 0) {
+            return '--cookies ' . escapeshellarg($cookieFile);
+        }
+        return '';
+    }
+
+    if ($mode === 'browser' || $mode === 'default' || $mode === 'auto') {
+        $targetBrowser = strtolower(trim($browser ?? ''));
+        if (empty($targetBrowser) || $targetBrowser === 'default' || $targetBrowser === 'auto') {
+            $targetBrowser = getSystemDefaultBrowser();
+        }
+        if (in_array($targetBrowser, $validBrowsers)) {
+            return '--cookies-from-browser ' . escapeshellarg($targetBrowser);
+        }
+        if (file_exists($cookieFile) && filesize($cookieFile) > 0) {
+            return '--cookies ' . escapeshellarg($cookieFile);
+        }
+    }
+
+    return '';
+}
+
+function handleYtdlpCookieStatus() {
+    $cookieFile = getYtdlpCookieFilePath();
+    $exists = file_exists($cookieFile) && filesize($cookieFile) > 0;
+    $systemDefault = getSystemDefaultBrowser();
+
+    echo json_encode([
+        'success' => true,
+        'has_cookie_file' => $exists,
+        'file_size' => $exists ? filesize($cookieFile) : 0,
+        'file_updated' => $exists ? date('Y-m-d H:i:s', filemtime($cookieFile)) : null,
+        'system_default_browser' => $systemDefault,
+    ]);
+    exit;
+}
+
+function handleYtdlpSaveCookies() {
+    $cookieFile = getYtdlpCookieFilePath();
+    $binDir = dirname($cookieFile);
+    if (!is_dir($binDir)) @mkdir($binDir, 0777, true);
+
+    $content = '';
+    if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
+        $content = file_get_contents($_FILES['file']['tmp_name']);
+    } elseif (isset($_POST['content'])) {
+        $content = $_POST['content'];
+    }
+
+    if (empty(trim($content))) {
+        echo json_encode(['success' => false, 'error' => 'No cookie content provided']);
+        exit;
+    }
+
+    $saved = @file_put_contents($cookieFile, $content);
+    if ($saved === false) {
+        echo json_encode(['success' => false, 'error' => 'Failed to save cookie file. Check permissions.']);
+        exit;
+    }
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'cookies.txt saved successfully.',
+        'file_size' => filesize($cookieFile),
+        'file_updated' => date('Y-m-d H:i:s', filemtime($cookieFile)),
+    ]);
+    exit;
+}
+
+function handleYtdlpDeleteCookies() {
+    $cookieFile = getYtdlpCookieFilePath();
+    if (file_exists($cookieFile)) {
+        @unlink($cookieFile);
+    }
+    echo json_encode(['success' => true, 'message' => 'cookies.txt deleted.']);
     exit;
 }
 
@@ -3620,12 +3925,91 @@ function handleYtdlpInfo() {
     if (empty($url)) { echo json_encode(['error' => 'No URL provided']); exit; }
     $path = getYtdlpPath();
     if (!$path) { echo json_encode(['error' => 'yt-dlp not found']); exit; }
-    $cmd = $path . ' --dump-json --no-download --ignore-errors ' . escapeshellarg($url) . ' 2>NUL';
-    $output = []; $returnVar = -1;
-    @exec($cmd, $output, $returnVar);
-    if ($returnVar !== 0 || empty($output)) { echo json_encode(['error' => 'Failed to fetch video info']); exit; }
-    $data = json_decode($output[0], true);
-    if (!$data) { echo json_encode(['error' => 'Failed to parse video information']); exit; }
+
+    $cookieMode = $_POST['cookie_mode'] ?? $_GET['cookie_mode'] ?? 'default';
+    $cookieBrowser = $_POST['cookie_browser'] ?? $_GET['cookie_browser'] ?? '';
+    $extraArgs = $_POST['extra_args'] ?? '';
+
+    $cookieArgs = getYtdlpCookieArgs($cookieMode, $cookieBrowser);
+    $jsRuntimeArgs = getYtdlpJsRuntimeArgs();
+    $baseArgs = '--dump-json --no-download --ignore-errors --no-warnings';
+    if (!empty($jsRuntimeArgs)) $baseArgs .= ' ' . trim($jsRuntimeArgs);
+    if (!empty($extraArgs)) $baseArgs .= ' ' . trim($extraArgs);
+
+    // Helper closure to run yt-dlp info command and parse JSON
+    $runInfoCmd = function($cArgs) use ($path, $baseArgs, $url) {
+        $fullArgs = trim($baseArgs . ' ' . trim($cArgs));
+        $cmd = $path . ' ' . $fullArgs . ' ' . escapeshellarg($url) . ' 2>&1';
+        $output = []; $returnVar = -1;
+        @exec($cmd, $output, $returnVar);
+        $fullOutput = implode("\n", $output);
+        $data = null;
+        foreach ($output as $line) {
+            $trimmed = trim($line);
+            if (!empty($trimmed) && $trimmed[0] === '{') {
+                $decoded = json_decode($trimmed, true);
+                if ($decoded && isset($decoded['title'])) {
+                    $data = $decoded;
+                    break;
+                }
+            }
+        }
+        return ['data' => $data, 'returnVar' => $returnVar, 'raw' => $fullOutput];
+    };
+
+    $res = $runInfoCmd($cookieArgs);
+    $cookieFile = getYtdlpCookieFilePath();
+
+    // Fallback 1: If browser extraction failed/had format errors and a saved cookies.txt exists, try cookies.txt
+    if (!$res['data'] && ($cookieMode === 'default' || $cookieMode === 'browser') && file_exists($cookieFile) && filesize($cookieFile) > 0) {
+        $fileArgs = '--cookies ' . escapeshellarg($cookieFile);
+        if ($fileArgs !== $cookieArgs) {
+            $fallbackRes = $runInfoCmd($fileArgs);
+            if ($fallbackRes['data']) {
+                $res = $fallbackRes;
+            }
+        }
+    }
+
+    // Fallback 2: If cookie mode caused failure, test plain without cookies if in default mode
+    if (!$res['data'] && ($cookieMode === 'default' || $cookieMode === 'auto')) {
+        $noCookieRes = $runInfoCmd('');
+        if ($noCookieRes['data']) {
+            $res = $noCookieRes;
+        }
+    }
+
+    if (!$res['data']) {
+        $errMsg = 'Failed to fetch video info';
+        $raw = $res['raw'];
+        $cookieNeeded = false;
+
+        if (stripos($raw, "Sign in to confirm you're not a bot") !== false ||
+            stripos($raw, "bot") !== false ||
+            stripos($raw, "cookies") !== false ||
+            stripos($raw, "Private video") !== false ||
+            stripos($raw, "Sign in") !== false ||
+            stripos($raw, "login") !== false ||
+            stripos($raw, "n challenge solving failed") !== false ||
+            stripos($raw, "Requested format is not available") !== false) {
+            $cookieNeeded = true;
+        }
+
+        if (preg_match('/ERROR:\s*(.+)$/m', $raw, $em)) {
+            $errMsg = trim($em[1]);
+        } elseif (!empty($raw)) {
+            $errMsg = substr(trim($raw), 0, 300);
+        }
+
+        echo json_encode([
+            'error' => $errMsg,
+            'cookie_setup_needed' => $cookieNeeded,
+            'debug' => substr($raw, 0, 1000)
+        ]);
+        exit;
+    }
+
+    $data = $res['data'];
 
     $formats = [];
     if (isset($data['formats']) && is_array($data['formats'])) {
@@ -3680,9 +4064,35 @@ function handleYtdlpDownload($pdo = null) {
     $destination = $_POST['destination'] ?? '';
     $filenameTemplate = $_POST['filename'] ?? '%(title)s.%(ext)s';
 
+    // Sanitize custom filename template so slashes/backslashes in video titles use visual fullwidth characters and never create unwanted subdirectories
+    if ($filenameTemplate !== '%(title)s.%(ext)s') {
+        if (preg_match('/^(.*?)(\.%\(ext\)s|\.[a-zA-Z0-9]+)$/i', $filenameTemplate, $m)) {
+            $baseName = $m[1];
+            $extName = $m[2];
+            $replaceMap = [
+                '\\' => '＼',
+                '/'  => '／',
+                ':'  => '：',
+                '*'  => '＊',
+                '?'  => '？',
+                '"'  => '＂',
+                '<'  => '＜',
+                '>'  => '＞',
+                '|'  => '｜',
+            ];
+            $cleanBase = strtr($baseName, $replaceMap);
+            $filenameTemplate = (trim($cleanBase) ?: 'video') . $extName;
+        }
+    }
+
     if (empty($url)) { echo json_encode(['error' => 'No URL provided']); exit; }
     $path = getYtdlpPath();
     if (!$path) { echo json_encode(['error' => 'yt-dlp not found']); exit; }
+
+    $cookieMode = $_POST['cookie_mode'] ?? 'default';
+    $cookieBrowser = $_POST['cookie_browser'] ?? '';
+    $cookieArgs = getYtdlpCookieArgs($cookieMode, $cookieBrowser);
+    $jsRuntimeArgs = getYtdlpJsRuntimeArgs();
 
     $outputDir = (!empty($destination) && is_dir($destination)) ? rtrim($destination, '\\/') : (dirname(__DIR__) . DIRECTORY_SEPARATOR . 'yt-dlp-downloads');
     if (!is_dir($outputDir)) mkdir($outputDir, 0777, true);
@@ -3690,7 +4100,14 @@ function handleYtdlpDownload($pdo = null) {
     $outputTemplate = $outputDir . DIRECTORY_SEPARATOR . $filenameTemplate;
     $infoFile = $outputDir . DIRECTORY_SEPARATOR . '_yt_name_' . uniqid() . '.txt';
     $extraArgs = $_POST['extra_args'] ?? '';
-    $cmd = $path . ' -f ' . escapeshellarg($format) . ' -o "' . $outputTemplate . '" --print-to-file filename "' . $infoFile . '" --no-playlist --ignore-errors --no-warnings --no-mtime --progress --newline ' . $extraArgs . ' ' . escapeshellarg($url) . ' 2>&1';
+
+    $cmdParts = [$path, '-f', escapeshellarg($format), '-o', '"' . $outputTemplate . '"', '--windows-filenames', '--print-to-file', 'filename', '"' . $infoFile . '"', '--no-playlist', '--ignore-errors', '--no-warnings', '--no-mtime', '--progress', '--newline'];
+    if (!empty($cookieArgs)) $cmdParts[] = $cookieArgs;
+    if (!empty($jsRuntimeArgs)) $cmdParts[] = trim($jsRuntimeArgs);
+    if (!empty($extraArgs)) $cmdParts[] = trim($extraArgs);
+    $cmdParts[] = escapeshellarg($url);
+    $cmdParts[] = '2>&1';
+    $cmd = implode(' ', $cmdParts);
 
     header('Content-Type: text/event-stream');
     header('Cache-Control: no-cache');
@@ -3804,13 +4221,35 @@ function handleFfmpegInfo() {
     if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
         $tmpDir = dirname(__DIR__) . '/uploads/ffmpeg_temp';
         if (!is_dir($tmpDir)) @mkdir($tmpDir, 0777, true);
-        $input = $tmpDir . '/' . uniqid('upload_') . '_' . basename($_FILES['file']['name']);
-        move_uploaded_file($_FILES['file']['tmp_name'], $input);
+        $ext = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
+        $safeExt = !empty($ext) ? '.' . preg_replace('/[^a-zA-Z0-9]/', '', $ext) : '.mp4';
+        $input = $tmpDir . '/' . uniqid('upload_') . $safeExt;
+        if (!move_uploaded_file($_FILES['file']['tmp_name'], $input)) {
+            echo json_encode(['error' => 'Failed to save uploaded file to temp directory']);
+            exit;
+        }
     } elseif (!empty($_POST['path'])) {
         $input = $_POST['path'];
         if (!file_exists($input)) {
-            echo json_encode(['error' => 'File not found']);
-            exit;
+            $root = dirname(__DIR__);
+            $candidates = [
+                $root . DIRECTORY_SEPARATOR . ltrim($input, '\\/'),
+                $root . DIRECTORY_SEPARATOR . 'yt-dlp-downloads' . DIRECTORY_SEPARATOR . basename($input),
+                $root . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . ltrim($input, '\\/'),
+                $root . DIRECTORY_SEPARATOR . 'Userdatabase' . DIRECTORY_SEPARATOR . ltrim($input, '\\/'),
+            ];
+            $found = false;
+            foreach ($candidates as $cand) {
+                if (file_exists($cand)) {
+                    $input = $cand;
+                    $found = true;
+                    break;
+                }
+            }
+            if (!$found && !preg_match('#^https?://#i', $input)) {
+                echo json_encode(['error' => 'File not found on server: ' . $input]);
+                exit;
+            }
         }
     } else {
         echo json_encode(['error' => 'No file provided']);
@@ -3833,9 +4272,25 @@ function handleFfmpegConvert() {
     if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
         $tmpDir = dirname(__DIR__) . '/uploads/ffmpeg_temp';
         if (!is_dir($tmpDir)) @mkdir($tmpDir, 0777, true);
-        $uploadPath = $tmpDir . '/' . uniqid('upload_') . '_' . basename($_FILES['file']['name']);
+        $ext = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
+        $safeExt = !empty($ext) ? '.' . preg_replace('/[^a-zA-Z0-9]/', '', $ext) : '.mp4';
+        $uploadPath = $tmpDir . '/' . uniqid('upload_') . $safeExt;
         move_uploaded_file($_FILES['file']['tmp_name'], $uploadPath);
         $inputPath = $uploadPath;
+    } elseif (!file_exists($inputPath)) {
+        $root = dirname(__DIR__);
+        $candidates = [
+            $root . DIRECTORY_SEPARATOR . ltrim($inputPath, '\\/'),
+            $root . DIRECTORY_SEPARATOR . 'yt-dlp-downloads' . DIRECTORY_SEPARATOR . basename($inputPath),
+            $root . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . ltrim($inputPath, '\\/'),
+            $root . DIRECTORY_SEPARATOR . 'Userdatabase' . DIRECTORY_SEPARATOR . ltrim($inputPath, '\\/'),
+        ];
+        foreach ($candidates as $cand) {
+            if (file_exists($cand)) {
+                $inputPath = $cand;
+                break;
+            }
+        }
     }
 
     FFmpegService::convert($inputPath, $opts);

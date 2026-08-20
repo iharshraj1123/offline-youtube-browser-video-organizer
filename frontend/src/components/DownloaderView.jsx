@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Download, Link, Image, Music, Video, Film, Clock, User, Eye, ThumbsUp, Settings, Folder, ChevronDown, X, Loader2, CheckCircle, AlertCircle, AlertTriangle, RefreshCw, Trash2, Maximize2, Minimize2 } from 'lucide-react';
+import { Download, Link, Image, Music, Video, Film, Clock, User, Eye, ThumbsUp, Settings, Folder, ChevronDown, X, Loader2, CheckCircle, AlertCircle, AlertTriangle, RefreshCw, Trash2, Maximize2, Minimize2, Cookie, FileText, Globe, Upload, HelpCircle, Check } from 'lucide-react';
 
 function formatDuration(seconds) {
   if (!seconds || isNaN(seconds)) return '0:00';
@@ -56,6 +56,21 @@ function cleanVideoUrl(rawUrl) {
   return rawUrl.trim();
 }
 
+function sanitizeSaveFilename(name) {
+  if (!name || typeof name !== 'string') return '';
+  return name
+    .replace(/\\/g, '＼') // Fullwidth backslash (looks like \)
+    .replace(/\//g, '／') // Fullwidth forward slash (looks like /)
+    .replace(/:/g, '：')  // Fullwidth colon (looks like :)
+    .replace(/\*/g, '＊') // Fullwidth asterisk
+    .replace(/\?/g, '？') // Fullwidth question mark
+    .replace(/"/g, '＂')  // Fullwidth quote
+    .replace(/</g, '＜')  // Fullwidth <
+    .replace(/>/g, '＞')  // Fullwidth >
+    .replace(/\|/g, '｜') // Fullwidth pipe
+    .trim();
+}
+
 const QUALITY_PRESETS = [
   { label: 'Best Video + Audio', value: 'best' },
   { label: '4K (2160p)', value: 'bestvideo[height<=2160]+bestaudio/best[height<=2160]' },
@@ -98,6 +113,28 @@ export function DownloaderView({ currentUser }) {
 
   const [ytdlpStatus, setYtdlpStatus] = useState({ checking: true, installed: false, version: null, updateAvailable: false });
   const [updating, setUpdating] = useState(false);
+  const [updateNotice, setUpdateNotice] = useState(null);
+
+  // Cookie Settings
+  const [cookieMode, setCookieMode] = useState(() => {
+    return localStorage.getItem('downloader_cookie_mode') || 'default';
+  });
+  const [cookieBrowser, setCookieBrowser] = useState(() => {
+    return localStorage.getItem('downloader_cookie_browser') || 'default';
+  });
+  const [cookieStatus, setCookieStatus] = useState({
+    checking: false,
+    has_cookie_file: false,
+    file_size: 0,
+    file_updated: null,
+    system_default_browser: 'firefox'
+  });
+  const [showCookieModal, setShowCookieModal] = useState(false);
+  const [cookieActiveTab, setCookieActiveTab] = useState('browser');
+  const [cookieInputText, setCookieInputText] = useState('');
+  const [savingCookies, setSavingCookies] = useState(false);
+  const [cookieNotice, setCookieNotice] = useState(null);
+  const [cookiePromptReason, setCookiePromptReason] = useState('');
 
   const [quality, setQuality] = useState(QUALITY_PRESETS[0].value);
   const [codec, setCodec] = useState('');
@@ -134,6 +171,100 @@ export function DownloaderView({ currentUser }) {
   const urlInputRef = useRef(null);
   const [pasteHint, setPasteHint] = useState('');
   const [expandedFormats, setExpandedFormats] = useState({});
+
+  const checkCookieStatus = async () => {
+    setCookieStatus(prev => ({ ...prev, checking: true }));
+    try {
+      const res = await fetch('./api/index.php?action=ytdlp_cookie_status');
+      const data = await res.json();
+      if (data.success) {
+        setCookieStatus({
+          checking: false,
+          has_cookie_file: data.has_cookie_file,
+          file_size: data.file_size,
+          file_updated: data.file_updated,
+          system_default_browser: data.system_default_browser || 'firefox'
+        });
+      }
+    } catch {
+      setCookieStatus(prev => ({ ...prev, checking: false }));
+    }
+  };
+
+  const handleSaveCookieText = async () => {
+    if (!cookieInputText.trim()) return;
+    setSavingCookies(true);
+    setCookieNotice(null);
+    try {
+      const formData = new URLSearchParams();
+      formData.append('content', cookieInputText);
+      const res = await fetch('./api/index.php?action=ytdlp_save_cookies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData.toString()
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCookieNotice({ type: 'success', text: 'cookies.txt saved & activated successfully!' });
+        setCookieInputText('');
+        setCookieMode('file');
+        localStorage.setItem('downloader_cookie_mode', 'file');
+        await checkCookieStatus();
+      } else {
+        setCookieNotice({ type: 'error', text: data.error || 'Failed to save cookies' });
+      }
+    } catch {
+      setCookieNotice({ type: 'error', text: 'Failed to save cookies' });
+    }
+    setSavingCookies(false);
+  };
+
+  const handleUploadCookieFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSavingCookies(true);
+    setCookieNotice(null);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('./api/index.php?action=ytdlp_save_cookies', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCookieNotice({ type: 'success', text: `File "${file.name}" saved & activated successfully!` });
+        setCookieMode('file');
+        localStorage.setItem('downloader_cookie_mode', 'file');
+        await checkCookieStatus();
+      } else {
+        setCookieNotice({ type: 'error', text: data.error || 'Failed to upload cookie file' });
+      }
+    } catch {
+      setCookieNotice({ type: 'error', text: 'Upload error' });
+    }
+    setSavingCookies(false);
+    e.target.value = '';
+  };
+
+  const handleDeleteCookieFile = async () => {
+    if (!window.confirm('Delete saved cookies.txt? yt-dlp will revert to using your default browser.')) return;
+    setSavingCookies(true);
+    setCookieNotice(null);
+    try {
+      const res = await fetch('./api/index.php?action=ytdlp_delete_cookies', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        setCookieNotice({ type: 'success', text: 'Cookie file deleted. Reverted to System Browser.' });
+        setCookieMode('default');
+        localStorage.setItem('downloader_cookie_mode', 'default');
+        await checkCookieStatus();
+      }
+    } catch {
+      setCookieNotice({ type: 'error', text: 'Failed to delete cookie file' });
+    }
+    setSavingCookies(false);
+  };
 
   const fetchDirectoryPresets = async () => {
     try {
@@ -173,6 +304,7 @@ export function DownloaderView({ currentUser }) {
   useEffect(() => {
     checkYtdlp();
     fetchDirectoryPresets();
+    checkCookieStatus();
   }, []);
 
   useEffect(() => {
@@ -199,10 +331,14 @@ export function DownloaderView({ currentUser }) {
 
   const checkYtdlp = async () => {
     setYtdlpStatus(prev => ({ ...prev, checking: true }));
+    setUpdateNotice(null);
     try {
       const res = await fetch('./api/index.php?action=ytdlp_verify');
       const data = await res.json();
       setYtdlpStatus({ checking: false, installed: data.installed, version: data.version, updateAvailable: data.update_available, updateMessage: data.update_message });
+      if (data.update_available && data.update_message) {
+        setUpdateNotice({ type: 'warning', text: data.update_message });
+      }
     } catch {
       setYtdlpStatus({ checking: false, installed: false, version: null, updateAvailable: false });
     }
@@ -210,11 +346,19 @@ export function DownloaderView({ currentUser }) {
 
   const handleUpdateYtdlp = async () => {
     setUpdating(true);
+    setUpdateNotice(null);
     try {
       const res = await fetch('./api/index.php?action=ytdlp_update', { method: 'POST' });
       const data = await res.json();
-      if (data.success) setYtdlpStatus(prev => ({ ...prev, version: data.version, updateAvailable: false }));
-    } catch { }
+      if (data.success) {
+        setYtdlpStatus(prev => ({ ...prev, version: data.version, updateAvailable: false }));
+        setUpdateNotice({ type: 'success', text: data.message || `Successfully updated yt-dlp to ${data.version}` });
+      } else {
+        setUpdateNotice({ type: 'error', text: data.error || 'Failed to update yt-dlp' });
+      }
+    } catch (err) {
+      setUpdateNotice({ type: 'error', text: 'Network error while updating yt-dlp' });
+    }
     setUpdating(false);
   };
 
@@ -294,6 +438,10 @@ export function DownloaderView({ currentUser }) {
     try {
       const formData = new URLSearchParams();
       formData.append('url', cleaned);
+      formData.append('cookie_mode', cookieMode);
+      formData.append('cookie_browser', cookieBrowser);
+      if (customArgs) formData.append('extra_args', customArgs);
+
       const res = await fetch('./api/index.php?action=ytdlp_info', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -302,6 +450,10 @@ export function DownloaderView({ currentUser }) {
       const data = await res.json();
       if (data.error) {
         setError(data.error);
+        if (data.cookie_setup_needed) {
+          setCookiePromptReason(data.error);
+          setShowCookieModal(true);
+        }
         setFetchedItems(prev => prev.map(item => item.id === tempItem.id ? { ...item, status: 'failed', error: data.error } : item));
       } else {
         const avail = data.formats || [];
@@ -316,7 +468,7 @@ export function DownloaderView({ currentUser }) {
           formats: avail,
           quality: itemQuality,
           status: 'ready',
-          saveName: data.title || '',
+          saveName: sanitizeSaveFilename(data.title || ''),
         } : item));
       }
     } catch (e) {
@@ -331,35 +483,25 @@ export function DownloaderView({ currentUser }) {
     setExpandedFormats(prev => { const n = { ...prev }; delete n[id]; return n; });
   };
 
+  const clearDoneQueue = () => {
+    setFetchedItems(prev => prev.filter(item => item.status !== 'done'));
+  };
+
   const updateItem = (id, updates) => {
     setFetchedItems(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
   };
 
   const downloadItem = async (item) => {
-    setCurrentDownloadId(item.id);
-    setDownloadProgress(0);
-    setDownloadSpeed('');
-    setDownloadEta('');
-    setDownloadStatus('Starting download...');
+    if (item.status === 'downloading') return;
     updateItem(item.id, { status: 'downloading', progress: 0, speed: '', eta: '', error: '' });
+    setError('');
 
     let destPath = '';
-    const itemDest = item.destinationPreset || 'default';
-    let isDownloadToDevice = false;
+    const itemDest = item.destinationPreset || destinationPreset;
+    const isDownloadToDevice = itemDest === 'Download to device';
 
-    if (itemDest === 'default') {
-      if (destinationPreset === 'Download to device') {
-        isDownloadToDevice = true;
-        destPath = '';
-      } else if (destinationPreset === 'Custom...') {
-        destPath = customPath;
-      } else {
-        const preset = presets.find(p => p.name === destinationPreset);
-        if (preset) destPath = preset.path;
-      }
-    } else if (itemDest === 'Download to device') {
-      isDownloadToDevice = true;
-      destPath = '';
+    if (itemDest === 'Download to device') {
+      destPath = '__device__';
     } else if (itemDest === 'Custom...') {
       destPath = item.customPath;
     } else {
@@ -387,11 +529,14 @@ export function DownloaderView({ currentUser }) {
       formData.append('destination', destPath);
       let finalFilename = filenameTemplate;
       if (item.saveName && item.saveName.trim()) {
-        finalFilename = `${item.saveName.trim()}.%(ext)s`;
+        const cleanName = sanitizeSaveFilename(item.saveName);
+        finalFilename = `${cleanName || 'video'}.%(ext)s`;
       }
       formData.append('filename', finalFilename);
       formData.append('extra_args', extraArgs);
       formData.append('auto_index', isDownloadToDevice ? '0' : (autoIndex ? '1' : '0'));
+      formData.append('cookie_mode', cookieMode);
+      formData.append('cookie_browser', cookieBrowser);
 
       const res = await fetch('./api/index.php?action=ytdlp_download', {
         method: 'POST',
@@ -546,7 +691,28 @@ export function DownloaderView({ currentUser }) {
           </>
         )}
         <button className="btn-refresh-status" onClick={checkYtdlp} title="Check status"><RefreshCw size={14} /></button>
+
+        {/* Cookie Status Badge */}
+        <div className="cookie-status-badge" onClick={() => setShowCookieModal(true)} title="Configure YouTube Cookies">
+          <Cookie size={14} />
+          <span>
+            {cookieMode === 'none'
+              ? 'Cookies: Off'
+              : cookieMode === 'file'
+              ? (cookieStatus.has_cookie_file ? `Cookies: File (${Math.round(cookieStatus.file_size / 1024 || 1)}KB)` : 'Cookies: File (Missing)')
+              : cookieBrowser === 'default'
+              ? `Cookies: ${cookieStatus.system_default_browser.charAt(0).toUpperCase() + cookieStatus.system_default_browser.slice(1)} (Default)`
+              : `Cookies: ${cookieBrowser.charAt(0).toUpperCase() + cookieBrowser.slice(1)}`}
+          </span>
+          <Settings size={12} className="cookie-badge-cog" />
+        </div>
       </div>
+
+      {updateNotice && (
+        <div className={`downloader-hint ${updateNotice.type === 'error' ? 'downloader-error' : updateNotice.type === 'success' ? 'downloader-success' : ''}`} style={updateNotice.type === 'success' ? { background: 'rgba(74, 222, 128, 0.1)', color: '#4ade80', border: '1px solid rgba(74, 222, 128, 0.2)', padding: '10px 14px', borderRadius: '8px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' } : { marginBottom: '16px' }}>
+          {updateNotice.type === 'success' ? <CheckCircle size={16} /> : <AlertTriangle size={14} />} {updateNotice.text}
+        </div>
+      )}
 
       {/* URL Input */}
       <div className="url-input-section">
@@ -853,6 +1019,40 @@ export function DownloaderView({ currentUser }) {
                     placeholder="--no-mtime --embed-thumbnail ..." disabled={isDownloading} />
                 </div>
               </div>
+
+              {/* Cookie Configuration in Advanced Options */}
+              <div className="options-grid two-col" style={{ marginTop: '12px', borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
+                <div className="option-group">
+                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Cookie size={14} /> Cookie Source
+                    </span>
+                    <button type="button" onClick={() => setShowCookieModal(true)} style={{ background: 'none', border: 'none', color: 'var(--primary-color, #3b82f6)', fontSize: '11px', cursor: 'pointer', padding: 0 }}>
+                      Manage File / Settings
+                    </button>
+                  </label>
+                  <select className="select-full" value={cookieMode} onChange={(e) => { setCookieMode(e.target.value); localStorage.setItem('downloader_cookie_mode', e.target.value); }} disabled={isDownloading}>
+                    <option value="default">System Default ({cookieStatus.system_default_browser})</option>
+                    <option value="browser">Specific Browser...</option>
+                    <option value="file">Saved File ({cookieStatus.has_cookie_file ? `${Math.round(cookieStatus.file_size / 1024 || 1)} KB` : 'No file'})</option>
+                    <option value="none">Disabled (No cookies)</option>
+                  </select>
+                </div>
+                {cookieMode === 'browser' && (
+                  <div className="option-group">
+                    <label>Select Browser</label>
+                    <select className="select-full" value={cookieBrowser} onChange={(e) => { setCookieBrowser(e.target.value); localStorage.setItem('downloader_cookie_browser', e.target.value); }} disabled={isDownloading}>
+                      <option value="default">System Default ({cookieStatus.system_default_browser})</option>
+                      <option value="chrome">Google Chrome</option>
+                      <option value="firefox">Mozilla Firefox</option>
+                      <option value="edge">Microsoft Edge</option>
+                      <option value="brave">Brave</option>
+                      <option value="opera">Opera</option>
+                      <option value="vivaldi">Vivaldi</option>
+                    </select>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -882,6 +1082,203 @@ export function DownloaderView({ currentUser }) {
           <h2>Video Downloader</h2>
           <p>Paste a URL from YouTube or any supported site above to get started.</p>
           <p className="empty-hint">Supports 1000+ sites via yt-dlp</p>
+        </div>
+      )}
+
+      {/* YouTube Cookie Settings & Setup Modal */}
+      {showCookieModal && (
+        <div className="cookie-modal-overlay" onClick={() => { setShowCookieModal(false); setCookiePromptReason(''); setCookieNotice(null); }}>
+          <div className="cookie-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="cookie-modal-header">
+              <h3>
+                <Cookie size={18} style={{ color: '#fbbf24' }} />
+                YouTube Cookies & Authentication
+              </h3>
+              <button className="btn-close-modal" onClick={() => { setShowCookieModal(false); setCookiePromptReason(''); setCookieNotice(null); }}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="cookie-modal-body">
+              {cookiePromptReason && (
+                <div className="downloader-hint" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', padding: '10px 14px', borderRadius: '8px', fontSize: '13px', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <strong>YouTube requires authentication or cookies:</strong>
+                    <div style={{ fontSize: '12px', marginTop: '2px', opacity: 0.9 }}>{cookiePromptReason}</div>
+                  </div>
+                </div>
+              )}
+
+              {cookieNotice && (
+                <div className={`downloader-hint ${cookieNotice.type === 'error' ? 'downloader-error' : 'downloader-success'}`} style={cookieNotice.type === 'success' ? { background: 'rgba(74, 222, 128, 0.1)', color: '#4ade80', border: '1px solid rgba(74, 222, 128, 0.2)', padding: '10px 14px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' } : {}}>
+                  {cookieNotice.type === 'success' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+                  {cookieNotice.text}
+                </div>
+              )}
+
+              {/* Current Active Status Card */}
+              <div className="cookie-card-status">
+                <div className="cookie-card-status-row">
+                  <span style={{ color: 'var(--text-secondary)' }}>Current Cookie Mode:</span>
+                  <span style={{ fontWeight: 600, color: cookieMode === 'none' ? '#f87171' : '#4ade80' }}>
+                    {cookieMode === 'none'
+                      ? 'Disabled'
+                      : cookieMode === 'file'
+                      ? `Saved cookies.txt File`
+                      : cookieBrowser === 'default'
+                      ? `System Default Browser (${cookieStatus.system_default_browser})`
+                      : `Browser: ${cookieBrowser.charAt(0).toUpperCase() + cookieBrowser.slice(1)}`}
+                  </span>
+                </div>
+                <div className="cookie-card-status-row">
+                  <span style={{ color: 'var(--text-secondary)' }}>System Default Browser:</span>
+                  <span style={{ textTransform: 'capitalize' }}>{cookieStatus.system_default_browser}</span>
+                </div>
+                <div className="cookie-card-status-row">
+                  <span style={{ color: 'var(--text-secondary)' }}>Saved Cookie File:</span>
+                  <span>{cookieStatus.has_cookie_file ? `Active (${Math.round(cookieStatus.file_size / 1024 || 1)} KB, updated ${cookieStatus.file_updated || ''})` : 'None saved'}</span>
+                </div>
+              </div>
+
+              {/* Tabs: Browser Extraction vs Saved File */}
+              <div className="cookie-tabs">
+                <button className={`cookie-tab-btn ${cookieActiveTab === 'browser' ? 'active' : ''}`} onClick={() => setCookieActiveTab('browser')}>
+                  <Globe size={14} style={{ display: 'inline', marginRight: '6px' }} />
+                  Browser Extraction (Default)
+                </button>
+                <button className={`cookie-tab-btn ${cookieActiveTab === 'file' ? 'active' : ''}`} onClick={() => setCookieActiveTab('file')}>
+                  <FileText size={14} style={{ display: 'inline', marginRight: '6px' }} />
+                  Saved cookies.txt File
+                </button>
+              </div>
+
+              {cookieActiveTab === 'browser' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div className="option-group">
+                    <label>Choose Host Browser</label>
+                    <select
+                      className="select-full"
+                      value={cookieBrowser}
+                      onChange={(e) => {
+                        setCookieBrowser(e.target.value);
+                        localStorage.setItem('downloader_cookie_browser', e.target.value);
+                        if (cookieMode !== 'browser' && cookieMode !== 'default') {
+                          setCookieMode(e.target.value === 'default' ? 'default' : 'browser');
+                          localStorage.setItem('downloader_cookie_mode', e.target.value === 'default' ? 'default' : 'browser');
+                        }
+                      }}
+                    >
+                      <option value="default">System Default ({cookieStatus.system_default_browser})</option>
+                      <option value="chrome">Google Chrome</option>
+                      <option value="firefox">Mozilla Firefox</option>
+                      <option value="edge">Microsoft Edge</option>
+                      <option value="brave">Brave Browser</option>
+                      <option value="opera">Opera</option>
+                      <option value="vivaldi">Vivaldi</option>
+                    </select>
+                  </div>
+
+                  <div className="cookie-helper-box">
+                    <strong>How it works:</strong> yt-dlp automatically reads logged-in YouTube session cookies directly from your local browser profile on the host PC. Zero file exports required!
+                  </div>
+
+                  <button
+                    className="btn-download"
+                    style={{ padding: '10px', fontSize: '13px', marginTop: '4px' }}
+                    onClick={() => {
+                      setCookieMode(cookieBrowser === 'default' ? 'default' : 'browser');
+                      localStorage.setItem('downloader_cookie_mode', cookieBrowser === 'default' ? 'default' : 'browser');
+                      setCookieNotice({ type: 'success', text: `Switched to ${cookieBrowser === 'default' ? `System Default (${cookieStatus.system_default_browser})` : cookieBrowser} browser cookies!` });
+                    }}
+                  >
+                    <Check size={16} /> Use This Browser
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  {/* File Upload Zone */}
+                  <div>
+                    <label style={{ fontSize: '13px', fontWeight: 600, display: 'block', marginBottom: '6px' }}>Upload cookies.txt File</label>
+                    <label className="cookie-dropzone">
+                      <input type="file" accept=".txt" onChange={handleUploadCookieFile} style={{ display: 'none' }} disabled={savingCookies} />
+                      <Upload size={24} style={{ color: 'var(--text-secondary)', marginBottom: '6px' }} />
+                      <div style={{ fontSize: '13px', fontWeight: 500 }}>Click to select your cookies.txt</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>Netscape cookie format exported from browser extension</div>
+                    </label>
+                  </div>
+
+                  {/* Paste Text */}
+                  <div>
+                    <label style={{ fontSize: '13px', fontWeight: 600, display: 'block', marginBottom: '6px' }}>Or Paste Cookie Text</label>
+                    <textarea
+                      className="cookie-textarea"
+                      placeholder="# Netscape HTTP Cookie File&#10;.youtube.com	TRUE	/	FALSE	1999999999	..."
+                      value={cookieInputText}
+                      onChange={(e) => setCookieInputText(e.target.value)}
+                      disabled={savingCookies}
+                    />
+                    <button
+                      className="btn-download"
+                      style={{ marginTop: '8px', padding: '8px 14px', fontSize: '13px', width: 'auto' }}
+                      onClick={handleSaveCookieText}
+                      disabled={!cookieInputText.trim() || savingCookies}
+                    >
+                      {savingCookies ? <><Loader2 size={14} className="spin" /> Saving...</> : <><Check size={14} /> Save Pasted Cookies</>}
+                    </button>
+                  </div>
+
+                  {cookieStatus.has_cookie_file && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--border-color)' }}>
+                      <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>File active on server</span>
+                      <button
+                        className="btn-link"
+                        style={{ color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                        onClick={handleDeleteCookieFile}
+                        disabled={savingCookies}
+                      >
+                        <Trash2 size={13} /> Delete Saved File
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="cookie-helper-box">
+                    <strong>Quick Tip:</strong> Use the free browser extension <em>"Get cookies.txt LOCALLY"</em> on Chrome/Firefox to export your YouTube cookies, then upload or paste the file here.
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="cookie-modal-footer">
+              <button
+                className="btn-link"
+                style={{
+                  color: cookieMode === 'none' ? '#4ade80' : 'var(--text-secondary)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  marginRight: 'auto'
+                }}
+                onClick={() => {
+                  const next = cookieMode === 'none' ? 'default' : 'none';
+                  setCookieMode(next);
+                  localStorage.setItem('downloader_cookie_mode', next);
+                  setCookieNotice({ type: 'success', text: next === 'none' ? 'Cookies disabled.' : 'Cookies re-enabled.' });
+                }}
+              >
+                {cookieMode === 'none' ? 'Re-enable Cookies' : 'Disable Cookies'}
+              </button>
+
+              <button
+                className="btn-download"
+                style={{ padding: '8px 20px', fontSize: '13px', width: 'auto' }}
+                onClick={() => { setShowCookieModal(false); setCookiePromptReason(''); setCookieNotice(null); }}
+              >
+                Done
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
