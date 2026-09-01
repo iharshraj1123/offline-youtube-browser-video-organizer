@@ -11338,7 +11338,7 @@ input:checked + .switch-slider:before {
   background: rgba(255, 187, 0, 0.06);
   border-color: rgba(255, 187, 0, 0.4);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(255, 187, 0, 0.15);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
 .sub-playlist-card.is-folder-card .sub-playlist-thumb-fallback {
@@ -11415,4 +11415,146 @@ input:checked + .switch-slider:before {
   background: rgba(62, 166, 255, 0.15);
   color: #3ea6ff;
   border: 1px solid rgba(62, 166, 255, 0.3);
+}
+
+/* Share Modal Styles */
+.share-modal-content {
+  animation: shareModalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes shareModalPop {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.share-modal-content select.form-input {
+  color: var(--text-color, #fff);
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.share-modal-content select.form-input option,
+.share-modal-content select.form-input optgroup {
+  background: #1f1f1f;
+  color: #f1f1f1;
+}
+
+.share-modal-content select.form-input:focus {
+  border-color: var(--primary-color, #ff0000);
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.share-modal-content input.form-input {
+  color: var(--text-color, #fff);
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+}
+
+.share-modal-content input.form-input:focus {
+  border-color: var(--primary-color, #ff0000);
+}
+
+/* Sub-Playlist Sorting Toolbar Styles */
+.subplaylist-sort-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 3px 6px 3px 12px;
+}
+
+.subplaylist-sort-label {
+  font-size: 12px;
+  color: #888;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.subplaylist-sort-select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.subplaylist-sort-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #eee;
+  font-size: 12.5px;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  padding: 4px 24px 4px 10px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.subplaylist-sort-select:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.subplaylist-sort-select:focus {
+  border-color: rgba(62, 166, 255, 0.6);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.subplaylist-sort-select option {
+  background: #1e1e1e;
+  color: #eee;
+  padding: 6px;
+}
+
+.subplaylist-sort-select-chevron {
+  position: absolute;
+  right: 8px;
+  pointer-events: none;
+  color: #aaa;
+}
+
+.subplaylist-sort-order-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #eee;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.subplaylist-sort-order-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #3ea6ff;
+}
+
+.subplaylist-sort-order-btn:active {
+  transform: scale(0.96);
 }

@@ -238,7 +238,25 @@ class Database {
             $pdo->exec("ALTER TABLE `playlists` DROP INDEX `playlist_name`");
         } catch (Exception $e) {}
         try {
+            $pdo->exec("ALTER TABLE `playlists` MODIFY COLUMN `playlist_name` varchar(255) NOT NULL");
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("ALTER TABLE `playlists` MODIFY COLUMN `folder_path` text DEFAULT NULL");
+        } catch (Exception $e) {}
+        try {
             $pdo->exec("ALTER TABLE `playlists` ADD INDEX `idx_parent_id` (`parent_id`)");
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("ALTER TABLE `playlists` ADD COLUMN `created_at` datetime DEFAULT NULL");
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("ALTER TABLE `playlists` ADD COLUMN `updated_at` datetime DEFAULT NULL");
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("ALTER TABLE `video_metadatas` MODIFY COLUMN `aspect_ratio` varchar(50) DEFAULT NULL");
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("ALTER TABLE `video_metadatas` MODIFY COLUMN `codec` varchar(100) DEFAULT NULL");
         } catch (Exception $e) {}
         try {
             $pdo->exec("CREATE TABLE IF NOT EXISTS `crawler_presets` (
@@ -251,6 +269,23 @@ class Database {
         } catch (Exception $e) {}
         try {
             $pdo->exec("ALTER TABLE `crawler_presets` ADD COLUMN `sync_type` varchar(30) NOT NULL DEFAULT 'folder'");
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("CREATE TABLE IF NOT EXISTS `share_domains` (
+                `id` int(11) NOT NULL AUTO_INCREMENT,
+                `domain_name` varchar(255) NOT NULL,
+                `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (`id`),
+                UNIQUE KEY `idx_domain_name` (`domain_name`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("CREATE TABLE IF NOT EXISTS `share_settings` (
+                `setting_key` varchar(100) NOT NULL,
+                `setting_value` text NOT NULL,
+                `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (`setting_key`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
         } catch (Exception $e) {}
         $updated = true;
     }

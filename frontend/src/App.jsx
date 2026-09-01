@@ -7,7 +7,8 @@ import {
   Play, Pause, Volume2, VolumeX, Maximize, Minimize,
   Settings, Trash2, Edit, RefreshCw, Plus, Check, Loader2,
   ThumbsUp, ThumbsDown, Info, Mic, Bell, CornerUpLeft,
-  Repeat, Shuffle, Download, SkipBack, SkipForward, ListMusic, X, RotateCcw, RotateCw, Cast, Upload, Subtitles, AlertTriangle, Wand2, Flame, MessageSquare, Sparkles, Eye, EyeOff, Layers, Film, FolderOpen
+  Repeat, Shuffle, Download, SkipBack, SkipForward, ListMusic, X, RotateCcw, RotateCw, Cast, Upload, Subtitles, AlertTriangle, Wand2, Flame, MessageSquare, Sparkles, Eye, EyeOff, Layers, Film, FolderOpen,
+  Share2, Copy, ArrowUp, ArrowDown
 } from 'lucide-react';
 import { AuthModal } from './components/AuthModal';
 import { CommentsSection } from './components/CommentsSection';
@@ -103,6 +104,38 @@ function formatTime(seconds) {
     return `${h}:${mStr}:${sStr}`;
   }
   return `${m}:${sStr}`;
+}
+
+// Parse timestamp string (e.g. "45", "1m30s", "1:30", "01:23:45") into seconds
+function parseTimestamp(tStr) {
+  if (!tStr && tStr !== 0) return 0;
+  const str = String(tStr).trim();
+  if (!str) return 0;
+
+  // Format: 1h2m3s / 1m30s / 45s
+  if (/[hms]/i.test(str)) {
+    let totalSec = 0;
+    const hMatch = str.match(/(\d+)\s*h/i);
+    const mMatch = str.match(/(\d+)\s*m/i);
+    const sMatch = str.match(/(\d+)\s*s/i);
+    if (hMatch) totalSec += parseInt(hMatch[1], 10) * 3600;
+    if (mMatch) totalSec += parseInt(mMatch[1], 10) * 60;
+    if (sMatch) totalSec += parseInt(sMatch[1], 10);
+    if (totalSec > 0) return totalSec;
+  }
+
+  // Format: 01:23:45 or 01:23
+  if (str.includes(':')) {
+    const parts = str.split(':').map(p => parseFloat(p) || 0);
+    if (parts.length === 3) {
+      return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    } else if (parts.length === 2) {
+      return parts[0] * 60 + parts[1];
+    }
+  }
+
+  const num = parseFloat(str);
+  return isNaN(num) ? 0 : Math.max(0, num);
 }
 
 function formatUploadDate(dateStr) {
@@ -329,16 +362,24 @@ export default function App() {
   };
 
   // Fetch video details and set to play (used on URL load & popstate)
-  const fetchVideoAndPlay = async (videoId, updateUrl = false) => {
+  const fetchVideoAndPlay = async (videoId, updateUrl = false, playlistId = null, playlistIndex = null) => {
     setLoading(true);
     try {
       const res = await fetch(`./api/index.php?action=video&id=${videoId}`);
       const data = await res.json();
       if (data && !data.error) {
         if (updateUrl) {
-          window.history.pushState(null, '', `?v=${videoId}`);
-          setActivePlaylist(null);
-          setCurrentPlaylistIndex(-1);
+          let url = `?v=${videoId}`;
+          if (playlistId) {
+            url += `&list=${playlistId}`;
+            if (playlistIndex !== null && playlistIndex !== undefined && playlistIndex >= 0) {
+              url += `&index=${playlistIndex}`;
+            }
+          } else {
+            setActivePlaylist(null);
+            setCurrentPlaylistIndex(-1);
+          }
+          window.history.pushState(null, '', url);
         }
         // Push to playback history (truncate forward entries)
         playHistoryRef.current = playHistoryRef.current.slice(0, historyIndexRef.current + 1);
@@ -512,6 +553,7 @@ export default function App() {
       const pg = p.get('page');
       const usr = p.get('user');
       const lst = p.get('list');
+      const idxParam = p.get('index');
 
       if (vId) {
         if (fetchVideoAndPlayRef.current) fetchVideoAndPlayRef.current(vId);
@@ -519,8 +561,10 @@ export default function App() {
           const playlist = playlistsRef.current.find(pl => String(pl.id) === String(lst));
           if (playlist) {
             setActivePlaylist(playlist);
-            const idx = (playlist.video_ids || []).findIndex(id => String(id) === String(vId));
-            setCurrentPlaylistIndex(idx >= 0 ? idx : 0);
+            const parsedIdx = idxParam !== null && !isNaN(parseInt(idxParam, 10)) ? parseInt(idxParam, 10) : -1;
+            const idxFromVid = (playlist.video_ids || []).findIndex(id => String(id) === String(vId));
+            const finalIdx = parsedIdx >= 0 ? parsedIdx : (idxFromVid >= 0 ? idxFromVid : 0);
+            setCurrentPlaylistIndex(finalIdx);
           }
         } else {
           setActivePlaylist(null);
@@ -535,8 +579,16 @@ export default function App() {
       } else if (lst) {
         const playlist = playlistsRef.current.find(pl => String(pl.id) === String(lst));
         if (playlist) {
-          setPlaylistView(playlist);
-          setCurrentView('playlist');
+          const parsedIdx = idxParam !== null && !isNaN(parseInt(idxParam, 10)) ? parseInt(idxParam, 10) : -1;
+          if (parsedIdx >= 0 && playlist.video_ids && playlist.video_ids[parsedIdx]) {
+            const targetVidId = playlist.video_ids[parsedIdx];
+            setActivePlaylist(playlist);
+            setCurrentPlaylistIndex(parsedIdx);
+            if (fetchVideoAndPlayRef.current) fetchVideoAndPlayRef.current(targetVidId);
+          } else {
+            setPlaylistView(playlist);
+            setCurrentView('playlist');
+          }
         }
       } else if (pg === 'crawler') {
         setCurrentView('crawler');
@@ -915,14 +967,22 @@ export default function App() {
         const params = new URLSearchParams(window.location.search);
         const listId = params.get('list');
         const videoId = params.get('v');
+        const indexParam = params.get('index');
 
         if (listId) {
           const playlist = data.find(p => String(p.id) === String(listId));
           if (playlist) {
+            const parsedIdx = indexParam !== null && !isNaN(parseInt(indexParam, 10)) ? parseInt(indexParam, 10) : -1;
             if (videoId) {
               setActivePlaylist(playlist);
-              const idx = (playlist.video_ids || []).findIndex(id => String(id) === String(videoId));
-              setCurrentPlaylistIndex(idx >= 0 ? idx : 0);
+              const idxFromVid = (playlist.video_ids || []).findIndex(id => String(id) === String(videoId));
+              const finalIdx = parsedIdx >= 0 ? parsedIdx : (idxFromVid >= 0 ? idxFromVid : 0);
+              setCurrentPlaylistIndex(finalIdx);
+            } else if (parsedIdx >= 0 && playlist.video_ids && playlist.video_ids[parsedIdx]) {
+              const targetVidId = playlist.video_ids[parsedIdx];
+              setActivePlaylist(playlist);
+              setCurrentPlaylistIndex(parsedIdx);
+              fetchVideoAndPlay(targetVidId);
             } else {
               setPlaylistView(playlist);
               setCurrentView('playlist');
@@ -1087,7 +1147,7 @@ export default function App() {
   };
 
   // Load a video for playing
-  const handlePlayVideo = async (video, keepMiniPlayer = false, skipHistory = false, playlistId = null) => {
+  const handlePlayVideo = async (video, keepMiniPlayer = false, skipHistory = false, playlistId = null, playlistIndex = null) => {
     const shouldKeepMini = keepMiniPlayer;
 
     // Push to playback history (truncate forward entries)
@@ -1097,13 +1157,31 @@ export default function App() {
       historyIndexRef.current = playHistoryRef.current.length - 1;
     }
 
+    // Determine resolved playlist index
+    let resolvedIndex = null;
+    if (playlistIndex !== null && playlistIndex !== undefined && playlistIndex >= 0) {
+      resolvedIndex = playlistIndex;
+    } else if (activePlaylist && activePlaylist.video_ids) {
+      const foundIdx = activePlaylist.video_ids.findIndex(id => String(id) === String(video.vid_id));
+      if (foundIdx >= 0) resolvedIndex = foundIdx;
+    }
+
+    if (resolvedIndex !== null && resolvedIndex >= 0) {
+      setCurrentPlaylistIndex(resolvedIndex);
+    }
+
     // Update browser history URL if NOT keeping in miniplayer
     if (!shouldKeepMini) {
       // Never put temp search playlist into the URL
       const realPlaylistId = playlistId && playlistId !== '__search__' ? playlistId : null;
-      const url = realPlaylistId
-        ? `?v=${video.vid_id}&list=${realPlaylistId}`
-        : `?v=${video.vid_id}`;
+      let url = `?v=${video.vid_id}`;
+      if (realPlaylistId) {
+        url += `&list=${realPlaylistId}`;
+        const finalIdx = resolvedIndex !== null && resolvedIndex >= 0 ? resolvedIndex : (currentPlaylistIndex >= 0 ? currentPlaylistIndex : null);
+        if (finalIdx !== null && finalIdx !== undefined && finalIdx >= 0) {
+          url += `&index=${finalIdx}`;
+        }
+      }
       window.history.pushState(null, '', url);
     }
     localStorage.setItem('yt_last_playing_video_id', video.vid_id);
@@ -1657,24 +1735,49 @@ export default function App() {
               allVideos={watchNextVideos.length > 0 ? watchNextVideos : videos}
               onPlayVideo={(video, pl, index, keepMiniPlayer, skipHistory) => {
                 let targetPlaylistId = null;
+                let targetIndex = null;
                 if (pl !== undefined) {
                   setActivePlaylist(pl);
-                  if (index !== undefined) setCurrentPlaylistIndex(index);
-                  targetPlaylistId = pl.id;
+                  if (index !== undefined && index !== null && index >= 0) {
+                    setCurrentPlaylistIndex(index);
+                    targetIndex = index;
+                  } else if (pl && pl.video_ids) {
+                    const fIdx = pl.video_ids.findIndex(id => String(id) === String(video.vid_id));
+                    if (fIdx >= 0) {
+                      setCurrentPlaylistIndex(fIdx);
+                      targetIndex = fIdx;
+                    }
+                  }
+                  targetPlaylistId = pl?.id;
                 } else if (skipHistory && activePlaylist) {
                   // Preserve active playlist (including temp search playlists) during prev/next nav
                   targetPlaylistId = activePlaylist.id;
+                  if (activePlaylist.video_ids) {
+                    const fIdx = activePlaylist.video_ids.findIndex(id => String(id) === String(video.vid_id));
+                    if (fIdx >= 0) {
+                      setCurrentPlaylistIndex(fIdx);
+                      targetIndex = fIdx;
+                    }
+                  }
                 } else {
                   // Clicking Watch Next outside the queue: keep temp playlist visible but deindex
                   setCurrentPlaylistIndex(-1);
                   targetPlaylistId = null;
                 }
-                handlePlayVideo(video, keepMiniPlayer, skipHistory, targetPlaylistId);
+                handlePlayVideo(video, keepMiniPlayer, skipHistory, targetPlaylistId, targetIndex);
               }}
               isMiniPlayer={currentView !== 'player'}
               onExpand={() => {
                 if (playingVideo) {
-                  window.history.pushState(null, '', `?v=${playingVideo.vid_id}`);
+                  const realPlId = activePlaylist && !activePlaylist._isTemp && activePlaylist.id ? activePlaylist.id : null;
+                  let url = `?v=${playingVideo.vid_id}`;
+                  if (realPlId) {
+                    url += `&list=${realPlId}`;
+                    if (currentPlaylistIndex >= 0) {
+                      url += `&index=${currentPlaylistIndex}`;
+                    }
+                  }
+                  window.history.pushState(null, '', url);
                 }
                 setCurrentView('player');
                 window.scrollTo(0, 0);
@@ -1765,7 +1868,7 @@ export default function App() {
               onPlayVideo={(video, pl, index) => {
                 setActivePlaylist(pl);
                 setCurrentPlaylistIndex(index);
-                handlePlayVideo(video, false, false, pl.id);
+                handlePlayVideo(video, false, false, pl.id, index);
               }}
               onRemoveVideo={removeVideoFromPlaylist}
               onReorder={updatePlaylistOrder}
@@ -1788,7 +1891,7 @@ export default function App() {
                   };
                   setActivePlaylist(playQueue);
                   setCurrentPlaylistIndex(0);
-                  handlePlayVideo(listVideos[0], false, false, pl.id);
+                  handlePlayVideo(listVideos[0], false, false, pl.id, 0);
                 }
               }}
             />
@@ -2137,6 +2240,379 @@ function ShortsCard({ video, onClick }) {
 }
 
 // ----------------------------------------
+// SUB-COMPONENT: ShareModal
+// ----------------------------------------
+function ShareModal({
+  video,
+  currentTime = 0,
+  activePlaylist = null,
+  currentPlaylistIndex = -1,
+  isShort = false,
+  onClose,
+  showFlashNotification
+}) {
+  const [includePlaylist, setIncludePlaylist] = useState(Boolean(activePlaylist && activePlaylist.id));
+  const [includeTimestamp, setIncludeTimestamp] = useState(false);
+  const [useHttps, setUseHttps] = useState(() => localStorage.getItem('yt_share_prefer_https') === '1');
+  const [timestampInput, setTimestampInput] = useState(() => formatTime(Math.floor(currentTime || 0)));
+  const [selectedDomain, setSelectedDomain] = useState('');
+  const [localAdapters, setLocalAdapters] = useState([]);
+  const [customDomains, setCustomDomains] = useState([]);
+  const [serverPort, setServerPort] = useState(80);
+  const [isAddingCustom, setIsAddingCustom] = useState(false);
+  const [newCustomDomain, setNewCustomDomain] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [loadingConfig, setLoadingConfig] = useState(true);
+
+  // Fetch share configuration & network adapters from server
+  useEffect(() => {
+    fetch('./api/index.php?action=get_share_config')
+      .then(res => res.json())
+      .then(data => {
+        if (data) {
+          const adapters = Array.isArray(data.local_adapters) ? data.local_adapters : [];
+          const customs = Array.isArray(data.custom_domains) ? data.custom_domains : [];
+          setLocalAdapters(adapters);
+          setCustomDomains(customs);
+          setServerPort(data.server_port || 80);
+
+          let initialDomain = data.preferred_domain;
+          if (!initialDomain) {
+            initialDomain = data.default_ip || window.location.hostname;
+          }
+          setSelectedDomain(initialDomain);
+
+          if (data.prefer_https !== undefined) {
+            setUseHttps(Boolean(data.prefer_https));
+            localStorage.setItem('yt_share_prefer_https', data.prefer_https ? '1' : '0');
+          }
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching share config:', err);
+        setSelectedDomain(window.location.hostname);
+      })
+      .finally(() => setLoadingConfig(false));
+  }, []);
+
+  const handleHttpsChange = (e) => {
+    const checked = e.target.checked;
+    setUseHttps(checked);
+    localStorage.setItem('yt_share_prefer_https', checked ? '1' : '0');
+    fetch('./api/index.php?action=save_share_preference', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prefer_https: checked ? 1 : 0 })
+    }).catch(console.error);
+  };
+
+  const handleDomainChange = (e) => {
+    const val = e.target.value;
+    if (val === '__add_custom__') {
+      setIsAddingCustom(true);
+      return;
+    }
+    setIsAddingCustom(false);
+    setSelectedDomain(val);
+
+    // Save user preference
+    fetch('./api/index.php?action=save_share_preference', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ domain_name: val })
+    }).catch(console.error);
+  };
+
+  const handleAddCustomDomainSubmit = async (e) => {
+    e.preventDefault();
+    const domain = newCustomDomain.trim();
+    if (!domain) return;
+
+    try {
+      const res = await fetch('./api/index.php?action=add_share_domain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain_name: domain })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCustomDomains(prev => [...prev.filter(d => d.domain_name !== data.domain_name), { id: data.id, domain_name: data.domain_name }]);
+        setSelectedDomain(data.domain_name);
+        setIsAddingCustom(false);
+        setNewCustomDomain('');
+        showFlashNotification?.(`Added domain "${data.domain_name}"`);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const shareUrl = useMemo(() => {
+    if (!video) return '';
+
+    let host = selectedDomain || window.location.hostname;
+    if (!host.includes(':')) {
+      const port = serverPort || (window.location.port ? parseInt(window.location.port) : 80);
+      const isDefaultPort = (useHttps && (port === 443 || port === 80)) || (!useHttps && port === 80);
+      if (port && !isDefaultPort) {
+        host = `${host}:${port}`;
+      }
+    }
+
+    const pathname = window.location.pathname.replace(/\/index\.html$/i, '/');
+    const protocol = useHttps ? 'https:' : 'http:';
+
+    const queryParams = new URLSearchParams();
+    if (isShort) {
+      queryParams.set('sv', video.vid_id);
+    } else {
+      queryParams.set('v', video.vid_id);
+      if (includePlaylist && activePlaylist && activePlaylist.id) {
+        queryParams.set('list', activePlaylist.id);
+        if (currentPlaylistIndex !== undefined && currentPlaylistIndex >= 0) {
+          queryParams.set('index', currentPlaylistIndex);
+        }
+      }
+    }
+
+    if (includeTimestamp) {
+      const sec = parseTimestamp(timestampInput);
+      if (sec > 0) {
+        queryParams.set('t', Math.floor(sec));
+      }
+    }
+
+    return `${protocol}//${host}${pathname}?${queryParams.toString()}`;
+  }, [video, selectedDomain, serverPort, isShort, includePlaylist, activePlaylist, currentPlaylistIndex, includeTimestamp, timestampInput, useHttps]);
+
+  const handleCopy = () => {
+    if (!shareUrl) return;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setCopied(true);
+      showFlashNotification?.('Link copied to clipboard!');
+      setTimeout(() => setCopied(false), 2500);
+    }).catch(err => {
+      console.error('Failed to copy text:', err);
+    });
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div
+        className="modal-content share-modal-content"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          maxWidth: '500px',
+          width: '92%',
+          padding: '24px',
+          background: 'rgba(20, 20, 20, 0.95)',
+          backdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: '16px',
+          boxShadow: '0 16px 40px rgba(0,0,0,0.6)'
+        }}
+      >
+        <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <span className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px', fontWeight: 'bold', color: '#fff' }}>
+            <Share2 size={20} style={{ color: 'var(--primary-color)' }} /> Share Link
+          </span>
+          <button className="modal-close" onClick={onClose}>&times;</button>
+        </div>
+
+        {/* Video preview mini banner */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.04)', padding: '10px 12px', borderRadius: '10px', marginBottom: '18px', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ width: '64px', height: '36px', borderRadius: '4px', overflow: 'hidden', background: '#000', flexShrink: 0 }}>
+            <img
+              src={`./thumbnails/${video.vid_id}.jpg`}
+              alt=""
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              onError={(e) => { e.target.style.display = 'none'; }}
+            />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: '13px', fontWeight: '600', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}
+            </div>
+            <div style={{ fontSize: '11px', color: '#aaa' }}>{video.uploader_name}</div>
+          </div>
+        </div>
+
+        {/* Domain selection */}
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#ccc', marginBottom: '6px' }}>
+            Select Domain / Host
+          </label>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <select
+              value={isAddingCustom ? '__add_custom__' : selectedDomain}
+              onChange={handleDomainChange}
+              className="form-input"
+              style={{ flex: 1, padding: '8px 12px', fontSize: '13px', cursor: 'pointer', background: 'rgba(255,255,255,0.06)' }}
+            >
+              {localAdapters.length > 0 && (
+                <optgroup label="Local Network (LAN IP)">
+                  {localAdapters.map(adapter => (
+                    <option key={adapter.ip} value={adapter.ip}>
+                      {adapter.label} {adapter.has_gateway ? '★ (Wi-Fi/LAN Default)' : ''}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              <optgroup label="Localhost">
+                <option value="localhost">localhost</option>
+                <option value="127.0.0.1">127.0.0.1</option>
+              </optgroup>
+              {customDomains.length > 0 && (
+                <optgroup label="Custom Domains / Saved IPs">
+                  {customDomains.map(d => (
+                    <option key={d.id} value={d.domain_name}>
+                      {d.domain_name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              <option value="__add_custom__">+ Add Custom Domain / IP...</option>
+            </select>
+          </div>
+
+          {/* Inline Add Custom Domain Form */}
+          {isAddingCustom && (
+            <form onSubmit={handleAddCustomDomainSubmit} style={{ marginTop: '10px', display: 'flex', gap: '8px' }}>
+              <input
+                type="text"
+                placeholder="e.g. 192.168.1.100 or my-server.local"
+                value={newCustomDomain}
+                onChange={(e) => setNewCustomDomain(e.target.value)}
+                className="form-input"
+                style={{ flex: 1, padding: '6px 10px', fontSize: '13px' }}
+                autoFocus
+                required
+              />
+              <button type="submit" className="btn-primary" style={{ padding: '6px 14px', fontSize: '12px' }}>
+                Save
+              </button>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => {
+                  setIsAddingCustom(false);
+                  setSelectedDomain(localAdapters[0]?.ip || 'localhost');
+                }}
+                style={{ padding: '6px 12px', fontSize: '12px' }}
+              >
+                Cancel
+              </button>
+            </form>
+          )}
+        </div>
+
+        {/* Checkbox Options */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+          {/* Use HTTPS Checkbox */}
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: '#eee', userSelect: 'none' }}>
+            <input
+              type="checkbox"
+              checked={useHttps}
+              onChange={handleHttpsChange}
+              style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+            />
+            <span>Use HTTPS (https://)</span>
+          </label>
+
+          {/* Start at Timestamp Checkbox */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: '#eee', userSelect: 'none' }}>
+              <input
+                type="checkbox"
+                checked={includeTimestamp}
+                onChange={(e) => setIncludeTimestamp(e.target.checked)}
+                style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+              />
+              <span>Start at</span>
+            </label>
+            <input
+              type="text"
+              value={timestampInput}
+              onChange={(e) => {
+                setTimestampInput(e.target.value);
+                if (!includeTimestamp) setIncludeTimestamp(true);
+              }}
+              placeholder="0:00"
+              className="form-input"
+              style={{
+                width: '80px',
+                padding: '4px 8px',
+                fontSize: '13px',
+                textAlign: 'center',
+                opacity: includeTimestamp ? 1 : 0.6
+              }}
+            />
+          </div>
+
+          {/* Preserve Playlist Checkbox (only if active playlist exists) */}
+          {activePlaylist && activePlaylist.id && (
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: '#eee', userSelect: 'none' }}>
+              <input
+                type="checkbox"
+                checked={includePlaylist}
+                onChange={(e) => setIncludePlaylist(e.target.checked)}
+                style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+              />
+              <span>Include playlist ({activePlaylist.playlist_name})</span>
+            </label>
+          )}
+        </div>
+
+        {/* Link Box & Copy Button */}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <input
+            type="text"
+            readOnly
+            value={shareUrl}
+            onFocus={(e) => e.target.select()}
+            className="form-input"
+            style={{
+              flex: 1,
+              padding: '10px 14px',
+              fontSize: '13px',
+              color: '#fff',
+              background: 'rgba(255,255,255,0.06)',
+              borderRadius: '8px',
+              fontFamily: 'monospace'
+            }}
+          />
+          <button
+            className="btn-primary"
+            onClick={handleCopy}
+            style={{
+              padding: '10px 18px',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontWeight: 'bold',
+              fontSize: '13px',
+              flexShrink: 0,
+              backgroundColor: copied ? '#10b981' : undefined
+            }}
+          >
+            {copied ? (
+              <>
+                <Check size={16} /> Copied!
+              </>
+            ) : (
+              <>
+                <Copy size={16} /> Copy Link
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------
 // SUB-COMPONENT: ShortsPlayerView
 // ----------------------------------------
 function ShortsPlayerView({
@@ -2190,6 +2666,7 @@ function ShortsPlayerView({
   // Edit / Delete / Save states
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editDesc, setEditDesc] = useState('');
   const [editTags, setEditTags] = useState('');
@@ -2197,6 +2674,27 @@ function ShortsPlayerView({
   const [newPlaylistName, setNewPlaylistName] = useState('');
 
   const currentVideo = shortsList[currentIndex];
+
+  // Handle URL time parameter 't' for Shorts
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tParam = params.get('t');
+    if (tParam && currentVideo) {
+      const seekSec = parseTimestamp(tParam);
+      if (seekSec > 0) {
+        const applySeek = () => {
+          if (videoRef.current) {
+            videoRef.current.currentTime = seekSec;
+          }
+        };
+        if (videoRef.current && videoRef.current.readyState >= 1) {
+          applySeek();
+        } else if (videoRef.current) {
+          videoRef.current.addEventListener('loadedmetadata', applySeek, { once: true });
+        }
+      }
+    }
+  }, [currentVideo]);
 
   // Initialize edit fields
   useEffect(() => {
@@ -2863,6 +3361,13 @@ function ShortsPlayerView({
               <span className="shorts-action-label">{currentVideo.comments || 0}</span>
             </div>
 
+            <div className="shorts-action-item" onClick={() => setShowShareModal(true)}>
+              <button className="shorts-action-btn-circle" title="Share">
+                <Share2 size={22} />
+              </button>
+              <span className="shorts-action-label">Share</span>
+            </div>
+
             <div className="shorts-action-item">
               <button className="shorts-action-btn-circle" onClick={toggleShortsUi} title="Hide UI">
                 <Eye size={22} />
@@ -2957,7 +3462,7 @@ function ShortsPlayerView({
                 </div>
               </div>
 
-              {/* Action Buttons: Edit, Delete, Save, Stats */}
+              {/* Action Buttons: Edit, Delete, Save, Share, Stats */}
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '12px' }}>
                 <button className="action-pill-btn" onClick={() => setShowEditModal(true)}>
                   <Edit size={16} /> <span>Edit</span>
@@ -2967,6 +3472,9 @@ function ShortsPlayerView({
                 </button>
                 <button className="action-pill-btn" onClick={() => setShowSaveModal(true)}>
                   <Bookmark size={16} /> <span>Save</span>
+                </button>
+                <button className="action-pill-btn" onClick={() => setShowShareModal(true)}>
+                  <Share2 size={16} /> <span>Share</span>
                 </button>
                 <button
                   className={`action-pill-btn ${showStatsModal ? 'active-pill-btn' : ''}`}
@@ -3145,6 +3653,18 @@ function ShortsPlayerView({
                   </div>
                 </div>
               </div>
+            )}
+
+            {/* Share Modal Overlay */}
+            {showShareModal && (
+              <ShareModal
+                video={currentVideo}
+                currentTime={videoRef.current?.currentTime || 0}
+                activePlaylist={null}
+                isShort={true}
+                onClose={() => setShowShareModal(false)}
+                showFlashNotification={showFlashNotification}
+              />
             )}
           </div>
         )}
@@ -3418,6 +3938,7 @@ function PlayerView({
   const [disliked, setDisliked] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState('');
 
   // Fullscreen '/' search overlay state
@@ -3918,7 +4439,14 @@ function PlayerView({
       historyIndexRef.current -= 1;
       const vidId = playHistoryRef.current[historyIndexRef.current];
       const prevVid = allVideos.find(v => v.vid_id === vidId);
-      if (prevVid) onPlayVideo(prevVid, undefined, undefined, isMiniPlayer, true);
+      if (prevVid) {
+        let prevIdx = undefined;
+        if (activePlaylist && activePlaylist.video_ids) {
+          const fIdx = activePlaylist.video_ids.findIndex(id => String(id) === String(prevVid.vid_id));
+          if (fIdx >= 0) prevIdx = fIdx;
+        }
+        onPlayVideo(prevVid, activePlaylist || undefined, prevIdx, isMiniPlayer, true);
+      }
     }
   };
 
@@ -3928,7 +4456,14 @@ function PlayerView({
       historyIndexRef.current += 1;
       const vidId = playHistoryRef.current[historyIndexRef.current];
       const nextVid = allVideos.find(v => v.vid_id === vidId);
-      if (nextVid) onPlayVideo(nextVid, undefined, undefined, isMiniPlayer, true);
+      if (nextVid) {
+        let nextIdx = undefined;
+        if (activePlaylist && activePlaylist.video_ids) {
+          const fIdx = activePlaylist.video_ids.findIndex(id => String(id) === String(nextVid.vid_id));
+          if (fIdx >= 0) nextIdx = fIdx;
+        }
+        onPlayVideo(nextVid, activePlaylist || undefined, nextIdx, isMiniPlayer, true);
+      }
       return;
     }
     // At end of history — generate new video (existing logic)
@@ -4922,6 +5457,17 @@ function PlayerView({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ vid_id: video.vid_id, duration: dur })
       });
+    }
+
+    // If URL has ?t= timestamp, apply seek immediately upon metadata load
+    const params = new URLSearchParams(window.location.search);
+    const tParam = params.get('t');
+    if (tParam) {
+      const seekSec = parseTimestamp(tParam);
+      if (seekSec > 0 && seekSec < videoRef.current.duration) {
+        videoRef.current.currentTime = seekSec;
+        setCurrentTime(seekSec);
+      }
     }
 
     // Set target orientation from actual video dimensions
@@ -7374,6 +7920,9 @@ function PlayerView({
                   <button className="action-pill-btn" onClick={() => setShowSaveModal(true)} style={{ flexShrink: 0, height: '36px', padding: '0 14px', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>
                     <Bookmark size={14} /> <span>Save</span>
                   </button>
+                  <button className="action-pill-btn" onClick={() => setShowShareModal(true)} style={{ flexShrink: 0, height: '36px', padding: '0 14px', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }}>
+                    <Share2 size={14} /> <span>Share</span>
+                  </button>
                 </div>
 
                 {/* Mobile Comments Preview Banner */}
@@ -7459,6 +8008,9 @@ function PlayerView({
                     </button>
                     <button className="action-pill-btn" onClick={() => setShowSaveModal(true)}>
                       <Bookmark size={16} /> <span>Save</span>
+                    </button>
+                    <button className="action-pill-btn" onClick={() => setShowShareModal(true)}>
+                      <Share2 size={16} /> <span>Share</span>
                     </button>
                   </div>
                 </div>
@@ -8194,6 +8746,19 @@ function PlayerView({
               </div>
             </div>
           )}
+
+          {/* Share Modal Overlay */}
+          {showShareModal && (
+            <ShareModal
+              video={video}
+              currentTime={currentTime}
+              activePlaylist={activePlaylist}
+              currentPlaylistIndex={currentPlaylistIndex}
+              isShort={false}
+              onClose={() => setShowShareModal(false)}
+              showFlashNotification={showFlashNotification}
+            />
+          )}
         </>
       )}
     </div>
@@ -8765,9 +9330,25 @@ function PlaylistView({
   onPlayPlaylist,
   isMobile
 }) {
-  const playlistVideos = (playlist.video_ids || [])
-    .map(id => allVideos.find(v => v.vid_id === parseInt(id)))
-    .filter(Boolean);
+  // O(1) lookup Map for videos
+  const allVideosMap = useMemo(() => {
+    const map = new Map();
+    (allVideos || []).forEach(v => map.set(v.vid_id, v));
+    return map;
+  }, [allVideos]);
+
+  // O(1) lookup Map for playlists
+  const allPlaylistsMap = useMemo(() => {
+    const map = new Map();
+    (allPlaylists || []).forEach(p => map.set(p.id, p));
+    return map;
+  }, [allPlaylists]);
+
+  const playlistVideos = useMemo(() => {
+    return (playlist.video_ids || [])
+      .map(id => allVideosMap.get(parseInt(id)))
+      .filter(Boolean);
+  }, [playlist.video_ids, allVideosMap]);
 
   // Compute ancestor breadcrumb trail
   const breadcrumbs = useMemo(() => {
@@ -8778,13 +9359,13 @@ function PlaylistView({
       visited.add(current.id);
       crumbs.unshift(current);
       if (current.parent_id) {
-        current = allPlaylists.find(p => p.id === current.parent_id);
+        current = allPlaylistsMap.get(current.parent_id);
       } else {
         break;
       }
     }
     return crumbs;
-  }, [playlist, allPlaylists]);
+  }, [playlist, allPlaylistsMap]);
 
   // Compute child playlists
   const childPlaylists = useMemo(() => {
@@ -8793,6 +9374,57 @@ function PlaylistView({
     }
     return playlist.children || [];
   }, [playlist, allPlaylists]);
+
+  // Sub-playlist sorting state (persisted in localStorage)
+  const [subSortBy, setSubSortBy] = useState(() => {
+    return localStorage.getItem('yt_subplaylist_sort') || 'name';
+  });
+  const [subSortOrder, setSubSortOrder] = useState(() => {
+    return localStorage.getItem('yt_subplaylist_order') || 'asc';
+  });
+
+  const handleSortChange = (newSort) => {
+    setSubSortBy(newSort);
+    localStorage.setItem('yt_subplaylist_sort', newSort);
+  };
+
+  const toggleSortOrder = () => {
+    const newOrder = subSortOrder === 'asc' ? 'desc' : 'asc';
+    setSubSortOrder(newOrder);
+    localStorage.setItem('yt_subplaylist_order', newOrder);
+  };
+
+  // Sort child playlists according to chosen criteria and order
+  const sortedChildPlaylists = useMemo(() => {
+    const list = [...childPlaylists];
+    list.sort((a, b) => {
+      const fullA = allPlaylistsMap.get(a.id) || a;
+      const fullB = allPlaylistsMap.get(b.id) || b;
+
+      let comparison = 0;
+      if (subSortBy === 'name') {
+        comparison = (fullA.playlist_name || '').localeCompare(fullB.playlist_name || '', undefined, {
+          numeric: true,
+          sensitivity: 'base'
+        });
+      } else if (subSortBy === 'modified') {
+        const timeA = new Date(fullA.updated_at || fullA.created_at || 0).getTime();
+        const timeB = new Date(fullB.updated_at || fullB.created_at || 0).getTime();
+        comparison = timeA - timeB;
+      } else if (subSortBy === 'created') {
+        const timeA = new Date(fullA.created_at || 0).getTime();
+        const timeB = new Date(fullB.created_at || 0).getTime();
+        comparison = timeA - timeB;
+      } else if (subSortBy === 'count') {
+        const countA = fullA.total_video_count !== undefined ? fullA.total_video_count : (fullA.video_count || 0);
+        const countB = fullB.total_video_count !== undefined ? fullB.total_video_count : (fullB.video_count || 0);
+        comparison = countA - countB;
+      }
+
+      return subSortOrder === 'asc' ? comparison : -comparison;
+    });
+    return list;
+  }, [childPlaylists, allPlaylistsMap, subSortBy, subSortOrder]);
 
   const isMega = Boolean(playlist.is_mega || childPlaylists.length > 0);
   const hasChildren = childPlaylists.length > 0;
@@ -8915,21 +9547,65 @@ function PlaylistView({
       {/* SECTION 1: Sub-Playlists (For Mega Playlists) */}
       {hasChildren && (
         <div style={{ marginTop: '24px' }}>
-          <h2 style={{ fontSize: '16px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', color: '#eee' }}>
-            <FolderOpen size={18} style={{ color: 'var(--primary-color)' }} /> Sub-Playlists ({childPlaylists.length})
-          </h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
+            <h2 style={{ fontSize: '16px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, color: '#eee' }}>
+              <FolderOpen size={18} style={{ color: 'var(--primary-color)' }} /> Sub-Playlists ({childPlaylists.length})
+            </h2>
+
+            {childPlaylists.length > 1 && (
+              <div className="subplaylist-sort-controls">
+                <span className="subplaylist-sort-label">Sort:</span>
+                <div className="subplaylist-sort-select-wrapper">
+                  <select
+                    value={subSortBy}
+                    onChange={(e) => handleSortChange(e.target.value)}
+                    className="subplaylist-sort-select"
+                  >
+                    <option value="name">Name</option>
+                    <option value="modified">Date Modified</option>
+                    <option value="created">Date Created</option>
+                    <option value="count">Video Count</option>
+                  </select>
+                  <ChevronDown size={12} className="subplaylist-sort-select-chevron" />
+                </div>
+
+                <button
+                  onClick={toggleSortOrder}
+                  className="subplaylist-sort-order-btn"
+                  title={
+                    subSortOrder === 'asc'
+                      ? (subSortBy === 'name' ? 'Alphabetical (A to Z)' : subSortBy === 'count' ? 'Lowest to highest count' : 'Oldest first')
+                      : (subSortBy === 'name' ? 'Reverse Alphabetical (Z to A)' : subSortBy === 'count' ? 'Highest to lowest count' : 'Newest first')
+                  }
+                >
+                  {subSortOrder === 'asc' ? (
+                    <>
+                      <ArrowUp size={13} style={{ color: '#3ea6ff' }} />
+                      <span>{subSortBy === 'name' ? 'A → Z' : (subSortBy === 'count' ? 'Low → High' : 'Oldest')}</span>
+                    </>
+                  ) : (
+                    <>
+                      <ArrowDown size={13} style={{ color: '#ff7777' }} />
+                      <span>{subSortBy === 'name' ? 'Z → A' : (subSortBy === 'count' ? 'High → Low' : 'Newest')}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+
           <div className="mega-playlist-grid">
-            {childPlaylists.map((child) => {
-              const fullChild = (allPlaylists || []).find(p => p.id === child.id) || child;
+            {sortedChildPlaylists.map((child) => {
+              const fullChild = allPlaylistsMap.get(child.id) || child;
               const childIsFolder = Boolean(
                 fullChild.is_mega ||
                 (fullChild.children_ids && fullChild.children_ids.length > 0) ||
                 (fullChild.children && fullChild.children.length > 0) ||
-                (allPlaylists || []).some(p => p.parent_id === fullChild.id)
+                (fullChild.children_count && fullChild.children_count > 0)
               );
               const thumbVidId = fullChild.first_video_id || (fullChild.video_ids && fullChild.video_ids[0]);
               const childVidCount = fullChild.total_video_count !== undefined ? fullChild.total_video_count : (fullChild.video_count || 0);
-              const childSubCount = fullChild.children_ids?.length || fullChild.children?.length || (allPlaylists || []).filter(p => p.parent_id === fullChild.id).length;
+              const childSubCount = fullChild.children_ids?.length || fullChild.children?.length || fullChild.children_count || 0;
 
               return (
                 <div
@@ -8942,6 +9618,8 @@ function PlaylistView({
                       <img
                         src={`./thumbnails/${thumbVidId}.jpg`}
                         alt=""
+                        loading="lazy"
+                        decoding="async"
                         className="sub-playlist-thumb"
                         onError={(e) => {
                           e.target.style.display = 'none';
@@ -9063,6 +9741,8 @@ function PlaylistView({
                   >
                     <img
                       src={`./thumbnails/${vid.vid_id}.jpg`}
+                      loading="lazy"
+                      decoding="async"
                       onError={(e) => {
                         e.target.style.display = 'none';
                         if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';

@@ -228,6 +228,18 @@ try {
         case 'get_server_ips':
             handleGetServerIps();
             break;
+        case 'get_share_config':
+            handleGetShareConfig($pdo);
+            break;
+        case 'add_share_domain':
+            handleAddShareDomain($pdo);
+            break;
+        case 'delete_share_domain':
+            handleDeleteShareDomain($pdo);
+            break;
+        case 'save_share_preference':
+            handleSaveSharePreference($pdo);
+            break;
         case 'start_cast_prep':
             handleStartCastPrep();
             break;
@@ -729,15 +741,27 @@ function findVideoIdByFilePath($pdo, $file) {
     return $row ? intval($row['vid_id']) : null;
 }
 
-function upsertPlaylistRecord($pdo, $name, $parentId, $folderPath, $syncType, $isMega = 0) {
+function upsertPlaylistRecord($pdo, $name, $parentId, $folderPath, $syncType, $isMega = 0, $createdAt = null, $updatedAt = null) {
+    $name = mb_substr(trim($name), 0, 255);
     if (!empty($folderPath)) {
         $stmt = $pdo->prepare("SELECT id FROM playlists WHERE folder_path = :path");
         $stmt->execute([':path' => $folderPath]);
         $existing = $stmt->fetch();
         if ($existing) {
             $plId = intval($existing['id']);
-            $up = $pdo->prepare("UPDATE playlists SET playlist_name = :name, parent_id = :pid, is_mega = :is_mega, sync_type = :st WHERE id = :id");
-            $up->execute([':name' => $name, ':pid' => $parentId, ':is_mega' => $isMega, ':st' => $syncType, ':id' => $plId]);
+            $sql = "UPDATE playlists SET playlist_name = :name, parent_id = :pid, is_mega = :is_mega, sync_type = :st";
+            $params = [':name' => $name, ':pid' => $parentId, ':is_mega' => $isMega, ':st' => $syncType, ':id' => $plId];
+            if ($createdAt) {
+                $sql .= ", created_at = :cat";
+                $params[':cat'] = $createdAt;
+            }
+            if ($updatedAt) {
+                $sql .= ", updated_at = :uat";
+                $params[':uat'] = $updatedAt;
+            }
+            $sql .= " WHERE id = :id";
+            $up = $pdo->prepare($sql);
+            $up->execute($params);
             return $plId;
         }
     }
@@ -752,14 +776,54 @@ function upsertPlaylistRecord($pdo, $name, $parentId, $folderPath, $syncType, $i
     $existing = $stmt->fetch();
     if ($existing) {
         $plId = intval($existing['id']);
-        $up = $pdo->prepare("UPDATE playlists SET folder_path = :path, is_mega = :is_mega, sync_type = :st WHERE id = :id");
-        $up->execute([':path' => $folderPath, ':is_mega' => $isMega, ':st' => $syncType, ':id' => $plId]);
+        $sql = "UPDATE playlists SET folder_path = :path, is_mega = :is_mega, sync_type = :st";
+        $params = [':path' => $folderPath, ':is_mega' => $isMega, ':st' => $syncType, ':id' => $plId];
+        if ($createdAt) {
+            $sql .= ", created_at = :cat";
+            $params[':cat'] = $createdAt;
+        }
+        if ($updatedAt) {
+            $sql .= ", updated_at = :uat";
+            $params[':uat'] = $updatedAt;
+        }
+        $sql .= " WHERE id = :id";
+        $up = $pdo->prepare($sql);
+        $up->execute($params);
         return $plId;
     }
 
-    $stmt = $pdo->prepare("INSERT INTO playlists (playlist_name, parent_id, is_mega, folder_path, sync_type, video_ids, video_count) VALUES (:name, :pid, :is_mega, :path, :st, '[]', 0)");
-    $stmt->execute([':name' => $name, ':pid' => $parentId, ':is_mega' => $isMega, ':path' => $folderPath, ':st' => $syncType]);
+    $cDate = $createdAt ?: date('Y-m-d H:i:s');
+    $uDate = $updatedAt ?: $cDate;
+    $stmt = $pdo->prepare("INSERT INTO playlists (playlist_name, parent_id, is_mega, folder_path, sync_type, video_ids, video_count, created_at, updated_at) VALUES (:name, :pid, :is_mega, :path, :st, '[]', 0, :cat, :uat)");
+    $stmt->execute([
+        ':name' => $name,
+        ':pid' => $parentId,
+        ':is_mega' => $isMega,
+        ':path' => $folderPath,
+        ':st' => $syncType,
+        ':cat' => $cDate,
+        ':uat' => $uDate
+    ]);
     return intval($pdo->lastInsertId());
+}
+
+function cleanEmptySyncPlaylists($pdo) {
+    $changed = true;
+    $maxPasses = 10;
+    while ($changed && $maxPasses > 0) {
+        $changed = false;
+        $maxPasses--;
+        $stmt = $pdo->query("SELECT id, video_ids, (SELECT COUNT(*) FROM playlists c WHERE c.parent_id = p.id) as child_count FROM playlists p WHERE p.playlist_name != 'default' AND p.sync_type IS NOT NULL");
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($rows as $r) {
+            $vids = json_decode($r['video_ids'], true) ?: [];
+            if (empty($vids) && intval($r['child_count']) === 0) {
+                $del = $pdo->prepare("DELETE FROM playlists WHERE id = :id");
+                $del->execute([':id' => $r['id']]);
+                $changed = true;
+            }
+        }
+    }
 }
 
 function syncMegaPlaylistHierarchy($pdo, $dirPath, $parentId, $uploaderInfo, $ffmpegPath, $videoExtensions, &$stats) {
@@ -767,23 +831,29 @@ function syncMegaPlaylistHierarchy($pdo, $dirPath, $parentId, $uploaderInfo, $ff
     $folderName = basename($dirPath);
     if (empty($folderName)) $folderName = 'Mega Playlist';
 
-    $playlistId = upsertPlaylistRecord($pdo, $folderName, $parentId, $dirPath, 'mega_playlist', 1);
-    $stats['playlists_created']++;
-
     $scanned = @scandir($dirPath);
-    if ($scanned === false) return $playlistId;
+    if ($scanned === false) return null;
 
     $directVideoIds = [];
-    $hasChildFolders = false;
+    $validChildPlaylistIds = [];
     natsort($scanned);
+
+    $mtime = @filemtime($dirPath) ?: time();
+    $ctime = @filectime($dirPath) ?: $mtime;
+    $createdDate = date('Y-m-d H:i:s', $ctime);
+    $modifiedDate = date('Y-m-d H:i:s', $mtime);
+
+    $playlistId = upsertPlaylistRecord($pdo, $folderName, $parentId, $dirPath, 'mega_playlist', 0, $createdDate, $modifiedDate);
 
     foreach ($scanned as $item) {
         if ($item === '.' || $item === '..') continue;
         $fullPath = $dirPath . '/' . $item;
 
         if (is_dir($fullPath)) {
-            $hasChildFolders = true;
-            syncMegaPlaylistHierarchy($pdo, $fullPath, $playlistId, $uploaderInfo, $ffmpegPath, $videoExtensions, $stats);
+            $childPlId = syncMegaPlaylistHierarchy($pdo, $fullPath, $playlistId, $uploaderInfo, $ffmpegPath, $videoExtensions, $stats);
+            if ($childPlId !== null) {
+                $validChildPlaylistIds[] = $childPlId;
+            }
         } elseif (is_file($fullPath)) {
             $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
             if (in_array($ext, $videoExtensions)) {
@@ -805,18 +875,30 @@ function syncMegaPlaylistHierarchy($pdo, $dirPath, $parentId, $uploaderInfo, $ff
         }
     }
 
-    $isMega = $hasChildFolders ? 1 : 0;
+    $hasChildPlaylists = count($validChildPlaylistIds) > 0;
+    $hasDirectVideos = count($directVideoIds) > 0;
+
+    // If completely empty (no direct videos and no non-empty child playlists)
+    if (!$hasDirectVideos && !$hasChildPlaylists) {
+        $delStmt = $pdo->prepare("DELETE FROM playlists WHERE id = :id AND playlist_name != 'default'");
+        $delStmt->execute([':id' => $playlistId]);
+        return null;
+    }
+
+    $isMega = $hasChildPlaylists ? 1 : 0;
     $vIdsJson = json_encode(array_values(array_unique($directVideoIds)));
     $vCount = count($directVideoIds);
 
-    $upStmt = $pdo->prepare("UPDATE playlists SET video_ids = :vids, video_count = :vcount, is_mega = :is_mega WHERE id = :id");
+    $upStmt = $pdo->prepare("UPDATE playlists SET video_ids = :vids, video_count = :vcount, is_mega = :is_mega, updated_at = :uat WHERE id = :id");
     $upStmt->execute([
         ':vids' => $vIdsJson,
         ':vcount' => $vCount,
         ':is_mega' => $isMega,
+        ':uat' => $modifiedDate,
         ':id' => $playlistId
     ]);
 
+    $stats['playlists_created']++;
     return $playlistId;
 }
 
@@ -969,24 +1051,37 @@ function handleCrawl($pdo) {
         $cleanDir = rtrim($directory, '/');
         $plName = basename($cleanDir);
         if (empty($plName)) $plName = 'Playlist';
-
-        $plId = upsertPlaylistRecord($pdo, $plName, null, $cleanDir, 'playlist', 0);
-        $vIdsJson = json_encode(array_values(array_unique($allSyncedVidIds)));
         $vCount = count($allSyncedVidIds);
 
-        $upStmt = $pdo->prepare("UPDATE playlists SET video_ids = :vids, video_count = :vcount, is_mega = 0 WHERE id = :id");
-        $upStmt->execute([
-            ':vids' => $vIdsJson,
-            ':vcount' => $vCount,
-            ':id' => $plId
-        ]);
+        if ($vCount > 0) {
+            $mtime = @filemtime($cleanDir) ?: time();
+            $ctime = @filectime($cleanDir) ?: $mtime;
+            $createdDate = date('Y-m-d H:i:s', $ctime);
+            $modifiedDate = date('Y-m-d H:i:s', $mtime);
 
-        $playlistInfo = [
-            'id' => $plId,
-            'name' => $plName,
-            'video_count' => $vCount
-        ];
+            $plId = upsertPlaylistRecord($pdo, $plName, null, $cleanDir, 'playlist', 0, $createdDate, $modifiedDate);
+            $vIdsJson = json_encode(array_values(array_unique($allSyncedVidIds)));
+
+            $upStmt = $pdo->prepare("UPDATE playlists SET video_ids = :vids, video_count = :vcount, is_mega = 0, updated_at = :uat WHERE id = :id");
+            $upStmt->execute([
+                ':vids' => $vIdsJson,
+                ':vcount' => $vCount,
+                ':uat' => $modifiedDate,
+                ':id' => $plId
+            ]);
+
+            $playlistInfo = [
+                'id' => $plId,
+                'name' => $plName,
+                'video_count' => $vCount
+            ];
+        } else {
+            $delStmt = $pdo->prepare("DELETE FROM playlists WHERE folder_path = :path AND playlist_name != 'default'");
+            $delStmt->execute([':path' => $cleanDir]);
+        }
     }
+
+    cleanEmptySyncPlaylists($pdo);
 
     echo json_encode([
         'success' => true,
@@ -1044,12 +1139,12 @@ function processSingleVideo($pdo, $file, $uploaderInfo, $ffmpegPath, $videoExten
         ':tags' => (!empty($meta['width']) && !empty($meta['height']) && (int)$meta['height'] >= (int)$meta['width'] && !in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), ['mp3', 'm4a', 'wav', 'flac', 'ogg', 'aac', 'wma', 'opus', 'mka'])) ? 'shorts' : '',
         ':description' => $description,
         ':filesize' => $meta['filesize'],
-        ':width' => $meta['width'],
-        ':height' => $meta['height'],
-        ':aspect_ratio' => $meta['aspect_ratio'],
-        ':bitrate' => $meta['bitrate'],
-        ':framerate' => $meta['framerate'],
-        ':codec' => $meta['codec']
+        ':width' => !empty($meta['width']) ? (int)$meta['width'] : null,
+        ':height' => !empty($meta['height']) ? (int)$meta['height'] : null,
+        ':aspect_ratio' => !empty($meta['aspect_ratio']) ? substr(trim($meta['aspect_ratio']), 0, 50) : null,
+        ':bitrate' => !empty($meta['bitrate']) ? (int)$meta['bitrate'] : null,
+        ':framerate' => !empty($meta['framerate']) ? (float)$meta['framerate'] : null,
+        ':codec' => !empty($meta['codec']) ? substr(trim($meta['codec']), 0, 100) : null
     ]);
 
     $newId = $pdo->lastInsertId();
@@ -1627,6 +1722,7 @@ function getTempHardlink($originalPath) {
 }
 
 function handleGetPlaylists($pdo) {
+    cleanEmptySyncPlaylists($pdo);
     $stmt = $pdo->query("SELECT * FROM playlists WHERE playlist_name != 'default' ORDER BY id ASC");
     $playlists = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
@@ -1640,6 +1736,18 @@ function handleGetPlaylists($pdo) {
         $ids = json_decode($pl['video_ids'], true);
         $pl['video_ids'] = is_array($ids) ? array_map('intval', $ids) : [];
         $pl['video_count'] = count($pl['video_ids']);
+
+        // Backfill created_at / updated_at from OS if missing on disk
+        if (empty($pl['created_at']) && !empty($pl['folder_path']) && file_exists($pl['folder_path'])) {
+            $ctime = @filectime($pl['folder_path']);
+            $mtime = @filemtime($pl['folder_path']);
+            if ($ctime) {
+                $pl['created_at'] = date('Y-m-d H:i:s', $ctime);
+                $pl['updated_at'] = date('Y-m-d H:i:s', $mtime ?: $ctime);
+                $backfill = $pdo->prepare("UPDATE playlists SET created_at = :cat, updated_at = :uat WHERE id = :id");
+                $backfill->execute([':cat' => $pl['created_at'], ':uat' => $pl['updated_at'], ':id' => $pl['id']]);
+            }
+        }
         
         $pId = $pl['parent_id'] ?? 0;
         $byParent[$pId][] = $pl['id'];
@@ -1690,6 +1798,8 @@ function handleGetPlaylists($pdo) {
                     'total_video_count' => count($cVideos),
                     'first_video_id' => !empty($cVideos) ? $cVideos[0] : null,
                     'children_count' => count($byParent[$cId] ?? []),
+                    'created_at' => $c['created_at'] ?? null,
+                    'updated_at' => $c['updated_at'] ?? null,
                 ];
             }
         }
@@ -1707,7 +1817,7 @@ function handleCreatePlaylist($pdo) {
     }
     $rawData = file_get_contents('php://input');
     $data = json_decode($rawData, true);
-    $name = trim($data['name'] ?? '');
+    $name = mb_substr(trim($data['name'] ?? ''), 0, 255);
     $parentId = !empty($data['parent_id']) ? intval($data['parent_id']) : null;
     $isMega = !empty($data['is_mega']) ? 1 : 0;
     
@@ -2742,6 +2852,185 @@ function getLocalIPs() {
     return array_values(array_filter($ips, function($ip) {
         return !empty($ip) && $ip !== '127.0.0.1';
     }));
+}
+
+function getLocalNetworkAdapters() {
+    $adapters = [];
+    $seenIps = [];
+
+    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+        @exec('ipconfig', $output);
+        $currentAdapter = '';
+        $currentIp = '';
+        $hasGateway = false;
+
+        foreach ($output as $line) {
+            $trimmed = trim($line);
+            if ($trimmed === '') continue;
+
+            if (preg_match('/^([a-zA-Z0-9\*\.\s\-_]+adapter|Unknown adapter)\s+([^:]+):$/i', $trimmed, $m)) {
+                if ($currentIp && $currentAdapter && !isset($seenIps[$currentIp])) {
+                    $seenIps[$currentIp] = true;
+                    $adapters[] = [
+                        'adapter' => $currentAdapter,
+                        'ip' => $currentIp,
+                        'has_gateway' => $hasGateway,
+                        'label' => $currentAdapter . ' (' . $currentIp . ')'
+                    ];
+                }
+                $currentAdapter = trim($m[2]);
+                $currentIp = '';
+                $hasGateway = false;
+            } elseif (preg_match('/IPv4 Address[\.\s]*:\s*([0-9\.]+)/i', $trimmed, $m)) {
+                $ip = trim($m[1]);
+                if ($ip !== '127.0.0.1') {
+                    $currentIp = $ip;
+                }
+            } elseif (preg_match('/Default Gateway[\.\s]*:\s*([0-9\.]+)/i', $trimmed, $m)) {
+                $gw = trim($m[1]);
+                if (!empty($gw) && $gw !== '0.0.0.0') {
+                    $hasGateway = true;
+                }
+            }
+        }
+        if ($currentIp && $currentAdapter && !isset($seenIps[$currentIp])) {
+            $seenIps[$currentIp] = true;
+            $adapters[] = [
+                'adapter' => $currentAdapter,
+                'ip' => $currentIp,
+                'has_gateway' => $hasGateway,
+                'label' => $currentAdapter . ' (' . $currentIp . ')'
+            ];
+        }
+    } else {
+        @exec('hostname -I', $output);
+        if (!empty($output)) {
+            $parts = explode(' ', trim($output[0]));
+            foreach ($parts as $idx => $ip) {
+                $ip = trim($ip);
+                if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) && $ip !== '127.0.0.1') {
+                    $adapters[] = [
+                        'adapter' => 'LAN ' . ($idx + 1),
+                        'ip' => $ip,
+                        'has_gateway' => ($idx === 0),
+                        'label' => 'LAN (' . $ip . ')'
+                    ];
+                }
+            }
+        }
+    }
+
+    if (empty($adapters)) {
+        $hostIps = @gethostbynamel(gethostname()) ?: [];
+        foreach ($hostIps as $idx => $hip) {
+            if ($hip !== '127.0.0.1') {
+                $adapters[] = [
+                    'adapter' => 'Network',
+                    'ip' => $hip,
+                    'has_gateway' => true,
+                    'label' => 'Local IP (' . $hip . ')'
+                ];
+            }
+        }
+    }
+
+    // Sort so adapters with default gateway appear first (active Wi-Fi or Ethernet)
+    usort($adapters, function($a, $b) {
+        if ($a['has_gateway'] && !$b['has_gateway']) return -1;
+        if (!$a['has_gateway'] && $b['has_gateway']) return 1;
+        return 0;
+    });
+
+    return $adapters;
+}
+
+function handleGetShareConfig($pdo) {
+    $adapters = getLocalNetworkAdapters();
+    
+    // Fetch custom domains from DB
+    $stmt = $pdo->query("SELECT id, domain_name FROM share_domains ORDER BY id ASC");
+    $customDomains = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Fetch user preferences from DB
+    $stmt = $pdo->prepare("SELECT setting_key, setting_value FROM share_settings WHERE setting_key IN ('preferred_domain', 'prefer_https')");
+    $stmt->execute();
+    $settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+
+    $port = isset($_SERVER['SERVER_PORT']) ? (int)$_SERVER['SERVER_PORT'] : 80;
+
+    echo json_encode([
+        'local_adapters' => $adapters,
+        'custom_domains' => $customDomains,
+        'preferred_domain' => $settings['preferred_domain'] ?? null,
+        'prefer_https' => isset($settings['prefer_https']) ? ($settings['prefer_https'] === '1' || $settings['prefer_https'] === 'true') : false,
+        'server_port' => $port,
+        'default_ip' => !empty($adapters) ? $adapters[0]['ip'] : 'localhost'
+    ]);
+    exit;
+}
+
+function handleAddShareDomain($pdo) {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('POST required');
+    $data = json_decode(file_get_contents('php://input'), true);
+    $domain = trim($data['domain_name'] ?? '');
+    if (empty($domain)) throw new Exception('Domain name is required');
+
+    // Clean up domain: strip http:// or https:// and trailing slashes if entered
+    $domain = preg_replace('#^https?://#i', '', $domain);
+    $domain = rtrim($domain, '/');
+
+    $stmt = $pdo->prepare("INSERT INTO share_domains (domain_name) VALUES (:domain) ON DUPLICATE KEY UPDATE domain_name = VALUES(domain_name)");
+    $stmt->execute([':domain' => $domain]);
+    $id = $pdo->lastInsertId();
+
+    // Auto-set as preferred domain
+    $stmt2 = $pdo->prepare("INSERT INTO share_settings (setting_key, setting_value) VALUES ('preferred_domain', :domain) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+    $stmt2->execute([':domain' => $domain]);
+
+    echo json_encode(['success' => true, 'id' => $id, 'domain_name' => $domain]);
+    exit;
+}
+
+function handleDeleteShareDomain($pdo) {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('POST required');
+    $data = json_decode(file_get_contents('php://input'), true);
+    $id = $data['id'] ?? null;
+    $domain = $data['domain_name'] ?? null;
+
+    if ($id) {
+        $stmt = $pdo->prepare("DELETE FROM share_domains WHERE id = :id");
+        $stmt->execute([':id' => $id]);
+    } else if ($domain) {
+        $stmt = $pdo->prepare("DELETE FROM share_domains WHERE domain_name = :domain");
+        $stmt->execute([':domain' => $domain]);
+    }
+
+    echo json_encode(['success' => true]);
+    exit;
+}
+
+function handleSaveSharePreference($pdo) {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('POST required');
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    if (isset($data['domain_name'])) {
+        $domain = trim($data['domain_name'] ?? '');
+        if (!empty($domain)) {
+            $domain = preg_replace('#^https?://#i', '', $domain);
+            $domain = rtrim($domain, '/');
+            $stmt = $pdo->prepare("INSERT INTO share_settings (setting_key, setting_value) VALUES ('preferred_domain', :domain) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+            $stmt->execute([':domain' => $domain]);
+        }
+    }
+
+    if (isset($data['prefer_https'])) {
+        $preferHttps = !empty($data['prefer_https']) ? '1' : '0';
+        $stmt = $pdo->prepare("INSERT INTO share_settings (setting_key, setting_value) VALUES ('prefer_https', :val) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+        $stmt->execute([':val' => $preferHttps]);
+    }
+
+    echo json_encode(['success' => true]);
+    exit;
 }
 
 function parseUPnPDescription($url) {

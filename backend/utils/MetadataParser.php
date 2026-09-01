@@ -147,13 +147,13 @@ class MetadataParser {
                 if (isset($stream['codec_type']) && $stream['codec_type'] === 'video') {
                     $result['width'] = (int)$stream['width'];
                     $result['height'] = (int)$stream['height'];
-                    $result['codec'] = $stream['codec_name'];
+                    $result['codec'] = substr(trim($stream['codec_name'] ?? ''), 0, 100);
 
                     // Aspect Ratio
                     if (isset($stream['display_aspect_ratio']) && $stream['display_aspect_ratio'] !== 'N/A' && $stream['display_aspect_ratio'] !== '0:1') {
-                        $result['aspect_ratio'] = $stream['display_aspect_ratio'];
+                        $result['aspect_ratio'] = substr(trim($stream['display_aspect_ratio']), 0, 50);
                     } elseif ($result['width'] > 0 && $result['height'] > 0) {
-                        $result['aspect_ratio'] = self::calculateAspectRatio($result['width'], $result['height']);
+                        $result['aspect_ratio'] = substr(trim(self::calculateAspectRatio($result['width'], $result['height'])), 0, 50);
                     }
 
                     // Frame rate
