@@ -15,72 +15,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-function initSystemTimezone() {
-    $iniTz = ini_get('date.timezone');
-    if (!empty($iniTz) && $iniTz !== 'UTC') {
-        date_default_timezone_set($iniTz);
-        return;
-    }
+if (!function_exists('initSystemTimezone')) {
+    function initSystemTimezone() {
+        $iniTz = ini_get('date.timezone');
+        if (!empty($iniTz) && $iniTz !== 'UTC') {
+            date_default_timezone_set($iniTz);
+            return;
+        }
 
-    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-        $output = []; $ret = -1;
-        @exec('tzutil /g 2>NUL', $output, $ret);
-        if ($ret === 0 && !empty($output)) {
-            $winTz = trim($output[0]);
-            $winTzMap = [
-                'India Standard Time' => 'Asia/Kolkata',
-                'Pacific Standard Time' => 'America/Los_Angeles',
-                'Eastern Standard Time' => 'America/New_York',
-                'Central Standard Time' => 'America/Chicago',
-                'Mountain Standard Time' => 'America/Denver',
-                'US Eastern Standard Time' => 'America/Indianapolis',
-                'GMT Standard Time' => 'Europe/London',
-                'Greenwich Standard Time' => 'Atlantic/Reykjavik',
-                'W. Europe Standard Time' => 'Europe/Berlin',
-                'Central Europe Standard Time' => 'Europe/Prague',
-                'Romance Standard Time' => 'Europe/Paris',
-                'Central European Standard Time' => 'Europe/Warsaw',
-                'Tokyo Standard Time' => 'Asia/Tokyo',
-                'China Standard Time' => 'Asia/Shanghai',
-                'Singapore Standard Time' => 'Asia/Singapore',
-                'SE Asia Standard Time' => 'Asia/Bangkok',
-                'AUS Eastern Standard Time' => 'Australia/Sydney',
-                'E. Australia Standard Time' => 'Australia/Brisbane',
-                'Cen. Australia Standard Time' => 'Australia/Adelaide',
-                'W. Australia Standard Time' => 'Australia/Perth',
-                'New Zealand Standard Time' => 'Pacific/Auckland',
-                'Hawaiian Standard Time' => 'Pacific/Honolulu',
-                'Alaskan Standard Time' => 'America/Anchorage',
-                'Arab Standard Time' => 'Asia/Riyadh',
-                'Arabian Standard Time' => 'Asia/Dubai',
-                'Iran Standard Time' => 'Asia/Tehran',
-                'Russian Standard Time' => 'Europe/Moscow',
-                'Pakistan Standard Time' => 'Asia/Karachi',
-                'Sri Lanka Standard Time' => 'Asia/Colombo',
-                'Bangladesh Standard Time' => 'Asia/Dhaka',
-                'Nepal Standard Time' => 'Asia/Kathmandu',
-                'Myanmar Standard Time' => 'Asia/Yangon',
-                'Korea Standard Time' => 'Asia/Seoul',
-                'Taipei Standard Time' => 'Asia/Taipei',
-                'E. South America Standard Time' => 'America/Sao_Paulo',
-                'Argentina Standard Time' => 'America/Argentina/Buenos_Aires',
-                'South Africa Standard Time' => 'Africa/Johannesburg',
-                'Egypt Standard Time' => 'Africa/Cairo',
-                'Israel Standard Time' => 'Asia/Jerusalem',
-                'Turkey Standard Time' => 'Europe/Istanbul',
-            ];
-            if (isset($winTzMap[$winTz])) {
-                date_default_timezone_set($winTzMap[$winTz]);
-                return;
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            $output = []; $ret = -1;
+            @exec('tzutil /g 2>NUL', $output, $ret);
+            if ($ret === 0 && !empty($output)) {
+                $winTz = trim($output[0]);
+                $winTzMap = [
+                    'India Standard Time' => 'Asia/Kolkata',
+                    'Pacific Standard Time' => 'America/Los_Angeles',
+                    'Eastern Standard Time' => 'America/New_York',
+                    'Central Standard Time' => 'America/Chicago',
+                    'Mountain Standard Time' => 'America/Denver',
+                    'US Eastern Standard Time' => 'America/Indianapolis',
+                    'GMT Standard Time' => 'Europe/London',
+                    'Greenwich Standard Time' => 'Atlantic/Reykjavik',
+                    'W. Europe Standard Time' => 'Europe/Berlin',
+                    'Central Europe Standard Time' => 'Europe/Prague',
+                    'Romance Standard Time' => 'Europe/Paris',
+                    'Central European Standard Time' => 'Europe/Warsaw',
+                    'Tokyo Standard Time' => 'Asia/Tokyo',
+                    'China Standard Time' => 'Asia/Shanghai',
+                    'Singapore Standard Time' => 'Asia/Singapore',
+                    'SE Asia Standard Time' => 'Asia/Bangkok',
+                    'AUS Eastern Standard Time' => 'Australia/Sydney',
+                    'E. Australia Standard Time' => 'Australia/Brisbane',
+                    'Cen. Australia Standard Time' => 'Australia/Adelaide',
+                    'W. Australia Standard Time' => 'Australia/Perth',
+                    'New Zealand Standard Time' => 'Pacific/Auckland',
+                    'Hawaiian Standard Time' => 'Pacific/Honolulu',
+                    'Alaskan Standard Time' => 'America/Anchorage',
+                    'Arab Standard Time' => 'Asia/Riyadh',
+                    'Arabian Standard Time' => 'Asia/Dubai',
+                    'Iran Standard Time' => 'Asia/Tehran',
+                    'Russian Standard Time' => 'Europe/Moscow',
+                    'Pakistan Standard Time' => 'Asia/Karachi',
+                    'Sri Lanka Standard Time' => 'Asia/Colombo',
+                    'Bangladesh Standard Time' => 'Asia/Dhaka',
+                    'Nepal Standard Time' => 'Asia/Kathmandu',
+                    'Myanmar Standard Time' => 'Asia/Yangon',
+                    'Korea Standard Time' => 'Asia/Seoul',
+                    'Taipei Standard Time' => 'Asia/Taipei',
+                    'E. South America Standard Time' => 'America/Sao_Paulo',
+                    'Argentina Standard Time' => 'America/Argentina/Buenos_Aires',
+                    'South Africa Standard Time' => 'Africa/Johannesburg',
+                    'Egypt Standard Time' => 'Africa/Cairo',
+                    'Israel Standard Time' => 'Asia/Jerusalem',
+                    'Turkey Standard Time' => 'Europe/Istanbul',
+                ];
+                if (isset($winTzMap[$winTz])) {
+                    date_default_timezone_set($winTzMap[$winTz]);
+                    return;
+                }
             }
         }
-    }
 
-    $detected = @date_default_timezone_get();
-    if (!empty($detected) && $detected !== 'UTC') {
-        date_default_timezone_set($detected);
-    } else {
-        date_default_timezone_set('Asia/Kolkata');
+        $detected = @date_default_timezone_get();
+        if (!empty($detected) && $detected !== 'UTC') {
+            date_default_timezone_set($detected);
+        } else {
+            date_default_timezone_set('Asia/Kolkata');
+        }
     }
 }
 initSystemTimezone();
@@ -633,10 +635,21 @@ function handleGetVideos($pdo) {
         }
     }
 
+    // If specific video IDs are requested, filter by them
+    $idsParam = $_GET['ids'] ?? '';
+    if (!empty($idsParam)) {
+        $idList = array_filter(array_map('intval', explode(',', $idsParam)));
+        if (!empty($idList)) {
+            $whereClauses[] = 'vid_id IN (' . implode(',', $idList) . ')';
+        }
+    }
+
     $whereSQL = implode(' AND ', $whereClauses);
 
     // Apply privacy / sensitive content exclusions
-    if (!empty($_GET['is_watch_next'])) {
+    if (!empty($_GET['include_all']) || !empty($_GET['ids'])) {
+        // Direct ID lookups or include_all bypass privacy exclusions
+    } else if (!empty($_GET['is_watch_next'])) {
         $ex = getExcludedVideoIds($pdo, 'watch_next');
         if (!empty($ex)) {
             $whereSQL .= ($whereSQL ? ' AND ' : '') . 'vid_id NOT IN (' . implode(',', $ex) . ')';
@@ -708,6 +721,7 @@ function handleGetVideo($pdo) {
     }
 
     echo json_encode($video);
+    exit;
 }
 
 function handleGetRandomVideo($pdo) {
@@ -5768,9 +5782,105 @@ function getExcludedVideoIds($pdo, $context, $extraParam = null) {
         $stmt = $pdo->query("SELECT * FROM exclusion_lists");
         $lists = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $excludedMap = [];
+
+        // Lazy-loaded playlist hierarchy for resolving playlist and mega-playlist video IDs
+        $playlistsById = null;
+        $playlistsByParent = null;
+        $getDescendants = null;
+
         foreach ($lists as $list) {
             $idsRaw = $list['video_ids'] ?? '';
             $ids = array_filter(array_map('intval', preg_split('/[\s,]+/', $idsRaw)));
+
+            // Resolve playlist_ids if present
+            $plIdsRaw = $list['playlist_ids'] ?? '';
+            $plIds = array_filter(array_map('intval', preg_split('/[\s,]+/', $plIdsRaw)));
+
+            if (!empty($plIds)) {
+                if ($playlistsById === null) {
+                    $plStmt = $pdo->query("SELECT id, parent_id, folder_path, video_ids FROM playlists WHERE playlist_name != 'default'");
+                    $plRows = $plStmt->fetchAll(PDO::FETCH_ASSOC);
+                    $playlistsById = [];
+                    $playlistsByParent = [];
+                    foreach ($plRows as $r) {
+                        $pId = intval($r['id']);
+                        $r['video_ids'] = json_decode($r['video_ids'] ?? '[]', true) ?: [];
+                        $playlistsById[$pId] = $r;
+                        $parentId = !empty($r['parent_id']) ? intval($r['parent_id']) : 0;
+                        $playlistsByParent[$parentId][] = $pId;
+                    }
+
+                    $getDescendants = function($targetId) use (&$getDescendants, &$playlistsById, &$playlistsByParent) {
+                        $vids = $playlistsById[$targetId]['video_ids'] ?? [];
+                        $folders = [];
+                        if (!empty($playlistsById[$targetId]['folder_path'])) {
+                            $folders[] = $playlistsById[$targetId]['folder_path'];
+                        }
+                        if (isset($playlistsByParent[$targetId])) {
+                            foreach ($playlistsByParent[$targetId] as $childId) {
+                                $cRes = $getDescendants($childId);
+                                foreach ($cRes['vids'] as $cv) {
+                                    if (!in_array($cv, $vids)) {
+                                        $vids[] = $cv;
+                                    }
+                                }
+                                foreach ($cRes['folders'] as $cf) {
+                                    if (!in_array($cf, $folders)) {
+                                        $folders[] = $cf;
+                                    }
+                                }
+                            }
+                        }
+                        return ['vids' => $vids, 'folders' => $folders];
+                    };
+                }
+
+                $allFolders = [];
+                foreach ($plIds as $targetPlId) {
+                    if (isset($playlistsById[$targetPlId])) {
+                        $plData = $getDescendants($targetPlId);
+                        foreach ($plData['vids'] as $pv) {
+                            $pvInt = intval($pv);
+                            if ($pvInt > 0 && !in_array($pvInt, $ids)) {
+                                $ids[] = $pvInt;
+                            }
+                        }
+                        foreach ($plData['folders'] as $pf) {
+                            if (!in_array($pf, $allFolders)) {
+                                $allFolders[] = $pf;
+                            }
+                        }
+                    }
+                }
+
+                // If any folders were gathered, query video_metadatas for all matching files (including duplicates/orphans)
+                if (!empty($allFolders)) {
+                    $folderClauses = [];
+                    $folderParams = [];
+                    $fIdx = 0;
+                    foreach ($allFolders as $f) {
+                        $norm = str_replace('\\', '/', trim($f, '/\\'));
+                        if (!empty($norm)) {
+                            $folderClauses[] = "link LIKE :ex_f1_$fIdx OR link LIKE :ex_f2_$fIdx";
+                            $folderParams[":ex_f1_$fIdx"] = "file:///$norm/%";
+                            $folderParams[":ex_f2_$fIdx"] = "file:///$norm";
+                            $fIdx++;
+                        }
+                    }
+                    if (!empty($folderClauses)) {
+                        $fStmt = $pdo->prepare("SELECT vid_id FROM video_metadatas WHERE " . implode(' OR ', $folderClauses));
+                        $fStmt->execute($folderParams);
+                        $fRows = $fStmt->fetchAll(PDO::FETCH_COLUMN);
+                        foreach ($fRows as $fvid) {
+                            $fvidInt = intval($fvid);
+                            if ($fvidInt > 0 && !in_array($fvidInt, $ids)) {
+                                $ids[] = $fvidInt;
+                            }
+                        }
+                    }
+                }
+            }
+
             if (empty($ids)) continue;
 
             $shouldExclude = false;
@@ -5788,10 +5898,10 @@ function getExcludedVideoIds($pdo, $context, $extraParam = null) {
                 }
             } else if ($context === 'next_play') {
                 $mode = $list['exclude_next'] ?? 'none';
-                if ($extraParam === 'random' && ($mode === 'random_next' || $mode === 'both')) {
-                    $shouldExclude = true;
-                } else if ($extraParam === 'normal' && ($mode === 'normal_next' || $mode === 'both')) {
-                    $shouldExclude = true;
+                if ($extraParam === 'random') {
+                    if ($mode === 'random_next' || $mode === 'both') $shouldExclude = true;
+                } else if ($extraParam === 'normal') {
+                    if ($mode === 'normal_next' || $mode === 'both') $shouldExclude = true;
                 } else if ($mode === 'both' || $mode === 'random_next' || $mode === 'normal_next') {
                     $shouldExclude = true;
                 }
@@ -5800,6 +5910,68 @@ function getExcludedVideoIds($pdo, $context, $extraParam = null) {
             if ($shouldExclude) {
                 foreach ($ids as $id) {
                     $excludedMap[$id] = true;
+                }
+            }
+        }
+        return array_keys($excludedMap);
+    } catch (Exception $e) {
+        return [];
+    }
+}
+
+function getExcludedPlaylistIds($pdo, $context) {
+    try {
+        $stmt = $pdo->query("SELECT * FROM exclusion_lists");
+        $lists = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $excludedMap = [];
+
+        $playlistsById = null;
+        $playlistsByParent = null;
+        $getDescendantPls = null;
+
+        foreach ($lists as $list) {
+            $plIdsRaw = $list['playlist_ids'] ?? '';
+            $plIds = array_filter(array_map('intval', preg_split('/[\s,]+/', $plIdsRaw)));
+            if (empty($plIds)) continue;
+
+            $shouldExclude = false;
+            if ($context === 'sidebar' && !empty($list['exclude_playlist_sidebar'])) {
+                $shouldExclude = true;
+            } else if ($context === 'search' && !empty($list['exclude_playlist_search'])) {
+                $shouldExclude = true;
+            }
+
+            if ($shouldExclude) {
+                if ($playlistsById === null) {
+                    $plStmt = $pdo->query("SELECT id, parent_id FROM playlists WHERE playlist_name != 'default'");
+                    $plRows = $plStmt->fetchAll(PDO::FETCH_ASSOC);
+                    $playlistsById = [];
+                    $playlistsByParent = [];
+                    foreach ($plRows as $r) {
+                        $pId = intval($r['id']);
+                        $playlistsById[$pId] = $r;
+                        $parentId = !empty($r['parent_id']) ? intval($r['parent_id']) : 0;
+                        $playlistsByParent[$parentId][] = $pId;
+                    }
+
+                    $getDescendantPls = function($targetId) use (&$getDescendantPls, &$playlistsByParent) {
+                        $res = [$targetId];
+                        if (isset($playlistsByParent[$targetId])) {
+                            foreach ($playlistsByParent[$targetId] as $childId) {
+                                $res = array_merge($res, $getDescendantPls($childId));
+                            }
+                        }
+                        return $res;
+                    };
+                }
+
+                foreach ($plIds as $targetPlId) {
+                    if (isset($playlistsById[$targetPlId])) {
+                        $allTargetAndChildren = $getDescendantPls($targetPlId);
+                        foreach ($allTargetAndChildren as $pid) {
+                            $excludedMap[$pid] = true;
+                        }
+                    }
                 }
             }
         }
@@ -5818,6 +5990,9 @@ function handleGetExclusionLists($pdo) {
             $l['exclude_search_suggestions'] = (int)($l['exclude_search_suggestions'] ?? 0);
             $l['exclude_watch_next'] = (int)($l['exclude_watch_next'] ?? 0);
             $l['exclude_search_results'] = (int)($l['exclude_search_results'] ?? 0);
+            $l['exclude_playlist_sidebar'] = (int)($l['exclude_playlist_sidebar'] ?? 0);
+            $l['exclude_playlist_search'] = (int)($l['exclude_playlist_search'] ?? 0);
+            $l['playlist_ids'] = array_values(array_filter(array_map('intval', preg_split('/[\s,]+/', $l['playlist_ids'] ?? ''))));
         }
         echo json_encode($lists);
     } catch (Exception $e) {
@@ -5841,6 +6016,10 @@ function handleSaveExclusionList($pdo) {
         ? implode(',', array_filter(array_map('intval', $data['video_ids'])))
         : trim($data['video_ids'] ?? '');
 
+    $playlistIds = is_array($data['playlist_ids'] ?? null)
+        ? implode(',', array_filter(array_map('intval', $data['playlist_ids'])))
+        : trim($data['playlist_ids'] ?? '');
+
     $excludePills = is_array($data['exclude_pills'] ?? null)
         ? json_encode(array_values($data['exclude_pills']))
         : (is_string($data['exclude_pills'] ?? null) ? $data['exclude_pills'] : '[]');
@@ -5852,39 +6031,50 @@ function handleSaveExclusionList($pdo) {
     $excludeSearchSug = !empty($data['exclude_search_suggestions']) ? 1 : 0;
     $excludeWatchNext = !empty($data['exclude_watch_next']) ? 1 : 0;
     $excludeSearchResults = !empty($data['exclude_search_results']) ? 1 : 0;
+    $excludePlaylistSidebar = !empty($data['exclude_playlist_sidebar']) ? 1 : 0;
+    $excludePlaylistSearch = !empty($data['exclude_playlist_search']) ? 1 : 0;
 
     if ($id > 0) {
         $stmt = $pdo->prepare("UPDATE exclusion_lists SET 
             list_name = :name,
             video_ids = :vids,
+            playlist_ids = :pids,
             exclude_pills = :pills,
             exclude_next = :next,
             exclude_search_suggestions = :sug,
             exclude_watch_next = :wn,
-            exclude_search_results = :sr
+            exclude_search_results = :sr,
+            exclude_playlist_sidebar = :pl_sb,
+            exclude_playlist_search = :pl_sr
             WHERE id = :id");
         $stmt->execute([
             ':name' => $listName,
             ':vids' => $videoIds,
+            ':pids' => $playlistIds,
             ':pills' => $excludePills,
             ':next' => $excludeNext,
             ':sug' => $excludeSearchSug,
             ':wn' => $excludeWatchNext,
             ':sr' => $excludeSearchResults,
+            ':pl_sb' => $excludePlaylistSidebar,
+            ':pl_sr' => $excludePlaylistSearch,
             ':id' => $id
         ]);
     } else {
         $stmt = $pdo->prepare("INSERT INTO exclusion_lists 
-            (list_name, video_ids, exclude_pills, exclude_next, exclude_search_suggestions, exclude_watch_next, exclude_search_results)
-            VALUES (:name, :vids, :pills, :next, :sug, :wn, :sr)");
+            (list_name, video_ids, playlist_ids, exclude_pills, exclude_next, exclude_search_suggestions, exclude_watch_next, exclude_search_results, exclude_playlist_sidebar, exclude_playlist_search)
+            VALUES (:name, :vids, :pids, :pills, :next, :sug, :wn, :sr, :pl_sb, :pl_sr)");
         $stmt->execute([
             ':name' => $listName,
             ':vids' => $videoIds,
+            ':pids' => $playlistIds,
             ':pills' => $excludePills,
             ':next' => $excludeNext,
             ':sug' => $excludeSearchSug,
             ':wn' => $excludeWatchNext,
-            ':sr' => $excludeSearchResults
+            ':sr' => $excludeSearchResults,
+            ':pl_sb' => $excludePlaylistSidebar,
+            ':pl_sr' => $excludePlaylistSearch
         ]);
         $id = (int)$pdo->lastInsertId();
     }
@@ -5914,7 +6104,9 @@ function handleGetExcludedIds($pdo) {
         'search_results' => getExcludedVideoIds($pdo, 'search_results'),
         'next_play_random' => getExcludedVideoIds($pdo, 'next_play', 'random'),
         'next_play_normal' => getExcludedVideoIds($pdo, 'next_play', 'normal'),
-        'all_next_play' => getExcludedVideoIds($pdo, 'next_play', 'both')
+        'all_next_play' => getExcludedVideoIds($pdo, 'next_play', 'both'),
+        'excluded_playlist_sidebar' => getExcludedPlaylistIds($pdo, 'sidebar'),
+        'excluded_playlist_search' => getExcludedPlaylistIds($pdo, 'search')
     ];
     echo json_encode($result);
     exit;

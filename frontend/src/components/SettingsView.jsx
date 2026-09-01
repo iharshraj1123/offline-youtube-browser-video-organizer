@@ -3,7 +3,7 @@ import {
   Sparkles, Play, Download, RefreshCw, Trash2,
   RotateCcw, Check, FolderClosed, Home, Database,
   Plus, Pencil, X, GripVertical, Eye, Copy, Save, ChevronDown, ChevronUp,
-  Lock, Shield, EyeOff
+  Lock, Shield, EyeOff, Folder, FolderTree, Layers, Search
 } from 'lucide-react';
 
 const DEFAULT_PILLS = [
@@ -175,15 +175,22 @@ export function SettingsView({ currentUser, showFlashNotification }) {
 
   // Privacy & Sensitive Content Exclusion Lists
   const [exclusionLists, setExclusionLists] = useState([]);
+  const [playlists, setPlaylists] = useState([]);
   const [isEditingList, setIsEditingList] = useState(false);
   const [editingListId, setEditingListId] = useState(null);
   const [listName, setListName] = useState('');
   const [selectedVideoIds, setSelectedVideoIds] = useState([]);
+  const [selectedPlaylistIds, setSelectedPlaylistIds] = useState([]);
+  const [contentSelectionTab, setContentSelectionTab] = useState('videos'); // 'videos' | 'playlists'
+  const [playlistSearchQuery, setPlaylistSearchQuery] = useState('');
+  const [playlistFilterType, setPlaylistFilterType] = useState('all'); // 'all' | 'standard' | 'mega'
   const [selectedPills, setSelectedPills] = useState([]);
   const [excludeNextMode, setExcludeNextMode] = useState('none');
   const [excludeSearchSug, setExcludeSearchSug] = useState(false);
   const [excludeWatchNext, setExcludeWatchNext] = useState(false);
   const [excludeSearchResults, setExcludeSearchResults] = useState(false);
+  const [excludePlaylistSidebar, setExcludePlaylistSidebar] = useState(false);
+  const [excludePlaylistSearch, setExcludePlaylistSearch] = useState(false);
   const [videoSearchQuery, setVideoSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearchingVideos, setIsSearchingVideos] = useState(false);
@@ -198,8 +205,19 @@ export function SettingsView({ currentUser, showFlashNotification }) {
     }
   };
 
+  const fetchPlaylists = async () => {
+    try {
+      const res = await fetch('./api/index.php?action=playlists');
+      const data = await res.json();
+      if (Array.isArray(data)) setPlaylists(data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   useEffect(() => {
     fetchExclusionLists();
+    fetchPlaylists();
   }, []);
 
   const [selectedVideosMap, setSelectedVideosMap] = useState({});
@@ -234,11 +252,14 @@ export function SettingsView({ currentUser, showFlashNotification }) {
         id: editingListId || 0,
         list_name: listName.trim(),
         video_ids: selectedVideoIds,
+        playlist_ids: selectedPlaylistIds,
         exclude_pills: selectedPills,
         exclude_next: excludeNextMode,
         exclude_search_suggestions: excludeSearchSug ? 1 : 0,
         exclude_watch_next: excludeWatchNext ? 1 : 0,
-        exclude_search_results: excludeSearchResults ? 1 : 0
+        exclude_search_results: excludeSearchResults ? 1 : 0,
+        exclude_playlist_sidebar: excludePlaylistSidebar ? 1 : 0,
+        exclude_playlist_search: excludePlaylistSearch ? 1 : 0
       };
       const res = await fetch('./api/index.php?action=save_exclusion_list', {
         method: 'POST',
@@ -281,17 +302,56 @@ export function SettingsView({ currentUser, showFlashNotification }) {
     return [];
   };
 
+  const getAllDescendantPlaylistIds = (targetId, allPlaylists) => {
+    const directChildren = (allPlaylists || []).filter(p => p.parent_id === targetId);
+    let ids = [];
+    for (const child of directChildren) {
+      ids.push(child.id);
+      ids = ids.concat(getAllDescendantPlaylistIds(child.id, allPlaylists));
+    }
+    return ids;
+  };
+
+  const getCoveringParent = (plId, selectedIds, allPlaylists) => {
+    const pl = (allPlaylists || []).find(p => p.id === plId);
+    if (!pl || !pl.parent_id) return null;
+    let currParentId = pl.parent_id;
+    while (currParentId) {
+      if (selectedIds.includes(currParentId)) {
+        return (allPlaylists || []).find(p => p.id === currParentId) || null;
+      }
+      const parentObj = (allPlaylists || []).find(p => p.id === currParentId);
+      currParentId = parentObj?.parent_id;
+    }
+    return null;
+  };
+
+  const handleTogglePlaylist = (pl) => {
+    if (selectedPlaylistIds.includes(pl.id)) {
+      setSelectedPlaylistIds(selectedPlaylistIds.filter(id => id !== pl.id));
+    } else {
+      const descendantIds = getAllDescendantPlaylistIds(pl.id, playlists);
+      const nextSelected = selectedPlaylistIds.filter(id => !descendantIds.includes(id));
+      setSelectedPlaylistIds([...nextSelected, pl.id]);
+    }
+  };
+
   const startEditExclusionList = (list) => {
     setEditingListId(list.id);
     setListName(list.list_name || '');
     setSelectedVideoIds(parseVideoIds(list.video_ids));
+    setSelectedPlaylistIds(parseVideoIds(list.playlist_ids));
     setSelectedPills(Array.isArray(list.exclude_pills) ? list.exclude_pills : []);
     setExcludeNextMode(list.exclude_next || 'none');
     setExcludeSearchSug(!!list.exclude_search_suggestions);
     setExcludeWatchNext(!!list.exclude_watch_next);
     setExcludeSearchResults(!!list.exclude_search_results);
+    setExcludePlaylistSidebar(!!list.exclude_playlist_sidebar);
+    setExcludePlaylistSearch(!!list.exclude_playlist_search);
     setVideoSearchQuery('');
     setSearchResults([]);
+    setPlaylistSearchQuery('');
+    setContentSelectionTab('videos');
     setIsEditingList(true);
   };
 
@@ -708,13 +768,18 @@ export function SettingsView({ currentUser, showFlashNotification }) {
                           setEditingListId(null);
                           setListName('');
                           setSelectedVideoIds([]);
+                          setSelectedPlaylistIds([]);
                           setSelectedPills([]);
                           setExcludeNextMode('none');
                           setExcludeSearchSug(false);
                           setExcludeWatchNext(false);
                           setExcludeSearchResults(false);
+                          setExcludePlaylistSidebar(false);
+                          setExcludePlaylistSearch(false);
                           setVideoSearchQuery('');
                           setSearchResults([]);
+                          setPlaylistSearchQuery('');
+                          setContentSelectionTab('videos');
                           setIsEditingList(true);
                         }}
                         style={{
@@ -737,14 +802,34 @@ export function SettingsView({ currentUser, showFlashNotification }) {
                     )}
                     {exclusionLists.map(list => {
                       const vids = parseVideoIds(list.video_ids);
+                      const plIds = parseVideoIds(list.playlist_ids);
+                      const selectedPlObjects = plIds.map(id => (playlists || []).find(p => p.id === id)).filter(Boolean);
+                      const megaCount = selectedPlObjects.filter(p => p.is_mega || (p.children_ids && p.children_ids.length > 0)).length;
+                      const totalVidsCount = new Set([
+                        ...vids,
+                        ...plIds.flatMap(pId => (playlists || []).find(p => p.id === pId)?.all_video_ids || [])
+                      ]).size;
+
                       return (
                         <div key={list.id} style={{ padding: 14, background: 'var(--card-bg)', borderRadius: 12, border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                               <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-color)' }}>{list.list_name}</span>
-                              <span style={{ background: 'var(--bg-secondary)', padding: '2px 8px', borderRadius: 12, fontSize: 11, color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}>
-                                📹 {vids.length} videos
-                              </span>
+                              {vids.length > 0 && (
+                                <span style={{ background: 'var(--bg-secondary)', padding: '2px 8px', borderRadius: 12, fontSize: 11, color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}>
+                                  📹 {vids.length} videos
+                                </span>
+                              )}
+                              {plIds.length > 0 && (
+                                <span style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', padding: '2px 8px', borderRadius: 12, fontSize: 11, border: '1px solid rgba(59, 130, 246, 0.25)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                  <Folder size={11} /> {plIds.length} playlist{plIds.length > 1 ? 's' : ''} {megaCount > 0 ? `(${megaCount} mega)` : ''}
+                                </span>
+                              )}
+                              {totalVidsCount > 0 && (
+                                <span style={{ background: 'rgba(239, 68, 68, 0.08)', color: '#ef4444', padding: '2px 8px', borderRadius: 12, fontSize: 11, border: '1px solid rgba(239, 68, 68, 0.2)', fontWeight: 600 }}>
+                                  🛡️ {totalVidsCount} hidden
+                                </span>
+                              )}
                             </div>
                             <div style={{ display: 'flex', gap: 8 }}>
                               <button onClick={() => startEditExclusionList(list)} style={{ background: 'none', border: '1px solid var(--border-color)', borderRadius: 6, padding: '4px 10px', color: 'var(--text-color)', cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -782,6 +867,16 @@ export function SettingsView({ currentUser, showFlashNotification }) {
                                 Search Results
                               </span>
                             )}
+                            {list.exclude_playlist_sidebar === 1 && (
+                              <span style={{ background: 'rgba(14, 165, 233, 0.1)', color: '#0ea5e9', border: '1px solid rgba(14, 165, 233, 0.25)', padding: '2px 8px', borderRadius: 6 }}>
+                                Sidebar Playlist Hidden
+                              </span>
+                            )}
+                            {list.exclude_playlist_search === 1 && (
+                              <span style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6', border: '1px solid rgba(139, 92, 246, 0.25)', padding: '2px 8px', borderRadius: 6 }}>
+                                /pl Search Hidden
+                              </span>
+                            )}
                           </div>
                         </div>
                       );
@@ -805,10 +900,10 @@ export function SettingsView({ currentUser, showFlashNotification }) {
                       </button>
                     </div>
 
-                    {/* SECTION 1: List Details & Videos */}
+                    {/* SECTION 1: List Details & Content Selection */}
                     <div style={{ background: 'var(--bg-secondary)', padding: 16, borderRadius: 10, border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: 14 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-color)', borderBottom: '1px solid var(--border-color)', paddingBottom: 6 }}>
-                        1. List Details & Video Selection
+                        1. List Details & Content Selection
                       </div>
                       <div>
                         <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>List Name</label>
@@ -820,77 +915,314 @@ export function SettingsView({ currentUser, showFlashNotification }) {
                         />
                       </div>
 
+                      {/* Content Selection Tabs: Videos vs Playlists */}
                       <div>
-                        <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>
-                          Add Videos to List ({selectedVideoIds.length} selected)
+                        <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: 8 }}>
+                          Select Content to Exclude
                         </label>
-                        <input
-                          value={videoSearchQuery}
-                          onChange={e => setVideoSearchQuery(e.target.value)}
-                          placeholder="Type to search video titles or keywords..."
-                          style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--card-bg)', color: 'var(--text-color)', fontSize: 13, boxSizing: 'border-box' }}
-                        />
-                        
-                        {/* Search Suggestions Dropdown */}
-                        {searchResults.length > 0 && (
-                          <div style={{ marginTop: 6, maxHeight: 180, overflowY: 'auto', background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: 8, padding: 6, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                            {searchResults.map(vid => {
-                              const isAdded = selectedVideoIds.includes(vid.vid_id);
-                              return (
-                                <div key={vid.vid_id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 8px', borderRadius: 6, background: 'var(--bg-secondary)', gap: 8 }}>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+                          <button
+                            type="button"
+                            onClick={() => setContentSelectionTab('videos')}
+                            style={{
+                              padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', gap: 6,
+                              background: contentSelectionTab === 'videos' ? 'var(--primary-color)' : 'var(--card-bg)',
+                              color: contentSelectionTab === 'videos' ? '#fff' : 'var(--text-color)',
+                              border: contentSelectionTab === 'videos' ? '1px solid var(--primary-color)' : '1px solid var(--border-color)'
+                            }}
+                          >
+                            📹 Individual Videos ({selectedVideoIds.length})
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setContentSelectionTab('playlists')}
+                            style={{
+                              padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', gap: 6,
+                              background: contentSelectionTab === 'playlists' ? 'var(--primary-color)' : 'var(--card-bg)',
+                              color: contentSelectionTab === 'playlists' ? '#fff' : 'var(--text-color)',
+                              border: contentSelectionTab === 'playlists' ? '1px solid var(--primary-color)' : '1px solid var(--border-color)'
+                            }}
+                          >
+                            📁 Playlists & Mega Playlists ({selectedPlaylistIds.length})
+                          </button>
+                        </div>
+
+                        {/* TAB 1: VIDEOS */}
+                        {contentSelectionTab === 'videos' && (
+                          <div>
+                            <input
+                              value={videoSearchQuery}
+                              onChange={e => setVideoSearchQuery(e.target.value)}
+                              placeholder="Type to search video titles or keywords..."
+                              style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--card-bg)', color: 'var(--text-color)', fontSize: 13, boxSizing: 'border-box' }}
+                            />
+                            
+                            {/* Search Suggestions Dropdown */}
+                            {searchResults.length > 0 && (
+                              <div style={{ marginTop: 6, maxHeight: 180, overflowY: 'auto', background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: 8, padding: 6, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                {searchResults.map(vid => {
+                                  const isAdded = selectedVideoIds.includes(vid.vid_id);
+                                  return (
+                                    <div key={vid.vid_id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 8px', borderRadius: 6, background: 'var(--bg-secondary)', gap: 8 }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
+                                        <img
+                                          src={`./thumbnails/${vid.vid_id}.jpg`}
+                                          alt=""
+                                          onError={(e) => { e.target.style.display = 'none'; }}
+                                          style={{ width: 40, height: 24, borderRadius: 4, objectFit: 'cover', background: '#000', flexShrink: 0 }}
+                                        />
+                                        <span style={{ fontSize: 12, color: 'var(--text-color)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                          {vid.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}
+                                        </span>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          if (isAdded) {
+                                            setSelectedVideoIds(selectedVideoIds.filter(id => id !== vid.vid_id));
+                                          } else {
+                                            setSelectedVideoIds([...selectedVideoIds, vid.vid_id]);
+                                            setSelectedVideosMap(prev => ({ ...prev, [vid.vid_id]: vid.vid_name }));
+                                          }
+                                        }}
+                                        style={{ padding: '4px 10px', borderRadius: 6, border: 'none', background: isAdded ? '#ef4444' : 'var(--primary-color)', color: '#fff', fontSize: 11, cursor: 'pointer', fontWeight: 600, flexShrink: 0 }}
+                                      >
+                                        {isAdded ? 'Remove' : '+ Add'}
+                                      </button>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+
+                            {/* Selected Video Chips */}
+                            {selectedVideoIds.length > 0 && (
+                              <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                {selectedVideoIds.map(id => (
+                                  <span key={id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: 16, padding: '3px 8px 3px 4px', fontSize: 11, color: 'var(--text-color)' }}>
                                     <img
-                                      src={`./thumbnails/${vid.vid_id}.jpg`}
+                                      src={`./thumbnails/${id}.jpg`}
                                       alt=""
                                       onError={(e) => { e.target.style.display = 'none'; }}
-                                      style={{ width: 40, height: 24, borderRadius: 4, objectFit: 'cover', background: '#000', flexShrink: 0 }}
+                                      style={{ width: 22, height: 14, borderRadius: 3, objectFit: 'cover', background: '#000', flexShrink: 0 }}
                                     />
-                                    <span style={{ fontSize: 12, color: 'var(--text-color)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                      {vid.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}
-                                    </span>
-                                  </div>
-                                  <button
-                                    onClick={() => {
-                                      if (isAdded) {
-                                        setSelectedVideoIds(selectedVideoIds.filter(id => id !== vid.vid_id));
-                                      } else {
-                                        setSelectedVideoIds([...selectedVideoIds, vid.vid_id]);
-                                        setSelectedVideosMap(prev => ({ ...prev, [vid.vid_id]: vid.vid_name }));
-                                      }
-                                    }}
-                                    style={{ padding: '4px 10px', borderRadius: 6, border: 'none', background: isAdded ? '#ef4444' : 'var(--primary-color)', color: '#fff', fontSize: 11, cursor: 'pointer', fontWeight: 600, flexShrink: 0 }}
-                                  >
-                                    {isAdded ? 'Remove' : '+ Add'}
-                                  </button>
-                                </div>
-                              );
-                            })}
+                                    <span>{selectedVideosMap[id] ? selectedVideosMap[id].replace(/\.[a-zA-Z0-9]+$/, '') : `Video #${id}`}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => setSelectedVideoIds(selectedVideoIds.filter(vId => vId !== id))}
+                                      style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 0, fontSize: 12, fontWeight: 700, marginLeft: 2 }}
+                                    >
+                                      ✕
+                                    </button>
+                                  </span>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         )}
 
-                        {/* Selected Video Chips */}
-                        {selectedVideoIds.length > 0 && (
-                          <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                            {selectedVideoIds.map(id => (
-                              <span key={id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: 16, padding: '3px 8px 3px 4px', fontSize: 11, color: 'var(--text-color)' }}>
-                                <img
-                                  src={`./thumbnails/${id}.jpg`}
-                                  alt=""
-                                  onError={(e) => { e.target.style.display = 'none'; }}
-                                  style={{ width: 22, height: 14, borderRadius: 3, objectFit: 'cover', background: '#000', flexShrink: 0 }}
+                        {/* TAB 2: PLAYLISTS & MEGA PLAYLISTS */}
+                        {contentSelectionTab === 'playlists' && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                              <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
+                                <input
+                                  value={playlistSearchQuery}
+                                  onChange={e => setPlaylistSearchQuery(e.target.value)}
+                                  placeholder="Search playlists by name..."
+                                  style={{ width: '100%', padding: '8px 12px 8px 32px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--card-bg)', color: 'var(--text-color)', fontSize: 13, boxSizing: 'border-box' }}
                                 />
-                                <span>{selectedVideosMap[id] ? selectedVideosMap[id].replace(/\.[a-zA-Z0-9]+$/, '') : `Video #${id}`}</span>
-                                <button
-                                  onClick={() => setSelectedVideoIds(selectedVideoIds.filter(vId => vId !== id))}
-                                  style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 0, fontSize: 12, fontWeight: 700, marginLeft: 2 }}
-                                >
-                                  ✕
-                                </button>
-                              </span>
-                            ))}
+                                <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+                              </div>
+                              <div style={{ display: 'flex', gap: 4 }}>
+                                {[
+                                  { id: 'all', label: 'All' },
+                                  { id: 'standard', label: 'Standard' },
+                                  { id: 'mega', label: 'Mega' }
+                                ].map(filter => (
+                                  <button
+                                    key={filter.id}
+                                    type="button"
+                                    onClick={() => setPlaylistFilterType(filter.id)}
+                                    style={{
+                                      padding: '6px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                                      background: playlistFilterType === filter.id ? 'var(--card-bg)' : 'transparent',
+                                      color: playlistFilterType === filter.id ? 'var(--primary-color)' : 'var(--text-secondary)',
+                                      border: playlistFilterType === filter.id ? '1px solid var(--primary-color)' : '1px solid var(--border-color)'
+                                    }}
+                                  >
+                                    {filter.label}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Playlists Selection List */}
+                            {(() => {
+                              const filteredPlaylists = (playlists || []).filter(pl => {
+                                const matchesSearch = !playlistSearchQuery.trim() || pl.playlist_name.toLowerCase().includes(playlistSearchQuery.toLowerCase().trim());
+                                const isMega = Boolean(pl.is_mega || (pl.children_ids && pl.children_ids.length > 0));
+                                if (playlistFilterType === 'standard') return matchesSearch && !isMega;
+                                if (playlistFilterType === 'mega') return matchesSearch && isMega;
+                                return matchesSearch;
+                              });
+
+                              if (filteredPlaylists.length === 0) {
+                                return (
+                                  <div style={{ padding: 14, textAlign: 'center', color: 'var(--text-secondary)', fontSize: 12, background: 'var(--card-bg)', borderRadius: 8, border: '1px solid var(--border-color)' }}>
+                                    No playlists match "{playlistSearchQuery}".
+                                  </div>
+                                );
+                              }
+
+                              return (
+                                <div style={{ maxHeight: 220, overflowY: 'auto', background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: 8, padding: 6, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                  {filteredPlaylists.map(pl => {
+                                    const isDirectlyAdded = selectedPlaylistIds.includes(pl.id);
+                                    const coveringParent = !isDirectlyAdded ? getCoveringParent(pl.id, selectedPlaylistIds, playlists) : null;
+                                    const isCovered = Boolean(coveringParent);
+                                    const isMega = Boolean(pl.is_mega || (pl.children_ids && pl.children_ids.length > 0));
+                                    const subCount = pl.children_ids?.length || pl.children?.length || 0;
+                                    const totalVids = pl.total_video_count || pl.video_count || 0;
+                                    const parentPl = pl.parent_id ? (playlists || []).find(p => p.id === pl.parent_id) : null;
+
+                                    let cardBg = 'var(--bg-secondary)';
+                                    let cardBorder = '1px solid transparent';
+                                    if (isDirectlyAdded) {
+                                      cardBg = 'rgba(var(--primary-color-rgb, 255, 0, 0), 0.08)';
+                                      cardBorder = '1px solid rgba(var(--primary-color-rgb, 255, 0, 0), 0.3)';
+                                    } else if (isCovered) {
+                                      cardBg = 'rgba(34, 197, 94, 0.05)';
+                                      cardBorder = '1px solid rgba(34, 197, 94, 0.25)';
+                                    }
+
+                                    return (
+                                      <div key={pl.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', borderRadius: 6, background: cardBg, border: cardBorder, gap: 10 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
+                                          {pl.first_video_id ? (
+                                            <img
+                                              src={`./thumbnails/${pl.first_video_id}.jpg`}
+                                              alt=""
+                                              onError={(e) => { e.target.style.display = 'none'; }}
+                                              style={{ width: 40, height: 24, borderRadius: 4, objectFit: 'cover', background: '#000', flexShrink: 0 }}
+                                            />
+                                          ) : (
+                                            <div style={{ width: 40, height: 24, borderRadius: 4, background: 'var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                              {isMega ? <Layers size={14} style={{ color: 'var(--text-secondary)' }} /> : <Folder size={14} style={{ color: 'var(--text-secondary)' }} />}
+                                            </div>
+                                          )}
+                                          <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                                              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-color)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                {pl.playlist_name}
+                                              </span>
+                                              {isMega ? (
+                                                <span style={{ background: 'rgba(168, 85, 247, 0.15)', color: '#a855f7', border: '1px solid rgba(168, 85, 247, 0.3)', padding: '1px 6px', borderRadius: 4, fontSize: 10, fontWeight: 700, flexShrink: 0 }}>
+                                                  🗂️ MEGA
+                                                </span>
+                                              ) : (
+                                                <span style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.25)', padding: '1px 6px', borderRadius: 4, fontSize: 10, fontWeight: 600, flexShrink: 0 }}>
+                                                  📁 PLAYLIST
+                                                </span>
+                                              )}
+                                              {isCovered && (
+                                                <span style={{ background: 'rgba(34, 197, 94, 0.12)', color: '#22c55e', border: '1px solid rgba(34, 197, 94, 0.25)', padding: '1px 6px', borderRadius: 4, fontSize: 10, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+                                                  <Check size={10} /> Included via "{coveringParent.playlist_name}"
+                                                </span>
+                                              )}
+                                            </div>
+                                            <div style={{ fontSize: 11, color: 'var(--text-secondary)', display: 'flex', gap: 6, alignItems: 'center', marginTop: 1 }}>
+                                              <span>{isMega ? `${subCount} sub-playlist${subCount === 1 ? '' : 's'} • ${totalVids} videos` : `${totalVids} videos`}</span>
+                                              {parentPl && (
+                                                <span>• in {parentPl.playlist_name}</span>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+                                        {isDirectlyAdded ? (
+                                          <button
+                                            type="button"
+                                            onClick={() => handleTogglePlaylist(pl)}
+                                            style={{ padding: '4px 12px', borderRadius: 6, border: 'none', background: '#ef4444', color: '#fff', fontSize: 11, cursor: 'pointer', fontWeight: 600, flexShrink: 0 }}
+                                          >
+                                            Remove
+                                          </button>
+                                        ) : isCovered ? (
+                                          <span
+                                            style={{ padding: '4px 10px', borderRadius: 6, background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', fontSize: 11, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4, border: '1px solid rgba(34, 197, 94, 0.3)', flexShrink: 0 }}
+                                            title={`Covered by parent playlist "${coveringParent.playlist_name}"`}
+                                          >
+                                            <Check size={12} /> Covered
+                                          </span>
+                                        ) : (
+                                          <button
+                                            type="button"
+                                            onClick={() => handleTogglePlaylist(pl)}
+                                            style={{ padding: '4px 12px', borderRadius: 6, border: 'none', background: 'var(--primary-color)', color: '#fff', fontSize: 11, cursor: 'pointer', fontWeight: 600, flexShrink: 0 }}
+                                          >
+                                            + Add
+                                          </button>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              );
+                            })()}
+
+                            {/* Selected Playlist Chips */}
+                            {selectedPlaylistIds.length > 0 && (
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                                {selectedPlaylistIds.map(plId => {
+                                  const pl = (playlists || []).find(p => p.id === plId);
+                                  if (!pl) return null;
+                                  const isMega = Boolean(pl.is_mega || (pl.children_ids && pl.children_ids.length > 0));
+                                  return (
+                                    <span key={plId} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: isMega ? 'rgba(168, 85, 247, 0.1)' : 'rgba(59, 130, 246, 0.1)', border: isMega ? '1px solid rgba(168, 85, 247, 0.3)' : '1px solid rgba(59, 130, 246, 0.25)', borderRadius: 16, padding: '3px 10px 3px 8px', fontSize: 11, color: 'var(--text-color)' }}>
+                                      {isMega ? <Layers size={12} style={{ color: '#a855f7' }} /> : <Folder size={12} style={{ color: '#3b82f6' }} />}
+                                      <span style={{ fontWeight: 600 }}>{pl.playlist_name}</span>
+                                      <span style={{ color: 'var(--text-secondary)', fontSize: 10 }}>
+                                        ({isMega ? `${pl.total_video_count || pl.video_count || 0} vids in ${pl.children_ids?.length || 0} subs` : `${pl.video_count || 0} vids`})
+                                      </span>
+                                      <button
+                                        type="button"
+                                        onClick={() => setSelectedPlaylistIds(selectedPlaylistIds.filter(id => id !== plId))}
+                                        style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 0, fontSize: 12, fontWeight: 700, marginLeft: 2 }}
+                                      >
+                                        ✕
+                                      </button>
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
+
+                      {/* Preview summary banner */}
+                      {(selectedVideoIds.length > 0 || selectedPlaylistIds.length > 0) && (() => {
+                        const totalUniqueVids = new Set([
+                          ...selectedVideoIds,
+                          ...selectedPlaylistIds.flatMap(pId => (playlists || []).find(p => p.id === pId)?.all_video_ids || [])
+                        ]).size;
+
+                        return (
+                          <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: 8, padding: '8px 12px', fontSize: 12, color: 'var(--text-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <Shield size={14} style={{ color: 'var(--primary-color)' }} />
+                              <span>
+                                Total Content: <strong>{selectedVideoIds.length}</strong> video{selectedVideoIds.length === 1 ? '' : 's'} + <strong>{selectedPlaylistIds.length}</strong> playlist{selectedPlaylistIds.length === 1 ? '' : 's'}
+                              </span>
+                            </div>
+                            <span style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 700, border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                              🛡️ {totalUniqueVids} unique videos will be excluded
+                            </span>
+                          </div>
+                        );
+                      })()}
                     </div>
 
                     {/* SECTION 2: Homepage & Autoplay Exclusion Rules */}
@@ -994,6 +1326,9 @@ export function SettingsView({ currentUser, showFlashNotification }) {
                       <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-color)', borderBottom: '1px solid var(--border-color)', paddingBottom: 6 }}>
                         3. Search & Sidebar Visibility Exclusions
                       </div>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: 2 }}>
+                        Video Level Visibility
+                      </div>
                       <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, color: 'var(--text-color)', cursor: 'pointer' }}>
                         <input type="checkbox" checked={excludeSearchSug} onChange={e => setExcludeSearchSug(e.target.checked)} />
                         <span>Exclude videos from search bar auto-complete suggestions</span>
@@ -1006,6 +1341,20 @@ export function SettingsView({ currentUser, showFlashNotification }) {
                         <input type="checkbox" checked={excludeSearchResults} onChange={e => setExcludeSearchResults(e.target.checked)} />
                         <span>Exclude videos from main video search results query</span>
                       </label>
+
+                      <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: 10, marginTop: 4, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                          Playlist & Mega Playlist Level Visibility
+                        </div>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, color: 'var(--text-color)', cursor: 'pointer' }}>
+                          <input type="checkbox" checked={excludePlaylistSidebar} onChange={e => setExcludePlaylistSidebar(e.target.checked)} />
+                          <span>Exclude the playlist/mega playlist from left sidebar menu</span>
+                        </label>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, color: 'var(--text-color)', cursor: 'pointer' }}>
+                          <input type="checkbox" checked={excludePlaylistSearch} onChange={e => setExcludePlaylistSearch(e.target.checked)} />
+                          <span>Exclude the playlist/mega playlist from <code>/pl</code> and <code>/l</code> search command suggestions & results</span>
+                        </label>
+                      </div>
                     </div>
 
                     {/* Form Buttons */}

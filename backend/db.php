@@ -198,15 +198,27 @@ class Database {
             $pdo->exec("CREATE TABLE IF NOT EXISTS `exclusion_lists` (
                 `id` int(11) NOT NULL AUTO_INCREMENT,
                 `list_name` varchar(100) NOT NULL,
-                `video_ids` longtext NOT NULL DEFAULT '',
-                `exclude_pills` longtext NOT NULL DEFAULT '[]',
+                `video_ids` longtext NULL,
+                `playlist_ids` longtext NULL,
+                `exclude_pills` longtext NULL,
                 `exclude_next` varchar(20) NOT NULL DEFAULT 'none',
                 `exclude_search_suggestions` tinyint(1) NOT NULL DEFAULT 0,
                 `exclude_watch_next` tinyint(1) NOT NULL DEFAULT 0,
                 `exclude_search_results` tinyint(1) NOT NULL DEFAULT 0,
+                `exclude_playlist_sidebar` tinyint(1) NOT NULL DEFAULT 0,
+                `exclude_playlist_search` tinyint(1) NOT NULL DEFAULT 0,
                 `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("ALTER TABLE `exclusion_lists` ADD COLUMN `playlist_ids` longtext NULL AFTER `video_ids`");
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("ALTER TABLE `exclusion_lists` ADD COLUMN `exclude_playlist_sidebar` tinyint(1) NOT NULL DEFAULT 0");
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("ALTER TABLE `exclusion_lists` ADD COLUMN `exclude_playlist_search` tinyint(1) NOT NULL DEFAULT 0");
         } catch (Exception $e) {}
         try {
             $pdo->exec("CREATE TABLE IF NOT EXISTS `category_pills` (

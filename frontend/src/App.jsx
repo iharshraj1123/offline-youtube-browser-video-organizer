@@ -1,6 +1,6 @@
 // c:\laragon\www\youtube\src-frontend\src\App.jsx
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   Menu, Search, Video, Compass, Folder, Newspaper,
   Tv, ListTodo, Bookmark, ChevronDown, ChevronLeft, ChevronRight,
@@ -207,6 +207,55 @@ export default function App() {
   const [activePlaylist, setActivePlaylist] = useState(null);
   const [currentPlaylistIndex, setCurrentPlaylistIndex] = useState(-1);
   const [playlistView, setPlaylistView] = useState(null);
+  const [excludedData, setExcludedData] = useState({
+    search_suggestions: [],
+    watch_next: [],
+    search_results: [],
+    next_play_random: [],
+    next_play_normal: [],
+    all_next_play: [],
+    excluded_playlist_sidebar: [],
+    excluded_playlist_search: []
+  });
+
+  const [extraVideosMap, setExtraVideosMap] = useState({});
+
+  const fetchMissingVideos = useCallback(async (ids) => {
+    if (!Array.isArray(ids) || ids.length === 0) return [];
+    const missing = ids.map(id => parseInt(id)).filter(num => {
+      return !isNaN(num) && !videos.some(v => v.vid_id === num) && !extraVideosMap[num];
+    });
+    if (missing.length === 0) return [];
+    try {
+      const res = await fetch(`./api/index.php?action=videos&ids=${missing.join(',')}&include_all=1`);
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        setExtraVideosMap(prev => {
+          const next = { ...prev };
+          data.forEach(v => {
+            if (v && v.vid_id) next[v.vid_id] = v;
+          });
+          return next;
+        });
+        return data;
+      }
+    } catch (e) {
+      console.error('Failed to fetch missing videos', e);
+    }
+    return [];
+  }, [videos, extraVideosMap]);
+
+  const fetchExcludedData = async () => {
+    try {
+      const res = await fetch('./api/index.php?action=get_excluded_ids');
+      const data = await res.json();
+      if (data && typeof data === 'object') {
+        setExcludedData(data);
+      }
+    } catch (e) {
+      console.error('Failed to fetch excluded data', e);
+    }
+  };
 
   // Playback history for prev/next navigation
   const playHistoryRef = useRef([]);
@@ -640,6 +689,7 @@ export default function App() {
     if (isPlaylistSearch) {
       const plQuery = searchQuery.replace(/^(\/pl|\/l)(\s+|$)/i, '').trim().toLowerCase();
       const matches = (playlists || []).filter(p => {
+        if ((excludedData.excluded_playlist_search || []).includes(p.id)) return false;
         if (!plQuery) return true;
         return (p.playlist_name || '').toLowerCase().includes(plQuery);
       });
@@ -884,6 +934,7 @@ export default function App() {
     if (isPlaylistSearch) {
       const plQuery = searchQuery.replace(/^(\/pl|\/l)(\s+|$)/i, '').trim().toLowerCase();
       const match = (playlists || []).find(p => {
+        if ((excludedData.excluded_playlist_search || []).includes(p.id)) return false;
         if (!plQuery) return true;
         return (p.playlist_name || '').toLowerCase().includes(plQuery);
       });
@@ -958,6 +1009,7 @@ export default function App() {
 
   const fetchPlaylists = async () => {
     try {
+      fetchExcludedData();
       const res = await fetch('./api/index.php?action=playlists');
       const data = await res.json();
       if (Array.isArray(data)) {
@@ -1647,7 +1699,7 @@ export default function App() {
           <div className="sidebar-section-label">Playlists</div>
           <nav className="sidebar-nav">
             {playlists
-              .filter((pl) => !pl.parent_id || pl.parent_id === 0)
+              .filter((pl) => (!pl.parent_id || pl.parent_id === 0) && !(excludedData.excluded_playlist_sidebar || []).includes(pl.id))
               .map((pl) => (
                 <button
                   key={pl.id}
@@ -1733,6 +1785,8 @@ export default function App() {
               onVideoDeleted={handleGoHome}
               onOpenShortById={handleOpenShortById}
               allVideos={watchNextVideos.length > 0 ? watchNextVideos : videos}
+              extraVideosMap={extraVideosMap}
+              onFetchMissingVideos={fetchMissingVideos}
               onPlayVideo={(video, pl, index, keepMiniPlayer, skipHistory) => {
                 let targetPlaylistId = null;
                 let targetIndex = null;
@@ -1817,12 +1871,12 @@ export default function App() {
                   const res = await fetch('./api/index.php?action=create_playlist', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name })
+                    body: JSON.stringify({ playlist_name: name })
                   });
                   const data = await res.json();
-                  if (data.status === 'success' && data.id) {
+                  if (data.id) {
                     const videoIds = activePlaylist.video_ids || [];
-                    await fetch('./api/index.php?action=update_playlist_videos', {
+                    await fetch('./api/index.php?action=update_playlist_order', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ playlist_id: data.id, video_ids: videoIds })
@@ -1854,6 +1908,8 @@ export default function App() {
             <PlaylistView
               playlist={playlists.find(p => p.id === playlistView.id) || playlistView}
               allVideos={videos}
+              extraVideosMap={extraVideosMap}
+              onFetchMissingVideos={fetchMissingVideos}
               allPlaylists={playlists}
               isMobile={isMobile}
               onSelectPlaylist={(pl) => {
@@ -1877,21 +1933,27 @@ export default function App() {
                 setPlaylistView(null);
                 setCurrentView('home');
               }}
-              onPlayPlaylist={(pl) => {
+              onPlayPlaylist={async (pl) => {
                 const idsToPlay = (pl.is_mega && pl.all_video_ids && pl.all_video_ids.length > 0)
                   ? pl.all_video_ids
                   : (pl.video_ids || []);
-                const listVideos = idsToPlay
-                  .map(id => videos.find(v => v.vid_id === parseInt(id)))
-                  .filter(Boolean);
-                if (listVideos.length > 0) {
-                  const playQueue = {
-                    ...pl,
-                    video_ids: idsToPlay
-                  };
-                  setActivePlaylist(playQueue);
-                  setCurrentPlaylistIndex(0);
-                  handlePlayVideo(listVideos[0], false, false, pl.id, 0);
+                if (idsToPlay.length === 0) return;
+
+                let firstVid = videos.find(v => v.vid_id === parseInt(idsToPlay[0])) || extraVideosMap[parseInt(idsToPlay[0])];
+                if (!firstVid) {
+                  const fetched = await fetchMissingVideos(idsToPlay);
+                  firstVid = (fetched || []).find(v => v.vid_id === parseInt(idsToPlay[0]));
+                }
+                const playQueue = {
+                  ...pl,
+                  video_ids: idsToPlay
+                };
+                setActivePlaylist(playQueue);
+                setCurrentPlaylistIndex(0);
+                if (firstVid) {
+                  handlePlayVideo(firstVid, false, false, pl.id, 0);
+                } else {
+                  fetchVideoAndPlay(idsToPlay[0], false, pl.id, 0);
                 }
               }}
             />
@@ -3925,13 +3987,18 @@ function SidebarVideoCard({ vid, onPlayVideo }) {
 }
 
 function PlayerView({
-  video, onVideoDeleted, onOpenShortById, allVideos, onPlayVideo, onOpenPlaylist, isMiniPlayer, onExpand, onClose, isTheaterMode, setIsTheaterMode, onPlayRandom,
+  video, onVideoDeleted, onOpenShortById, allVideos, extraVideosMap = {}, onFetchMissingVideos, onPlayVideo, onOpenPlaylist, isMiniPlayer, onExpand, onClose, isTheaterMode, setIsTheaterMode, onPlayRandom,
   playlists, activePlaylist, setActivePlaylist, currentPlaylistIndex, setCurrentPlaylistIndex,
   addVideoToPlaylist, removeVideoFromPlaylist, createPlaylist, updatePlaylistOrder,
   isSidebarCollapsed, setIsSidebarCollapsed, currentUser, onOpenAuth, onNavigateToProfile, showFlashNotification,
   showNotification, notifKey, playHistoryRef, historyIndexRef,
   onSaveTempPlaylist, onUpdateTempPlaylist
 }) {
+  useEffect(() => {
+    if (activePlaylist && activePlaylist.video_ids && activePlaylist.video_ids.length > 0 && onFetchMissingVideos) {
+      onFetchMissingVideos(activePlaylist.video_ids);
+    }
+  }, [activePlaylist?.id, activePlaylist?.video_ids, onFetchMissingVideos]);
   const [likes, setLikes] = useState(parseInt(video.likes) || 0);
   const [dislikes, setDislikes] = useState(parseInt(video.dislikes) || 0);
   const [liked, setLiked] = useState(false);
@@ -4438,7 +4505,7 @@ function PlayerView({
     if (historyIndexRef.current > 0) {
       historyIndexRef.current -= 1;
       const vidId = playHistoryRef.current[historyIndexRef.current];
-      const prevVid = allVideos.find(v => v.vid_id === vidId);
+      const prevVid = allVideos.find(v => v.vid_id === vidId) || extraVideosMap?.[vidId];
       if (prevVid) {
         let prevIdx = undefined;
         if (activePlaylist && activePlaylist.video_ids) {
@@ -4455,7 +4522,7 @@ function PlayerView({
     if (historyIndexRef.current < playHistoryRef.current.length - 1) {
       historyIndexRef.current += 1;
       const vidId = playHistoryRef.current[historyIndexRef.current];
-      const nextVid = allVideos.find(v => v.vid_id === vidId);
+      const nextVid = allVideos.find(v => v.vid_id === vidId) || extraVideosMap?.[vidId];
       if (nextVid) {
         let nextIdx = undefined;
         if (activePlaylist && activePlaylist.video_ids) {
@@ -4475,8 +4542,15 @@ function PlayerView({
       } else if (nextIdx >= ids.length) {
         nextIdx = 0;
       }
-      const nextVid = allVideos.find(v => v.vid_id === parseInt(ids[nextIdx]));
-      if (nextVid) onPlayVideo(nextVid, activePlaylist, nextIdx, isMiniPlayer);
+      const targetId = parseInt(ids[nextIdx]);
+      let nextVid = allVideos.find(v => v.vid_id === targetId) || extraVideosMap?.[targetId];
+      if (!nextVid && onFetchMissingVideos) {
+        const fetched = await onFetchMissingVideos([targetId]);
+        nextVid = (fetched || []).find(v => v.vid_id === targetId);
+      }
+      if (nextVid) {
+        onPlayVideo(nextVid, activePlaylist, nextIdx, isMiniPlayer);
+      }
     } else if (isRandom) {
       onPlayRandom(isMiniPlayer);
     } else {
@@ -5756,6 +5830,7 @@ function PlayerView({
     if (isPlaylistSearch) {
       const plQuery = fsSearchQuery.replace(/^(\/pl|\/l)(\s+|$)/i, '').trim().toLowerCase();
       const matches = (playlists || []).filter(p => {
+        if ((excludedData.excluded_playlist_search || []).includes(p.id)) return false;
         if (!plQuery) return true;
         return (p.playlist_name || '').toLowerCase().includes(plQuery);
       });
@@ -8501,7 +8576,8 @@ function PlayerView({
                   }}
                 >
                   {(activePlaylist.video_ids || []).map((id, idx) => {
-                    const vid = allVideos.find(v => v.vid_id === parseInt(id));
+                    const numId = parseInt(id);
+                    const vid = allVideos.find(v => v.vid_id === numId) || extraVideosMap?.[numId];
                     if (!vid) return null;
                     const isCurrent = parseInt(id) === video.vid_id;
                     const cleanTitle = (vid.vid_name || '').replace(/\.[a-zA-Z0-9]+$/, '');
@@ -9321,6 +9397,8 @@ function CrawlerView({ onRefreshPlaylists }) {
 function PlaylistView({
   playlist,
   allVideos,
+  extraVideosMap = {},
+  onFetchMissingVideos,
   allPlaylists = [],
   onSelectPlaylist,
   onPlayVideo,
@@ -9330,12 +9408,21 @@ function PlaylistView({
   onPlayPlaylist,
   isMobile
 }) {
+  useEffect(() => {
+    if (playlist && playlist.video_ids && playlist.video_ids.length > 0 && onFetchMissingVideos) {
+      onFetchMissingVideos(playlist.video_ids);
+    }
+  }, [playlist?.id, playlist?.video_ids, onFetchMissingVideos]);
+
   // O(1) lookup Map for videos
   const allVideosMap = useMemo(() => {
     const map = new Map();
     (allVideos || []).forEach(v => map.set(v.vid_id, v));
+    Object.values(extraVideosMap || {}).forEach(v => {
+      if (v && v.vid_id) map.set(v.vid_id, v);
+    });
     return map;
-  }, [allVideos]);
+  }, [allVideos, extraVideosMap]);
 
   // O(1) lookup Map for playlists
   const allPlaylistsMap = useMemo(() => {
