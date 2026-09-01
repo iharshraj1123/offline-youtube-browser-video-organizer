@@ -15,6 +15,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+function initSystemTimezone() {
+    $iniTz = ini_get('date.timezone');
+    if (!empty($iniTz) && $iniTz !== 'UTC') {
+        date_default_timezone_set($iniTz);
+        return;
+    }
+
+    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+        $output = []; $ret = -1;
+        @exec('tzutil /g 2>NUL', $output, $ret);
+        if ($ret === 0 && !empty($output)) {
+            $winTz = trim($output[0]);
+            $winTzMap = [
+                'India Standard Time' => 'Asia/Kolkata',
+                'Pacific Standard Time' => 'America/Los_Angeles',
+                'Eastern Standard Time' => 'America/New_York',
+                'Central Standard Time' => 'America/Chicago',
+                'Mountain Standard Time' => 'America/Denver',
+                'US Eastern Standard Time' => 'America/Indianapolis',
+                'GMT Standard Time' => 'Europe/London',
+                'Greenwich Standard Time' => 'Atlantic/Reykjavik',
+                'W. Europe Standard Time' => 'Europe/Berlin',
+                'Central Europe Standard Time' => 'Europe/Prague',
+                'Romance Standard Time' => 'Europe/Paris',
+                'Central European Standard Time' => 'Europe/Warsaw',
+                'Tokyo Standard Time' => 'Asia/Tokyo',
+                'China Standard Time' => 'Asia/Shanghai',
+                'Singapore Standard Time' => 'Asia/Singapore',
+                'SE Asia Standard Time' => 'Asia/Bangkok',
+                'AUS Eastern Standard Time' => 'Australia/Sydney',
+                'E. Australia Standard Time' => 'Australia/Brisbane',
+                'Cen. Australia Standard Time' => 'Australia/Adelaide',
+                'W. Australia Standard Time' => 'Australia/Perth',
+                'New Zealand Standard Time' => 'Pacific/Auckland',
+                'Hawaiian Standard Time' => 'Pacific/Honolulu',
+                'Alaskan Standard Time' => 'America/Anchorage',
+                'Arab Standard Time' => 'Asia/Riyadh',
+                'Arabian Standard Time' => 'Asia/Dubai',
+                'Iran Standard Time' => 'Asia/Tehran',
+                'Russian Standard Time' => 'Europe/Moscow',
+                'Pakistan Standard Time' => 'Asia/Karachi',
+                'Sri Lanka Standard Time' => 'Asia/Colombo',
+                'Bangladesh Standard Time' => 'Asia/Dhaka',
+                'Nepal Standard Time' => 'Asia/Kathmandu',
+                'Myanmar Standard Time' => 'Asia/Yangon',
+                'Korea Standard Time' => 'Asia/Seoul',
+                'Taipei Standard Time' => 'Asia/Taipei',
+                'E. South America Standard Time' => 'America/Sao_Paulo',
+                'Argentina Standard Time' => 'America/Argentina/Buenos_Aires',
+                'South Africa Standard Time' => 'Africa/Johannesburg',
+                'Egypt Standard Time' => 'Africa/Cairo',
+                'Israel Standard Time' => 'Asia/Jerusalem',
+                'Turkey Standard Time' => 'Europe/Istanbul',
+            ];
+            if (isset($winTzMap[$winTz])) {
+                date_default_timezone_set($winTzMap[$winTz]);
+                return;
+            }
+        }
+    }
+
+    $detected = @date_default_timezone_get();
+    if (!empty($detected) && $detected !== 'UTC') {
+        date_default_timezone_set($detected);
+    } else {
+        date_default_timezone_set('Asia/Kolkata');
+    }
+}
+initSystemTimezone();
+
 // Dynamically determine the base directory path (e.g. "/youtube" or "")
 $baseDir = str_replace('\\', '/', dirname(dirname($_SERVER['SCRIPT_NAME'] ?? '')));
 if ($baseDir === '/') {
@@ -644,6 +714,112 @@ function handleGetRandomVideo($pdo) {
     exit;
 }
 
+function findVideoIdByFilePath($pdo, $file) {
+    $normalized = str_replace('\\', '/', $file);
+    if (preg_match('/^([a-zA-Z]):\/(.*)$/', $normalized, $matches)) {
+        $drive = $matches[1];
+        $rest = $matches[2];
+        $link = "file:///" . strtoupper($drive) . ":/" . $rest;
+    } else {
+        $link = "file:///" . str_replace('%', '%25', $normalized);
+    }
+    $stmt = $pdo->prepare("SELECT vid_id FROM video_metadatas WHERE link = :link");
+    $stmt->execute([':link' => $link]);
+    $row = $stmt->fetch();
+    return $row ? intval($row['vid_id']) : null;
+}
+
+function upsertPlaylistRecord($pdo, $name, $parentId, $folderPath, $syncType, $isMega = 0) {
+    if (!empty($folderPath)) {
+        $stmt = $pdo->prepare("SELECT id FROM playlists WHERE folder_path = :path");
+        $stmt->execute([':path' => $folderPath]);
+        $existing = $stmt->fetch();
+        if ($existing) {
+            $plId = intval($existing['id']);
+            $up = $pdo->prepare("UPDATE playlists SET playlist_name = :name, parent_id = :pid, is_mega = :is_mega, sync_type = :st WHERE id = :id");
+            $up->execute([':name' => $name, ':pid' => $parentId, ':is_mega' => $isMega, ':st' => $syncType, ':id' => $plId]);
+            return $plId;
+        }
+    }
+
+    if ($parentId) {
+        $stmt = $pdo->prepare("SELECT id FROM playlists WHERE playlist_name = :name AND parent_id = :pid");
+        $stmt->execute([':name' => $name, ':pid' => $parentId]);
+    } else {
+        $stmt = $pdo->prepare("SELECT id FROM playlists WHERE playlist_name = :name AND (parent_id IS NULL OR parent_id = 0)");
+        $stmt->execute([':name' => $name]);
+    }
+    $existing = $stmt->fetch();
+    if ($existing) {
+        $plId = intval($existing['id']);
+        $up = $pdo->prepare("UPDATE playlists SET folder_path = :path, is_mega = :is_mega, sync_type = :st WHERE id = :id");
+        $up->execute([':path' => $folderPath, ':is_mega' => $isMega, ':st' => $syncType, ':id' => $plId]);
+        return $plId;
+    }
+
+    $stmt = $pdo->prepare("INSERT INTO playlists (playlist_name, parent_id, is_mega, folder_path, sync_type, video_ids, video_count) VALUES (:name, :pid, :is_mega, :path, :st, '[]', 0)");
+    $stmt->execute([':name' => $name, ':pid' => $parentId, ':is_mega' => $isMega, ':path' => $folderPath, ':st' => $syncType]);
+    return intval($pdo->lastInsertId());
+}
+
+function syncMegaPlaylistHierarchy($pdo, $dirPath, $parentId, $uploaderInfo, $ffmpegPath, $videoExtensions, &$stats) {
+    $dirPath = rtrim(str_replace('\\', '/', $dirPath), '/');
+    $folderName = basename($dirPath);
+    if (empty($folderName)) $folderName = 'Mega Playlist';
+
+    $playlistId = upsertPlaylistRecord($pdo, $folderName, $parentId, $dirPath, 'mega_playlist', 1);
+    $stats['playlists_created']++;
+
+    $scanned = @scandir($dirPath);
+    if ($scanned === false) return $playlistId;
+
+    $directVideoIds = [];
+    $hasChildFolders = false;
+    natsort($scanned);
+
+    foreach ($scanned as $item) {
+        if ($item === '.' || $item === '..') continue;
+        $fullPath = $dirPath . '/' . $item;
+
+        if (is_dir($fullPath)) {
+            $hasChildFolders = true;
+            syncMegaPlaylistHierarchy($pdo, $fullPath, $playlistId, $uploaderInfo, $ffmpegPath, $videoExtensions, $stats);
+        } elseif (is_file($fullPath)) {
+            $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
+            if (in_array($ext, $videoExtensions)) {
+                $res = processSingleVideo($pdo, $fullPath, $uploaderInfo, $ffmpegPath, $videoExtensions, "Discovered in playlist $folderName.");
+                if ($res !== false && isset($res['id'])) {
+                    $vidId = intval($res['id']);
+                    $stats['added']++;
+                    $stats['new_videos'][] = $res;
+                    $stats['new_vid_ids'][] = $vidId;
+                    $directVideoIds[] = $vidId;
+                } else {
+                    $existingVidId = findVideoIdByFilePath($pdo, $fullPath);
+                    if ($existingVidId) {
+                        $directVideoIds[] = $existingVidId;
+                        $stats['skipped']++;
+                    }
+                }
+            }
+        }
+    }
+
+    $isMega = $hasChildFolders ? 1 : 0;
+    $vIdsJson = json_encode(array_values(array_unique($directVideoIds)));
+    $vCount = count($directVideoIds);
+
+    $upStmt = $pdo->prepare("UPDATE playlists SET video_ids = :vids, video_count = :vcount, is_mega = :is_mega WHERE id = :id");
+    $upStmt->execute([
+        ':vids' => $vIdsJson,
+        ':vcount' => $vCount,
+        ':is_mega' => $isMega,
+        ':id' => $playlistId
+    ]);
+
+    return $playlistId;
+}
+
 function handleCrawl($pdo) {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new Exception('POST method required');
@@ -653,7 +829,12 @@ function handleCrawl($pdo) {
     $data = json_decode($rawData, true);
 
     $directory = $data['directory'] ?? '';
+    $syncType = trim($data['sync_type'] ?? 'folder');
+    if (!in_array($syncType, ['folder', 'playlist', 'mega_playlist'])) $syncType = 'folder';
+
     $recursive = isset($data['recursive']) ? (bool)$data['recursive'] : false;
+    // For playlist and mega_playlist, recursive checkbox is ignored (playlist is strict depth 1, mega_playlist is tree)
+    if ($syncType === 'playlist') $recursive = false;
 
     if (empty($directory)) {
         throw new Exception('Directory path is required');
@@ -683,20 +864,56 @@ function handleCrawl($pdo) {
         $localPathDecoded = rawurldecode($localPath);
         
         if (!file_exists($localPath) && !file_exists($localPathDecoded)) {
-            // Delete video metadata row
             $deleteStmt = $pdo->prepare("DELETE FROM video_metadatas WHERE vid_id = :id");
             $deleteStmt->execute([':id' => $id]);
-            // Clean from default playlist
             deleteFromPlaylistsTable($pdo, $id);
             $deletedCount++;
         }
     }
 
     $videoExtensions = ['mp4', 'webm', 'mkv', 'avi'];
-    $files = [];
 
-    // Scan directory
-    if ($recursive) {
+    // Get cookie values for user session
+    $uploaderInfo = [
+        'id' => $_COOKIE['loggedusernum'] ?? 1,
+        'name' => $_COOKIE['loggedusername'] ?? 'Admin',
+        'img' => stripBaseDir($_COOKIE['loggeduserpic'] ?? BASE_DIR . '/Userdatabase/profilepic/defaulta.jpg'),
+    ];
+
+    $ffmpegPath = getFFmpegPath();
+
+    // CASE 3: Mega Playlist Sync (Recursive Playlist Hierarchy)
+    if ($syncType === 'mega_playlist') {
+        $stats = [
+            'added' => 0,
+            'skipped' => 0,
+            'new_videos' => [],
+            'new_vid_ids' => [],
+            'playlists_created' => 0
+        ];
+        $rootId = syncMegaPlaylistHierarchy($pdo, $directory, null, $uploaderInfo, $ffmpegPath, $videoExtensions, $stats);
+        
+        if (!empty($stats['new_vid_ids'])) {
+            updatePlaylistsTable($pdo, $stats['new_vid_ids']);
+        }
+
+        echo json_encode([
+            'success' => true,
+            'sync_type' => 'mega_playlist',
+            'root_playlist_id' => $rootId,
+            'root_playlist_name' => basename(rtrim($directory, '/')),
+            'playlists_created' => $stats['playlists_created'],
+            'added' => $stats['added'],
+            'skipped' => $stats['skipped'],
+            'deleted' => $deletedCount,
+            'new_videos' => $stats['new_videos']
+        ]);
+        exit;
+    }
+
+    // CASE 1 & 2: Folder or Single Playlist Sync
+    $files = [];
+    if ($recursive && $syncType === 'folder') {
         $directoryIterator = new RecursiveDirectoryIterator($directory, RecursiveDirectoryIterator::SKIP_DOTS);
         $iterator = new RecursiveIteratorIterator($directoryIterator);
         foreach ($iterator as $fileInfo) {
@@ -709,6 +926,7 @@ function handleCrawl($pdo) {
         }
     } else {
         $scanned = scandir($directory);
+        natsort($scanned);
         foreach ($scanned as $item) {
             if ($item === '.' || $item === '..') continue;
             $filePath = $directory . $item;
@@ -724,38 +942,62 @@ function handleCrawl($pdo) {
     $added = 0;
     $skipped = 0;
     $newVideosList = [];
-
-    // Get cookie values for user session
-    $uploaderInfo = [
-        'id' => $_COOKIE['loggedusernum'] ?? 1,
-        'name' => $_COOKIE['loggedusername'] ?? 'Admin',
-        'img' => stripBaseDir($_COOKIE['loggeduserpic'] ?? BASE_DIR . '/Userdatabase/profilepic/defaulta.jpg'),
-    ];
-
-    $ffmpegPath = getFFmpegPath();
     $newVidIds = [];
-    $videoExtensions = ['mp4', 'webm', 'mkv', 'avi'];
+    $allSyncedVidIds = [];
 
     foreach ($files as $file) {
-        $result = processSingleVideo($pdo, $file, $uploaderInfo, $ffmpegPath, $videoExtensions, 'Discovered via crawler.');
-        if ($result === false) { $skipped++; continue; }
+        $result = processSingleVideo($pdo, $file, $uploaderInfo, $ffmpegPath, $videoExtensions, $syncType === 'playlist' ? 'Discovered via playlist sync.' : 'Discovered via crawler.');
+        if ($result === false) {
+            $skipped++;
+            $existingId = findVideoIdByFilePath($pdo, $file);
+            if ($existingId) $allSyncedVidIds[] = $existingId;
+            continue;
+        }
         $newVidIds[] = $result['id'];
+        $allSyncedVidIds[] = $result['id'];
         $newVideosList[] = $result;
         $added++;
     }
 
-    // Update playlists table instead of legacy row 10
     if ($added > 0) {
         updatePlaylistsTable($pdo, $newVidIds);
     }
 
+    // If Playlist Sync: create/update the playlist bundle
+    $playlistInfo = null;
+    if ($syncType === 'playlist') {
+        $cleanDir = rtrim($directory, '/');
+        $plName = basename($cleanDir);
+        if (empty($plName)) $plName = 'Playlist';
+
+        $plId = upsertPlaylistRecord($pdo, $plName, null, $cleanDir, 'playlist', 0);
+        $vIdsJson = json_encode(array_values(array_unique($allSyncedVidIds)));
+        $vCount = count($allSyncedVidIds);
+
+        $upStmt = $pdo->prepare("UPDATE playlists SET video_ids = :vids, video_count = :vcount, is_mega = 0 WHERE id = :id");
+        $upStmt->execute([
+            ':vids' => $vIdsJson,
+            ':vcount' => $vCount,
+            ':id' => $plId
+        ]);
+
+        $playlistInfo = [
+            'id' => $plId,
+            'name' => $plName,
+            'video_count' => $vCount
+        ];
+    }
+
     echo json_encode([
         'success' => true,
+        'sync_type' => $syncType,
+        'playlist' => $playlistInfo,
         'added' => $added,
         'skipped' => $skipped,
         'deleted' => $deletedCount,
         'new_videos' => $newVideosList
     ]);
+    exit;
 }
 
 function processSingleVideo($pdo, $file, $uploaderInfo, $ffmpegPath, $videoExtensions, $description) {
@@ -1385,15 +1627,76 @@ function getTempHardlink($originalPath) {
 }
 
 function handleGetPlaylists($pdo) {
-    $stmt = $pdo->query("SELECT * FROM playlists WHERE playlist_name != 'default' ORDER BY id DESC");
-    $playlists = $stmt->fetchAll();
+    $stmt = $pdo->query("SELECT * FROM playlists WHERE playlist_name != 'default' ORDER BY id ASC");
+    $playlists = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Decode video_ids JSON for each playlist
+    // Decode video_ids JSON for each playlist and format fields
+    $byId = [];
+    $byParent = [];
     foreach ($playlists as &$pl) {
+        $pl['id'] = intval($pl['id']);
+        $pl['parent_id'] = !empty($pl['parent_id']) ? intval($pl['parent_id']) : null;
+        $pl['is_mega'] = !empty($pl['is_mega']) ? 1 : 0;
         $ids = json_decode($pl['video_ids'], true);
-        $pl['video_ids'] = is_array($ids) ? $ids : [];
+        $pl['video_ids'] = is_array($ids) ? array_map('intval', $ids) : [];
+        $pl['video_count'] = count($pl['video_ids']);
+        
+        $pId = $pl['parent_id'] ?? 0;
+        $byParent[$pId][] = $pl['id'];
+        $byId[$pl['id']] = &$pl;
     }
-    
+    unset($pl);
+
+    // Recursive helper to get all descendant video IDs in order
+    $getAllDescendantVideos = function($plId) use (&$getAllDescendantVideos, $byParent, $byId) {
+        $vIds = $byId[$plId]['video_ids'] ?? [];
+        if (isset($byParent[$plId])) {
+            foreach ($byParent[$plId] as $childId) {
+                $childVideos = $getAllDescendantVideos($childId);
+                foreach ($childVideos as $cv) {
+                    if (!in_array($cv, $vIds)) {
+                        $vIds[] = $cv;
+                    }
+                }
+            }
+        }
+        return $vIds;
+    };
+
+    foreach ($playlists as &$pl) {
+        $plId = $pl['id'];
+        $childIds = $byParent[$plId] ?? [];
+        $pl['children_ids'] = $childIds;
+        if (!empty($childIds)) {
+            $pl['is_mega'] = 1;
+        }
+        $allVideos = $getAllDescendantVideos($plId);
+        $pl['total_video_count'] = count($allVideos);
+        $pl['all_video_ids'] = $allVideos;
+        $pl['first_video_id'] = !empty($allVideos) ? $allVideos[0] : null;
+
+        // Direct children summary for instant UI rendering
+        $childrenSummaries = [];
+        foreach ($childIds as $cId) {
+            if (isset($byId[$cId])) {
+                $c = $byId[$cId];
+                $cVideos = $getAllDescendantVideos($cId);
+                $childrenSummaries[] = [
+                    'id' => $c['id'],
+                    'playlist_name' => $c['playlist_name'],
+                    'parent_id' => $c['parent_id'],
+                    'is_mega' => (!empty($c['is_mega']) || !empty($byParent[$cId])) ? 1 : 0,
+                    'video_count' => count($c['video_ids']),
+                    'total_video_count' => count($cVideos),
+                    'first_video_id' => !empty($cVideos) ? $cVideos[0] : null,
+                    'children_count' => count($byParent[$cId] ?? []),
+                ];
+            }
+        }
+        $pl['children'] = $childrenSummaries;
+    }
+    unset($pl);
+
     echo json_encode($playlists);
     exit;
 }
@@ -1405,22 +1708,29 @@ function handleCreatePlaylist($pdo) {
     $rawData = file_get_contents('php://input');
     $data = json_decode($rawData, true);
     $name = trim($data['name'] ?? '');
+    $parentId = !empty($data['parent_id']) ? intval($data['parent_id']) : null;
+    $isMega = !empty($data['is_mega']) ? 1 : 0;
     
     if (empty($name)) {
         throw new Exception('Playlist name is required');
     }
     
-    // Check if exists
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM playlists WHERE playlist_name = :name");
-    $stmt->execute([':name' => $name]);
+    // Check if exists under same parent
+    if ($parentId) {
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM playlists WHERE playlist_name = :name AND parent_id = :parent_id");
+        $stmt->execute([':name' => $name, ':parent_id' => $parentId]);
+    } else {
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM playlists WHERE playlist_name = :name AND (parent_id IS NULL OR parent_id = 0)");
+        $stmt->execute([':name' => $name]);
+    }
     if ($stmt->fetchColumn() > 0) {
         throw new Exception('A playlist with this name already exists');
     }
     
-    $stmt = $pdo->prepare("INSERT INTO playlists (playlist_name, video_ids, video_count) VALUES (:name, '[]', 0)");
-    $stmt->execute([':name' => $name]);
+    $stmt = $pdo->prepare("INSERT INTO playlists (playlist_name, parent_id, is_mega, video_ids, video_count) VALUES (:name, :parent_id, :is_mega, '[]', 0)");
+    $stmt->execute([':name' => $name, ':parent_id' => $parentId, ':is_mega' => $isMega]);
     
-    echo json_encode(['status' => 'success', 'id' => $pdo->lastInsertId(), 'name' => $name]);
+    echo json_encode(['status' => 'success', 'id' => $pdo->lastInsertId(), 'name' => $name, 'parent_id' => $parentId]);
     exit;
 }
 
@@ -1432,10 +1742,28 @@ function handleDeletePlaylistAction($pdo) {
     $data = json_decode($rawData, true);
     $id = intval($data['id'] ?? 0);
     
-    $stmt = $pdo->prepare("DELETE FROM playlists WHERE id = :id AND playlist_name != 'default'");
-    $stmt->execute([':id' => $id]);
+    if ($id <= 0) throw new Exception('Invalid playlist ID');
+
+    // Recursive helper to collect all descendant child playlist IDs
+    $collectChildIds = function($pId) use (&$collectChildIds, $pdo) {
+        $stmt = $pdo->prepare("SELECT id FROM playlists WHERE parent_id = :pid");
+        $stmt->execute([':pid' => $pId]);
+        $children = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        $all = $children;
+        foreach ($children as $cId) {
+            $sub = $collectChildIds($cId);
+            $all = array_merge($all, $sub);
+        }
+        return $all;
+    };
+
+    $toDelete = array_merge([$id], $collectChildIds($id));
+    $placeholders = implode(',', array_fill(0, count($toDelete), '?'));
     
-    echo json_encode(['status' => 'success']);
+    $stmt = $pdo->prepare("DELETE FROM playlists WHERE id IN ($placeholders) AND playlist_name != 'default'");
+    $stmt->execute($toDelete);
+    
+    echo json_encode(['status' => 'success', 'deleted_ids' => $toDelete]);
     exit;
 }
 
@@ -4951,8 +5279,12 @@ function removeDuplicateVttCues($vtt) {
 }
 
 function handleGetPresets($pdo) {
-    $stmt = $pdo->query("SELECT id, preset_name, target_url FROM crawler_presets ORDER BY id ASC");
+    $stmt = $pdo->query("SELECT id, preset_name, target_url, sync_type FROM crawler_presets ORDER BY id ASC");
     $presets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($presets as &$p) {
+        if (empty($p['sync_type'])) $p['sync_type'] = 'folder';
+    }
+    unset($p);
     echo json_encode($presets);
     exit;
 }
@@ -4963,11 +5295,13 @@ function handleSavePreset($pdo) {
     
     $name = trim($data['preset_name'] ?? '');
     $url = trim($data['target_url'] ?? '');
+    $syncType = trim($data['sync_type'] ?? 'folder');
+    if (!in_array($syncType, ['folder', 'playlist', 'mega_playlist'])) $syncType = 'folder';
 
     if ($name === '' || $url === '') throw new Exception('Preset name and target URL are required');
 
-    $stmt = $pdo->prepare("INSERT INTO crawler_presets (preset_name, target_url) VALUES (:name, :url)");
-    $stmt->execute([':name' => $name, ':url' => $url]);
+    $stmt = $pdo->prepare("INSERT INTO crawler_presets (preset_name, target_url, sync_type) VALUES (:name, :url, :sync_type)");
+    $stmt->execute([':name' => $name, ':url' => $url, ':sync_type' => $syncType]);
     
     echo json_encode(['success' => true, 'id' => $pdo->lastInsertId()]);
     exit;

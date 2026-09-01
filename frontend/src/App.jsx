@@ -7,7 +7,7 @@ import {
   Play, Pause, Volume2, VolumeX, Maximize, Minimize,
   Settings, Trash2, Edit, RefreshCw, Plus, Check, Loader2,
   ThumbsUp, ThumbsDown, Info, Mic, Bell, CornerUpLeft,
-  Repeat, Shuffle, Download, SkipBack, SkipForward, ListMusic, X, RotateCcw, RotateCw, Cast, Upload, Subtitles, AlertTriangle, Wand2, Flame, MessageSquare, Sparkles, Eye, EyeOff
+  Repeat, Shuffle, Download, SkipBack, SkipForward, ListMusic, X, RotateCcw, RotateCw, Cast, Upload, Subtitles, AlertTriangle, Wand2, Flame, MessageSquare, Sparkles, Eye, EyeOff, Layers, Film, FolderOpen
 } from 'lucide-react';
 import { AuthModal } from './components/AuthModal';
 import { CommentsSection } from './components/CommentsSection';
@@ -573,7 +573,7 @@ export default function App() {
     };
   }, []);
 
-  // Debounced search suggestions fetcher
+  // Debounced search suggestions fetcher (Supports /s for Shorts and /pl or /l for Playlists)
   useEffect(() => {
     setActiveSuggestionIndex(-1);
     const trimmed = searchQuery.trim();
@@ -583,6 +583,47 @@ export default function App() {
     }
 
     const isShortsSearch = searchQuery.startsWith('/s ');
+    const isPlaylistSearch = /^(\/pl|\/l)(\s+|$)/i.test(searchQuery);
+
+    if (isPlaylistSearch) {
+      const plQuery = searchQuery.replace(/^(\/pl|\/l)(\s+|$)/i, '').trim().toLowerCase();
+      const matches = (playlists || []).filter(p => {
+        if (!plQuery) return true;
+        return (p.playlist_name || '').toLowerCase().includes(plQuery);
+      });
+
+      const plSuggestions = matches.slice(0, 20).map(p => {
+        const trail = [];
+        let curr = p;
+        const visited = new Set();
+        while (curr && !visited.has(curr.id)) {
+          visited.add(curr.id);
+          if (curr.id !== p.id) trail.unshift(curr.playlist_name);
+          if (curr.parent_id) curr = (playlists || []).find(x => x.id === curr.parent_id);
+          else break;
+        }
+        const pathStr = trail.length > 0 ? trail.join(' › ') : '';
+        const isMegaPl = Boolean(p.is_mega || (p.children_ids && p.children_ids.length > 0) || (p.children && p.children.length > 0) || (playlists || []).some(x => x.parent_id === p.id));
+        const subCount = p.children_ids?.length || p.children?.length || (playlists || []).filter(x => x.parent_id === p.id).length;
+
+        return {
+          _type: 'playlist',
+          vid_id: `pl_${p.id}`,
+          vid_name: p.playlist_name,
+          playlist: p,
+          pathStr,
+          is_mega: isMegaPl,
+          total_video_count: p.total_video_count || (p.video_ids?.length || 0),
+          video_count: p.video_ids?.length || 0,
+          sub_count: subCount,
+          first_video_id: p.first_video_id || (p.video_ids && p.video_ids[0])
+        };
+      });
+
+      setSuggestions(plSuggestions);
+      return;
+    }
+
     const queryTerm = isShortsSearch ? searchQuery.slice(3).trim() : trimmed;
 
     if (queryTerm === '') {
@@ -594,14 +635,14 @@ export default function App() {
       try {
         const res = await fetch(`./api/index.php?action=search_suggestions&q=${encodeURIComponent(queryTerm)}`);
         const data = await res.json();
-        setSuggestions(data);
+        setSuggestions(Array.isArray(data) ? data : []);
       } catch (e) {
         console.error('Error fetching suggestions:', e);
       }
     }, 200);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery]);
+  }, [searchQuery, playlists]);
 
   const scrollSuggestionIntoView = (index) => {
     const container = suggestionsContainerRef.current;
@@ -649,7 +690,11 @@ export default function App() {
         const selected = suggestions[activeSuggestionIndex];
         setShowSuggestions(false);
         setMobileSearchActive(false);
-        if (searchQuery.startsWith('/s ')) {
+        if (selected._type === 'playlist') {
+          setPlaylistView(selected.playlist);
+          setCurrentView('playlist');
+          window.history.pushState(null, '', `?list=${selected.playlist.id}`);
+        } else if (searchQuery.startsWith('/s ')) {
           handleOpenShortById(selected.vid_id);
         } else {
           fetchVideoAndPlay(selected.vid_id, true);
@@ -782,6 +827,21 @@ export default function App() {
     e.preventDefault();
     setMobileSearchActive(false);
     setShowSuggestions(false);
+
+    const isPlaylistSearch = /^(\/pl|\/l)(\s+|$)/i.test(searchQuery);
+    if (isPlaylistSearch) {
+      const plQuery = searchQuery.replace(/^(\/pl|\/l)(\s+|$)/i, '').trim().toLowerCase();
+      const match = (playlists || []).find(p => {
+        if (!plQuery) return true;
+        return (p.playlist_name || '').toLowerCase().includes(plQuery);
+      });
+      if (match) {
+        setPlaylistView(match);
+        setCurrentView('playlist');
+        window.history.pushState(null, '', `?list=${match.id}`);
+      }
+      return;
+    }
 
     if (searchQuery.startsWith('/s ')) {
       const q = searchQuery.slice(3).trim();
@@ -1187,7 +1247,7 @@ export default function App() {
             <form className="search-form" onSubmit={handleSearchSubmit}>
               <input
                 type="text"
-                placeholder="Search"
+                placeholder="Search (e.g. /s for Shorts, /pl for Playlists)"
                 className="search-input"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -1221,36 +1281,87 @@ export default function App() {
 
             {showSuggestions && suggestions.length > 0 && (
               <div ref={suggestionsContainerRef} className="search-suggestions-dropdown">
-                {suggestions.map((sug, index) => (
-                  <div
-                    key={sug.vid_id}
-                    className={`suggestion-item ${index === activeSuggestionIndex ? 'active' : ''}`}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      setShowSuggestions(false);
-                      setMobileSearchActive(false);
-                      if (searchQuery.startsWith('/s ')) {
-                        handleOpenShortById(sug.vid_id);
-                      } else {
-                        fetchVideoAndPlay(sug.vid_id, true);
-                      }
-                    }}
-                  >
-                    <div className="suggestion-thumbnail-container">
-                      <img 
-                        src={`./thumbnails/${sug.vid_id}.jpg`} 
-                        onError={(e) => { e.target.classList.add('hide-thumb'); }} 
-                        alt="" 
-                        className="suggestion-thumbnail" 
-                      />
-                      <Search size={14} className="suggestion-fallback-icon" />
+                {suggestions.map((sug, index) => {
+                  if (sug._type === 'playlist') {
+                    const thumbVid = sug.first_video_id;
+                    return (
+                      <div
+                        key={sug.vid_id}
+                        className={`suggestion-item suggestion-playlist-item ${index === activeSuggestionIndex ? 'active' : ''}`}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setShowSuggestions(false);
+                          setMobileSearchActive(false);
+                          setPlaylistView(sug.playlist);
+                          setCurrentView('playlist');
+                          window.history.pushState(null, '', `?list=${sug.playlist.id}`);
+                        }}
+                      >
+                        <div className="suggestion-thumbnail-container">
+                          {thumbVid ? (
+                            <img
+                              src={`./thumbnails/${thumbVid}.jpg`}
+                              onError={(e) => { e.target.classList.add('hide-thumb'); }}
+                              alt=""
+                              className="suggestion-thumbnail"
+                            />
+                          ) : null}
+                          {sug.is_mega ? (
+                            <Layers size={15} className="suggestion-fallback-icon" />
+                          ) : (
+                            <ListMusic size={15} className="suggestion-fallback-icon" />
+                          )}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontWeight: '600', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {sug.vid_name}
+                          </span>
+                          {sug.pathStr ? (
+                            <span style={{ fontSize: '11px', color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              In: {sug.pathStr}
+                            </span>
+                          ) : null}
+                        </div>
+                        <span className={`suggestion-playlist-badge ${sug.is_mega ? 'badge-mega' : 'badge-leaf'}`}>
+                          {sug.is_mega
+                            ? `${sug.sub_count} sub-playlists • ${sug.total_video_count} vids`
+                            : `${sug.video_count} videos`}
+                        </span>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={sug.vid_id}
+                      className={`suggestion-item ${index === activeSuggestionIndex ? 'active' : ''}`}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setShowSuggestions(false);
+                        setMobileSearchActive(false);
+                        if (searchQuery.startsWith('/s ')) {
+                          handleOpenShortById(sug.vid_id);
+                        } else {
+                          fetchVideoAndPlay(sug.vid_id, true);
+                        }
+                      }}
+                    >
+                      <div className="suggestion-thumbnail-container">
+                        <img 
+                          src={`./thumbnails/${sug.vid_id}.jpg`} 
+                          onError={(e) => { e.target.classList.add('hide-thumb'); }} 
+                          alt="" 
+                          className="suggestion-thumbnail" 
+                        />
+                        <Search size={14} className="suggestion-fallback-icon" />
+                      </div>
+                      <span>{sug.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}</span>
+                      {searchQuery.startsWith('/s ') && (
+                        <span className="suggestion-shorts-badge">Shorts</span>
+                      )}
                     </div>
-                    <span>{sug.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}</span>
-                    {searchQuery.startsWith('/s ') && (
-                      <span className="suggestion-shorts-badge">Shorts</span>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -1457,22 +1568,28 @@ export default function App() {
           {/* Playlists Nav */}
           <div className="sidebar-section-label">Playlists</div>
           <nav className="sidebar-nav">
-            {playlists.map((pl) => (
-              <button
-                key={pl.id}
-                className={`sidebar-item ${currentView === 'playlist' && playlistView?.id === pl.id ? 'active' : ''}`}
-                onClick={() => {
-                  setPlaylistView(pl);
-                  setCurrentView('playlist');
-                  setMobileSidebarOpen(false);
-                  window.history.pushState(null, '', `?list=${pl.id}`);
-                }}
-                title={pl.playlist_name}
-              >
-                <span className="sidebar-item-icon"><ListMusic size={20} /></span>
-                <span className="sidebar-item-label">{pl.playlist_name}</span>
-              </button>
-            ))}
+            {playlists
+              .filter((pl) => !pl.parent_id || pl.parent_id === 0)
+              .map((pl) => (
+                <button
+                  key={pl.id}
+                  className={`sidebar-item ${currentView === 'playlist' && (playlistView?.id === pl.id || (playlistView && pl.all_video_ids && (playlistView.parent_id === pl.id || (pl.children_ids || []).includes(playlistView.id)))) ? 'active' : ''}`}
+                  onClick={() => {
+                    setPlaylistView(pl);
+                    setCurrentView('playlist');
+                    setMobileSidebarOpen(false);
+                    window.history.pushState(null, '', `?list=${pl.id}`);
+                  }}
+                  title={pl.playlist_name}
+                >
+                  <span className="sidebar-item-icon">
+                    {pl.is_mega ? <Layers size={20} /> : <ListMusic size={20} />}
+                  </span>
+                  <span className="sidebar-item-label" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {pl.playlist_name}
+                  </span>
+                </button>
+              ))}
           </nav>
         </aside>
 
@@ -1582,6 +1699,11 @@ export default function App() {
               currentUser={user}
               onOpenAuth={(tab) => { setAuthModalTab(tab || 'login'); setShowAuthModal(true); }}
               onNavigateToProfile={handleGoToProfile}
+              onOpenPlaylist={(pl) => {
+                setPlaylistView(pl);
+                setCurrentView('playlist');
+                window.history.pushState(null, '', `?list=${pl.id}`);
+              }}
               showFlashNotification={showFlashNotification}
               showNotification={showNotification}
               notifKey={notifKey}
@@ -1622,14 +1744,24 @@ export default function App() {
           )}
 
           {currentView === 'crawler' && (
-            <CrawlerView />
+            <CrawlerView onRefreshPlaylists={fetchPlaylists} />
           )}
 
           {currentView === 'playlist' && playlistView && (
             <PlaylistView
               playlist={playlists.find(p => p.id === playlistView.id) || playlistView}
               allVideos={videos}
+              allPlaylists={playlists}
               isMobile={isMobile}
+              onSelectPlaylist={(pl) => {
+                if (!pl) {
+                  setPlaylistView(null);
+                  setCurrentView('home');
+                } else {
+                  setPlaylistView(pl);
+                  window.history.pushState(null, '', `?list=${pl.id}`);
+                }
+              }}
               onPlayVideo={(video, pl, index) => {
                 setActivePlaylist(pl);
                 setCurrentPlaylistIndex(index);
@@ -1637,13 +1769,24 @@ export default function App() {
               }}
               onRemoveVideo={removeVideoFromPlaylist}
               onReorder={updatePlaylistOrder}
-              onDeletePlaylist={deletePlaylist}
+              onDeletePlaylist={async (id) => {
+                await deletePlaylist(id);
+                setPlaylistView(null);
+                setCurrentView('home');
+              }}
               onPlayPlaylist={(pl) => {
-                const listVideos = (pl.video_ids || [])
+                const idsToPlay = (pl.is_mega && pl.all_video_ids && pl.all_video_ids.length > 0)
+                  ? pl.all_video_ids
+                  : (pl.video_ids || []);
+                const listVideos = idsToPlay
                   .map(id => videos.find(v => v.vid_id === parseInt(id)))
                   .filter(Boolean);
                 if (listVideos.length > 0) {
-                  setActivePlaylist(pl);
+                  const playQueue = {
+                    ...pl,
+                    video_ids: idsToPlay
+                  };
+                  setActivePlaylist(playQueue);
                   setCurrentPlaylistIndex(0);
                   handlePlayVideo(listVideos[0], false, false, pl.id);
                 }
@@ -2147,25 +2290,11 @@ function ShortsPlayerView({
 
   const renderDescription = (text) => {
     if (!text) return 'Enjoy!';
-    const combinedRegex = /(https?:\/\/[^\s]+)|(\d{1,2}:\d{2}(?::\d{2})?)/g;
+    const combinedRegex = /((?:https?:\/\/|www\.)[^\s]+|\b(?:[a-zA-Z0-9-]+\.)+(?:com|org|net|edu|gov|io|co|be|ly|app|dev|tv|me|info|biz|ai|in|uk|us|de|jp|cc)(?:\/[^\s]*)?|\b\d{1,2}:\d{2}(?::\d{2})?\b)/gi;
     const parts = text.split(combinedRegex);
 
     return parts.map((part, index) => {
       if (!part) return null;
-
-      if (part.startsWith('http://') || part.startsWith('https://')) {
-        return (
-          <a
-            key={index}
-            href={part}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: '#3ea6ff', textDecoration: 'underline' }}
-          >
-            {part}
-          </a>
-        );
-      }
 
       if (/^\d{1,2}:\d{2}(?::\d{2})?$/.test(part)) {
         const seconds = parseTimestampToSeconds(part);
@@ -2184,6 +2313,27 @@ function ShortsPlayerView({
           >
             {part}
           </span>
+        );
+      }
+
+      if (/^(?:https?:\/\/|www\.)|\b(?:[a-zA-Z0-9-]+\.)+(?:com|org|net|edu|gov|io|co|be|ly|app|dev|tv|me|info|biz|ai|in|uk|us|de|jp|cc)/i.test(part)) {
+        const matchPunct = part.match(/[.,!?:;)"'\]]+$/);
+        const trailingPunct = matchPunct ? matchPunct[0] : '';
+        const cleanUrl = matchPunct ? part.slice(0, -trailingPunct.length) : part;
+        const href = /^https?:\/\//i.test(cleanUrl) ? cleanUrl : `https://${cleanUrl}`;
+
+        return (
+          <React.Fragment key={index}>
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#3ea6ff', textDecoration: 'underline' }}
+            >
+              {cleanUrl}
+            </a>
+            {trailingPunct}
+          </React.Fragment>
         );
       }
 
@@ -3255,7 +3405,7 @@ function SidebarVideoCard({ vid, onPlayVideo }) {
 }
 
 function PlayerView({
-  video, onVideoDeleted, onOpenShortById, allVideos, onPlayVideo, isMiniPlayer, onExpand, onClose, isTheaterMode, setIsTheaterMode, onPlayRandom,
+  video, onVideoDeleted, onOpenShortById, allVideos, onPlayVideo, onOpenPlaylist, isMiniPlayer, onExpand, onClose, isTheaterMode, setIsTheaterMode, onPlayRandom,
   playlists, activePlaylist, setActivePlaylist, currentPlaylistIndex, setCurrentPlaylistIndex,
   addVideoToPlaylist, removeVideoFromPlaylist, createPlaylist, updatePlaylistOrder,
   isSidebarCollapsed, setIsSidebarCollapsed, currentUser, onOpenAuth, onNavigateToProfile, showFlashNotification,
@@ -3899,25 +4049,11 @@ function PlayerView({
 
   const renderDescription = (text) => {
     if (!text) return 'Enjoy!';
-    const combinedRegex = /(https?:\/\/[^\s]+)|(\d{1,2}:\d{2}(?::\d{2})?)/g;
+    const combinedRegex = /((?:https?:\/\/|www\.)[^\s]+|\b(?:[a-zA-Z0-9-]+\.)+(?:com|org|net|edu|gov|io|co|be|ly|app|dev|tv|me|info|biz|ai|in|uk|us|de|jp|cc)(?:\/[^\s]*)?|\b\d{1,2}:\d{2}(?::\d{2})?\b)/gi;
     const parts = text.split(combinedRegex);
 
     return parts.map((part, index) => {
       if (!part) return null;
-
-      if (part.startsWith('http://') || part.startsWith('https://')) {
-        return (
-          <a
-            key={index}
-            href={part}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: '#3ea6ff', textDecoration: 'underline' }}
-          >
-            {part}
-          </a>
-        );
-      }
 
       if (/^\d{1,2}:\d{2}(?::\d{2})?$/.test(part)) {
         const seconds = parseTimestampToSeconds(part);
@@ -3937,6 +4073,27 @@ function PlayerView({
           >
             {part}
           </span>
+        );
+      }
+
+      if (/^(?:https?:\/\/|www\.)|\b(?:[a-zA-Z0-9-]+\.)+(?:com|org|net|edu|gov|io|co|be|ly|app|dev|tv|me|info|biz|ai|in|uk|us|de|jp|cc)/i.test(part)) {
+        const matchPunct = part.match(/[.,!?:;)"'\]]+$/);
+        const trailingPunct = matchPunct ? matchPunct[0] : '';
+        const cleanUrl = matchPunct ? part.slice(0, -trailingPunct.length) : part;
+        const href = /^https?:\/\//i.test(cleanUrl) ? cleanUrl : `https://${cleanUrl}`;
+
+        return (
+          <React.Fragment key={index}>
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#3ea6ff', textDecoration: 'underline' }}
+            >
+              {cleanUrl}
+            </a>
+            {trailingPunct}
+          </React.Fragment>
         );
       }
 
@@ -5040,12 +5197,52 @@ function PlayerView({
     }
   }, [isFullscreen]);
 
-  // Fullscreen search suggestions fetcher
+  // Fullscreen search suggestions fetcher (Supports /s for Shorts and /pl or /l for Playlists)
   useEffect(() => {
     setFsActiveSugIndex(-1);
     const trimmed = fsSearchQuery.trim();
     if (!trimmed || !showFsSearch) {
       setFsSuggestions([]);
+      return;
+    }
+
+    const isPlaylistSearch = /^(\/pl|\/l)(\s+|$)/i.test(fsSearchQuery);
+    if (isPlaylistSearch) {
+      const plQuery = fsSearchQuery.replace(/^(\/pl|\/l)(\s+|$)/i, '').trim().toLowerCase();
+      const matches = (playlists || []).filter(p => {
+        if (!plQuery) return true;
+        return (p.playlist_name || '').toLowerCase().includes(plQuery);
+      });
+
+      const plSuggestions = matches.slice(0, 20).map(p => {
+        const trail = [];
+        let curr = p;
+        const visited = new Set();
+        while (curr && !visited.has(curr.id)) {
+          visited.add(curr.id);
+          if (curr.id !== p.id) trail.unshift(curr.playlist_name);
+          if (curr.parent_id) curr = (playlists || []).find(x => x.id === curr.parent_id);
+          else break;
+        }
+        const pathStr = trail.length > 0 ? trail.join(' › ') : '';
+        const isMegaPl = Boolean(p.is_mega || (p.children_ids && p.children_ids.length > 0) || (p.children && p.children.length > 0) || (playlists || []).some(x => x.parent_id === p.id));
+        const subCount = p.children_ids?.length || p.children?.length || (playlists || []).filter(x => x.parent_id === p.id).length;
+
+        return {
+          _type: 'playlist',
+          vid_id: `pl_${p.id}`,
+          vid_name: p.playlist_name,
+          playlist: p,
+          pathStr,
+          is_mega: isMegaPl,
+          total_video_count: p.total_video_count || (p.video_ids?.length || 0),
+          video_count: p.video_ids?.length || 0,
+          sub_count: subCount,
+          first_video_id: p.first_video_id || (p.video_ids && p.video_ids[0])
+        };
+      });
+
+      setFsSuggestions(plSuggestions);
       return;
     }
 
@@ -5068,7 +5265,7 @@ function PlayerView({
     }, 200);
 
     return () => clearTimeout(timer);
-  }, [fsSearchQuery, showFsSearch]);
+  }, [fsSearchQuery, showFsSearch, playlists]);
 
   const handleFsSearchKeyDown = (e) => {
     if (e.key === 'Escape') {
@@ -5103,6 +5300,15 @@ function PlayerView({
     setShowFsSearch(false);
     setFsSearchQuery('');
     setFsSuggestions([]);
+    if (sug._type === 'playlist') {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => { });
+      }
+      if (onOpenPlaylist) {
+        onOpenPlaylist(sug.playlist);
+      }
+      return;
+    }
     if (fsSearchQuery.startsWith('/s ')) {
       if (document.fullscreenElement) {
         document.exitFullscreen().catch(() => { });
@@ -5558,7 +5764,7 @@ function PlayerView({
                 ref={fsSearchInputRef}
                 type="text"
                 className="fullscreen-search-input"
-                placeholder="Search videos... (e.g. /s for Shorts)"
+                placeholder="Search videos... (e.g. /s for Shorts, /pl for Playlists)"
                 value={fsSearchQuery}
                 onChange={(e) => setFsSearchQuery(e.target.value)}
                 onKeyDown={handleFsSearchKeyDown}
@@ -5582,31 +5788,77 @@ function PlayerView({
 
             {fsSuggestions.length > 0 && (
               <div className="fullscreen-suggestions-dropdown">
-                {fsSuggestions.map((sug, idx) => (
-                  <div
-                    key={sug.vid_id}
-                    className={`fullscreen-suggestion-item ${idx === fsActiveSugIndex ? 'active' : ''}`}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      handleSelectFsSuggestion(sug);
-                    }}
-                  >
-                    <div className="fullscreen-suggestion-thumb">
-                      <img
-                        src={`./thumbnails/${sug.vid_id}.jpg`}
-                        alt=""
-                        onError={(e) => e.target.classList.add('hide-thumb')}
-                      />
-                      <Search size={14} className="suggestion-fallback-icon" />
+                {fsSuggestions.map((sug, idx) => {
+                  if (sug._type === 'playlist') {
+                    const thumbVid = sug.first_video_id;
+                    return (
+                      <div
+                        key={sug.vid_id}
+                        className={`fullscreen-suggestion-item suggestion-playlist-item ${idx === fsActiveSugIndex ? 'active' : ''}`}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          handleSelectFsSuggestion(sug);
+                        }}
+                      >
+                        <div className="fullscreen-suggestion-thumb">
+                          {thumbVid ? (
+                            <img
+                              src={`./thumbnails/${thumbVid}.jpg`}
+                              alt=""
+                              onError={(e) => e.target.classList.add('hide-thumb')}
+                            />
+                          ) : null}
+                          {sug.is_mega ? (
+                            <Layers size={14} className="suggestion-fallback-icon" />
+                          ) : (
+                            <ListMusic size={14} className="suggestion-fallback-icon" />
+                          )}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+                          <span className="fullscreen-suggestion-title" style={{ fontWeight: '600', color: '#fff' }}>
+                            {sug.vid_name}
+                          </span>
+                          {sug.pathStr ? (
+                            <span style={{ fontSize: '11px', color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              In: {sug.pathStr}
+                            </span>
+                          ) : null}
+                        </div>
+                        <span className={`suggestion-playlist-badge ${sug.is_mega ? 'badge-mega' : 'badge-leaf'}`}>
+                          {sug.is_mega
+                            ? `${sug.sub_count} sub-playlists • ${sug.total_video_count} vids`
+                            : `${sug.video_count} videos`}
+                        </span>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={sug.vid_id}
+                      className={`fullscreen-suggestion-item ${idx === fsActiveSugIndex ? 'active' : ''}`}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleSelectFsSuggestion(sug);
+                      }}
+                    >
+                      <div className="fullscreen-suggestion-thumb">
+                        <img
+                          src={`./thumbnails/${sug.vid_id}.jpg`}
+                          alt=""
+                          onError={(e) => e.target.classList.add('hide-thumb')}
+                        />
+                        <Search size={14} className="suggestion-fallback-icon" />
+                      </div>
+                      <span className="fullscreen-suggestion-title">
+                        {sug.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}
+                      </span>
+                      {fsSearchQuery.startsWith('/s ') && (
+                        <span className="suggestion-shorts-badge">Shorts</span>
+                      )}
                     </div>
-                    <span className="fullscreen-suggestion-title">
-                      {sug.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}
-                    </span>
-                    {fsSearchQuery.startsWith('/s ') && (
-                      <span className="suggestion-shorts-badge">Shorts</span>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -7951,8 +8203,9 @@ function PlayerView({
 // ----------------------------------------
 // SUB-VIEW: CrawlerView
 // ----------------------------------------
-function CrawlerView() {
+function CrawlerView({ onRefreshPlaylists }) {
   const [directory, setDirectory] = useState('D:/Video songs');
+  const [syncType, setSyncType] = useState('folder'); // 'folder' | 'playlist' | 'mega_playlist'
   const [recursive, setRecursive] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [generatingThumbs, setGeneratingThumbs] = useState(false);
@@ -7967,13 +8220,19 @@ function CrawlerView() {
 
   const [newPresetName, setNewPresetName] = useState('');
   const [newPresetPath, setNewPresetPath] = useState('');
+  const [newPresetSyncType, setNewPresetSyncType] = useState('folder');
 
   useEffect(() => {
     fetch('./api/index.php?action=get_presets')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
-          setPresetFolders(data.map(p => ({ id: p.id, name: p.preset_name, path: p.target_url })));
+          setPresetFolders(data.map(p => ({
+            id: p.id,
+            name: p.preset_name,
+            path: p.target_url,
+            sync_type: p.sync_type || 'folder'
+          })));
         }
       })
       .catch(console.error);
@@ -7986,15 +8245,26 @@ function CrawlerView() {
     fetch('./api/index.php?action=save_preset', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ preset_name: newPresetName, target_url: newPresetPath })
+      body: JSON.stringify({
+        preset_name: newPresetName,
+        target_url: newPresetPath,
+        sync_type: newPresetSyncType
+      })
     })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          setPresetFolders(prev => [...prev, { id: data.id, name: newPresetName, path: newPresetPath }]);
+          setPresetFolders(prev => [
+            ...prev,
+            { id: data.id, name: newPresetName, path: newPresetPath, sync_type: newPresetSyncType }
+          ]);
           setNewPresetName('');
           setNewPresetPath('');
-          setLogs(prev => [...prev, { type: 'success', text: `Added directory preset: "${newPresetName}"` }]);
+          setNewPresetSyncType('folder');
+          setLogs(prev => [
+            ...prev,
+            { type: 'success', text: `Added directory preset: "${newPresetName}" (${newPresetSyncType})` }
+          ]);
         }
       })
       .catch(err => console.error(err));
@@ -8026,38 +8296,6 @@ function CrawlerView() {
         console.error(err);
         setLogs(prev => [...prev, { type: 'error', text: `Error removing preset: ${err.message}` }]);
       });
-  };
-
-  const handleMigrateDates = async () => {
-    setMigratingDates(true);
-    setLogs(prev => [
-      ...prev,
-      { type: 'info', text: 'Starting database date migration based on video file modification dates (mtime)...' }
-    ]);
-    try {
-      const res = await fetch('./api/migrate_dates.php');
-      const data = await res.json();
-      if (data.status === 'success') {
-        setLogs(prev => [
-          ...prev,
-          { type: 'success', text: `Migration completed: ${data.message}` },
-          { type: 'success', text: `Updated: ${data.updated} videos in database.` },
-          { type: 'info', text: `Missing files: ${data.missing_files} videos skipped (file not found).` }
-        ]);
-      } else {
-        setLogs(prev => [
-          ...prev,
-          { type: 'error', text: `Migration failed: ${data.message}` }
-        ]);
-      }
-    } catch (e) {
-      setLogs(prev => [
-        ...prev,
-        { type: 'error', text: `HTTP connection error: ${e.message}` }
-      ]);
-    } finally {
-      setMigratingDates(false);
-    }
   };
 
   const handleGenerateMissingThumbnails = async () => {
@@ -8110,7 +8348,6 @@ function CrawlerView() {
           break;
         }
 
-        // Tiny delay of 200ms between requests
         await new Promise(r => setTimeout(r, 200));
       }
 
@@ -8127,8 +8364,6 @@ function CrawlerView() {
       setGeneratingThumbs(false);
     }
   };
-
-
 
   const [uploadDir, setUploadDir] = useState('D:/Video songs');
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -8188,16 +8423,21 @@ function CrawlerView() {
 
   const handleCrawl = async () => {
     setScanning(true);
+    const syncLabel = syncType === 'mega_playlist' ? 'Mega Playlist' : syncType === 'playlist' ? 'Playlist' : 'Folder';
     setLogs(prev => [
       ...prev,
-      { type: 'info', text: `Starting scan on: "${directory}"...` }
+      { type: 'info', text: `Starting ${syncLabel} Sync on: "${directory}"...` }
     ]);
 
     try {
       const res = await fetch('./api/index.php?action=crawl', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ directory, recursive })
+        body: JSON.stringify({
+          directory,
+          recursive: syncType === 'folder' ? recursive : false,
+          sync_type: syncType
+        })
       });
       const data = await res.json();
 
@@ -8207,20 +8447,45 @@ function CrawlerView() {
           { type: 'error', text: `Scan failed: ${data.error}` }
         ]);
       } else {
-        setLogs(prev => [
-          ...prev,
-          { type: 'success', text: `Scan completed successfully!` },
-          { type: 'success', text: `Added ${data.added} new videos.` },
-          { type: 'info', text: `Skipped ${data.skipped} already indexed videos.` }
-        ]);
+        if (data.sync_type === 'mega_playlist') {
+          setLogs(prev => [
+            ...prev,
+            { type: 'success', text: `Mega Playlist Sync completed!` },
+            { type: 'success', text: `Synced root Mega Playlist "${data.root_playlist_name}" with ${data.playlists_created} nested playlists.` },
+            { type: 'success', text: `Added ${data.added} new videos, skipped ${data.skipped} existing.` }
+          ]);
+        } else if (data.sync_type === 'playlist') {
+          setLogs(prev => [
+            ...prev,
+            { type: 'success', text: `Playlist Sync completed!` },
+            { type: 'success', text: `Synced playlist "${data.playlist?.name}" with ${data.playlist?.video_count || 0} videos.` },
+            { type: 'success', text: `Added ${data.added} new videos, skipped ${data.skipped} existing.` }
+          ]);
+        } else {
+          setLogs(prev => [
+            ...prev,
+            { type: 'success', text: `Folder scan completed successfully!` },
+            { type: 'success', text: `Added ${data.added} new videos, skipped ${data.skipped} existing.` }
+          ]);
+        }
+
         if (data.new_videos && data.new_videos.length > 0) {
-          data.new_videos.forEach(v => {
+          data.new_videos.slice(0, 10).forEach(v => {
             setLogs(prev => [
               ...prev,
               { type: 'success', text: `  + Added: ${v.name} (Duration: ${v.duration > 0 ? formatTime(v.duration) : 'Scanned by server'})` }
             ]);
           });
+          if (data.new_videos.length > 10) {
+            setLogs(prev => [
+              ...prev,
+              { type: 'info', text: `  ... and ${data.new_videos.length - 10} more videos.` }
+            ]);
+          }
         }
+
+        // Refresh playlists across the app
+        onRefreshPlaylists?.();
       }
     } catch (e) {
       setLogs(prev => [
@@ -8244,15 +8509,30 @@ function CrawlerView() {
         <div className="crawler-presets">
           {presetFolders.map((preset) => (
             <div key={preset.id || preset.name} className="preset-card">
-              <span className="preset-name">
-                <Folder size={18} className="logo-icon" /> {preset.name}
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <span className="preset-name" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {preset.sync_type === 'mega_playlist' ? (
+                    <Layers size={18} style={{ color: 'var(--primary-color)' }} />
+                  ) : preset.sync_type === 'playlist' ? (
+                    <ListMusic size={18} style={{ color: '#3ea6ff' }} />
+                  ) : (
+                    <Folder size={18} className="logo-icon" />
+                  )}
+                  {preset.name}
+                </span>
+                <span className={`preset-sync-badge badge-${preset.sync_type || 'folder'}`}>
+                  {preset.sync_type === 'mega_playlist' ? 'Mega Playlist' : preset.sync_type === 'playlist' ? 'Playlist' : 'Folder'}
+                </span>
+              </div>
               <span className="preset-path" title={preset.path}>{preset.path}</span>
               <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
                 <button
                   className="btn-primary"
                   style={{ fontSize: '11px', padding: '4px 8px', flex: 1 }}
-                  onClick={() => setDirectory(preset.path)}
+                  onClick={() => {
+                    setDirectory(preset.path);
+                    setSyncType(preset.sync_type || 'folder');
+                  }}
                 >
                   Select
                 </button>
@@ -8270,29 +8550,42 @@ function CrawlerView() {
 
         {/* Add Preset Form */}
         <form onSubmit={handleAddPreset} style={{ marginTop: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-          <div style={{ flex: 1, minWidth: '150px' }}>
+          <div style={{ flex: 1, minWidth: '140px' }}>
             <label className="form-label" style={{ fontSize: '12px', marginBottom: '4px' }}>Preset Name</label>
             <input
               type="text"
               value={newPresetName}
               onChange={(e) => setNewPresetName(e.target.value)}
-              placeholder="e.g. My Fun Videos"
+              placeholder="e.g. My Animes"
               className="form-input"
               style={{ padding: '6px 10px', fontSize: '13px' }}
               required
             />
           </div>
-          <div style={{ flex: 2, minWidth: '250px' }}>
+          <div style={{ flex: 2, minWidth: '220px' }}>
             <label className="form-label" style={{ fontSize: '12px', marginBottom: '4px' }}>Folder Path</label>
             <input
               type="text"
               value={newPresetPath}
               onChange={(e) => setNewPresetPath(e.target.value)}
-              placeholder="e.g. D:/My Videos"
+              placeholder="e.g. D:/My Animes"
               className="form-input"
               style={{ padding: '6px 10px', fontSize: '13px' }}
               required
             />
+          </div>
+          <div style={{ flex: 1, minWidth: '150px' }}>
+            <label className="form-label" style={{ fontSize: '12px', marginBottom: '4px' }}>Sync Type</label>
+            <select
+              value={newPresetSyncType}
+              onChange={(e) => setNewPresetSyncType(e.target.value)}
+              className="form-input"
+              style={{ padding: '6px 10px', fontSize: '13px', cursor: 'pointer' }}
+            >
+              <option value="folder">Normal Folder (Default)</option>
+              <option value="playlist">Playlist</option>
+              <option value="mega_playlist">Mega Playlist</option>
+            </select>
           </div>
           <button type="submit" className="btn-primary" style={{ padding: '8px 16px', height: '36px', fontSize: '13px' }}>
             Add Preset
@@ -8314,14 +8607,30 @@ function CrawlerView() {
             />
           </div>
 
-          <label className="form-checkbox-group">
-            <input
-              type="checkbox"
-              checked={recursive}
-              onChange={(e) => setRecursive(e.target.checked)}
-            />
-            <span className="form-label" style={{ fontWeight: 'normal' }}>Recursive scanning (include subdirectories)</span>
-          </label>
+          <div className="form-group">
+            <label className="form-label">Sync Type</label>
+            <select
+              value={syncType}
+              onChange={(e) => setSyncType(e.target.value)}
+              className="form-input"
+              style={{ padding: '8px 12px', fontSize: '14px', cursor: 'pointer' }}
+            >
+              <option value="folder">Normal Folder (Default: direct video files or recursive scan)</option>
+              <option value="playlist">Playlist (Syncs direct depth 1 videos and bundles them in a playlist)</option>
+              <option value="mega_playlist">Mega Playlist (Recursively creates nested playlists & sub-playlists)</option>
+            </select>
+          </div>
+
+          {syncType === 'folder' && (
+            <label className="form-checkbox-group">
+              <input
+                type="checkbox"
+                checked={recursive}
+                onChange={(e) => setRecursive(e.target.checked)}
+              />
+              <span className="form-label" style={{ fontWeight: 'normal' }}>Recursive scanning (include subdirectories)</span>
+            </label>
+          )}
 
           <button
             className="btn-primary"
@@ -8335,7 +8644,11 @@ function CrawlerView() {
                 <span>Scanning Directory...</span>
               </>
             ) : (
-              <span>Run Crawler in Folder</span>
+              <span>
+                {syncType === 'folder' && 'Run Crawler in Folder'}
+                {syncType === 'playlist' && 'Run Playlist Sync in Folder'}
+                {syncType === 'mega_playlist' && 'Run Mega Playlist Sync (Nested Tree)'}
+              </span>
             )}
           </button>
 
@@ -8438,12 +8751,52 @@ function CrawlerView() {
 }
 
 // ----------------------------------------
-// SUB-VIEW: PlaylistView
+// SUB-VIEW: PlaylistView (Supports Hierarchical / Mega Playlists)
 // ----------------------------------------
-function PlaylistView({ playlist, allVideos, onPlayVideo, onRemoveVideo, onReorder, onDeletePlaylist, onPlayPlaylist, isMobile }) {
+function PlaylistView({
+  playlist,
+  allVideos,
+  allPlaylists = [],
+  onSelectPlaylist,
+  onPlayVideo,
+  onRemoveVideo,
+  onReorder,
+  onDeletePlaylist,
+  onPlayPlaylist,
+  isMobile
+}) {
   const playlistVideos = (playlist.video_ids || [])
     .map(id => allVideos.find(v => v.vid_id === parseInt(id)))
     .filter(Boolean);
+
+  // Compute ancestor breadcrumb trail
+  const breadcrumbs = useMemo(() => {
+    const crumbs = [];
+    let current = playlist;
+    const visited = new Set();
+    while (current && !visited.has(current.id)) {
+      visited.add(current.id);
+      crumbs.unshift(current);
+      if (current.parent_id) {
+        current = allPlaylists.find(p => p.id === current.parent_id);
+      } else {
+        break;
+      }
+    }
+    return crumbs;
+  }, [playlist, allPlaylists]);
+
+  // Compute child playlists
+  const childPlaylists = useMemo(() => {
+    if (allPlaylists && allPlaylists.length > 0) {
+      return allPlaylists.filter(p => p.parent_id === playlist.id);
+    }
+    return playlist.children || [];
+  }, [playlist, allPlaylists]);
+
+  const isMega = Boolean(playlist.is_mega || childPlaylists.length > 0);
+  const hasChildren = childPlaylists.length > 0;
+  const hasDirectVideos = playlistVideos.length > 0;
 
   const dragItem = useRef(null);
   const dragOverItem = useRef(null);
@@ -8471,32 +8824,83 @@ function PlaylistView({ playlist, allVideos, onPlayVideo, onRemoveVideo, onReord
     onReorder(playlist.id, newIds);
   };
 
+  const totalVideosCount = playlist.total_video_count || (playlistVideos.length + childPlaylists.reduce((acc, c) => acc + (c.total_video_count || c.video_count || 0), 0));
+
   return (
     <div className="crawler-container" style={{ maxWidth: '1000px', margin: '0 auto', padding: isMobile ? '12px 8px' : '24px' }}>
+      
+      {/* Breadcrumbs Navigation */}
+      {breadcrumbs.length > 1 && (
+        <div className="playlist-breadcrumbs">
+          <button
+            onClick={() => onSelectPlaylist?.(null)}
+            className="breadcrumb-btn"
+          >
+            Playlists
+          </button>
+          {breadcrumbs.map((crumb, idx) => {
+            const isLast = idx === breadcrumbs.length - 1;
+            return (
+              <React.Fragment key={crumb.id}>
+                <ChevronRight size={14} className="breadcrumb-sep" />
+                {isLast ? (
+                  <span className="breadcrumb-current">{crumb.playlist_name}</span>
+                ) : (
+                  <button
+                    onClick={() => onSelectPlaylist?.(crumb)}
+                    className="breadcrumb-btn"
+                  >
+                    {crumb.playlist_name}
+                  </button>
+                )}
+              </React.Fragment>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Playlist Header */}
       <div className="crawler-header" style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'stretch' : 'flex-start', gap: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '20px' }}>
         <div>
           <h1 className="crawler-title" style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: isMobile ? '20px' : '24px', margin: 0 }}>
-            <ListMusic size={isMobile ? 24 : 28} style={{ color: 'var(--primary-color)' }} /> {playlist.playlist_name}
+            {isMega ? (
+              <Layers size={isMobile ? 24 : 28} style={{ color: 'var(--primary-color)' }} />
+            ) : (
+              <ListMusic size={isMobile ? 24 : 28} style={{ color: 'var(--primary-color)' }} />
+            )}
+            {playlist.playlist_name}
+            {isMega && (
+              <span style={{ fontSize: '11px', fontWeight: 'bold', background: 'rgba(255,0,0,0.15)', color: 'var(--primary-color)', padding: '2px 8px', borderRadius: '12px', letterSpacing: '0.5px' }}>
+                MEGA PLAYLIST
+              </span>
+            )}
           </h1>
           <p className="crawler-desc" style={{ marginTop: '6px', fontSize: isMobile ? '12px' : '14px' }}>
-            {playlistVideos.length} {playlistVideos.length === 1 ? 'video' : 'videos'} {isMobile ? '' : '• Drag & drop items to reorder playlist queue'}
+            {isMega ? (
+              `${childPlaylists.length} ${childPlaylists.length === 1 ? 'sub-playlist' : 'sub-playlists'}${hasDirectVideos ? ` • ${playlistVideos.length} direct videos` : ''} • ${totalVideosCount} total videos`
+            ) : (
+              `${playlistVideos.length} ${playlistVideos.length === 1 ? 'video' : 'videos'} ${isMobile ? '' : '• Drag & drop items to reorder playlist queue'}`
+            )}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '12px', width: isMobile ? '100%' : 'auto' }}>
-          {playlistVideos.length > 0 && (
+        <div style={{ display: 'flex', gap: '12px', width: isMobile ? '100%' : 'auto', flexWrap: 'wrap' }}>
+          {(hasDirectVideos || (playlist.all_video_ids && playlist.all_video_ids.length > 0) || totalVideosCount > 0) && (
             <button
               className="btn-primary"
               onClick={() => onPlayPlaylist(playlist)}
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 20px', borderRadius: '20px', fontWeight: 'bold', flex: isMobile ? 1 : 'none' }}
             >
-              <Play size={18} fill="currentColor" /> Play All
+              <Play size={18} fill="currentColor" /> Play All {isMega && totalVideosCount > 0 ? `(${totalVideosCount})` : ''}
             </button>
           )}
           {playlist.playlist_name !== 'default' && (
             <button
               className="btn-secondary"
               onClick={() => {
-                if (confirm('Are you sure you want to delete this playlist?')) {
+                const promptMsg = isMega
+                  ? `Are you sure you want to delete this Mega Playlist "${playlist.playlist_name}" and all its sub-playlists?`
+                  : `Are you sure you want to delete this playlist?`;
+                if (confirm(promptMsg)) {
                   onDeletePlaylist(playlist.id);
                 }
               }}
@@ -8508,113 +8912,223 @@ function PlaylistView({ playlist, allVideos, onPlayVideo, onRemoveVideo, onReord
         </div>
       </div>
 
-      {playlistVideos.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: isMobile ? '40px 10px' : '80px 20px', color: '#aaa' }}>
-          <ListMusic size={isMobile ? 48 : 64} style={{ marginBottom: '16px', opacity: 0.5 }} />
-          <p style={{ fontSize: isMobile ? '14px' : '16px' }}>This playlist has no videos yet.</p>
-          <p style={{ fontSize: isMobile ? '12px' : '14px', color: '#666', marginTop: '6px' }}>To add videos, click the "Save" button below any video player.</p>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '20px' }}>
-          {playlistVideos.map((vid, idx) => {
-            const cleanTitle = (vid.vid_name || '').replace(/\.[a-zA-Z0-9]+$/, '');
-            return (
-              <div
-                key={vid.vid_id}
-                draggable={!isMobile}
-                onDragStart={(e) => handleDragStart(e, idx)}
-                onDragEnter={(e) => handleDragEnter(e, idx)}
-                onDragEnd={handleDragEnd}
-                onDragOver={(e) => e.preventDefault()}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: isMobile ? '10px' : '16px',
-                  background: 'rgba(255, 255, 255, 0.03)',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
-                  padding: isMobile ? '8px 10px' : '12px 16px',
-                  borderRadius: '8px',
-                  cursor: isMobile ? 'pointer' : 'grab',
-                  transition: 'background 0.2s, transform 0.1s'
-                }}
-                className="playlist-item-row"
-                onClick={isMobile ? () => onPlayVideo(vid, playlist, idx) : undefined}
-              >
-                <div style={{ color: '#666', fontSize: isMobile ? '12px' : '14px', fontWeight: 'bold', width: isMobile ? '16px' : '20px', textAlign: 'center', flexShrink: 0 }}>
-                  {idx + 1}
-                </div>
+      {/* SECTION 1: Sub-Playlists (For Mega Playlists) */}
+      {hasChildren && (
+        <div style={{ marginTop: '24px' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', color: '#eee' }}>
+            <FolderOpen size={18} style={{ color: 'var(--primary-color)' }} /> Sub-Playlists ({childPlaylists.length})
+          </h2>
+          <div className="mega-playlist-grid">
+            {childPlaylists.map((child) => {
+              const fullChild = (allPlaylists || []).find(p => p.id === child.id) || child;
+              const childIsFolder = Boolean(
+                fullChild.is_mega ||
+                (fullChild.children_ids && fullChild.children_ids.length > 0) ||
+                (fullChild.children && fullChild.children.length > 0) ||
+                (allPlaylists || []).some(p => p.parent_id === fullChild.id)
+              );
+              const thumbVidId = fullChild.first_video_id || (fullChild.video_ids && fullChild.video_ids[0]);
+              const childVidCount = fullChild.total_video_count !== undefined ? fullChild.total_video_count : (fullChild.video_count || 0);
+              const childSubCount = fullChild.children_ids?.length || fullChild.children?.length || (allPlaylists || []).filter(p => p.parent_id === fullChild.id).length;
 
+              return (
                 <div
-                  onClick={!isMobile ? () => onPlayVideo(vid, playlist, idx) : undefined}
-                  style={{
-                    width: isMobile ? '96px' : '120px',
-                    height: isMobile ? '54px' : '68px',
-                    borderRadius: '6px',
-                    overflow: 'hidden',
-                    background: '#000',
-                    position: 'relative',
-                    cursor: 'pointer',
-                    flexShrink: 0
-                  }}
+                  key={child.id}
+                  className={`sub-playlist-card ${childIsFolder ? 'is-folder-card' : 'is-leaf-card'}`}
+                  onClick={() => onSelectPlaylist?.(fullChild)}
                 >
-                  <img
-                    src={`./thumbnails/${vid.vid_id}.jpg`}
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'flex';
-                    }}
-                    alt=""
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
-                  <div style={{ display: 'none', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', color: '#444' }}>
-                    <Play size={20} />
-                  </div>
-                  {vid.duration > 0 && (
-                    <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(0,0,0,0.8)', color: '#fff', fontSize: '10px', padding: '2px 4px', borderRadius: '2px' }}>
-                      {formatTime(vid.duration)}
-                    </span>
-                  )}
-                </div>
+                  <div className="sub-playlist-thumb-wrap">
+                    {thumbVidId ? (
+                      <img
+                        src={`./thumbnails/${thumbVidId}.jpg`}
+                        alt=""
+                        className="sub-playlist-thumb"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div className="sub-playlist-thumb-fallback" style={{ display: thumbVidId ? 'none' : 'flex' }}>
+                      {childIsFolder ? <Folder size={32} /> : <ListMusic size={32} />}
+                    </div>
 
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <h3
+                    {/* Top Folder badge for non-leaf folder cards */}
+                    {childIsFolder ? (
+                      <div className="folder-card-badge">
+                        <Folder size={11} /> Folder
+                      </div>
+                    ) : null}
+
+                    {/* Bottom count badge */}
+                    <div className="sub-playlist-overlay-count">
+                      {childIsFolder ? <Folder size={12} /> : <ListMusic size={12} />}
+                      <span>{childIsFolder ? `${childSubCount} playlists` : `${childVidCount} vids`}</span>
+                    </div>
+
+                    {/* Only LEAF playlists show the Play button on hover; Folders show an open folder overlay */}
+                    {!childIsFolder ? (
+                      <button
+                        className="sub-playlist-play-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onPlayPlaylist(fullChild);
+                        }}
+                        title="Play sub-playlist"
+                      >
+                        <Play size={18} fill="currentColor" />
+                      </button>
+                    ) : (
+                      <div className="folder-hover-overlay">
+                        <FolderOpen size={20} />
+                        <span>Open Folder</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="sub-playlist-info">
+                    <h3 className="sub-playlist-title" title={fullChild.playlist_name} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      {childIsFolder ? (
+                        <Folder size={15} style={{ color: '#ffbb00', flexShrink: 0 }} />
+                      ) : (
+                        <ListMusic size={15} style={{ color: '#3ea6ff', flexShrink: 0 }} />
+                      )}
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {fullChild.playlist_name}
+                      </span>
+                    </h3>
+                    <span className="sub-playlist-meta">
+                      {childIsFolder ? (
+                        `${childSubCount} ${childSubCount === 1 ? 'sub-playlist' : 'sub-playlists'} • ${childVidCount} total videos`
+                      ) : (
+                        `${fullChild.video_count || 0} videos`
+                      )}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* SECTION 2: Direct Videos in Playlist */}
+      {hasDirectVideos && (
+        <div style={{ marginTop: hasChildren ? '32px' : '20px' }}>
+          {hasChildren && (
+            <h2 style={{ fontSize: '16px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', color: '#eee' }}>
+              <Film size={18} style={{ color: '#3ea6ff' }} /> Direct Videos ({playlistVideos.length})
+            </h2>
+          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {playlistVideos.map((vid, idx) => {
+              const cleanTitle = (vid.vid_name || '').replace(/\.[a-zA-Z0-9]+$/, '');
+              return (
+                <div
+                  key={vid.vid_id}
+                  draggable={!isMobile}
+                  onDragStart={(e) => handleDragStart(e, idx)}
+                  onDragEnter={(e) => handleDragEnter(e, idx)}
+                  onDragEnd={handleDragEnd}
+                  onDragOver={(e) => e.preventDefault()}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: isMobile ? '10px' : '16px',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    padding: isMobile ? '8px 10px' : '12px 16px',
+                    borderRadius: '8px',
+                    cursor: isMobile ? 'pointer' : 'grab',
+                    transition: 'background 0.2s, transform 0.1s'
+                  }}
+                  className="playlist-item-row"
+                  onClick={isMobile ? () => onPlayVideo(vid, playlist, idx) : undefined}
+                >
+                  <div style={{ color: '#666', fontSize: isMobile ? '12px' : '14px', fontWeight: 'bold', width: isMobile ? '16px' : '20px', textAlign: 'center', flexShrink: 0 }}>
+                    {idx + 1}
+                  </div>
+
+                  <div
                     onClick={!isMobile ? () => onPlayVideo(vid, playlist, idx) : undefined}
                     style={{
-                      fontSize: isMobile ? '13px' : '15px',
-                      fontWeight: '600',
-                      color: '#fff',
-                      cursor: 'pointer',
-                      margin: 0,
-                      whiteSpace: isMobile ? 'normal' : 'nowrap',
-                      display: isMobile ? '-webkit-box' : 'block',
-                      WebkitLineClamp: isMobile ? 2 : undefined,
-                      WebkitBoxOrient: isMobile ? 'vertical' : undefined,
+                      width: isMobile ? '96px' : '120px',
+                      height: isMobile ? '54px' : '68px',
+                      borderRadius: '6px',
                       overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      lineHeight: '1.3'
+                      background: '#000',
+                      position: 'relative',
+                      cursor: 'pointer',
+                      flexShrink: 0
                     }}
                   >
-                    {cleanTitle}
-                  </h3>
-                  <span style={{ fontSize: isMobile ? '11px' : '12px', color: '#aaa', marginTop: '4px', display: 'inline-block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
-                    {vid.uploader_name}
-                  </span>
-                </div>
+                    <img
+                      src={`./thumbnails/${vid.vid_id}.jpg`}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                      }}
+                      alt=""
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                    <div style={{ display: 'none', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', color: '#444' }}>
+                      <Play size={20} />
+                    </div>
+                    {vid.duration > 0 && (
+                      <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(0,0,0,0.8)', color: '#fff', fontSize: '10px', padding: '2px 4px', borderRadius: '2px' }}>
+                        {formatTime(vid.duration)}
+                      </span>
+                    )}
+                  </div>
 
-                <button
-                  className="btn-secondary"
-                  onClick={(e) => {
-                    if (isMobile) e.stopPropagation();
-                    onRemoveVideo(playlist.id, vid.vid_id);
-                  }}
-                  style={{ padding: '8px', borderRadius: '50%', border: 'none', backgroundColor: 'transparent', color: '#aaa', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-                  title="Remove from playlist"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            );
-          })}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <h3
+                      onClick={!isMobile ? () => onPlayVideo(vid, playlist, idx) : undefined}
+                      style={{
+                        fontSize: isMobile ? '13px' : '15px',
+                        fontWeight: '600',
+                        color: '#fff',
+                        cursor: 'pointer',
+                        margin: 0,
+                        whiteSpace: isMobile ? 'normal' : 'nowrap',
+                        display: isMobile ? '-webkit-box' : 'block',
+                        WebkitLineClamp: isMobile ? 2 : undefined,
+                        WebkitBoxOrient: isMobile ? 'vertical' : undefined,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        lineHeight: '1.3'
+                      }}
+                    >
+                      {cleanTitle}
+                    </h3>
+                    <span style={{ fontSize: isMobile ? '11px' : '12px', color: '#aaa', marginTop: '4px', display: 'inline-block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
+                      {vid.uploader_name}
+                    </span>
+                  </div>
+
+                  <button
+                    className="btn-secondary"
+                    onClick={(e) => {
+                      if (isMobile) e.stopPropagation();
+                      onRemoveVideo(playlist.id, vid.vid_id);
+                    }}
+                    style={{ padding: '8px', borderRadius: '50%', border: 'none', backgroundColor: 'transparent', color: '#aaa', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+                    title="Remove from playlist"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!hasChildren && !hasDirectVideos && (
+        <div style={{ textAlign: 'center', padding: isMobile ? '40px 10px' : '80px 20px', color: '#aaa' }}>
+          <ListMusic size={isMobile ? 48 : 64} style={{ marginBottom: '16px', opacity: 0.5 }} />
+          <p style={{ fontSize: isMobile ? '14px' : '16px' }}>This playlist has no videos or sub-playlists yet.</p>
+          <p style={{ fontSize: isMobile ? '12px' : '14px', color: '#666', marginTop: '6px' }}>To add videos, click the "Save" button below any video player or run a folder sync in the Crawler.</p>
         </div>
       )}
     </div>

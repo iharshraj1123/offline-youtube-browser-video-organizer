@@ -4,6 +4,78 @@
 // Loads DB credentials from backend/.env (gitignored).
 // To set up: copy backend/.env.example to backend/.env and fill in your credentials.
 
+if (!function_exists('initSystemTimezone')) {
+    function initSystemTimezone() {
+        $iniTz = ini_get('date.timezone');
+        if (!empty($iniTz) && $iniTz !== 'UTC') {
+            date_default_timezone_set($iniTz);
+            return;
+        }
+
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            $output = []; $ret = -1;
+            @exec('tzutil /g 2>NUL', $output, $ret);
+            if ($ret === 0 && !empty($output)) {
+                $winTz = trim($output[0]);
+                $winTzMap = [
+                    'India Standard Time' => 'Asia/Kolkata',
+                    'Pacific Standard Time' => 'America/Los_Angeles',
+                    'Eastern Standard Time' => 'America/New_York',
+                    'Central Standard Time' => 'America/Chicago',
+                    'Mountain Standard Time' => 'America/Denver',
+                    'US Eastern Standard Time' => 'America/Indianapolis',
+                    'GMT Standard Time' => 'Europe/London',
+                    'Greenwich Standard Time' => 'Atlantic/Reykjavik',
+                    'W. Europe Standard Time' => 'Europe/Berlin',
+                    'Central Europe Standard Time' => 'Europe/Prague',
+                    'Romance Standard Time' => 'Europe/Paris',
+                    'Central European Standard Time' => 'Europe/Warsaw',
+                    'Tokyo Standard Time' => 'Asia/Tokyo',
+                    'China Standard Time' => 'Asia/Shanghai',
+                    'Singapore Standard Time' => 'Asia/Singapore',
+                    'SE Asia Standard Time' => 'Asia/Bangkok',
+                    'AUS Eastern Standard Time' => 'Australia/Sydney',
+                    'E. Australia Standard Time' => 'Australia/Brisbane',
+                    'Cen. Australia Standard Time' => 'Australia/Adelaide',
+                    'W. Australia Standard Time' => 'Australia/Perth',
+                    'New Zealand Standard Time' => 'Pacific/Auckland',
+                    'Hawaiian Standard Time' => 'Pacific/Honolulu',
+                    'Alaskan Standard Time' => 'America/Anchorage',
+                    'Arab Standard Time' => 'Asia/Riyadh',
+                    'Arabian Standard Time' => 'Asia/Dubai',
+                    'Iran Standard Time' => 'Asia/Tehran',
+                    'Russian Standard Time' => 'Europe/Moscow',
+                    'Pakistan Standard Time' => 'Asia/Karachi',
+                    'Sri Lanka Standard Time' => 'Asia/Colombo',
+                    'Bangladesh Standard Time' => 'Asia/Dhaka',
+                    'Nepal Standard Time' => 'Asia/Kathmandu',
+                    'Myanmar Standard Time' => 'Asia/Yangon',
+                    'Korea Standard Time' => 'Asia/Seoul',
+                    'Taipei Standard Time' => 'Asia/Taipei',
+                    'E. South America Standard Time' => 'America/Sao_Paulo',
+                    'Argentina Standard Time' => 'America/Argentina/Buenos_Aires',
+                    'South Africa Standard Time' => 'Africa/Johannesburg',
+                    'Egypt Standard Time' => 'Africa/Cairo',
+                    'Israel Standard Time' => 'Asia/Jerusalem',
+                    'Turkey Standard Time' => 'Europe/Istanbul',
+                ];
+                if (isset($winTzMap[$winTz])) {
+                    date_default_timezone_set($winTzMap[$winTz]);
+                    return;
+                }
+            }
+        }
+
+        $detected = @date_default_timezone_get();
+        if (!empty($detected) && $detected !== 'UTC') {
+            date_default_timezone_set($detected);
+        } else {
+            date_default_timezone_set('Asia/Kolkata');
+        }
+    }
+}
+initSystemTimezone();
+
 class Database {
     private static $pdo = null;
 
@@ -63,6 +135,8 @@ class Database {
         // Try primary credentials first
         try {
             $pdo = new PDO($dsn, $user, $pass, $options);
+            $offset = (new DateTime('now'))->format('P');
+            @$pdo->exec("SET time_zone = '$offset'");
             if (!$connect_without_db) {
                 self::$pdo = $pdo;
                 self::runSchemaUpdates($pdo);
@@ -72,6 +146,8 @@ class Database {
             // Try fallback (e.g. root / no password)
             try {
                 $pdo = new PDO($dsn, $fallback, $fbpass, $options);
+                $offset = (new DateTime('now'))->format('P');
+                @$pdo->exec("SET time_zone = '$offset'");
                 if (!$connect_without_db) {
                     self::$pdo = $pdo;
                     self::runSchemaUpdates($pdo);
@@ -145,6 +221,36 @@ class Database {
                 `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("ALTER TABLE `playlists` ADD COLUMN `parent_id` int(11) DEFAULT NULL");
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("ALTER TABLE `playlists` ADD COLUMN `is_mega` tinyint(1) NOT NULL DEFAULT 0");
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("ALTER TABLE `playlists` ADD COLUMN `folder_path` varchar(500) DEFAULT NULL");
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("ALTER TABLE `playlists` ADD COLUMN `sync_type` varchar(30) DEFAULT NULL");
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("ALTER TABLE `playlists` DROP INDEX `playlist_name`");
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("ALTER TABLE `playlists` ADD INDEX `idx_parent_id` (`parent_id`)");
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("CREATE TABLE IF NOT EXISTS `crawler_presets` (
+                `id` int(11) NOT NULL AUTO_INCREMENT,
+                `preset_name` varchar(100) NOT NULL,
+                `target_url` varchar(500) NOT NULL,
+                `sync_type` varchar(30) NOT NULL DEFAULT 'folder',
+                PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("ALTER TABLE `crawler_presets` ADD COLUMN `sync_type` varchar(30) NOT NULL DEFAULT 'folder'");
         } catch (Exception $e) {}
         $updated = true;
     }
