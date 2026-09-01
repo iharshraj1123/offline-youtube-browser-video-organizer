@@ -10,9 +10,7 @@ class MetadataParser {
      * @return array Metadata array
      */
     public static function parse($filePath) {
-        $originalPath = $filePath;
-        $filePath = self::ensureAccessibleFile($filePath);
-
+        $tempFile = null;
         try {
             // Basic fallback initializations
             $stats = [
@@ -29,6 +27,16 @@ class MetadataParser {
 
             if (!file_exists($filePath)) {
                 return $stats;
+            }
+
+            // Create temporary file on the same drive if path has Unicode chars
+            if (preg_match('/[^\x20-\x7e]/', $filePath)) {
+                $tempFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . bin2hex(random_bytes(8)) . '.mp4';
+                if (!copy($filePath, $tempFile)) {
+                    $tempFile = null;
+                } else {
+                    $filePath = $tempFile;
+                }
             }
 
             // 1. Try FFprobe first (Industrial strength)
@@ -54,9 +62,21 @@ class MetadataParser {
             // 3. Fallback to basic
             $stats['method'] = 'basic';
             return $stats;
+        } catch (Exception $e) {
+            return [
+                'duration' => 0,
+                'filesize' => @filesize($filePath) ?: 0,
+                'width' => null,
+                'height' => null,
+                'aspect_ratio' => null,
+                'bitrate' => null,
+                'framerate' => null,
+                'codec' => null,
+                'method' => 'error'
+            ];
         } finally {
-            if ($filePath !== $originalPath) {
-                @unlink($filePath);
+            if ($tempFile && file_exists($tempFile)) {
+                @unlink($tempFile);
             }
         }
     }
@@ -103,73 +123,73 @@ class MetadataParser {
      * Parse metadata using FFprobe
      */
     private static function parseWithFFprobe($ffprobePath, $filePath) {
-        // Create temporary hardlink in the same folder to bypass Windows Unicode cmd.exe bugs
         $tempLink = self::getTempHardlink($filePath);
         $inputPath = $tempLink ? $tempLink : $filePath;
 
-        $cmd = "$ffprobePath -v quiet -print_format json -show_format -show_streams " . escapeshellarg($inputPath);
-        $output = [];
-        $returnVar = -1;
-        @exec($cmd, $output, $returnVar);
+        try {
+            $cmd = "$ffprobePath -v quiet -print_format json -show_format -show_streams " . escapeshellarg($inputPath);
+            $output = [];
+            $returnVar = -1;
+            @exec($cmd, $output, $returnVar);
 
-        // Clean up temporary hardlink
-        if ($tempLink && file_exists($tempLink)) {
-            @unlink($tempLink);
-        }
-
-        if ($returnVar !== 0 || empty($output)) {
-            return null;
-        }
-
-        $json = json_decode(implode('', $output), true);
-        if (!$json) {
-            return null;
-        }
-
-        $result = [];
-
-        // Parse format info
-        if (isset($json['format'])) {
-            if (isset($json['format']['duration'])) {
-                $result['duration'] = (int)round($json['format']['duration']);
+            if ($returnVar !== 0 || empty($output)) {
+                return null;
             }
-            if (isset($json['format']['size'])) {
-                $result['filesize'] = (int)$json['format']['size'];
+
+            $json = json_decode(implode('', $output), true);
+            if (!$json) {
+                return null;
             }
-            if (isset($json['format']['bit_rate'])) {
-                $result['bitrate'] = (int)round($json['format']['bit_rate'] / 1000); // in kbps
-            }
-        }
 
-        // Parse video stream info
-        if (isset($json['streams'])) {
-            foreach ($json['streams'] as $stream) {
-                if (isset($stream['codec_type']) && $stream['codec_type'] === 'video') {
-                    $result['width'] = (int)$stream['width'];
-                    $result['height'] = (int)$stream['height'];
-                    $result['codec'] = substr(trim($stream['codec_name'] ?? ''), 0, 100);
+            $result = [];
 
-                    // Aspect Ratio
-                    if (isset($stream['display_aspect_ratio']) && $stream['display_aspect_ratio'] !== 'N/A' && $stream['display_aspect_ratio'] !== '0:1') {
-                        $result['aspect_ratio'] = substr(trim($stream['display_aspect_ratio']), 0, 50);
-                    } elseif ($result['width'] > 0 && $result['height'] > 0) {
-                        $result['aspect_ratio'] = substr(trim(self::calculateAspectRatio($result['width'], $result['height'])), 0, 50);
-                    }
-
-                    // Frame rate
-                    if (isset($stream['avg_frame_rate'])) {
-                        $parts = explode('/', $stream['avg_frame_rate']);
-                        if (count($parts) === 2 && (float)$parts[1] > 0) {
-                            $fps = (float)$parts[0] / (float)$parts[1];
-                            $result['framerate'] = round($fps * 100) / 100;
-                        }
-                    }
-                    break;
+            // Parse format info
+            if (isset($json['format'])) {
+                if (isset($json['format']['duration'])) {
+                    $result['duration'] = (int)round($json['format']['duration']);
+                }
+                if (isset($json['format']['size'])) {
+                    $result['filesize'] = (int)$json['format']['size'];
+                }
+                if (isset($json['format']['bit_rate'])) {
+                    $result['bitrate'] = (int)round($json['format']['bit_rate'] / 1000); // in kbps
                 }
             }
-        }
 
-        return $result;
+            // Parse video stream info
+            if (isset($json['streams'])) {
+                foreach ($json['streams'] as $stream) {
+                    if (isset($stream['codec_type']) && $stream['codec_type'] === 'video') {
+                        $result['width'] = (int)$stream['width'];
+                        $result['height'] = (int)$stream['height'];
+                        $result['codec'] = substr(trim($stream['codec_name'] ?? ''), 0, 100);
+
+                        // Aspect Ratio
+                        if (isset($stream['display_aspect_ratio']) && $stream['display_aspect_ratio'] !== 'N/A' && $stream['display_aspect_ratio'] !== '0:1') {
+                            $result['aspect_ratio'] = substr(trim($stream['display_aspect_ratio']), 0, 50);
+                        } elseif ($result['width'] > 0 && $result['height'] > 0) {
+                            $result['aspect_ratio'] = substr(trim(self::calculateAspectRatio($result['width'], $result['height'])), 0, 50);
+                        }
+
+                        // Frame rate
+                        if (isset($stream['avg_frame_rate'])) {
+                            $parts = explode('/', $stream['avg_frame_rate']);
+                            if (count($parts) === 2 && (float)$parts[1] > 0) {
+                                $fps = (float)$parts[0] / (float)$parts[1];
+                                $result['framerate'] = round($fps * 100) / 100;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
+            return $result;
+        } finally {
+            if ($tempLink && file_exists($tempLink)) {
+                @unlink($tempLink);
+            }
+        }
     }
 
     /**
@@ -210,15 +230,13 @@ class MetadataParser {
             if ($mvhd_pos === false) {
                 $pos = strpos($end_data, 'mvhd');
                 if ($pos !== false) {
-                    $data = $end_data; // use end data for unpacking
+                    $data = $end_data;
                     $mvhd_pos = $pos;
                 }
             }
             if ($tkhd_pos === false) {
                 $pos = strpos($end_data, 'tkhd');
                 if ($pos !== false) {
-                    // if tkhd is in end data but mvhd was in beginning, we offset accordingly
-                    // but usually they are both in the same moov block.
                     $data = $end_data;
                     $tkhd_pos = $pos;
                 }
@@ -232,13 +250,11 @@ class MetadataParser {
         if ($mvhd_pos !== false && strlen($data) >= $mvhd_pos + 32) {
             $version = ord($data[$mvhd_pos + 4]);
             if ($version === 1) {
-                // Version 1: 64-bit creation, modification, timescale, duration
                 $timescale = unpack('N', substr($data, $mvhd_pos + 20, 4))[1];
                 $duration_bytes = substr($data, $mvhd_pos + 24, 8);
                 $unpack = unpack('Nhigh/Nlow', $duration_bytes);
                 $duration = ($unpack['high'] * 4294967296) + $unpack['low'];
             } else {
-                // Version 0: 32-bit creation, modification, timescale, duration
                 $timescale = unpack('N', substr($data, $mvhd_pos + 12, 4))[1];
                 $duration = unpack('N', substr($data, $mvhd_pos + 16, 4))[1];
             }
@@ -249,13 +265,10 @@ class MetadataParser {
         }
 
         // 2. Parse Width & Height from tkhd (track header)
-        // There can be multiple tracks (video/audio). We scan for the video track (which has non-zero width/height)
         if ($tkhd_pos !== false && strlen($data) >= $tkhd_pos + 5) {
             $version = ord($data[$tkhd_pos + 4]);
-            $offset = ($version === 1) ? 84 : 72; // size varies based on version
+            $offset = ($version === 1) ? 84 : 72;
             
-            // Width and Height are stored as 16.16 fixed point numbers (4 bytes integer, 4 bytes fraction)
-            // Width is at $tkhd_pos + $offset, Height is at $tkhd_pos + $offset + 4
             if (strlen($data) >= $tkhd_pos + $offset + 8) {
                 $w_int = unpack('n', substr($data, $tkhd_pos + $offset, 2))[1];
                 $h_int = unpack('n', substr($data, $tkhd_pos + $offset + 4, 2))[1];
@@ -274,51 +287,32 @@ class MetadataParser {
             $result['bitrate'] = (int)round(($size * 8) / ($result['duration'] * 1000)); // in kbps
         }
 
-        // Default code fallbacks
         $result['codec'] = 'h264';
-        $result['framerate'] = 30; // standard average fallback
+        $result['framerate'] = 30;
 
         return !empty($result) ? $result : null;
     }
 
     private static function getTempHardlink($originalPath) {
+        $normalized = str_replace('\\', '/', $originalPath);
         $dir = dirname($originalPath);
-        $ext = pathinfo($originalPath, PATHINFO_EXTENSION);
         
-        // Create random unique ASCII filename
+        if (preg_match('/^([a-zA-Z]):\//', $normalized, $matches)) {
+            $tempDir = strtoupper($matches[1]) . ':/youtube_temp';
+            if (!is_dir($tempDir)) @mkdir($tempDir, 0777, true);
+            if (is_dir($tempDir)) $dir = $tempDir;
+        }
+        
+        $ext = pathinfo($originalPath, PATHINFO_EXTENSION);
         $tempName = 'temp_probe_' . uniqid() . '.' . $ext;
         $tempPath = $dir . DIRECTORY_SEPARATOR . $tempName;
         
-        // Normalize path slashes for Windows link()
         $tempPath = str_replace('/', DIRECTORY_SEPARATOR, $tempPath);
-        $originalPath = str_replace('/', DIRECTORY_SEPARATOR, $originalPath);
+        $origWin = str_replace('/', DIRECTORY_SEPARATOR, $originalPath);
         
-        if (@link($originalPath, $tempPath)) {
+        if (@link($origWin, $tempPath)) {
             return $tempPath;
         }
         return null;
-    }
-
-    /**
-     * On Windows, PHP's ANSI filesystem APIs (file_exists, filesize, etc.) cannot
-     * handle filenames with Unicode characters outside the system codepage.
-     * This falls back to COM Scripting.FileSystemObject (wide-char) to copy the
-     * file to an ASCII-only temp name. Returns the usable path (may be same as input).
-     */
-    private static function ensureAccessibleFile(&$path) {
-        if (@file_exists($path)) return $path;
-        if (!class_exists('COM', false)) return $path;
-        try {
-            $fso = new COM('Scripting.FileSystemObject');
-            if (!$fso->FileExists($path)) return $path;
-            $dir = dirname($path);
-            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-            if (!$ext) $ext = 'mp4';
-            $tempName = $dir . DIRECTORY_SEPARATOR . 'ytdlp_idx_' . uniqid() . '.' . $ext;
-            $fso->CopyFile($path, $tempName, true);
-            $path = $tempName;
-            return $tempName;
-        } catch (Exception $e) {}
-        return $path;
     }
 }

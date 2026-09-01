@@ -807,6 +807,35 @@ function upsertPlaylistRecord($pdo, $name, $parentId, $folderPath, $syncType, $i
     return intval($pdo->lastInsertId());
 }
 
+function cleanStaleTempFilesFromDir($dirPath) {
+    $dirPath = rtrim(str_replace('\\', '/', $dirPath), '/');
+    if (!is_dir($dirPath)) return;
+    $scanned = @scandir($dirPath);
+    if (!$scanned) return;
+    foreach ($scanned as $item) {
+        if ($item === '.' || $item === '..') continue;
+        if (preg_match('/^(temp_thumb_|temp_probe_|ytdlp_idx_|temp_link_)/i', $item)) {
+            $fullPath = $dirPath . '/' . $item;
+            if (is_file($fullPath)) {
+                @unlink($fullPath);
+            }
+        }
+    }
+}
+
+function purgeDeletedFoldersFromPlaylists($pdo) {
+    $stmt = $pdo->query("SELECT id, folder_path, playlist_name FROM playlists WHERE folder_path IS NOT NULL AND playlist_name != 'default'");
+    $playlists = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $delStmt = $pdo->prepare("DELETE FROM playlists WHERE id = :id");
+    
+    foreach ($playlists as $pl) {
+        $path = $pl['folder_path'];
+        if (!empty($path) && !file_exists($path) && !is_dir($path)) {
+            $delStmt->execute([':id' => $pl['id']]);
+        }
+    }
+}
+
 function cleanEmptySyncPlaylists($pdo) {
     $changed = true;
     $maxPasses = 10;
@@ -828,6 +857,8 @@ function cleanEmptySyncPlaylists($pdo) {
 
 function syncMegaPlaylistHierarchy($pdo, $dirPath, $parentId, $uploaderInfo, $ffmpegPath, $videoExtensions, &$stats) {
     $dirPath = rtrim(str_replace('\\', '/', $dirPath), '/');
+    cleanStaleTempFilesFromDir($dirPath);
+
     $folderName = basename($dirPath);
     if (empty($folderName)) $folderName = 'Mega Playlist';
 
@@ -855,20 +886,31 @@ function syncMegaPlaylistHierarchy($pdo, $dirPath, $parentId, $uploaderInfo, $ff
                 $validChildPlaylistIds[] = $childPlId;
             }
         } elseif (is_file($fullPath)) {
+            $base = basename($fullPath);
+            if (preg_match('/^(temp_thumb_|temp_probe_|ytdlp_idx_|temp_link_|\.|~)/i', $base)) {
+                @unlink($fullPath);
+                continue;
+            }
+
             $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
             if (in_array($ext, $videoExtensions)) {
-                $res = processSingleVideo($pdo, $fullPath, $uploaderInfo, $ffmpegPath, $videoExtensions, "Discovered in playlist $folderName.");
-                if ($res !== false && isset($res['id'])) {
-                    $vidId = intval($res['id']);
-                    $stats['added']++;
-                    $stats['new_videos'][] = $res;
-                    $stats['new_vid_ids'][] = $vidId;
-                    $directVideoIds[] = $vidId;
+                $existingVidId = findVideoIdByFilePath($pdo, $fullPath);
+                if ($existingVidId) {
+                    $directVideoIds[] = $existingVidId;
+                    $stats['skipped']++;
+                    // Generate missing thumbnail if needed
+                    $thumbPath = dirname(__DIR__) . '/thumbnails/' . $existingVidId . '.jpg';
+                    if ($ffmpegPath && (!file_exists($thumbPath) || filesize($thumbPath) === 0)) {
+                        generateServerThumbnail($ffmpegPath, $fullPath, $existingVidId);
+                    }
                 } else {
-                    $existingVidId = findVideoIdByFilePath($pdo, $fullPath);
-                    if ($existingVidId) {
-                        $directVideoIds[] = $existingVidId;
-                        $stats['skipped']++;
+                    $res = processSingleVideo($pdo, $fullPath, $uploaderInfo, $ffmpegPath, $videoExtensions, "Discovered in playlist $folderName.");
+                    if ($res !== false && isset($res['id'])) {
+                        $vidId = intval($res['id']);
+                        $stats['added']++;
+                        $stats['new_videos'][] = $res;
+                        $stats['new_vid_ids'][] = $vidId;
+                        $directVideoIds[] = $vidId;
                     }
                 }
             }
@@ -930,16 +972,22 @@ function handleCrawl($pdo) {
         throw new Exception("Directory does not exist or is not readable: $directory");
     }
 
-    // 1. Purge legacy row 10 in video_metadatas if it exists
-    $pdo->exec("DELETE FROM video_metadatas WHERE vid_id = 10");
+    // 1. Purge legacy row 10 & any accidental temp records in video_metadatas
+    $pdo->exec("DELETE FROM video_metadatas WHERE vid_id = 10 OR vid_name LIKE 'temp_%' OR vid_name LIKE 'ytdlp_%' OR link LIKE '%temp_%' OR link LIKE '%ytdlp_%'");
 
-    // 2. Bidirectional sync: Clean up missing files from database
+    // 2. Clean stale temp files from target directory
+    cleanStaleTempFilesFromDir($directory);
+
+    // 3. Bidirectional sync: Clean up missing folders from playlists table
+    purgeDeletedFoldersFromPlaylists($pdo);
+
+    // 4. Bidirectional sync: Clean up missing files from database and all playlists
     $stmt = $pdo->query("SELECT vid_id, link FROM video_metadatas");
     $dbVideos = $stmt->fetchAll();
     $deletedCount = 0;
     foreach ($dbVideos as $dbVideo) {
         $link = $dbVideo['link'];
-        $id = $dbVideo['vid_id'];
+        $id = (int)$dbVideo['vid_id'];
         
         $localPath = str_replace('file:///', '', $link);
         $localPath = str_replace('//', '/', $localPath);
@@ -1028,11 +1076,26 @@ function handleCrawl($pdo) {
     $allSyncedVidIds = [];
 
     foreach ($files as $file) {
+        $base = basename($file);
+        if (preg_match('/^(temp_thumb_|temp_probe_|ytdlp_idx_|temp_link_|\.|~)/i', $base)) {
+            @unlink($file);
+            continue;
+        }
+
+        $existingId = findVideoIdByFilePath($pdo, $file);
+        if ($existingId) {
+            $skipped++;
+            $allSyncedVidIds[] = $existingId;
+            $thumbPath = dirname(__DIR__) . '/thumbnails/' . $existingId . '.jpg';
+            if ($ffmpegPath && (!file_exists($thumbPath) || filesize($thumbPath) === 0)) {
+                generateServerThumbnail($ffmpegPath, $file, $existingId);
+            }
+            continue;
+        }
+
         $result = processSingleVideo($pdo, $file, $uploaderInfo, $ffmpegPath, $videoExtensions, $syncType === 'playlist' ? 'Discovered via playlist sync.' : 'Discovered via crawler.');
         if ($result === false) {
             $skipped++;
-            $existingId = findVideoIdByFilePath($pdo, $file);
-            if ($existingId) $allSyncedVidIds[] = $existingId;
             continue;
         }
         $newVidIds[] = $result['id'];
@@ -1473,24 +1536,22 @@ function updatePlaylistsTable($pdo, $newIds) {
 }
 
 function deleteFromPlaylistsTable($pdo, $deleteId) {
-    $stmt = $pdo->prepare("SELECT video_ids FROM playlists WHERE playlist_name = 'default'");
-    $stmt->execute();
-    $row = $stmt->fetch();
-    
-    if ($row) {
+    $stmt = $pdo->query("SELECT id, video_ids FROM playlists");
+    $allPlaylists = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $upStmt = $pdo->prepare("UPDATE playlists SET video_ids = :playlist, video_count = :count WHERE id = :id");
+
+    foreach ($allPlaylists as $row) {
         $playlist = json_decode($row['video_ids'], true);
         if (is_array($playlist)) {
-            $key = array_search((string)$deleteId, $playlist);
-            if ($key !== false) {
-                array_splice($playlist, $key, 1);
-                
-                $count = count($playlist);
-                $json = json_encode($playlist);
-                
-                $updateStmt = $pdo->prepare("UPDATE playlists SET video_ids = :playlist, video_count = :count WHERE playlist_name = 'default'");
-                $updateStmt->execute([
-                    ':playlist' => $json,
-                    ':count' => $count
+            $origLen = count($playlist);
+            $filtered = array_values(array_filter($playlist, function($item) use ($deleteId) {
+                return (int)$item !== (int)$deleteId && (string)$item !== (string)$deleteId;
+            }));
+            if (count($filtered) !== $origLen) {
+                $upStmt->execute([
+                    ':playlist' => json_encode($filtered),
+                    ':count' => count($filtered),
+                    ':id' => $row['id']
                 ]);
             }
         }
@@ -1570,28 +1631,29 @@ function generateServerThumbnail($ffmpegPath, $videoPath, $vidId) {
     $outputPath = $thumbDir . $vidId . '.jpg';
     
     // Create temporary hardlink on the same partition to bypass Windows Unicode cmd.exe bugs
-    $tempLink = getTempHardlink($videoPath);
+    $tempLink = getTempHardlink($videoPath, 'temp_thumb_');
     $inputPath = $tempLink ? $tempLink : $videoPath;
     
-    // Try to extract frame at 6 seconds
-    $cmd = "$ffmpegPath -y -ss 00:00:06 -i " . escapeshellarg($inputPath) . " -vframes 1 -q:v 15 " . escapeshellarg($outputPath);
-    
-    $output = [];
-    $returnVar = -1;
-    @exec($cmd, $output, $returnVar);
-    
-    // Fallback: if 6s seek failed or produced no output (e.g. video shorter than 6s), try first frame
-    if ($returnVar !== 0 || !file_exists($outputPath)) {
-        $cmd = "$ffmpegPath -y -i " . escapeshellarg($inputPath) . " -vframes 1 -q:v 15 " . escapeshellarg($outputPath);
+    try {
+        // Fast keyframe seek before -i (5x-10x faster)
+        $cmd = "$ffmpegPath -y -ss 00:00:03 -skip_frame nokey -i " . escapeshellarg($inputPath) . " -vframes 1 -q:v 15 " . escapeshellarg($outputPath);
+        
+        $output = [];
+        $returnVar = -1;
         @exec($cmd, $output, $returnVar);
+        
+        // Fallback: if 3s fast seek failed or produced no output (e.g. video shorter than 3s), try first frame
+        if ($returnVar !== 0 || !file_exists($outputPath) || filesize($outputPath) === 0) {
+            $cmd = "$ffmpegPath -y -i " . escapeshellarg($inputPath) . " -vframes 1 -q:v 15 " . escapeshellarg($outputPath);
+            @exec($cmd, $output, $returnVar);
+        }
+        
+        return ($returnVar === 0 && file_exists($outputPath) && filesize($outputPath) > 0);
+    } finally {
+        if ($tempLink && file_exists($tempLink)) {
+            @unlink($tempLink);
+        }
     }
-    
-    // Clean up temporary hardlink if created
-    if ($tempLink && file_exists($tempLink)) {
-        @unlink($tempLink);
-    }
-    
-    return ($returnVar === 0 && file_exists($outputPath));
 }
 
 function handleGenerateMissingThumbnails($pdo) {
@@ -1703,25 +1765,49 @@ function handleGenerateMissingThumbnails($pdo) {
     ]);
 }
 
-function getTempHardlink($originalPath) {
+global $activeTempHardlinks;
+$activeTempHardlinks = [];
+
+register_shutdown_function(function() {
+    global $activeTempHardlinks;
+    if (!empty($activeTempHardlinks) && is_array($activeTempHardlinks)) {
+        foreach ($activeTempHardlinks as $link) {
+            if (file_exists($link)) {
+                @unlink($link);
+            }
+        }
+    }
+});
+
+function getTempHardlink($originalPath, $prefix = 'temp_link_') {
+    $normalized = str_replace('\\', '/', $originalPath);
     $dir = dirname($originalPath);
+
+    // Put temp hardlink in dedicated drive-level youtube_temp folder
+    if (preg_match('/^([a-zA-Z]):\//', $normalized, $matches)) {
+        $tempDir = strtoupper($matches[1]) . ':/youtube_temp';
+        if (!is_dir($tempDir)) @mkdir($tempDir, 0777, true);
+        if (is_dir($tempDir)) $dir = $tempDir;
+    }
+
     $ext = pathinfo($originalPath, PATHINFO_EXTENSION);
-    
-    // Create random unique ASCII filename
-    $tempName = 'temp_thumb_' . uniqid() . '.' . $ext;
+    $tempName = $prefix . uniqid() . '.' . $ext;
     $tempPath = $dir . DIRECTORY_SEPARATOR . $tempName;
-    
-    // Normalize path slashes for Windows link()
+
     $tempPath = str_replace('/', DIRECTORY_SEPARATOR, $tempPath);
-    $originalPath = str_replace('/', DIRECTORY_SEPARATOR, $originalPath);
-    
-    if (@link($originalPath, $tempPath)) {
+    $origWin = str_replace('/', DIRECTORY_SEPARATOR, $originalPath);
+
+    if (@link($origWin, $tempPath)) {
+        global $activeTempHardlinks;
+        if (!isset($activeTempHardlinks)) $activeTempHardlinks = [];
+        $activeTempHardlinks[] = $tempPath;
         return $tempPath;
     }
     return null;
 }
 
 function handleGetPlaylists($pdo) {
+    purgeDeletedFoldersFromPlaylists($pdo);
     cleanEmptySyncPlaylists($pdo);
     $stmt = $pdo->query("SELECT * FROM playlists WHERE playlist_name != 'default' ORDER BY id ASC");
     $playlists = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -3265,12 +3351,20 @@ function stopBackgroundProcess($progressId) {
 function getDurationUs($localPath) {
     $ffprobePath = str_replace('"', '', getFFmpegPath());
     $ffprobePath = str_replace('ffmpeg.exe', 'ffprobe.exe', $ffprobePath);
-    $durOut = [];
-    exec($ffprobePath . ' -v error -show_entries format=duration -of csv=p=0 ' . escapeshellarg($localPath), $durOut, $durCode);
-    if ($durCode === 0 && !empty($durOut[0])) {
-        return intval(floatval(trim($durOut[0])) * 1000000);
+    $tempLink = getTempHardlink($localPath, 'temp_dur_');
+    $probePath = $tempLink ? $tempLink : $localPath;
+    try {
+        $durOut = [];
+        exec($ffprobePath . ' -v error -show_entries format=duration -of csv=p=0 ' . escapeshellarg($probePath), $durOut, $durCode);
+        if ($durCode === 0 && !empty($durOut[0])) {
+            return intval(floatval(trim($durOut[0])) * 1000000);
+        }
+        return 0;
+    } finally {
+        if ($tempLink && file_exists($tempLink)) {
+            @unlink($tempLink);
+        }
     }
-    return 0;
 }
 
 function probeCastMedia($localPath) {
@@ -3695,7 +3789,10 @@ function handleStartConvertPrep($pdo) {
     $videoNeedsTranscode = false;
     $audioNeedsTranscode = false;
 
-    $pixCmd = $ffprobePath . ' -v error -select_streams v:0 -show_entries stream=pix_fmt -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($localPath);
+    $tempLink = getTempHardlink($localPath, 'temp_conv_');
+    $probePath = $tempLink ? $tempLink : $localPath;
+
+    $pixCmd = $ffprobePath . ' -v error -select_streams v:0 -show_entries stream=pix_fmt -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($probePath);
     $pixOut = []; $pixCode = -1;
     exec($pixCmd, $pixOut, $pixCode);
     if ($pixCode === 0 && !empty($pixOut[0])) {
@@ -3703,7 +3800,7 @@ function handleStartConvertPrep($pdo) {
         if (preg_match('/p1[0-9]|1[0-9](le|be)/', $pixFmt)) $videoNeedsTranscode = true;
     }
 
-    $acCmd = $ffprobePath . ' -v error -select_streams a -show_entries stream=index,codec_name -of csv=p=0 ' . escapeshellarg($localPath);
+    $acCmd = $ffprobePath . ' -v error -select_streams a -show_entries stream=index,codec_name -of csv=p=0 ' . escapeshellarg($probePath);
     $acOut = []; $acCode = -1;
     exec($acCmd, $acOut, $acCode);
     if ($acCode === 0) {
@@ -3726,13 +3823,13 @@ function handleStartConvertPrep($pdo) {
     // Build command based on stage
     if (!$videoNeedsTranscode && !$audioNeedsTranscode) {
         $cmd = $ffmpegPath . ' -y -progress ' . escapeshellarg($progressFile)
-            . ' -i ' . escapeshellarg($localPath)
+            . ' -i ' . escapeshellarg($probePath)
             . ' -map 0:v:0 -map 0:' . $audioIndex
             . ' -c:v copy -c:a copy -movflags +faststart -map_metadata -1 '
             . escapeshellarg($outputMp4);
     } elseif (!$videoNeedsTranscode) {
         $cmd = $ffmpegPath . ' -y -progress ' . escapeshellarg($progressFile)
-            . ' -i ' . escapeshellarg($localPath)
+            . ' -i ' . escapeshellarg($probePath)
             . ' -map 0:v:0 -map 0:' . $audioIndex
             . ' -c:v copy -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart -map_metadata -1 '
             . escapeshellarg($outputMp4);
@@ -3751,7 +3848,7 @@ function handleStartConvertPrep($pdo) {
         if (!$isGpu) $videoArgs = '-c:v libx264 -preset ultrafast -crf 28 -pix_fmt yuv420p';
 
         $cmdCpu = $ffmpegPath . ' -y -threads 0 -progress ' . escapeshellarg($progressFile)
-            . ' -i ' . escapeshellarg($localPath)
+            . ' -i ' . escapeshellarg($probePath)
             . ' -map 0:v:0 -map 0:' . $audioIndex
             . ' -c:v libx264 -preset ultrafast -crf 28 -pix_fmt yuv420p'
             . ' -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart -map_metadata -1 '
@@ -3759,7 +3856,7 @@ function handleStartConvertPrep($pdo) {
 
         if ($videoNeedsTranscode && isset($isGpu) && $isGpu) {
             $cmdGpu = $ffmpegPath . ' -y -threads 0 -progress ' . escapeshellarg($progressFile)
-                . ' -i ' . escapeshellarg($localPath)
+                . ' -i ' . escapeshellarg($probePath)
                 . ' -map 0:v:0 -map 0:' . $audioIndex
                 . ' ' . $videoArgs
                 . ' -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart -map_metadata -1 '
@@ -3769,6 +3866,10 @@ function handleStartConvertPrep($pdo) {
         } else {
             $cmd = $cmdCpu;
         }
+    }
+
+    if ($tempLink) {
+        $cmd .= "\r\ndel \"" . $tempLink . "\" 2>NUL";
     }
 
     execInBackground($cmd, $progressId);
@@ -3954,12 +4055,20 @@ function handleFinishConvertPrep() {
     if ($hasSubtitle && $subtitleIndex >= 0 && !empty($localPath)) {
         $ffmpegPath = getFFmpegPath();
         if ($ffmpegPath) {
-            $subCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath)
-                . ' -map 0:' . $subtitleIndex
-                . ' -c:s webvtt ' . escapeshellarg($outputVtt);
-            $subOut = []; $subCode = -1;
-            exec($subCmd . ' 2>&1', $subOut, $subCode);
-            $hasVtt = ($subCode === 0 && file_exists($outputVtt) && filesize($outputVtt) > 0);
+            $tempLink = getTempHardlink($localPath, 'temp_sub_');
+            $inputPath = $tempLink ? $tempLink : $localPath;
+            try {
+                $subCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($inputPath)
+                    . ' -map 0:' . $subtitleIndex
+                    . ' -c:s webvtt ' . escapeshellarg($outputVtt);
+                $subOut = []; $subCode = -1;
+                exec($subCmd . ' 2>&1', $subOut, $subCode);
+                $hasVtt = ($subCode === 0 && file_exists($outputVtt) && filesize($outputVtt) > 0);
+            } finally {
+                if ($tempLink && file_exists($tempLink)) {
+                    @unlink($tempLink);
+                }
+            }
         }
     }
 
@@ -4933,11 +5042,15 @@ function handleProbeVideo($pdo) {
     $ffprobePath = str_replace('"', '', getFFmpegPath());
     $ffprobePath = str_replace('ffmpeg.exe', 'ffprobe.exe', $ffprobePath);
 
-    $cmd = $ffprobePath . ' -v error -print_format json -show_streams ' . escapeshellarg($localPath);
-    $output = [];
-    $code = -1;
-    exec($cmd, $output, $code);
-    if ($code !== 0) throw new Exception('Failed to probe video file');
+    $tempLink = getTempHardlink($localPath, 'temp_probe_');
+    $probePath = $tempLink ? $tempLink : $localPath;
+
+    try {
+        $cmd = $ffprobePath . ' -v error -print_format json -show_streams ' . escapeshellarg($probePath);
+        $output = [];
+        $code = -1;
+        exec($cmd, $output, $code);
+        if ($code !== 0) throw new Exception('Failed to probe video file');
 
     $ffprobeResult = json_decode(implode("\n", $output), true);
     if (!$ffprobeResult || !isset($ffprobeResult['streams'])) throw new Exception('Invalid ffprobe output');
@@ -4989,6 +5102,11 @@ function handleProbeVideo($pdo) {
         'subtitle_streams' => $subtitleStreams,
     ]);
     exit;
+    } finally {
+        if ($tempLink && file_exists($tempLink)) {
+            @unlink($tempLink);
+        }
+    }
 }
 
 function handleConvertVideo($pdo) {
@@ -5028,98 +5146,85 @@ function handleConvertVideo($pdo) {
     $ffprobePath = str_replace('"', '', $ffmpegPath);
     $ffprobePath = str_replace('ffmpeg.exe', 'ffprobe.exe', $ffprobePath);
 
-    // Check video: high bit depth (10-bit+) requires re-encode
-    $pixCmd = $ffprobePath . ' -v error -select_streams v:0 -show_entries stream=pix_fmt -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($localPath);
-    $pixOut = []; $pixCode = -1;
-    exec($pixCmd, $pixOut, $pixCode);
-    if ($pixCode === 0 && !empty($pixOut[0])) {
-        $pixFmt = trim($pixOut[0]);
-        if (preg_match('/p1[0-9]|1[0-9](le|be)/', $pixFmt)) {
-            $videoNeedsTranscode = true;
+    $tempLink = getTempHardlink($localPath, 'temp_conv_');
+    $inputPath = $tempLink ? $tempLink : $localPath;
+
+    try {
+        // Check video: high bit depth (10-bit+) requires re-encode
+        $pixCmd = $ffprobePath . ' -v error -select_streams v:0 -show_entries stream=pix_fmt -of default=noprint_wrappers=1:nokey=1 ' . escapeshellarg($inputPath);
+        $pixOut = []; $pixCode = -1;
+        exec($pixCmd, $pixOut, $pixCode);
+        if ($pixCode === 0 && !empty($pixOut[0])) {
+            $pixFmt = trim($pixOut[0]);
+            if (preg_match('/p1[0-9]|1[0-9](le|be)/', $pixFmt)) {
+                $videoNeedsTranscode = true;
+            }
         }
-    }
 
-    // Check audio: non-AAC/MP3/AC3 codecs need re-encode for browser playback in MP4
-    $acCmd = $ffprobePath . ' -v error -select_streams a -show_entries stream=index,codec_name -of csv=p=0 ' . escapeshellarg($localPath);
-    $acOut = []; $acCode = -1;
-    exec($acCmd, $acOut, $acCode);
-    if ($acCode === 0) {
-        $audioCodec = '';
-        foreach ($acOut as $line) {
-            $parts = explode(',', trim($line));
-            $idx = intval($parts[0] ?? -1);
-            $codec = $parts[1] ?? '';
-            if ($idx === $audioIndex) { $audioCodec = $codec; break; }
+        // Check audio: non-AAC/MP3/AC3 codecs need re-encode for browser playback in MP4
+        $acCmd = $ffprobePath . ' -v error -select_streams a -show_entries stream=index,codec_name -of csv=p=0 ' . escapeshellarg($inputPath);
+        $acOut = []; $acCode = -1;
+        exec($acCmd, $acOut, $acCode);
+        if ($acCode === 0) {
+            $audioCodec = '';
+            foreach ($acOut as $line) {
+                $parts = explode(',', trim($line));
+                $idx = intval($parts[0] ?? -1);
+                $codec = $parts[1] ?? '';
+                if ($idx === $audioIndex) { $audioCodec = $codec; break; }
+            }
+            if (!in_array($audioCodec, ['aac', 'mp3', 'ac3', 'eac3'])) {
+                $audioNeedsTranscode = true;
+            }
         }
-        if (!in_array($audioCodec, ['aac', 'mp3', 'ac3', 'eac3'])) {
-            $audioNeedsTranscode = true;
-        }
-    }
 
-    $remuxOutput = [];
-    $remuxCode = -1;
-
-    // ---------- Stage 1: Copy both (remux) ----------
-    if (!$videoNeedsTranscode && !$audioNeedsTranscode) {
-        $remuxCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath)
-            . ' -map 0:v:0 -map 0:' . $audioIndex
-            . ' -c:v copy -c:a copy -movflags +faststart'
-            . ' -map_metadata -1'
-            . ' ' . escapeshellarg($outputMp4);
-        exec($remuxCmd . ' 2>&1', $remuxOutput, $remuxCode);
-    }
-
-    // ---------- Stage 2: Copy video + re-encode audio only ----------
-    if ($remuxCode !== 0 && !$videoNeedsTranscode) {
-        $remuxCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath)
-            . ' -map 0:v:0 -map 0:' . $audioIndex
-            . ' -c:v copy'
-            . ' -c:a aac -ac 2 -ar 44100 -b:a 128k'
-            . ' -movflags +faststart'
-            . ' -map_metadata -1'
-            . ' ' . escapeshellarg($outputMp4);
         $remuxOutput = [];
         $remuxCode = -1;
-        exec($remuxCmd . ' 2>&1', $remuxOutput, $remuxCode);
-    }
 
-    // ---------- Stage 3: Full transcode (video + audio) ----------
-    if ($remuxCode !== 0) {
-        $encoder = detectGpuEncoder($ffmpegPath);
-        $isGpu = ($encoder !== 'libx264');
-
-        if ($encoder === 'h264_nvenc') {
-            $videoArgsGpu = '-c:v h264_nvenc -pix_fmt yuv420p -preset p1 -rc constqp -qp 28';
-        } elseif ($encoder === 'h264_qsv') {
-            $videoArgsGpu = '-c:v h264_qsv -pix_fmt yuv420p -preset veryfast';
-        } elseif ($encoder === 'h264_amf') {
-            $videoArgsGpu = '-c:v h264_amf -pix_fmt yuv420p -preset speed';
-        } else {
-            $videoArgsGpu = '';
-        }
-        $videoArgsCpu = '-c:v libx264 -preset ultrafast -crf 28 -pix_fmt yuv420p';
-        $videoArgs = $isGpu ? $videoArgsGpu : $videoArgsCpu;
-
-        $transcodeCmd = $ffmpegPath . ' -y -threads 0 -i ' . escapeshellarg($localPath)
-            . ' -map 0:v:0 -map 0:' . $audioIndex
-            . ' ' . $videoArgs
-            . ' -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart'
-            . ' -map_metadata -1'
-            . ' ' . escapeshellarg($outputMp4);
-        $remuxOutput = [];
-        $remuxCode = -1;
-        exec($transcodeCmd . ' 2>&1', $remuxOutput, $remuxCode);
-
-        if ($remuxCode !== 0) {
-            error_log("[convert] GPU transcode failed for: " . $row['link'] . " (encoder=$encoder)");
-        }
-
-        // GPU → CPU fallback
-        if ($remuxCode !== 0 && $isGpu) {
-            @unlink($outputMp4);
-            $transcodeCmd = $ffmpegPath . ' -y -threads 0 -i ' . escapeshellarg($localPath)
+        // ---------- Stage 1: Copy both (remux) ----------
+        if (!$videoNeedsTranscode && !$audioNeedsTranscode) {
+            $remuxCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($inputPath)
                 . ' -map 0:v:0 -map 0:' . $audioIndex
-                . ' ' . $videoArgsCpu
+                . ' -c:v copy -c:a copy -movflags +faststart'
+                . ' -map_metadata -1'
+                . ' ' . escapeshellarg($outputMp4);
+            exec($remuxCmd . ' 2>&1', $remuxOutput, $remuxCode);
+        }
+
+        // ---------- Stage 2: Copy video + re-encode audio only ----------
+        if ($remuxCode !== 0 && !$videoNeedsTranscode) {
+            $remuxCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($inputPath)
+                . ' -map 0:v:0 -map 0:' . $audioIndex
+                . ' -c:v copy'
+                . ' -c:a aac -ac 2 -ar 44100 -b:a 128k'
+                . ' -movflags +faststart'
+                . ' -map_metadata -1'
+                . ' ' . escapeshellarg($outputMp4);
+            $remuxOutput = [];
+            $remuxCode = -1;
+            exec($remuxCmd . ' 2>&1', $remuxOutput, $remuxCode);
+        }
+
+        // ---------- Stage 3: Full transcode (video + audio) ----------
+        if ($remuxCode !== 0) {
+            $encoder = detectGpuEncoder($ffmpegPath);
+            $isGpu = ($encoder !== 'libx264');
+
+            if ($encoder === 'h264_nvenc') {
+                $videoArgsGpu = '-c:v h264_nvenc -pix_fmt yuv420p -preset p1 -rc constqp -qp 28';
+            } elseif ($encoder === 'h264_qsv') {
+                $videoArgsGpu = '-c:v h264_qsv -pix_fmt yuv420p -preset veryfast';
+            } elseif ($encoder === 'h264_amf') {
+                $videoArgsGpu = '-c:v h264_amf -pix_fmt yuv420p -preset speed';
+            } else {
+                $videoArgsGpu = '';
+            }
+            $videoArgsCpu = '-c:v libx264 -preset ultrafast -crf 28 -pix_fmt yuv420p';
+            $videoArgs = $isGpu ? $videoArgsGpu : $videoArgsCpu;
+
+            $transcodeCmd = $ffmpegPath . ' -y -threads 0 -i ' . escapeshellarg($inputPath)
+                . ' -map 0:v:0 -map 0:' . $audioIndex
+                . ' ' . $videoArgs
                 . ' -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart'
                 . ' -map_metadata -1'
                 . ' ' . escapeshellarg($outputMp4);
@@ -5128,34 +5233,56 @@ function handleConvertVideo($pdo) {
             exec($transcodeCmd . ' 2>&1', $remuxOutput, $remuxCode);
 
             if ($remuxCode !== 0) {
-                error_log("[convert] CPU fallback transcode failed for: " . $row['link']);
+                error_log("[convert] GPU transcode failed for: " . $row['link'] . " (encoder=$encoder)");
+            }
+
+            // GPU → CPU fallback
+            if ($remuxCode !== 0 && $isGpu) {
+                @unlink($outputMp4);
+                $transcodeCmd = $ffmpegPath . ' -y -threads 0 -i ' . escapeshellarg($inputPath)
+                    . ' -map 0:v:0 -map 0:' . $audioIndex
+                    . ' ' . $videoArgsCpu
+                    . ' -c:a aac -ac 2 -ar 44100 -b:a 128k -movflags +faststart'
+                    . ' -map_metadata -1'
+                    . ' ' . escapeshellarg($outputMp4);
+                $remuxOutput = [];
+                $remuxCode = -1;
+                exec($transcodeCmd . ' 2>&1', $remuxOutput, $remuxCode);
+
+                if ($remuxCode !== 0) {
+                    error_log("[convert] CPU fallback transcode failed for: " . $row['link']);
+                }
+            }
+
+            if ($remuxCode !== 0) {
+                throw new Exception('Conversion failed: ' . implode("\n", array_slice($remuxOutput, -5)));
             }
         }
 
-        if ($remuxCode !== 0) {
-            throw new Exception('Conversion failed: ' . implode("\n", array_slice($remuxOutput, -5)));
+        // Extract subtitle if requested (use global stream index)
+        $hasVtt = false;
+        if ($subtitleIndex >= 0) {
+            $subCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($inputPath)
+                . ' -map 0:' . $subtitleIndex
+                . ' -c:s webvtt'
+                . ' ' . escapeshellarg($outputVtt);
+            $subOutput = [];
+            $subCode = -1;
+            exec($subCmd . ' 2>&1', $subOutput, $subCode);
+            $hasVtt = ($subCode === 0 && file_exists($outputVtt) && filesize($outputVtt) > 0);
+        }
+
+        echo json_encode([
+            'mp4' => $publicMp4,
+            'mp4_path' => $outputMp4,
+            'vtt' => $hasVtt ? $publicVtt : null,
+        ]);
+        exit;
+    } finally {
+        if ($tempLink && file_exists($tempLink)) {
+            @unlink($tempLink);
         }
     }
-
-    // Extract subtitle if requested (use global stream index)
-    $hasVtt = false;
-    if ($subtitleIndex >= 0) {
-        $subCmd = $ffmpegPath . ' -y -i ' . escapeshellarg($localPath)
-            . ' -map 0:' . $subtitleIndex
-            . ' -c:s webvtt'
-            . ' ' . escapeshellarg($outputVtt);
-        $subOutput = [];
-        $subCode = -1;
-        exec($subCmd . ' 2>&1', $subOutput, $subCode);
-        $hasVtt = ($subCode === 0 && file_exists($outputVtt) && filesize($outputVtt) > 0);
-    }
-
-    echo json_encode([
-        'mp4' => $publicMp4,
-        'mp4_path' => $outputMp4,
-        'vtt' => $hasVtt ? $publicVtt : null,
-    ]);
-    exit;
 }
 
 // ----------------------------------------
