@@ -1377,7 +1377,7 @@ export default function App() {
             <form className="search-form" onSubmit={handleSearchSubmit}>
               <input
                 type="text"
-                placeholder="Search (e.g. /s for Shorts, /pl for Playlists)"
+                placeholder="Search"
                 className="search-input"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -1773,6 +1773,7 @@ export default function App() {
               onNavigateToProfile={() => setCurrentView('profile')}
               showFlashNotification={showFlashNotification}
               playlists={playlists}
+              excludedData={excludedData}
               addVideoToPlaylist={addVideoToPlaylist}
               removeVideoFromPlaylist={removeVideoFromPlaylist}
               createPlaylist={createPlaylist}
@@ -1845,6 +1846,7 @@ export default function App() {
               playHistoryRef={playHistoryRef}
               historyIndexRef={historyIndexRef}
               playlists={playlists}
+              excludedData={excludedData}
               activePlaylist={activePlaylist}
               setActivePlaylist={setActivePlaylist}
               currentPlaylistIndex={currentPlaylistIndex}
@@ -2687,6 +2689,7 @@ function ShortsPlayerView({
   onNavigateToProfile,
   showFlashNotification,
   playlists = [],
+  excludedData = {},
   addVideoToPlaylist,
   removeVideoFromPlaylist,
   createPlaylist
@@ -2734,6 +2737,56 @@ function ShortsPlayerView({
   const [editTags, setEditTags] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState('');
+  const [saveSearchQuery, setSaveSearchQuery] = useState('');
+
+  const playlistMap = useMemo(() => {
+    const map = new Map();
+    (playlists || []).forEach(p => map.set(p.id, p));
+    return map;
+  }, [playlists]);
+
+  const saveablePlaylists = useMemo(() => {
+    const excludedSidebarIds = new Set(excludedData?.excluded_playlist_sidebar || []);
+    const filtered = (playlists || []).filter(pl => {
+      if (pl.playlist_name === 'default') return false;
+      if (pl.is_mega === 1 || pl.is_mega === true) return false;
+      if (excludedSidebarIds.has(pl.id)) return false;
+      return true;
+    });
+
+    const items = filtered.map(pl => {
+      let displayPath = pl.playlist_name;
+      if (pl.parent_id) {
+        const parent = playlistMap.get(pl.parent_id);
+        if (parent) {
+          let prefix = parent.playlist_name;
+          if (parent.parent_id) {
+            const grandParent = playlistMap.get(parent.parent_id);
+            if (grandParent) prefix = `${grandParent.playlist_name} › ${prefix}`;
+          }
+          displayPath = `${prefix} › ${pl.playlist_name}`;
+        }
+      }
+      const isCustom = !pl.folder_path && (!pl.parent_id || pl.parent_id === 0);
+      return { ...pl, displayPath, isCustom };
+    });
+
+    items.sort((a, b) => {
+      if (a.isCustom && !b.isCustom) return -1;
+      if (!a.isCustom && b.isCustom) return 1;
+      return a.displayPath.localeCompare(b.displayPath, undefined, { sensitivity: 'base' });
+    });
+
+    return items;
+  }, [playlists, playlistMap, excludedData?.excluded_playlist_sidebar]);
+
+  const displayedSavePlaylists = useMemo(() => {
+    if (!saveSearchQuery.trim()) return saveablePlaylists;
+    const q = saveSearchQuery.toLowerCase();
+    return saveablePlaylists.filter(pl =>
+      pl.displayPath.toLowerCase().includes(q) || pl.playlist_name.toLowerCase().includes(q)
+    );
+  }, [saveablePlaylists, saveSearchQuery]);
 
   const currentVideo = shortsList[currentIndex];
 
@@ -3393,7 +3446,7 @@ function ShortsPlayerView({
                           setShowDescription(!showDescription);
                           setShowComments(false);
                         }}
-                        title="View description"
+                        title={slideTitle}
                       >
                         {slideTitle}
                       </div>
@@ -3580,11 +3633,26 @@ function ShortsPlayerView({
                 <p style={{ margin: 0, fontSize: '13.5px', color: '#ccc', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
                   {renderDescription(currentVideo.description)}
                 </p>
+                {currentVideo.tags && (
+                  <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {currentVideo.tags.split(',').map((tag, idx) => {
+                      const cleanTag = tag.trim();
+                      if (!cleanTag) return null;
+                      return (
+                        <span key={idx} className="vid-timestamps" style={{ fontSize: '13px' }}>
+                          #{cleanTag}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
+          </div>
+        )}
 
-            {/* Metadata Editing Modal Overlay */}
-            {showEditModal && (
+        {/* Metadata Editing Modal Overlay */}
+        {showEditModal && (
               <div
                 className="modal-overlay"
                 style={{ zIndex: 1100 }}
@@ -3657,28 +3725,56 @@ function ShortsPlayerView({
                     <button className="modal-close" onClick={() => setShowSaveModal(false)}>&times;</button>
                   </div>
 
+                  {/* Playlists checklist search filter */}
+                  {saveablePlaylists.length > 5 && (
+                    <div style={{ marginBottom: '10px' }}>
+                      <input
+                        type="text"
+                        placeholder="Search playlists..."
+                        value={saveSearchQuery}
+                        onChange={(e) => setSaveSearchQuery(e.target.value)}
+                        style={{
+                          width: '100%',
+                          fontSize: '13px',
+                          padding: '6px 10px',
+                          background: 'rgba(255,255,255,0.06)',
+                          borderRadius: '6px',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          color: '#fff',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+                  )}
+
                   {/* Playlists checklist */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '200px', overflowY: 'auto', paddingRight: '4px', marginBottom: '20px' }}>
-                    {playlists.map(pl => {
-                      const isSaved = pl.video_ids && pl.video_ids.includes(currentVideo.vid_id);
-                      return (
-                        <label key={pl.id} className="playlist-save-item" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', cursor: 'pointer', color: '#ccc' }}>
-                          <input
-                            type="checkbox"
-                            checked={isSaved}
-                            onChange={() => {
-                              if (isSaved) {
-                                removeVideoFromPlaylist(pl.id, currentVideo.vid_id);
-                              } else {
-                                addVideoToPlaylist(pl.id, currentVideo.vid_id);
-                              }
-                            }}
-                            style={{ width: '16px', height: '16px', cursor: 'pointer' }}
-                          />
-                          <span>{pl.playlist_name}</span>
-                        </label>
-                      );
-                    })}
+                    {displayedSavePlaylists.length === 0 ? (
+                      <div style={{ color: '#888', fontSize: '13px', padding: '12px 0', textAlign: 'center' }}>
+                        {saveSearchQuery ? 'No matching playlists' : 'No playlists available'}
+                      </div>
+                    ) : (
+                      displayedSavePlaylists.map(pl => {
+                        const isSaved = pl.video_ids && pl.video_ids.includes(currentVideo.vid_id);
+                        return (
+                          <label key={pl.id} className="playlist-save-item" title={pl.displayPath} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 0', cursor: 'pointer', color: isSaved ? '#fff' : '#ccc' }}>
+                            <input
+                              type="checkbox"
+                              checked={isSaved}
+                              onChange={() => {
+                                if (isSaved) {
+                                  removeVideoFromPlaylist(pl.id, currentVideo.vid_id);
+                                } else {
+                                  addVideoToPlaylist(pl.id, currentVideo.vid_id);
+                                }
+                              }}
+                              style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                            />
+                            <span title={pl.displayPath} style={{ fontSize: '13px', wordBreak: 'break-word' }}>{pl.displayPath}</span>
+                          </label>
+                        );
+                      })
+                    )}
                   </div>
 
                   {/* Create Playlist Form */}
@@ -3728,8 +3824,6 @@ function ShortsPlayerView({
                 showFlashNotification={showFlashNotification}
               />
             )}
-          </div>
-        )}
       </div>
     </div>
   );
@@ -3924,7 +4018,7 @@ function VideoCard({ video, onClick }) {
       <div className="video-card-details">
         <img src={video.uploader_img} alt="" className="channel-avatar" />
         <div className="video-text-details">
-          <span className="video-card-title">{cleanTitle}</span>
+          <span className="video-card-title" title={cleanTitle}>{cleanTitle}</span>
           <span className="video-card-channel">{video.uploader_name}</span>
           <div className="video-card-meta">
             <span>{video.views || 0} views</span>
@@ -3978,7 +4072,7 @@ function SidebarVideoCard({ vid, onPlayVideo }) {
         )}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flex: 1 }}>
-        <span className="sidebar-title">{vid.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}</span>
+        <span className="sidebar-title" title={vid.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}>{vid.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}</span>
         <span className="sidebar-channel">{vid.uploader_name}</span>
         <span style={{ fontSize: '11px', color: '#aaa' }}>{vid.views || 0} views</span>
       </div>
@@ -3988,7 +4082,7 @@ function SidebarVideoCard({ vid, onPlayVideo }) {
 
 function PlayerView({
   video, onVideoDeleted, onOpenShortById, allVideos, extraVideosMap = {}, onFetchMissingVideos, onPlayVideo, onOpenPlaylist, isMiniPlayer, onExpand, onClose, isTheaterMode, setIsTheaterMode, onPlayRandom,
-  playlists, activePlaylist, setActivePlaylist, currentPlaylistIndex, setCurrentPlaylistIndex,
+  playlists, excludedData = {}, activePlaylist, setActivePlaylist, currentPlaylistIndex, setCurrentPlaylistIndex,
   addVideoToPlaylist, removeVideoFromPlaylist, createPlaylist, updatePlaylistOrder,
   isSidebarCollapsed, setIsSidebarCollapsed, currentUser, onOpenAuth, onNavigateToProfile, showFlashNotification,
   showNotification, notifKey, playHistoryRef, historyIndexRef,
@@ -4007,6 +4101,56 @@ function PlayerView({
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState('');
+  const [saveSearchQuery, setSaveSearchQuery] = useState('');
+
+  const playlistMap = useMemo(() => {
+    const map = new Map();
+    (playlists || []).forEach(p => map.set(p.id, p));
+    return map;
+  }, [playlists]);
+
+  const saveablePlaylists = useMemo(() => {
+    const excludedSidebarIds = new Set(excludedData?.excluded_playlist_sidebar || []);
+    const filtered = (playlists || []).filter(pl => {
+      if (pl.playlist_name === 'default') return false;
+      if (pl.is_mega === 1 || pl.is_mega === true) return false;
+      if (excludedSidebarIds.has(pl.id)) return false;
+      return true;
+    });
+
+    const items = filtered.map(pl => {
+      let displayPath = pl.playlist_name;
+      if (pl.parent_id) {
+        const parent = playlistMap.get(pl.parent_id);
+        if (parent) {
+          let prefix = parent.playlist_name;
+          if (parent.parent_id) {
+            const grandParent = playlistMap.get(parent.parent_id);
+            if (grandParent) prefix = `${grandParent.playlist_name} › ${prefix}`;
+          }
+          displayPath = `${prefix} › ${pl.playlist_name}`;
+        }
+      }
+      const isCustom = !pl.folder_path && (!pl.parent_id || pl.parent_id === 0);
+      return { ...pl, displayPath, isCustom };
+    });
+
+    items.sort((a, b) => {
+      if (a.isCustom && !b.isCustom) return -1;
+      if (!a.isCustom && b.isCustom) return 1;
+      return a.displayPath.localeCompare(b.displayPath, undefined, { sensitivity: 'base' });
+    });
+
+    return items;
+  }, [playlists, playlistMap, excludedData?.excluded_playlist_sidebar]);
+
+  const displayedSavePlaylists = useMemo(() => {
+    if (!saveSearchQuery.trim()) return saveablePlaylists;
+    const q = saveSearchQuery.toLowerCase();
+    return saveablePlaylists.filter(pl =>
+      pl.displayPath.toLowerCase().includes(q) || pl.playlist_name.toLowerCase().includes(q)
+    );
+  }, [saveablePlaylists, saveSearchQuery]);
 
   // Fullscreen '/' search overlay state
   const [showFsSearch, setShowFsSearch] = useState(false);
@@ -4555,7 +4699,15 @@ function PlayerView({
       onPlayRandom(isMiniPlayer);
     } else {
       const idx = allVideos.findIndex(v => v.vid_id === video.vid_id);
-      if (idx < allVideos.length - 1) onPlayVideo(allVideos[idx + 1], undefined, undefined, isMiniPlayer);
+      const exNormal = new Set([...(excludedData?.next_play_normal || []), ...(excludedData?.all_next_play || [])]);
+      let nextVid = null;
+      for (let i = idx + 1; i < allVideos.length; i++) {
+        if (!exNormal.has(allVideos[i].vid_id)) {
+          nextVid = allVideos[i];
+          break;
+        }
+      }
+      if (nextVid) onPlayVideo(nextVid, undefined, undefined, isMiniPlayer);
     }
   };
 
@@ -6194,8 +6346,16 @@ function PlayerView({
     if (isLooping) return;
     if (isReverseAutoplay) {
       const currentIndex = allVideos.findIndex(v => v.vid_id === video.vid_id);
-      if (currentIndex > 0) {
-        onPlayVideo(allVideos[currentIndex - 1], undefined, undefined, isMiniPlayer);
+      const exNormal = new Set([...(excludedData?.next_play_normal || []), ...(excludedData?.all_next_play || [])]);
+      let prevVid = null;
+      for (let i = currentIndex - 1; i >= 0; i--) {
+        if (!exNormal.has(allVideos[i].vid_id)) {
+          prevVid = allVideos[i];
+          break;
+        }
+      }
+      if (prevVid) {
+        onPlayVideo(prevVid, undefined, undefined, isMiniPlayer);
       }
     } else {
       handleNextVideo();
@@ -6385,7 +6545,7 @@ function PlayerView({
                 ref={fsSearchInputRef}
                 type="text"
                 className="fullscreen-search-input"
-                placeholder="Search videos... (e.g. /s for Shorts, /pl for Playlists)"
+                placeholder="Search"
                 value={fsSearchQuery}
                 onChange={(e) => setFsSearchQuery(e.target.value)}
                 onKeyDown={handleFsSearchKeyDown}
@@ -8040,7 +8200,7 @@ function PlayerView({
             ) : (
               /* Standard Desktop Detail Layout */
               <div className="video-metadata-details">
-                <h1 className="video-detail-title">{video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}</h1>
+                <h1 className="video-detail-title" title={video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}>{video.vid_name.replace(/\.[a-zA-Z0-9]+$/, '')}</h1>
 
                 <div className="video-detail-actions">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -8632,18 +8792,21 @@ function PlayerView({
                         </div>
 
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{
-                            fontSize: isMobile ? '12px' : '13px',
-                            fontWeight: isCurrent ? 'bold' : 'normal',
-                            color: isCurrent ? 'var(--primary-color)' : '#fff',
-                            whiteSpace: isMobile ? 'normal' : 'nowrap',
-                            display: isMobile ? '-webkit-box' : 'block',
-                            WebkitLineClamp: isMobile ? 2 : undefined,
-                            WebkitBoxOrient: isMobile ? 'vertical' : undefined,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            lineHeight: '1.3'
-                          }}>
+                          <div
+                            title={cleanTitle}
+                            style={{
+                              fontSize: isMobile ? '12px' : '13px',
+                              fontWeight: isCurrent ? 'bold' : 'normal',
+                              color: isCurrent ? 'var(--primary-color)' : '#fff',
+                              whiteSpace: isMobile ? 'normal' : 'nowrap',
+                              display: isMobile ? '-webkit-box' : 'block',
+                              WebkitLineClamp: isMobile ? 2 : undefined,
+                              WebkitBoxOrient: isMobile ? 'vertical' : undefined,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              lineHeight: '1.3'
+                            }}
+                          >
                             {cleanTitle}
                           </div>
                           <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -8762,28 +8925,58 @@ function PlayerView({
                   <button className="modal-close" onClick={() => setShowSaveModal(false)}>&times;</button>
                 </div>
 
+                {/* Playlists checklist search filter */}
+                {saveablePlaylists.length > 5 && (
+                  <div style={{ marginBottom: '10px' }}>
+                    <input
+                      type="text"
+                      placeholder="Search playlists..."
+                      value={saveSearchQuery}
+                      onChange={(e) => setSaveSearchQuery(e.target.value)}
+                      style={{
+                        width: '100%',
+                        fontSize: '13px',
+                        padding: '6px 10px',
+                        background: 'rgba(255,255,255,0.06)',
+                        borderRadius: '6px',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        color: '#fff',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+                )}
+
                 {/* Playlists checklist */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '200px', overflowY: 'auto', paddingRight: '4px', marginBottom: '20px' }}>
-                  {playlists.map(pl => {
-                    const isSaved = pl.video_ids && pl.video_ids.includes(video.vid_id);
-                    return (
-                      <label key={pl.id} className="playlist-save-item">
-                        <input
-                          type="checkbox"
-                          checked={isSaved}
-                          onChange={() => {
-                            if (isSaved) {
-                              removeVideoFromPlaylist(pl.id, video.vid_id);
-                            } else {
-                              addVideoToPlaylist(pl.id, video.vid_id);
-                            }
-                          }}
-                          className="playlist-save-checkbox"
-                        />
-                        <span className="playlist-save-label-text">{pl.playlist_name}</span>
-                      </label>
-                    );
-                  })}
+                  {displayedSavePlaylists.length === 0 ? (
+                    <div style={{ color: '#888', fontSize: '13px', padding: '12px 0', textAlign: 'center' }}>
+                      {saveSearchQuery ? 'No matching playlists' : 'No playlists available'}
+                    </div>
+                  ) : (
+                    displayedSavePlaylists.map(pl => {
+                      const isSaved = pl.video_ids && pl.video_ids.includes(video.vid_id);
+                      return (
+                        <label key={pl.id} className="playlist-save-item" title={pl.displayPath}>
+                          <input
+                            type="checkbox"
+                            checked={isSaved}
+                            onChange={() => {
+                              if (isSaved) {
+                                removeVideoFromPlaylist(pl.id, video.vid_id);
+                              } else {
+                                addVideoToPlaylist(pl.id, video.vid_id);
+                              }
+                            }}
+                            className="playlist-save-checkbox"
+                          />
+                          <span className="playlist-save-label-text" title={pl.displayPath} style={{ fontSize: '13px', wordBreak: 'break-word' }}>
+                            {pl.displayPath}
+                          </span>
+                        </label>
+                      );
+                    })
+                  )}
                 </div>
 
                 {/* Create Playlist Form */}
@@ -9850,6 +10043,7 @@ function PlaylistView({
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <h3
                       onClick={!isMobile ? () => onPlayVideo(vid, playlist, idx) : undefined}
+                      title={cleanTitle}
                       style={{
                         fontSize: isMobile ? '13px' : '15px',
                         fontWeight: '600',

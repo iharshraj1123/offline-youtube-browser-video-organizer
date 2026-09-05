@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Download, Link, Image, Music, Video, Film, Clock, User, Eye, ThumbsUp, Settings, Folder, ChevronDown, X, Loader2, CheckCircle, AlertCircle, AlertTriangle, RefreshCw, Trash2, Maximize2, Minimize2, Cookie, FileText, Globe, Upload, HelpCircle, Check } from 'lucide-react';
+import { Download, Link, Image, Music, Video, Film, Clock, User, Eye, ThumbsUp, Settings, Folder, ChevronDown, X, Loader2, CheckCircle, AlertCircle, AlertTriangle, RefreshCw, Trash2, Maximize2, Minimize2, Cookie, FileText, Globe, Upload, HelpCircle, Check, Scissors } from 'lucide-react';
 
 function formatDuration(seconds) {
   if (!seconds || isNaN(seconds)) return '0:00';
@@ -8,6 +8,62 @@ function formatDuration(seconds) {
   const s = Math.floor(seconds % 60);
   if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function parseTimeInput(val) {
+  if (val === null || val === undefined) return null;
+  const s = String(val).trim();
+  if (s === '') return null;
+  if (/^\d+(\.\d+)?$/.test(s)) {
+    return parseFloat(s);
+  }
+  const parts = s.split(':');
+  if (parts.length === 2) {
+    if (/^\d+$/.test(parts[0]) && /^[0-5]?\d(\.\d+)?$/.test(parts[1])) {
+      return parseInt(parts[0], 10) * 60 + parseFloat(parts[1]);
+    }
+  } else if (parts.length === 3) {
+    if (/^\d+$/.test(parts[0]) && /^[0-5]?\d$/.test(parts[1]) && /^[0-5]?\d(\.\d+)?$/.test(parts[2])) {
+      return parseInt(parts[0], 10) * 3600 + parseInt(parts[1], 10) * 60 + parseFloat(parts[2]);
+    }
+  }
+  return NaN;
+}
+
+function getTrimStatus(trimStart, trimEnd, totalDuration) {
+  const startSec = parseTimeInput(trimStart);
+  const endSec = parseTimeInput(trimEnd);
+
+  if (Number.isNaN(startSec)) return { active: false, error: 'Invalid start time format' };
+  if (Number.isNaN(endSec)) return { active: false, error: 'Invalid end time format' };
+
+  const hasStart = startSec !== null && startSec > 0;
+  const hasEnd = endSec !== null && endSec > 0;
+
+  if (!hasStart && !hasEnd) {
+    return { active: false, error: null };
+  }
+
+  if (startSec !== null && endSec !== null && endSec > 0 && endSec <= startSec) {
+    return { active: false, error: 'End must be after start' };
+  }
+
+  if (totalDuration > 0 && startSec !== null && startSec >= totalDuration) {
+    return { active: false, error: 'Start exceeds video duration' };
+  }
+
+  const effectiveStart = hasStart ? startSec : 0;
+  const effectiveEnd = hasEnd ? endSec : (totalDuration > 0 ? totalDuration : null);
+  const durationSec = effectiveEnd !== null ? (effectiveEnd - effectiveStart) : null;
+
+  return {
+    active: true,
+    error: null,
+    startSec: effectiveStart,
+    endSec: hasEnd ? endSec : null,
+    durationSec: durationSec !== null && durationSec > 0 ? durationSec : null,
+    summary: `${formatDuration(effectiveStart)} → ${hasEnd ? formatDuration(endSec) : 'End'}${durationSec !== null && durationSec > 0 ? ' (' + formatDuration(durationSec) + ')' : ''}`
+  };
 }
 
 function formatNumber(n) {
@@ -158,6 +214,9 @@ export function DownloaderView({ currentUser }) {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [throttle, setThrottle] = useState('');
   const [customArgs, setCustomArgs] = useState('');
+  const [proxy, setProxy] = useState(() => {
+    return localStorage.getItem('downloader_proxy') || '';
+  });
   const [autoIndex, setAutoIndex] = useState(true);
 
   const [queueActive, setQueueActive] = useState(false);
@@ -320,6 +379,12 @@ export function DownloaderView({ currentUser }) {
   }, [customPath]);
 
   useEffect(() => {
+    if (proxy !== undefined) {
+      localStorage.setItem('downloader_proxy', proxy);
+    }
+  }, [proxy]);
+
+  useEffect(() => {
     const handleClick = (e) => {
       if (pathSelectorRef.current && !pathSelectorRef.current.contains(e.target)) {
         setShowPathSelector(false);
@@ -431,6 +496,8 @@ export function DownloaderView({ currentUser }) {
       customPath: '',
       status: 'fetching',
       progress: 0, speed: '', eta: '', file: '', size: '', indexed: false, vid_id: null, error: '',
+      trimStart: '',
+      trimEnd: '',
     };
     setFetchedItems(prev => [...prev, tempItem]);
     setUrl('');
@@ -440,6 +507,7 @@ export function DownloaderView({ currentUser }) {
       formData.append('url', cleaned);
       formData.append('cookie_mode', cookieMode);
       formData.append('cookie_browser', cookieBrowser);
+      if (proxy && proxy.trim()) formData.append('proxy', proxy.trim());
       if (customArgs) formData.append('extra_args', customArgs);
 
       const res = await fetch('./api/index.php?action=ytdlp_info', {
@@ -493,7 +561,19 @@ export function DownloaderView({ currentUser }) {
 
   const downloadItem = async (item) => {
     if (item.status === 'downloading') return;
-    updateItem(item.id, { status: 'downloading', progress: 0, speed: '', eta: '', error: '' });
+    const trimInfo = getTrimStatus(item.trimStart, item.trimEnd, item.duration);
+    if (trimInfo.error) {
+      setError(`Cannot download "${item.title || 'video'}": ${trimInfo.error}`);
+      return;
+    }
+    updateItem(item.id, {
+      status: 'downloading',
+      progress: 0,
+      speed: '',
+      eta: '',
+      error: '',
+      trimSummary: trimInfo.active ? trimInfo.summary : ''
+    });
     setError('');
 
     let destPath = '';
@@ -537,6 +617,9 @@ export function DownloaderView({ currentUser }) {
       formData.append('auto_index', isDownloadToDevice ? '0' : (autoIndex ? '1' : '0'));
       formData.append('cookie_mode', cookieMode);
       formData.append('cookie_browser', cookieBrowser);
+      if (proxy && proxy.trim()) formData.append('proxy', proxy.trim());
+      formData.append('trim_start', item.trimStart ? item.trimStart.trim() : '');
+      formData.append('trim_end', item.trimEnd ? item.trimEnd.trim() : '');
 
       const res = await fetch('./api/index.php?action=ytdlp_download', {
         method: 'POST',
@@ -607,6 +690,12 @@ export function DownloaderView({ currentUser }) {
   const handleDownloadAll = async () => {
     const ready = [...fetchedItems.filter(f => f.status === 'ready')];
     if (ready.length === 0) return;
+    const invalidItem = ready.find(f => Boolean(getTrimStatus(f.trimStart, f.trimEnd, f.duration).error));
+    if (invalidItem) {
+      const err = getTrimStatus(invalidItem.trimStart, invalidItem.trimEnd, invalidItem.duration).error;
+      setError(`Please fix trimming for "${invalidItem.title || 'video'}": ${err}`);
+      return;
+    }
     setQueueActive(true);
     try {
       for (const item of ready) {
@@ -805,6 +894,58 @@ export function DownloaderView({ currentUser }) {
                     />
                   </div>
                 )}
+                {item.status === 'ready' && (() => {
+                  const trimInfo = getTrimStatus(item.trimStart, item.trimEnd, item.duration);
+                  const hasInput = (item.trimStart && item.trimStart.trim() !== '') || (item.trimEnd && item.trimEnd.trim() !== '');
+
+                  return (
+                    <div className="item-trim-row">
+                      <span style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
+                        <Scissors size={12} style={{ color: trimInfo.active ? '#34d399' : 'var(--text-secondary)' }} /> Trim:
+                      </span>
+                      <div className="trim-input-group">
+                        <span className="trim-input-label">Start:</span>
+                        <input
+                          type="text"
+                          className={`trim-input-sm ${trimInfo.error && trimInfo.error.toLowerCase().includes('start') ? 'input-error' : ''}`}
+                          value={item.trimStart || ''}
+                          onChange={(e) => updateItem(item.id, { trimStart: e.target.value })}
+                          placeholder="0 or 0:00"
+                        />
+                      </div>
+                      <div className="trim-input-group">
+                        <span className="trim-input-label">End:</span>
+                        <input
+                          type="text"
+                          className={`trim-input-sm ${trimInfo.error && (trimInfo.error.toLowerCase().includes('end') || trimInfo.error.toLowerCase().includes('after')) ? 'input-error' : ''}`}
+                          value={item.trimEnd || ''}
+                          onChange={(e) => updateItem(item.id, { trimEnd: e.target.value })}
+                          placeholder="End (e.g. 1:30)"
+                        />
+                      </div>
+                      {trimInfo.active && (
+                        <span className="trim-badge trim-badge-active" title="Video will be trimmed during download">
+                          ✂ {trimInfo.summary}
+                        </span>
+                      )}
+                      {trimInfo.error && (
+                        <span className="trim-badge trim-badge-error" title={trimInfo.error}>
+                          {trimInfo.error}
+                        </span>
+                      )}
+                      {hasInput && (
+                        <button
+                          type="button"
+                          className="trim-btn-clear"
+                          onClick={() => updateItem(item.id, { trimStart: '', trimEnd: '' })}
+                          title="Reset / Clear trimming (download full video)"
+                        >
+                          <X size={12} />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })()}
                 <div className="video-meta" style={{ fontSize: '12px', marginBottom: 0 }}>
                   <span><User size={12} /> {item.uploader}</span>
                   {item.durationString && <span><Clock size={12} /> {item.durationString}</span>}
@@ -829,6 +970,7 @@ export function DownloaderView({ currentUser }) {
                   <div style={{ fontSize: '11px', color: '#4ade80' }}>
                     {item.file} {item.size && `• ${item.size}`}
                     {item.indexed && <span className="indexed-badge" style={{ marginLeft: '6px' }}>✓ Indexed</span>}
+                    {item.trimSummary && <span className="trim-badge trim-badge-active" style={{ marginLeft: '6px' }}>✂ {item.trimSummary}</span>}
                     {item.cleanedUrl && <div style={{ color: 'var(--border-color)', fontSize: '9px', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>source: {item.cleanedUrl}</div>}
                   </div>
                 )}
@@ -867,7 +1009,9 @@ export function DownloaderView({ currentUser }) {
                         )}
                       </div>
                       <button className="btn-primary" style={{ padding: '4px 10px', fontSize: '11px' }}
-                        onClick={() => handleDownloadSingle(item)} disabled={isDownloading}>
+                        onClick={() => handleDownloadSingle(item)}
+                        disabled={isDownloading || Boolean(getTrimStatus(item.trimStart, item.trimEnd, item.duration).error)}
+                        title={getTrimStatus(item.trimStart, item.trimEnd, item.duration).error || 'Download'}>
                         <Download size={12} /> Download
                       </button>
                     </>
@@ -1018,6 +1162,21 @@ export function DownloaderView({ currentUser }) {
                   <input type="text" className="input-full" value={customArgs} onChange={(e) => setCustomArgs(e.target.value)}
                     placeholder="--no-mtime --embed-thumbnail ..." disabled={isDownloading} />
                 </div>
+              </div>
+              <div className="option-group" style={{ marginTop: '8px' }}>
+                <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Globe size={14} /> Proxy URL (Bypass ISP / Region Blocks)
+                  </span>
+                  {proxy && (
+                    <button type="button" onClick={() => setProxy('')} style={{ background: 'none', border: 'none', color: 'var(--text-muted, #9ca3af)', fontSize: '11px', cursor: 'pointer', padding: 0 }}>
+                      Clear
+                    </button>
+                  )}
+                </label>
+                <input type="text" className="input-full" value={proxy} onChange={(e) => setProxy(e.target.value)}
+                  placeholder="e.g. socks5://127.0.0.1:1080 or http://127.0.0.1:8080" disabled={isDownloading} />
+                <span className="hint">Routes yt-dlp through a local or remote proxy (SOCKS5/HTTP) to bypass ISP blockades without routing your entire PC through a VPN.</span>
               </div>
 
               {/* Cookie Configuration in Advanced Options */}

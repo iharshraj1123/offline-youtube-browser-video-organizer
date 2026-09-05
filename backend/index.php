@@ -725,8 +725,14 @@ function handleGetVideo($pdo) {
 }
 
 function handleGetRandomVideo($pdo) {
-    // Select a single random video (exclude compatibility seed 10)
-    $stmt = $pdo->query("SELECT * FROM video_metadatas WHERE vid_id != 10 ORDER BY RAND() LIMIT 1");
+    // Select a single random video (exclude compatibility seed 10 and next_play random exclusions)
+    $ex = getExcludedVideoIds($pdo, 'next_play', 'random');
+    $where = ["vid_id != 10"];
+    if (!empty($ex)) {
+        $where[] = "vid_id NOT IN (" . implode(',', array_map('intval', $ex)) . ")";
+    }
+    $whereSql = implode(' AND ', $where);
+    $stmt = $pdo->query("SELECT * FROM video_metadatas WHERE $whereSql ORDER BY RAND() LIMIT 1");
     $video = $stmt->fetch();
     
     if ($video) {
@@ -4569,6 +4575,23 @@ function getYtdlpJsRuntimeArgs() {
     return $jsArgs;
 }
 
+function getYtdlpPluginArgs() {
+    $pluginsDir = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'plugins';
+    if (is_dir($pluginsDir)) {
+        return ' --plugin-dirs ' . escapeshellarg($pluginsDir);
+    }
+    return '';
+}
+
+function isLocalPortOpen($port = 40000) {
+    $fp = @fsockopen('127.0.0.1', $port, $errno, $errstr, 0.15);
+    if (is_resource($fp)) {
+        fclose($fp);
+        return true;
+    }
+    return false;
+}
+
 function getYtdlpCookieFilePath() {
     return dirname(__FILE__) . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'cookies.txt';
 }
@@ -4669,11 +4692,21 @@ function handleYtdlpInfo() {
     $cookieMode = $_POST['cookie_mode'] ?? $_GET['cookie_mode'] ?? 'default';
     $cookieBrowser = $_POST['cookie_browser'] ?? $_GET['cookie_browser'] ?? '';
     $extraArgs = $_POST['extra_args'] ?? '';
+    $proxy = trim($_POST['proxy'] ?? $_GET['proxy'] ?? '');
+    if (empty($proxy) && (stripos($url, 'hanime') !== false || stripos($url, 'hstream') !== false || stripos($url, 'hentaihaven') !== false)) {
+        if (isLocalPortOpen(40000)) {
+            $proxy = 'socks5h://127.0.0.1:40000';
+        }
+    }
+    $proxyArgs = !empty($proxy) ? (' --proxy ' . escapeshellarg($proxy)) : '';
+    $pluginArgs = getYtdlpPluginArgs();
 
     $cookieArgs = getYtdlpCookieArgs($cookieMode, $cookieBrowser);
     $jsRuntimeArgs = getYtdlpJsRuntimeArgs();
     $baseArgs = '--dump-json --no-download --ignore-errors --no-warnings';
     if (!empty($jsRuntimeArgs)) $baseArgs .= ' ' . trim($jsRuntimeArgs);
+    if (!empty($pluginArgs)) $baseArgs .= ' ' . trim($pluginArgs);
+    if (!empty($proxyArgs)) $baseArgs .= ' ' . trim($proxyArgs);
     if (!empty($extraArgs)) $baseArgs .= ' ' . trim($extraArgs);
 
     // Helper closure to run yt-dlp info command and parse JSON
@@ -4716,6 +4749,14 @@ function handleYtdlpInfo() {
         $noCookieRes = $runInfoCmd('');
         if ($noCookieRes['data']) {
             $res = $noCookieRes;
+        }
+    }
+
+    // Fallback 3: If still failing and local proxy is available on port 40000, retry through it
+    if (!$res['data'] && empty($proxy) && isLocalPortOpen(40000)) {
+        $warpRes = $runInfoCmd($cookieArgs . ' --proxy ' . escapeshellarg('socks5h://127.0.0.1:40000'));
+        if ($warpRes['data']) {
+            $res = $warpRes;
         }
     }
 
@@ -4795,6 +4836,36 @@ function handleYtdlpInfo() {
     exit;
 }
 
+function parseTimeToSeconds($val) {
+    if ($val === null) return null;
+    $val = trim((string)$val);
+    if ($val === '') return null;
+    if (is_numeric($val)) {
+        $num = (float)$val;
+        return $num >= 0 ? $num : false;
+    }
+    $parts = explode(':', $val);
+    if (count($parts) === 2) {
+        if (is_numeric($parts[0]) && is_numeric($parts[1])) {
+            $m = (float)$parts[0];
+            $s = (float)$parts[1];
+            if ($m >= 0 && $s >= 0 && $s < 60) {
+                return $m * 60 + $s;
+            }
+        }
+    } elseif (count($parts) === 3) {
+        if (is_numeric($parts[0]) && is_numeric($parts[1]) && is_numeric($parts[2])) {
+            $h = (float)$parts[0];
+            $m = (float)$parts[1];
+            $s = (float)$parts[2];
+            if ($h >= 0 && $m >= 0 && $m < 60 && $s >= 0 && $s < 60) {
+                return $h * 3600 + $m * 60 + $s;
+            }
+        }
+    }
+    return false;
+}
+
 function handleYtdlpDownload($pdo = null) {
     $downloadStartTime = time();
     $url = $_POST['url'] ?? '';
@@ -4840,11 +4911,58 @@ function handleYtdlpDownload($pdo = null) {
     $outputTemplate = $outputDir . DIRECTORY_SEPARATOR . $filenameTemplate;
     $infoFile = $outputDir . DIRECTORY_SEPARATOR . '_yt_name_' . uniqid() . '.txt';
     $extraArgs = $_POST['extra_args'] ?? '';
+    $proxy = trim($_POST['proxy'] ?? '');
+    if (empty($proxy) && (stripos($url, 'hanime') !== false || stripos($url, 'hstream') !== false || stripos($url, 'hentaihaven') !== false)) {
+        if (isLocalPortOpen(40000)) {
+            $proxy = 'socks5h://127.0.0.1:40000';
+        }
+    }
+    $proxyArgs = !empty($proxy) ? (' --proxy ' . escapeshellarg($proxy)) : '';
+    $pluginArgs = getYtdlpPluginArgs();
 
     $cmdParts = [$path, '-f', escapeshellarg($format), '-o', '"' . $outputTemplate . '"', '--windows-filenames', '--print-to-file', 'filename', '"' . $infoFile . '"', '--no-playlist', '--ignore-errors', '--no-warnings', '--no-mtime', '--progress', '--newline'];
     if (!empty($cookieArgs)) $cmdParts[] = $cookieArgs;
     if (!empty($jsRuntimeArgs)) $cmdParts[] = trim($jsRuntimeArgs);
+    if (!empty($pluginArgs)) $cmdParts[] = trim($pluginArgs);
+    if (!empty($proxyArgs)) $cmdParts[] = trim($proxyArgs);
     if (!empty($extraArgs)) $cmdParts[] = trim($extraArgs);
+
+    // Explicitly provide FFmpeg path if available so yt-dlp can locate it for section slicing and merging
+    $ffmpegPath = getFFmpegPath();
+    if (!empty($ffmpegPath)) {
+        $cleanFfmpeg = trim($ffmpegPath, '"');
+        $cmdParts[] = '--ffmpeg-location ' . escapeshellarg($cleanFfmpeg);
+    }
+
+    // Trimming options (start & end)
+    $trimStartRaw = $_POST['trim_start'] ?? '';
+    $trimEndRaw = $_POST['trim_end'] ?? '';
+    $startSec = parseTimeToSeconds($trimStartRaw);
+    $endSec = parseTimeToSeconds($trimEndRaw);
+
+    if ($startSec === false || $endSec === false) {
+        header('Content-Type: text/event-stream');
+        echo "data: " . json_encode(['type' => 'error', 'message' => 'Invalid trim time format. Use seconds (e.g. 90) or mm:ss / hh:mm:ss.']) . "\n\n";
+        flush();
+        exit;
+    }
+
+    $hasStart = ($startSec !== null && $startSec > 0);
+    $hasEnd = ($endSec !== null && $endSec > 0);
+
+    if ($hasStart || $hasEnd) {
+        if ($startSec !== null && $endSec !== null && $endSec > 0 && $endSec <= $startSec) {
+            header('Content-Type: text/event-stream');
+            echo "data: " . json_encode(['type' => 'error', 'message' => 'Trim end time must be greater than start time.']) . "\n\n";
+            flush();
+            exit;
+        }
+        $secStart = ($startSec !== null && $startSec > 0) ? $startSec : 0;
+        $secEnd = ($endSec !== null && $endSec > 0) ? $endSec : 'inf';
+        $cmdParts[] = '--download-sections ' . escapeshellarg('*' . $secStart . '-' . $secEnd);
+        $cmdParts[] = '--force-keyframes-at-cuts';
+    }
+
     $cmdParts[] = escapeshellarg($url);
     $cmdParts[] = '2>&1';
     $cmd = implode(' ', $cmdParts);

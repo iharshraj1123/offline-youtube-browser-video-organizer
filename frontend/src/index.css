@@ -5646,6 +5646,90 @@ body.mini-player-dragging * {
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
 }
 
+/* Per-item Trimming Controls */
+.item-trim-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+  flex-wrap: wrap;
+}
+
+.trim-input-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.trim-input-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.trim-input-sm {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  color: #fff;
+  font-size: 11px;
+  padding: 2px 6px;
+  font-family: var(--font-family);
+  width: 82px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.trim-input-sm:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+.trim-input-sm.input-error {
+  border-color: #f87171 !important;
+  box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.2) !important;
+}
+
+.trim-badge {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.trim-badge-active {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
+.trim-badge-error {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+}
+
+.trim-btn-clear {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.trim-btn-clear:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
 /* Download Progress */
 .download-progress-section {
   margin-bottom: 16px;
