@@ -156,10 +156,13 @@ class MetadataParser {
                 }
             }
 
-            // Parse video stream info
+            // Parse video and audio stream info
             if (isset($json['streams'])) {
+                $hasVideo = false;
+                $hasAudio = false;
                 foreach ($json['streams'] as $stream) {
-                    if (isset($stream['codec_type']) && $stream['codec_type'] === 'video') {
+                    $codecType = $stream['codec_type'] ?? '';
+                    if ($codecType === 'video' && !$hasVideo) {
                         $result['width'] = (int)$stream['width'];
                         $result['height'] = (int)$stream['height'];
                         $result['codec'] = substr(trim($stream['codec_name'] ?? ''), 0, 100);
@@ -179,6 +182,13 @@ class MetadataParser {
                                 $result['framerate'] = round($fps * 100) / 100;
                             }
                         }
+                        $hasVideo = true;
+                    } elseif ($codecType === 'audio' && !$hasAudio) {
+                        $result['audio_codec'] = substr(trim($stream['codec_name'] ?? ''), 0, 50);
+                        $hasAudio = true;
+                    }
+
+                    if ($hasVideo && $hasAudio) {
                         break;
                     }
                 }
@@ -288,6 +298,7 @@ class MetadataParser {
         }
 
         $result['codec'] = 'h264';
+        $result['audio_codec'] = 'aac';
         $result['framerate'] = 30;
 
         return !empty($result) ? $result : null;

@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS `video_metadatas` (
     `bitrate` int(11) DEFAULT NULL,
     `framerate` float DEFAULT NULL,
     `codec` varchar(50) DEFAULT NULL,
+    `audio_codec` varchar(50) DEFAULT NULL,
     
     PRIMARY KEY (`vid_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

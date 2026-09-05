@@ -3624,7 +3624,8 @@ function ShortsPlayerView({
                   <div><strong>File Size:</strong> {currentVideo.filesize ? `${(currentVideo.filesize / (1024 * 1024)).toFixed(2)} MB` : 'N/A'}</div>
                   <div><strong>Bitrate:</strong> {currentVideo.bitrate ? `${currentVideo.bitrate} kbps` : 'N/A'}</div>
                   <div><strong>Frame Rate:</strong> {currentVideo.framerate ? `${Math.round(currentVideo.framerate)} fps` : '30 fps'}</div>
-                  <div><strong>Codec:</strong> {currentVideo.codec || 'h264'}</div>
+                  <div><strong>Video Codec:</strong> {currentVideo.codec || 'h264'}</div>
+                  <div><strong>Audio Codec:</strong> {currentVideo.audio_codec || 'aac'}</div>
                   <div style={{ wordBreak: 'break-all' }}><strong>Source:</strong> {currentVideo.link}</div>
                 </div>
               )}
@@ -4080,6 +4081,9 @@ function SidebarVideoCard({ vid, onPlayVideo }) {
   );
 }
 
+// Session-level playback speed (persists across video changes and playlists, resets on page refresh)
+let sessionPlaybackSpeed = parseFloat(localStorage.getItem('yt_default_speed')) || 1;
+
 function PlayerView({
   video, onVideoDeleted, onOpenShortById, allVideos, extraVideosMap = {}, onFetchMissingVideos, onPlayVideo, onOpenPlaylist, isMiniPlayer, onExpand, onClose, isTheaterMode, setIsTheaterMode, onPlayRandom,
   playlists, excludedData = {}, activePlaylist, setActivePlaylist, currentPlaylistIndex, setCurrentPlaylistIndex,
@@ -4464,19 +4468,28 @@ function PlayerView({
   const [subActiveIdx, setSubActiveIdx] = useState(-1);
   const [subStyleVer, setSubStyleVer] = useState(0);
 
-  // Close cast/settings menus on outside click
+  // Close cast/settings menus on outside click (capture phase so clicks on video or other controls aren't blocked)
   useEffect(() => {
     if (!showCastMenu && !showSettings) return;
     const handleClickOutside = (e) => {
-      if (castDropdownRef.current && !castDropdownRef.current.contains(e.target) && !e.target.closest('.control-btn')) {
-        setShowCastMenu(false);
+      if (showCastMenu && castDropdownRef.current && !castDropdownRef.current.contains(e.target)) {
+        if (!e.target.closest('.cast-btn')) {
+          setShowCastMenu(false);
+        }
       }
-      if (settingsDropdownRef.current && !settingsDropdownRef.current.contains(e.target) && !e.target.closest('.control-btn')) {
-        setShowSettings(false);
+      if (showSettings && settingsDropdownRef.current && !settingsDropdownRef.current.contains(e.target)) {
+        if (!e.target.closest('.settings-btn')) {
+          setShowSettings(false);
+          setSettingsSubmenu('main');
+        }
       }
     };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    document.addEventListener('pointerdown', handleClickOutside, true);
+    document.addEventListener('click', handleClickOutside, true);
+    return () => {
+      document.removeEventListener('pointerdown', handleClickOutside, true);
+      document.removeEventListener('click', handleClickOutside, true);
+    };
   }, [showCastMenu, showSettings]);
 
   // Auto-scroll playlist queue to current video on change
@@ -4547,10 +4560,45 @@ function PlayerView({
   const playerWrapperRef = useRef(null);
 
   // Settings extra states
-  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [playbackSpeed, setPlaybackSpeedState] = useState(sessionPlaybackSpeed);
+  const playbackSpeedRef = useRef(sessionPlaybackSpeed);
+
+  const setPlaybackSpeed = useCallback((valOrUpdater) => {
+    setPlaybackSpeedState(prev => {
+      const nextVal = typeof valOrUpdater === 'function' ? valOrUpdater(prev) : valOrUpdater;
+      sessionPlaybackSpeed = nextVal;
+      playbackSpeedRef.current = nextVal;
+      if (videoRef.current) {
+        videoRef.current.playbackRate = nextVal;
+      }
+      return nextVal;
+    });
+  }, []);
   const [isLooping, setIsLooping] = useState(false);
   const [isRandom, setIsRandom] = useState(() => localStorage.getItem('yt_random') === 'true');
   const [showStats, setShowStats] = useState(false);
+  const [probedAudioCodec, setProbedAudioCodec] = useState(null);
+
+  useEffect(() => {
+    setProbedAudioCodec(null);
+  }, [video?.vid_id]);
+
+  // Probe video metadata (including audio codec) when Stats for Nerds is viewed if not already available
+  useEffect(() => {
+    if (!showStats || !video?.vid_id) return;
+    if (video.audio_codec || probedAudioCodec) return;
+    if (mkvStreams?.audio_streams?.[0]?.codec) return;
+    let isMounted = true;
+    fetch(`./api/index.php?action=probe_video&id=${video.vid_id}`)
+      .then(r => r.json())
+      .then(data => {
+        if (!isMounted) return;
+        const ac = data.audio_codec || data.audio_streams?.[0]?.codec;
+        if (ac) setProbedAudioCodec(ac);
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, [showStats, video?.vid_id, video?.audio_codec, probedAudioCodec, mkvStreams]);
   const [settingsSubmenu, setSettingsSubmenu] = useState('main'); // 'main' or 'speed'
   const [userActive, setUserActive] = useState(true);
   const hideControlsTimeoutRef = useRef(null);
@@ -4876,13 +4924,12 @@ function PlayerView({
     setCurrentTime(0);
     setDuration(parseInt(video.duration) || 0);
 
-    setPlaybackSpeed(1);
     setIsLooping(false);
     setShowStats(false);
     setSettingsSubmenu('main');
     showFlashNotification('');
     if (videoRef.current) {
-      videoRef.current.playbackRate = 1;
+      videoRef.current.playbackRate = playbackSpeedRef.current || 1;
       videoRef.current.volume = volume;
       videoRef.current.muted = isMuted;
       if (!isMiniPlayer) {
@@ -5674,6 +5721,9 @@ function PlayerView({
   const handleLoadedMetadata = () => {
     if (!videoRef.current) return;
     setDuration(videoRef.current.duration);
+    if (playbackSpeedRef.current && videoRef.current.playbackRate !== playbackSpeedRef.current) {
+      videoRef.current.playbackRate = playbackSpeedRef.current;
+    }
 
     // If duration in DB was 0, save it!
     if (parseInt(video.duration) === 0) {
@@ -6208,6 +6258,19 @@ function PlayerView({
         e.preventDefault();
         setShowSettings(prev => !prev);
       }
+      if (e.key === 'Escape') {
+        if (showSettings) {
+          e.preventDefault();
+          setShowSettings(false);
+          setSettingsSubmenu('main');
+          return;
+        }
+        if (showCastMenu) {
+          e.preventDefault();
+          setShowCastMenu(false);
+          return;
+        }
+      }
       if (castDevice) {
         if (e.code === 'Space') {
           e.preventDefault();
@@ -6228,20 +6291,18 @@ function PlayerView({
           return newVal;
         });
       }
-      if (e.code === 'NumpadAdd') {
+      if (e.code === 'NumpadAdd' || e.key === '+' || e.key === '=') {
         e.preventDefault();
         setPlaybackSpeed(prev => {
-          const newVal = Math.min(2.0, prev + 0.125);
-          if (videoRef.current) videoRef.current.playbackRate = newVal;
+          const newVal = Math.min(3.0, Math.round((prev + 0.125) * 1000) / 1000);
           showFlashNotification(`Speed: ${newVal}x`);
           return newVal;
         });
       }
-      if (e.code === 'NumpadSubtract') {
+      if (e.code === 'NumpadSubtract' || e.key === '-' || e.key === '_') {
         e.preventDefault();
         setPlaybackSpeed(prev => {
-          const newVal = Math.max(0.25, prev - 0.125);
-          if (videoRef.current) videoRef.current.playbackRate = newVal;
+          const newVal = Math.max(0.25, Math.round((prev - 0.125) * 1000) / 1000);
           showFlashNotification(`Speed: ${newVal}x`);
           return newVal;
         });
@@ -6857,7 +6918,12 @@ function PlayerView({
           })()}
           autoPlay={!castDevice}
           loop={isLooping}
-          onPlay={() => setIsPlaying(true)}
+          onPlay={() => {
+            setIsPlaying(true);
+            if (videoRef.current && playbackSpeedRef.current && videoRef.current.playbackRate !== playbackSpeedRef.current) {
+              videoRef.current.playbackRate = playbackSpeedRef.current;
+            }
+          }}
           onPause={() => setIsPlaying(false)}
           onTimeUpdate={handleTimeUpdate}
           onLoadedMetadata={handleLoadedMetadata}
@@ -7119,7 +7185,8 @@ function PlayerView({
               <div><strong>File Size:</strong> {video.filesize ? `${(video.filesize / (1024 * 1024)).toFixed(2)} MB` : 'Calculating...'}</div>
               <div><strong>Bitrate:</strong> {video.bitrate ? `${video.bitrate} kbps` : 'Calculating...'}</div>
               <div><strong>Frame Rate:</strong> {video.framerate ? `${Math.round(video.framerate)} fps` : '30 fps'}</div>
-              <div><strong>Codec:</strong> {video.codec || 'h264'}</div>
+              <div><strong>Video Codec:</strong> {video.codec || 'h264'}</div>
+              <div><strong>Audio Codec:</strong> {video.audio_codec || probedAudioCodec || mkvStreams?.audio_streams?.[selectedAudioIdx]?.codec || mkvStreams?.audio_streams?.[0]?.codec || castDiagnostics?.audio_codec || 'aac'}</div>
               <div style={{ wordBreak: 'break-all' }}><strong>Source:</strong> {video.link}</div>
             </div>
           </div>
@@ -7383,7 +7450,7 @@ function PlayerView({
                   {/* Top-Right Controls */}
                   <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
                     <button
-                      className={`control-btn ${showCastMenu ? 'cast-active' : ''}`}
+                      className={`control-btn cast-btn ${showCastMenu ? 'cast-active' : ''}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowCastMenu(!showCastMenu);
@@ -7403,7 +7470,7 @@ function PlayerView({
                       </button>
                     )}
                     <button
-                      className={`control-btn ${showSettings ? 'settings-active' : ''}`}
+                      className={`control-btn settings-btn ${showSettings ? 'settings-active' : ''}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowSettings(!showSettings);
@@ -7688,7 +7755,7 @@ function PlayerView({
                     </button>
                   )}
                   <button
-                    className={`control-btn ${showCastMenu ? 'cast-active' : ''}`}
+                    className={`control-btn cast-btn ${showCastMenu ? 'cast-active' : ''}`}
                     onClick={() => {
                       setShowCastMenu(!showCastMenu);
                       setShowSettings(false);
@@ -7716,7 +7783,7 @@ function PlayerView({
                     </button>
                   )}
                   <button
-                    className={`control-btn ${showSettings ? 'settings-active' : ''}`}
+                    className={`control-btn settings-btn ${showSettings ? 'settings-active' : ''}`}
                     onClick={() => {
                       setShowSettings(!showSettings);
                       setShowCastMenu(false);

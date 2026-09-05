@@ -1204,9 +1204,9 @@ function processSingleVideo($pdo, $file, $uploaderInfo, $ffmpegPath, $videoExten
 
     $insertStmt = $pdo->prepare("
         INSERT INTO video_metadatas 
-        (vid_name, vid_name_normalized, link, uploader_id, uploader_name, uploader_img, likes, dislikes, duration, views, upload_date, upload_time, tags, subtitles, description, comments, filesize, width, height, aspect_ratio, bitrate, framerate, codec)
+        (vid_name, vid_name_normalized, link, uploader_id, uploader_name, uploader_img, likes, dislikes, duration, views, upload_date, upload_time, tags, subtitles, description, comments, filesize, width, height, aspect_ratio, bitrate, framerate, codec, audio_codec)
         VALUES 
-        (:vid_name, :vid_name_normalized, :link, :uploader_id, :uploader_name, :uploader_img, 0, 0, :duration, 0, :upload_date, :upload_time, :tags, 'null', :description, 0, :filesize, :width, :height, :aspect_ratio, :bitrate, :framerate, :codec)
+        (:vid_name, :vid_name_normalized, :link, :uploader_id, :uploader_name, :uploader_img, 0, 0, :duration, 0, :upload_date, :upload_time, :tags, 'null', :description, 0, :filesize, :width, :height, :aspect_ratio, :bitrate, :framerate, :codec, :audio_codec)
     ");
 
     $insertStmt->execute([
@@ -1227,7 +1227,8 @@ function processSingleVideo($pdo, $file, $uploaderInfo, $ffmpegPath, $videoExten
         ':aspect_ratio' => !empty($meta['aspect_ratio']) ? substr(trim($meta['aspect_ratio']), 0, 50) : null,
         ':bitrate' => !empty($meta['bitrate']) ? (int)$meta['bitrate'] : null,
         ':framerate' => !empty($meta['framerate']) ? (float)$meta['framerate'] : null,
-        ':codec' => !empty($meta['codec']) ? substr(trim($meta['codec']), 0, 100) : null
+        ':codec' => !empty($meta['codec']) ? substr(trim($meta['codec']), 0, 100) : null,
+        ':audio_codec' => !empty($meta['audio_codec']) ? substr(trim($meta['audio_codec']), 0, 50) : null
     ]);
 
     $newId = $pdo->lastInsertId();
@@ -5224,8 +5225,24 @@ function handleProbeVideo($pdo) {
         }
     }
 
+    $primaryAudioCodec = !empty($audioStreams[0]['codec']) ? $audioStreams[0]['codec'] : '';
+
+    if (!empty($primaryAudioCodec)) {
+        try {
+            $upStmt = $pdo->prepare("UPDATE video_metadatas SET audio_codec = :ac WHERE vid_id = :id AND (audio_codec IS NULL OR audio_codec = '')");
+            $upStmt->execute([':ac' => substr(trim($primaryAudioCodec), 0, 50), ':id' => $id]);
+        } catch (Exception $e) {}
+    }
+    if (!empty($videoCodec)) {
+        try {
+            $upStmt = $pdo->prepare("UPDATE video_metadatas SET codec = :vc WHERE vid_id = :id AND (codec IS NULL OR codec = '')");
+            $upStmt->execute([':vc' => substr(trim($videoCodec), 0, 100), ':id' => $id]);
+        } catch (Exception $e) {}
+    }
+
     echo json_encode([
         'video_codec' => $videoCodec,
+        'audio_codec' => $primaryAudioCodec,
         'container' => $container,
         'copy_safe' => in_array($videoCodec, ['h264', 'hevc', 'h265'])
             && !preg_match('/p1[0-9]|1[0-9](le|be)/', $videoPixFmt),

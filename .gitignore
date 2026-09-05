@@ -35,3 +35,7 @@ backend/bin/cookies.txt
 # Environment files
 .env
 backend/.env
+
+# AI Agent Instructions
+gemini.md
+

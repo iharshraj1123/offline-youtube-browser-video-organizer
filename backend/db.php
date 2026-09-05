@@ -271,6 +271,9 @@ class Database {
             $pdo->exec("ALTER TABLE `video_metadatas` MODIFY COLUMN `codec` varchar(100) DEFAULT NULL");
         } catch (Exception $e) {}
         try {
+            $pdo->exec("ALTER TABLE `video_metadatas` ADD COLUMN `audio_codec` varchar(50) DEFAULT NULL");
+        } catch (Exception $e) {}
+        try {
             $pdo->exec("CREATE TABLE IF NOT EXISTS `crawler_presets` (
                 `id` int(11) NOT NULL AUTO_INCREMENT,
                 `preset_name` varchar(100) NOT NULL,
