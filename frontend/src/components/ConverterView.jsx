@@ -1628,6 +1628,38 @@ export function ConverterView() {
     dispatch({ type: 'UPDATE_SETTING', payload: { key, value } });
   };
 
+  const updateSettings = (patch) => {
+    dispatch({ type: 'APPLY_PRESET', payload: patch });
+  };
+
+  const handleResolutionChange = (newResolution) => {
+    if (newResolution && newResolution !== 'original' && settings.videoCodec === 'copy') {
+      const originalCodec = mediaInfo?.streams?.find(s => s.type === 'video')?.codec;
+      const targetCodec = (originalCodec && ['h264', 'h265'].includes(originalCodec)) ? originalCodec : 'h264';
+      updateSettings({ resolution: newResolution, videoCodec: targetCodec });
+    } else {
+      updateSetting('resolution', newResolution);
+    }
+  };
+
+  const handleFramerateChange = (newFps) => {
+    if (newFps && newFps !== 'original' && settings.videoCodec === 'copy') {
+      const originalCodec = mediaInfo?.streams?.find(s => s.type === 'video')?.codec;
+      const targetCodec = (originalCodec && ['h264', 'h265'].includes(originalCodec)) ? originalCodec : 'h264';
+      updateSettings({ framerate: newFps, videoCodec: targetCodec });
+    } else {
+      updateSetting('framerate', newFps);
+    }
+  };
+
+  const handleVideoCodecChange = (newCodec) => {
+    if (newCodec === 'copy') {
+      updateSettings({ videoCodec: 'copy', resolution: 'original', framerate: 'original' });
+    } else {
+      updateSetting('videoCodec', newCodec);
+    }
+  };
+
   return (
     <div className="converter-view">
       {/* FFmpeg Status Bar */}
@@ -2059,11 +2091,45 @@ export function ConverterView() {
           {/* Video Options */}
           {showVideoOptions && (
             <Section icon={Video} title="Video Settings" description="Configure video encoding parameters." defaultOpen={false}>
-              <OptionRow label="Video Codec" tooltip="Choose how to encode the video stream. 'Copy' skips re-encoding." description="Select video encoder">
-                <select value={settings.videoCodec} onChange={(e) => updateSetting('videoCodec', e.target.value)}>
+              <OptionRow label="Video Codec" tooltip="Choose how to encode the video stream. 'Copy' skips re-encoding." description={settings.videoCodec === 'copy' ? "Stream copy mode: video passed through as-is. Choosing a resolution/FPS will auto-enable H.264" : "Select video encoder"}>
+                <select value={settings.videoCodec} onChange={(e) => handleVideoCodecChange(e.target.value)}>
                   {getAvailableVideoCodecs().map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                 </select>
               </OptionRow>
+
+              {/* Resolution: Always visible */}
+              <OptionRow label="Resolution" tooltip="Output resolution. Scaling requires re-encoding. Pick a standard size, or choose Custom for exact dimensions." description={settings.videoCodec === 'copy' ? "Selecting a resolution will auto-enable H.264 video encoding (Audio stays Copy)" : "Lower resolution = smaller file"}>
+                {RESOLUTIONS.some(r => r.value === settings.resolution) ? (
+                  <select value={settings.resolution} onChange={(e) => {
+                    if (e.target.value === '__custom__') {
+                      handleResolutionChange('');
+                    } else {
+                      handleResolutionChange(e.target.value);
+                    }
+                  }}>
+                    {RESOLUTIONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                    <option value="__custom__">Custom…</option>
+                  </select>
+                ) : (
+                  <div className="resolution-custom-group">
+                    <div style={{ display: 'flex', gap: '6px', width: '100%', alignItems: 'center' }}>
+                      <input type="text" className="input-inline" value={settings.resolution}
+                        onChange={(e) => handleResolutionChange(e.target.value)}
+                        placeholder="e.g. 1920x1080 or 540" style={{ flex: '1' }} />
+                      <button className="btn-sm" onClick={() => handleResolutionChange('original')}>Presets</button>
+                    </div>
+                    <span className="input-hint">Use <strong>WxH</strong> (e.g. 1920x1080) or just a <strong>height</strong> (e.g. 720 for auto-width)</span>
+                  </div>
+                )}
+              </OptionRow>
+
+              {/* Frame Rate: Always visible */}
+              <OptionRow label="Frame Rate" tooltip="Output frames per second. Changing frame rate requires re-encoding." description={settings.videoCodec === 'copy' ? "Changing FPS will auto-enable H.264 video encoding" : "Common video standards"}>
+                <select value={settings.framerate} onChange={(e) => handleFramerateChange(e.target.value)}>
+                  {FPS_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+                </select>
+              </OptionRow>
+
               {settings.videoCodec !== 'copy' && (
                 <>
                   <OptionRow label="CRF Quality" tooltip="Constant Rate Factor. Lower = better quality, larger file." description={getCrfDescription(settings.crf)}>
@@ -2093,35 +2159,6 @@ export function ConverterView() {
                           onChange={(e) => updateSetting('videoBitrate', e.target.value)} placeholder="1000k, 5M..." />
                       )}
                     </div>
-                  </OptionRow>
-                  <OptionRow label="Resolution" tooltip="Output resolution. Pick a standard size, or choose Custom for exact dimensions." description="Lower resolution = smaller file">
-                    {RESOLUTIONS.some(r => r.value === settings.resolution) ? (
-                      <select value={settings.resolution} onChange={(e) => {
-                        if (e.target.value === '__custom__') {
-                          updateSetting('resolution', '');
-                        } else {
-                          updateSetting('resolution', e.target.value);
-                        }
-                      }}>
-                        {RESOLUTIONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
-                        <option value="__custom__">Custom…</option>
-                      </select>
-                    ) : (
-                      <div className="resolution-custom-group">
-                        <div style={{ display: 'flex', gap: '6px', width: '100%', alignItems: 'center' }}>
-                          <input type="text" className="input-inline" value={settings.resolution}
-                            onChange={(e) => updateSetting('resolution', e.target.value)}
-                            placeholder="e.g. 1920x1080 or 540" style={{ flex: '1' }} />
-                          <button className="btn-sm" onClick={() => updateSetting('resolution', 'original')}>Presets</button>
-                        </div>
-                        <span className="input-hint">Use <strong>WxH</strong> (e.g. 1920x1080) or just a <strong>height</strong> (e.g. 720 for auto-width)</span>
-                      </div>
-                    )}
-                  </OptionRow>
-                  <OptionRow label="Frame Rate" tooltip="Output frames per second." description="Common video standards">
-                    <select value={settings.framerate} onChange={(e) => updateSetting('framerate', e.target.value)}>
-                      {FPS_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-                    </select>
                   </OptionRow>
                   <OptionRow label="Encoding Preset" tooltip="Speed vs compression tradeoff." description="Affects encoding speed and file size">
                     <select value={settings.preset} onChange={(e) => updateSetting('preset', e.target.value)}>
@@ -2190,7 +2227,7 @@ export function ConverterView() {
           {/* Audio Options */}
           {!isGif && (
             <Section icon={Music} title="Audio Settings" description="Configure audio encoding." defaultOpen={false}>
-              <OptionRow label="Audio Codec" tooltip="How to encode the audio stream. 'Copy' preserves original quality." description="Choose audio encoder">
+              <OptionRow label="Audio Codec" tooltip="How to encode the audio stream. 'Copy' preserves original quality." description={settings.audioCodec === 'copy' ? "Copied as-is (lossless & instant — recommended even when resizing video)" : "Choose audio encoder"}>
                 <select value={settings.audioCodec} onChange={(e) => updateSetting('audioCodec', e.target.value)}>
                   {getAvailableAudioCodecs().map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                 </select>
