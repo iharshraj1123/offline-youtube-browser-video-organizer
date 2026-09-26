@@ -286,6 +286,15 @@ class Database {
             $pdo->exec("ALTER TABLE `crawler_presets` ADD COLUMN `sync_type` varchar(30) NOT NULL DEFAULT 'folder'");
         } catch (Exception $e) {}
         try {
+            $pdo->exec("ALTER TABLE `crawler_presets` ADD COLUMN `recursive` tinyint(1) NOT NULL DEFAULT 1");
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("ALTER TABLE `crawler_presets` ADD COLUMN `last_synced_at` datetime DEFAULT NULL");
+        } catch (Exception $e) {}
+        try {
+            $pdo->exec("ALTER TABLE `crawler_presets` ADD COLUMN `last_sync_status` varchar(255) DEFAULT NULL");
+        } catch (Exception $e) {}
+        try {
             $pdo->exec("CREATE TABLE IF NOT EXISTS `share_domains` (
                 `id` int(11) NOT NULL AUTO_INCREMENT,
                 `domain_name` varchar(255) NOT NULL,

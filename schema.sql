@@ -139,7 +139,11 @@ CREATE TABLE IF NOT EXISTS `chats` (
 CREATE TABLE IF NOT EXISTS `crawler_presets` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `preset_name` VARCHAR(100) NOT NULL,
-    `target_url` TEXT NOT NULL
+    `target_url` TEXT NOT NULL,
+    `sync_type` VARCHAR(30) NOT NULL DEFAULT 'folder',
+    `recursive` TINYINT(1) NOT NULL DEFAULT 1,
+    `last_synced_at` DATETIME DEFAULT NULL,
+    `last_sync_status` VARCHAR(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table 8: exclusion_lists (Privacy & Sensitive Content Exclusions)

@@ -613,26 +613,30 @@ button {
 
 .crawler-presets {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .preset-card {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  padding: 20px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  transition: border-color var(--transition-speed);
+  gap: 10px;
+  transition: border-color var(--transition-speed), transform var(--transition-speed), box-shadow var(--transition-speed);
 }
 
+.preset-card:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
 
 .preset-name {
   font-weight: 600;
-  font-size: 16px;
+  font-size: 15px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -643,7 +647,6 @@ button {
   color: var(--text-secondary);
   font-family: monospace;
   word-break: break-all;
-  height: 36px;
   overflow: hidden;
 }
 

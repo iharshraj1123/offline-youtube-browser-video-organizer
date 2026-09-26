@@ -112,9 +112,29 @@ function cleanVideoUrl(rawUrl) {
   return rawUrl.trim();
 }
 
-function sanitizeSaveFilename(name) {
-  if (!name || typeof name !== 'string') return '';
-  return name
+function extractVideoId(rawUrl) {
+  try {
+    let s = rawUrl.trim();
+    if (!/^https?:\/\//i.test(s)) s = 'https://' + s;
+    const url = new URL(s);
+    let host = url.hostname.replace(/^www\./, '').toLowerCase();
+    if (host === 'youtu.be') {
+      const vid = url.pathname.replace(/^\//, '').split('/')[0];
+      if (vid) return vid;
+    } else if (host === 'youtube.com') {
+      const vid = url.searchParams.get('v');
+      if (vid) return vid;
+      if (url.pathname.startsWith('/shorts/')) {
+        return url.pathname.replace(/^\/shorts\//, '').split('/')[0];
+      }
+    }
+  } catch { }
+  return '';
+}
+
+function sanitizeSaveFilename(name, fallback = '') {
+  if (!name || typeof name !== 'string') return fallback || '';
+  const sanitized = name
     .replace(/\\/g, '＼') // Fullwidth backslash (looks like \)
     .replace(/\//g, '／') // Fullwidth forward slash (looks like /)
     .replace(/:/g, '：')  // Fullwidth colon (looks like :)
@@ -125,10 +145,17 @@ function sanitizeSaveFilename(name) {
     .replace(/>/g, '＞')  // Fullwidth >
     .replace(/\|/g, '｜') // Fullwidth pipe
     .trim();
+
+  // Test if sanitized string has any visible non-filler characters
+  const visible = sanitized.replace(/[\s\u3164\u115f\u1160\u200b-\u200f\ufeff]/g, '');
+  if (!visible) {
+    return fallback || '';
+  }
+  return sanitized;
 }
 
 const QUALITY_PRESETS = [
-  { label: 'Best Video + Audio', value: 'best' },
+  { label: 'Best Video + Audio', value: 'bestvideo+bestaudio/best' },
   { label: '4K (2160p)', value: 'bestvideo[height<=2160]+bestaudio/best[height<=2160]' },
   { label: '1440p', value: 'bestvideo[height<=1440]+bestaudio/best[height<=1440]' },
   { label: '1080p', value: 'bestvideo[height<=1080]+bestaudio/best[height<=1080]' },
@@ -478,6 +505,7 @@ export function DownloaderView({ currentUser }) {
   const handleFetchInfo = async () => {
     if (!url.trim()) return;
     const cleaned = cleanVideoUrl(url);
+    const extractedVid = extractVideoId(cleaned || url);
     setFetching(true);
     setError('');
 
@@ -485,6 +513,7 @@ export function DownloaderView({ currentUser }) {
       id: Date.now(),
       url: url.trim(),
       cleanedUrl: cleaned,
+      extractedVid: extractedVid,
       title: 'Fetching...',
       thumbnail: '',
       duration: 0,
@@ -526,6 +555,7 @@ export function DownloaderView({ currentUser }) {
       } else {
         const avail = data.formats || [];
         const itemQuality = avail.length > 0 ? autoSelectQuality(avail) : quality;
+        const fallbackTitle = extractedVid ? `video_${extractedVid}` : 'video';
         setFetchedItems(prev => prev.map(item => item.id === tempItem.id ? {
           ...item,
           title: data.title || 'Unknown',
@@ -536,7 +566,7 @@ export function DownloaderView({ currentUser }) {
           formats: avail,
           quality: itemQuality,
           status: 'ready',
-          saveName: sanitizeSaveFilename(data.title || ''),
+          saveName: sanitizeSaveFilename(data.title || '', fallbackTitle),
         } : item));
       }
     } catch (e) {
@@ -609,8 +639,9 @@ export function DownloaderView({ currentUser }) {
       formData.append('destination', destPath);
       let finalFilename = filenameTemplate;
       if (item.saveName && item.saveName.trim()) {
-        const cleanName = sanitizeSaveFilename(item.saveName);
-        finalFilename = `${cleanName || 'video'}.%(ext)s`;
+        const fallback = item.extractedVid ? `video_${item.extractedVid}` : 'video';
+        const cleanName = sanitizeSaveFilename(item.saveName, fallback);
+        finalFilename = `${cleanName || fallback}.%(ext)s`;
       }
       formData.append('filename', finalFilename);
       formData.append('extra_args', extraArgs);

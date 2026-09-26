@@ -118,6 +118,7 @@ require_once 'classes/FFmpegService.php';
 
 $action = $_GET['action'] ?? '';
 
+if (php_sapi_name() !== 'cli' || !empty($action)) {
 try {
     $pdo = Database::connect();
 
@@ -416,7 +417,7 @@ try {
             FFmpegService::split($inputPath, $segments, $outDir);
             exit;
 
-        // -- crawler presets
+        // -- crawler presets & auto-sync
         case 'get_presets':
             handleGetPresets($pdo);
             break;
@@ -425,6 +426,18 @@ try {
             break;
         case 'delete_preset':
             handleDeletePreset($pdo);
+            break;
+        case 'sync_all_presets':
+            handleSyncAllPresets($pdo);
+            break;
+        case 'trigger_auto_sync':
+            handleTriggerAutoSync($pdo);
+            break;
+        case 'get_auto_sync_status':
+            handleGetAutoSyncStatus($pdo);
+            break;
+        case 'save_auto_sync_settings':
+            handleSaveAutoSyncSettings($pdo);
             break;
 
         default:
@@ -435,6 +448,7 @@ try {
 } catch (Exception $e) {
     header('HTTP/1.1 500 Internal Server Error');
     echo json_encode(['error' => $e->getMessage()]);
+}
 }
 
 // ----------------------------------------
@@ -964,44 +978,14 @@ function syncMegaPlaylistHierarchy($pdo, $dirPath, $parentId, $uploaderInfo, $ff
     return $playlistId;
 }
 
-function handleCrawl($pdo) {
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        throw new Exception('POST method required');
-    }
-
-    $rawData = file_get_contents('php://input');
-    $data = json_decode($rawData, true);
-
-    $directory = $data['directory'] ?? '';
-    $syncType = trim($data['sync_type'] ?? 'folder');
-    if (!in_array($syncType, ['folder', 'playlist', 'mega_playlist'])) $syncType = 'folder';
-
-    $recursive = isset($data['recursive']) ? (bool)$data['recursive'] : false;
-    // For playlist and mega_playlist, recursive checkbox is ignored (playlist is strict depth 1, mega_playlist is tree)
-    if ($syncType === 'playlist') $recursive = false;
-
-    if (empty($directory)) {
-        throw new Exception('Directory path is required');
-    }
-
-    // Normalize directory path
-    $directory = str_replace('\\', '/', $directory);
-    $directory = rtrim($directory, '/') . '/';
-
-    if (!is_dir($directory)) {
-        throw new Exception("Directory does not exist or is not readable: $directory");
-    }
-
+function purgeStaleAndMissingDatabaseRecords($pdo) {
     // 1. Purge legacy row 10 & any accidental temp records in video_metadatas
     $pdo->exec("DELETE FROM video_metadatas WHERE vid_id = 10 OR vid_name LIKE 'temp_%' OR vid_name LIKE 'ytdlp_%' OR link LIKE '%temp_%' OR link LIKE '%ytdlp_%'");
 
-    // 2. Clean stale temp files from target directory
-    cleanStaleTempFilesFromDir($directory);
-
-    // 3. Bidirectional sync: Clean up missing folders from playlists table
+    // 2. Bidirectional sync: Clean up missing folders from playlists table
     purgeDeletedFoldersFromPlaylists($pdo);
 
-    // 4. Bidirectional sync: Clean up missing files from database and all playlists
+    // 3. Bidirectional sync: Clean up missing files from database and all playlists
     $stmt = $pdo->query("SELECT vid_id, link FROM video_metadatas");
     $dbVideos = $stmt->fetchAll();
     $deletedCount = 0;
@@ -1020,17 +1004,89 @@ function handleCrawl($pdo) {
             $deletedCount++;
         }
     }
+    return $deletedCount;
+}
 
-    $videoExtensions = ['mp4', 'webm', 'mkv', 'avi'];
+function getCurrentLoggedInUploader($pdo) {
+    // 1. Check cookies from active browser session
+    if (!empty($_COOKIE['loggedusername']) && !empty($_COOKIE['loggedusernum'])) {
+        $num = intval($_COOKIE['loggedusernum']);
+        $name = $_COOKIE['loggedusername'];
+        $pic = stripBaseDir($_COOKIE['loggeduserpic'] ?? BASE_DIR . '/Userdatabase/profilepic/defaulta.jpg');
+        
+        // Save as current active account for background/CLI syncs
+        try {
+            $stmt = $pdo->prepare("INSERT INTO share_settings (setting_key, setting_value) VALUES 
+                ('last_logged_user_num', :num),
+                ('last_logged_user_name', :name),
+                ('last_logged_user_pic', :pic)
+                ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+            $stmt->execute([':num' => strval($num), ':name' => $name, ':pic' => $pic]);
+        } catch (Exception $e) {}
 
-    // Get cookie values for user session
-    $uploaderInfo = [
-        'id' => $_COOKIE['loggedusernum'] ?? 1,
-        'name' => $_COOKIE['loggedusername'] ?? 'Admin',
-        'img' => stripBaseDir($_COOKIE['loggeduserpic'] ?? BASE_DIR . '/Userdatabase/profilepic/defaulta.jpg'),
+        return ['id' => $num, 'name' => $name, 'img' => $pic];
+    }
+
+    // 2. Check if a logged in user was recorded in settings
+    try {
+        $stmt = $pdo->prepare("SELECT setting_key, setting_value FROM share_settings WHERE setting_key IN ('last_logged_user_num', 'last_logged_user_name', 'last_logged_user_pic')");
+        $stmt->execute();
+        $stored = [];
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $stored[$row['setting_key']] = $row['setting_value'];
+        }
+        if (!empty($stored['last_logged_user_name'])) {
+            return [
+                'id' => intval($stored['last_logged_user_num'] ?? 1),
+                'name' => $stored['last_logged_user_name'],
+                'img' => stripBaseDir($stored['last_logged_user_pic'] ?? BASE_DIR . '/Userdatabase/profilepic/defaulta.jpg')
+            ];
+        }
+    } catch (Exception $e) {}
+
+    // 3. Fallback to primary account in database (user_num = 1)
+    try {
+        $stmt = $pdo->query("SELECT user_num, user_name, user_pic FROM users WHERE user_num = 1");
+        $u = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($u) {
+            return [
+                'id' => intval($u['user_num']),
+                'name' => $u['user_name'],
+                'img' => stripBaseDir($u['user_pic'] ?? BASE_DIR . '/Userdatabase/profilepic/defaulta.jpg')
+            ];
+        }
+    } catch (Exception $e) {}
+
+    return [
+        'id' => 1,
+        'name' => 'iharshraj',
+        'img' => stripBaseDir(BASE_DIR . '/Userdatabase/profilepic/defaulta.jpg')
     ];
+}
 
-    $ffmpegPath = getFFmpegPath();
+function performDirectoryCrawl($pdo, $directory, $syncType = 'folder', $recursive = false, $uploaderInfo = null, $ffmpegPath = null, $videoExtensions = null) {
+    if (!in_array($syncType, ['folder', 'playlist', 'mega_playlist'])) $syncType = 'folder';
+    if ($syncType === 'playlist') $recursive = false;
+
+    // Normalize directory path
+    $directory = str_replace('\\', '/', $directory);
+    $directory = rtrim($directory, '/') . '/';
+
+    if (!is_dir($directory)) {
+        throw new Exception("Directory does not exist or is not readable: $directory");
+    }
+
+    cleanStaleTempFilesFromDir($directory);
+
+    if ($videoExtensions === null) {
+        $videoExtensions = ['mp4', 'webm', 'mkv', 'avi'];
+    }
+    if ($uploaderInfo === null) {
+        $uploaderInfo = getCurrentLoggedInUploader($pdo);
+    }
+    if ($ffmpegPath === null) {
+        $ffmpegPath = getFFmpegPath();
+    }
 
     // CASE 3: Mega Playlist Sync (Recursive Playlist Hierarchy)
     if ($syncType === 'mega_playlist') {
@@ -1047,7 +1103,7 @@ function handleCrawl($pdo) {
             updatePlaylistsTable($pdo, $stats['new_vid_ids']);
         }
 
-        echo json_encode([
+        return [
             'success' => true,
             'sync_type' => 'mega_playlist',
             'root_playlist_id' => $rootId,
@@ -1055,10 +1111,8 @@ function handleCrawl($pdo) {
             'playlists_created' => $stats['playlists_created'],
             'added' => $stats['added'],
             'skipped' => $stats['skipped'],
-            'deleted' => $deletedCount,
             'new_videos' => $stats['new_videos']
-        ]);
-        exit;
+        ];
     }
 
     // CASE 1 & 2: Folder or Single Playlist Sync
@@ -1075,15 +1129,17 @@ function handleCrawl($pdo) {
             }
         }
     } else {
-        $scanned = scandir($directory);
-        natsort($scanned);
-        foreach ($scanned as $item) {
-            if ($item === '.' || $item === '..') continue;
-            $filePath = $directory . $item;
-            if (is_file($filePath)) {
-                $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
-                if (in_array($ext, $videoExtensions)) {
-                    $files[] = $filePath;
+        $scanned = @scandir($directory);
+        if ($scanned !== false) {
+            natsort($scanned);
+            foreach ($scanned as $item) {
+                if ($item === '.' || $item === '..') continue;
+                $filePath = $directory . $item;
+                if (is_file($filePath)) {
+                    $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+                    if (in_array($ext, $videoExtensions)) {
+                        $files[] = $filePath;
+                    }
                 }
             }
         }
@@ -1164,17 +1220,280 @@ function handleCrawl($pdo) {
         }
     }
 
-    cleanEmptySyncPlaylists($pdo);
-
-    echo json_encode([
+    return [
         'success' => true,
         'sync_type' => $syncType,
         'playlist' => $playlistInfo,
         'added' => $added,
         'skipped' => $skipped,
-        'deleted' => $deletedCount,
         'new_videos' => $newVideosList
+    ];
+}
+
+function handleCrawl($pdo) {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        throw new Exception('POST method required');
+    }
+
+    $rawData = file_get_contents('php://input');
+    $data = json_decode($rawData, true);
+
+    $directory = $data['directory'] ?? '';
+    $syncType = trim($data['sync_type'] ?? 'folder');
+    $recursive = isset($data['recursive']) ? (bool)$data['recursive'] : false;
+
+    if (empty($directory)) {
+        throw new Exception('Directory path is required');
+    }
+
+    $deletedCount = purgeStaleAndMissingDatabaseRecords($pdo);
+    $result = performDirectoryCrawl($pdo, $directory, $syncType, $recursive);
+    cleanEmptySyncPlaylists($pdo);
+
+    $result['deleted'] = $deletedCount;
+    echo json_encode($result);
+    exit;
+}
+
+function executeSyncAllPresets($pdo, $isAuto = false) {
+    // 1. Concurrency lock to avoid parallel syncing
+    $lockKey = 'auto_sync_running_lock';
+    $stmt = $pdo->prepare("SELECT setting_value FROM share_settings WHERE setting_key = :k");
+    $stmt->execute([':k' => $lockKey]);
+    $lockVal = $stmt->fetchColumn();
+    if ($lockVal && (time() - intval($lockVal)) < 900) { // 15 min lock
+        return [
+            'success' => false,
+            'message' => 'Sync is already currently in progress (locked).'
+        ];
+    }
+
+    // Set lock
+    $stmt = $pdo->prepare("INSERT INTO share_settings (setting_key, setting_value) VALUES (:k, :v) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+    $stmt->execute([':k' => $lockKey, ':v' => strval(time())]);
+
+    try {
+        $startTime = microtime(true);
+        // Clean missing records once across DB
+        $deletedCount = purgeStaleAndMissingDatabaseRecords($pdo);
+
+        // Fetch all presets
+        $stmt = $pdo->query("SELECT `id`, `preset_name`, `target_url`, `sync_type`, `recursive`, `last_synced_at`, `last_sync_status` FROM `crawler_presets` ORDER BY `id` ASC");
+        $presets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $totalAdded = 0;
+        $totalSkipped = 0;
+        $totalPlaylistsCreated = 0;
+        $presetResults = [];
+        $ffmpegPath = getFFmpegPath();
+        $videoExtensions = ['mp4', 'webm', 'mkv', 'avi'];
+        $uploaderInfo = getCurrentLoggedInUploader($pdo);
+
+        foreach ($presets as $preset) {
+            $pId = (int)$preset['id'];
+            $pName = $preset['preset_name'];
+            $pDir = $preset['target_url'];
+            $pType = $preset['sync_type'] ?: 'folder';
+            $pRec = isset($preset['recursive']) ? (bool)$preset['recursive'] : true;
+
+            $nowStr = date('Y-m-d H:i:s');
+            if (!is_dir($pDir)) {
+                $statusMsg = 'Directory not accessible or missing';
+                $upStmt = $pdo->prepare("UPDATE crawler_presets SET last_synced_at = :ts, last_sync_status = :st WHERE id = :id");
+                $upStmt->execute([':ts' => $nowStr, ':st' => $statusMsg, ':id' => $pId]);
+                $presetResults[] = [
+                    'id' => $pId,
+                    'name' => $pName,
+                    'path' => $pDir,
+                    'status' => 'error',
+                    'message' => $statusMsg,
+                    'added' => 0,
+                    'skipped' => 0
+                ];
+                continue;
+            }
+
+            try {
+                $crawlRes = performDirectoryCrawl($pdo, $pDir, $pType, $pRec, $uploaderInfo, $ffmpegPath, $videoExtensions);
+                $pAdded = $crawlRes['added'] ?? 0;
+                $pSkipped = $crawlRes['skipped'] ?? 0;
+                $pPlaylists = $crawlRes['playlists_created'] ?? 0;
+                $totalAdded += $pAdded;
+                $totalSkipped += $pSkipped;
+                $totalPlaylistsCreated += $pPlaylists;
+
+                $statusMsg = "Added: {$pAdded}, Skipped: {$pSkipped}" . ($pPlaylists > 0 ? ", Playlists: {$pPlaylists}" : "");
+                $upStmt = $pdo->prepare("UPDATE crawler_presets SET last_synced_at = :ts, last_sync_status = :st WHERE id = :id");
+                $upStmt->execute([':ts' => $nowStr, ':st' => $statusMsg, ':id' => $pId]);
+
+                $presetResults[] = [
+                    'id' => $pId,
+                    'name' => $pName,
+                    'path' => $pDir,
+                    'sync_type' => $pType,
+                    'status' => 'success',
+                    'added' => $pAdded,
+                    'skipped' => $pSkipped,
+                    'playlists_created' => $pPlaylists,
+                    'new_videos' => $crawlRes['new_videos'] ?? []
+                ];
+            } catch (Exception $e) {
+                $statusMsg = "Error: " . substr($e->getMessage(), 0, 180);
+                $upStmt = $pdo->prepare("UPDATE crawler_presets SET last_synced_at = :ts, last_sync_status = :st WHERE id = :id");
+                $upStmt->execute([':ts' => $nowStr, ':st' => $statusMsg, ':id' => $pId]);
+
+                $presetResults[] = [
+                    'id' => $pId,
+                    'name' => $pName,
+                    'path' => $pDir,
+                    'status' => 'error',
+                    'message' => $e->getMessage(),
+                    'added' => 0,
+                    'skipped' => 0
+                ];
+            }
+        }
+
+        cleanEmptySyncPlaylists($pdo);
+
+        $durationSec = round(microtime(true) - $startTime, 2);
+        $summary = "Synced " . count($presets) . " presets: {$totalAdded} added, {$totalSkipped} skipped, {$deletedCount} deleted ({$durationSec}s)";
+        $nowStr = date('Y-m-d H:i:s');
+
+        // Save last run info
+        $saveStmt = $pdo->prepare("INSERT INTO share_settings (setting_key, setting_value) VALUES (:k, :v) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+        $saveStmt->execute([':k' => 'auto_sync_last_run_at', ':v' => $nowStr]);
+        $saveStmt->execute([':k' => 'auto_sync_last_status', ':v' => $summary]);
+
+        // Release lock
+        $saveStmt->execute([':k' => $lockKey, ':v' => '0']);
+
+        return [
+            'success' => true,
+            'summary' => $summary,
+            'last_run_at' => $nowStr,
+            'presets_count' => count($presets),
+            'total_added' => $totalAdded,
+            'total_skipped' => $totalSkipped,
+            'total_deleted' => $deletedCount,
+            'total_playlists' => $totalPlaylistsCreated,
+            'duration_seconds' => $durationSec,
+            'presets' => $presetResults
+        ];
+    } catch (Exception $e) {
+        // Release lock on exception
+        $saveStmt = $pdo->prepare("INSERT INTO share_settings (setting_key, setting_value) VALUES (:k, :v) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+        $saveStmt->execute([':k' => $lockKey, ':v' => '0']);
+        throw $e;
+    }
+}
+
+function handleSyncAllPresets($pdo) {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('POST method required');
+    $result = executeSyncAllPresets($pdo, false);
+    echo json_encode($result);
+    exit;
+}
+
+function handleTriggerAutoSync($pdo) {
+    // 1. Read auto_sync_interval (hours). Default is 24.
+    $stmt = $pdo->prepare("SELECT setting_key, setting_value FROM share_settings WHERE setting_key IN ('auto_sync_interval', 'auto_sync_last_run_at', 'auto_sync_last_status')");
+    $stmt->execute();
+    $settings = [];
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $settings[$row['setting_key']] = $row['setting_value'];
+    }
+
+    $intervalHours = isset($settings['auto_sync_interval']) ? intval($settings['auto_sync_interval']) : 24;
+    $lastRunAt = $settings['auto_sync_last_run_at'] ?? null;
+    $lastStatus = $settings['auto_sync_last_status'] ?? null;
+
+    // If disabled (interval <= 0)
+    if ($intervalHours <= 0) {
+        echo json_encode([
+            'ran' => false,
+            'reason' => 'disabled',
+            'message' => 'Auto-sync is disabled in settings.',
+            'interval_hours' => 0,
+            'last_run_at' => $lastRunAt,
+            'last_status' => $lastStatus
+        ]);
+        exit;
+    }
+
+    // Check if interval has elapsed
+    $now = time();
+    $lastRunTimestamp = $lastRunAt ? strtotime($lastRunAt) : 0;
+    $secondsElapsed = $now - $lastRunTimestamp;
+    $secondsRequired = $intervalHours * 3600;
+
+    $isForce = isset($_GET['force']) && ($_GET['force'] === '1' || $_GET['force'] === 'true');
+
+    if (!$isForce && $secondsElapsed < $secondsRequired) {
+        $secondsRemaining = $secondsRequired - $secondsElapsed;
+        echo json_encode([
+            'ran' => false,
+            'reason' => 'not_due',
+            'message' => 'Auto-sync is not due yet.',
+            'interval_hours' => $intervalHours,
+            'last_run_at' => $lastRunAt,
+            'last_status' => $lastStatus,
+            'seconds_remaining' => $secondsRemaining,
+            'next_due_in_hours' => round($secondsRemaining / 3600, 1)
+        ]);
+        exit;
+    }
+
+    // Interval has elapsed (or forced), execute!
+    $result = executeSyncAllPresets($pdo, true);
+    $result['ran'] = true;
+    echo json_encode($result);
+    exit;
+}
+
+function handleGetAutoSyncStatus($pdo) {
+    $stmt = $pdo->prepare("SELECT setting_key, setting_value FROM share_settings WHERE setting_key IN ('auto_sync_interval', 'auto_sync_last_run_at', 'auto_sync_last_status')");
+    $stmt->execute();
+    $settings = [];
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $settings[$row['setting_key']] = $row['setting_value'];
+    }
+
+    $intervalHours = isset($settings['auto_sync_interval']) ? intval($settings['auto_sync_interval']) : 24;
+    $lastRunAt = $settings['auto_sync_last_run_at'] ?? null;
+    $lastStatus = $settings['auto_sync_last_status'] ?? null;
+
+    $now = time();
+    $lastRunTimestamp = $lastRunAt ? strtotime($lastRunAt) : 0;
+    $secondsElapsed = $now - $lastRunTimestamp;
+    $secondsRequired = $intervalHours * 3600;
+    $isDue = ($intervalHours > 0) && ($secondsElapsed >= $secondsRequired);
+
+    echo json_encode([
+        'interval_hours' => $intervalHours,
+        'last_run_at' => $lastRunAt,
+        'last_status' => $lastStatus,
+        'is_due' => $isDue,
+        'is_enabled' => ($intervalHours > 0),
+        'seconds_remaining' => ($intervalHours > 0 && !$isDue) ? ($secondsRequired - $secondsElapsed) : 0
     ]);
+    exit;
+}
+
+function handleSaveAutoSyncSettings($pdo) {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('POST method required');
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    $interval = isset($data['interval_hours']) ? intval($data['interval_hours']) : 24;
+    // Allowed intervals: 0 (disabled), 1, 4, 12, 24, 48
+    if (!in_array($interval, [0, 1, 4, 12, 24, 48])) {
+        $interval = 24;
+    }
+
+    $stmt = $pdo->prepare("INSERT INTO share_settings (setting_key, setting_value) VALUES ('auto_sync_interval', :val) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+    $stmt->execute([':val' => strval($interval)]);
+
+    echo json_encode(['success' => true, 'interval_hours' => $interval]);
     exit;
 }
 
@@ -1316,11 +1635,7 @@ function handleUploadFile($pdo) {
         throw new Exception("Directory does not exist: $directory");
     }
 
-    $uploaderInfo = [
-        'id' => $_COOKIE['loggedusernum'] ?? 1,
-        'name' => $_COOKIE['loggedusername'] ?? 'Admin',
-        'img' => stripBaseDir($_COOKIE['loggeduserpic'] ?? BASE_DIR . '/Userdatabase/profilepic/defaulta.jpg'),
-    ];
+    $uploaderInfo = getCurrentLoggedInUploader($pdo);
 
     $ffmpegPath = getFFmpegPath();
     $videoExtensions = ['mp4', 'webm', 'mkv', 'avi'];
@@ -4872,8 +5187,14 @@ function handleYtdlpDownload($pdo = null) {
     $url = $_POST['url'] ?? '';
     $sourceUrl = $_POST['source_url'] ?? $url;
     $cleanUrl = cleanSourceUrl($sourceUrl);
-    $format = $_POST['format'] ?? 'best';
+    $format = $_POST['format'] ?? 'bestvideo+bestaudio/best';
+    if ($format === 'best') {
+        $format = 'bestvideo+bestaudio/best';
+    }
     $destination = $_POST['destination'] ?? '';
+    $outputDir = (!empty($destination) && is_dir($destination)) ? rtrim($destination, '\\/') : (dirname(__DIR__) . DIRECTORY_SEPARATOR . 'yt-dlp-downloads');
+    if (!is_dir($outputDir)) mkdir($outputDir, 0777, true);
+
     $filenameTemplate = $_POST['filename'] ?? '%(title)s.%(ext)s';
 
     // Sanitize custom filename template so slashes/backslashes in video titles use visual fullwidth characters and never create unwanted subdirectories
@@ -4893,21 +5214,39 @@ function handleYtdlpDownload($pdo = null) {
                 '|'  => '｜',
             ];
             $cleanBase = strtr($baseName, $replaceMap);
-            $filenameTemplate = (trim($cleanBase) ?: 'video') . $extName;
+            // Strip whitespace and invisible unicode fillers (Hangul fillers, zero-width spaces, etc.)
+            $visibleChars = preg_replace('/[\s\x{3164}\x{115F}\x{1160}\x{200B}-\x{200F}\x{FEFF}]/u', '', $cleanBase);
+            $cleanBase = empty(trim($visibleChars)) ? ('video_' . uniqid()) : (trim($cleanBase) ?: 'video');
+
+            // Collision check: if a file with the same name already exists in $outputDir, append (2), (3), etc.
+            $candidateBase = $cleanBase;
+            $prefix = $cleanBase;
+            $startNum = 2;
+            if (preg_match('/^(.*?)\s*\((\d+)\)$/', $cleanBase, $numMatch)) {
+                $prefix = trim($numMatch[1]);
+                $startNum = intval($numMatch[2]);
+            }
+
+            $escapedCand = preg_replace('/([\*\[\]\?])/', '[$1]', $candidateBase);
+            $existing = array_filter(glob($outputDir . DIRECTORY_SEPARATOR . $escapedCand . '.*') ?: [], function($f) {
+                return !in_array(strtolower(pathinfo($f, PATHINFO_EXTENSION)), ['part', 'ytdl', 'temp', 'txt']);
+            });
+
+            if (!empty($existing) || file_exists($outputDir . DIRECTORY_SEPARATOR . $candidateBase)) {
+                $num = $startNum;
+                do {
+                    $candidateBase = $prefix . " ($num)";
+                    $escapedCand = preg_replace('/([\*\[\]\?])/', '[$1]', $candidateBase);
+                    $existing = array_filter(glob($outputDir . DIRECTORY_SEPARATOR . $escapedCand . '.*') ?: [], function($f) {
+                        return !in_array(strtolower(pathinfo($f, PATHINFO_EXTENSION)), ['part', 'ytdl', 'temp', 'txt']);
+                    });
+                    $num++;
+                } while (!empty($existing) || file_exists($outputDir . DIRECTORY_SEPARATOR . $candidateBase));
+            }
+
+            $filenameTemplate = $candidateBase . $extName;
         }
     }
-
-    if (empty($url)) { echo json_encode(['error' => 'No URL provided']); exit; }
-    $path = getYtdlpPath();
-    if (!$path) { echo json_encode(['error' => 'yt-dlp not found']); exit; }
-
-    $cookieMode = $_POST['cookie_mode'] ?? 'default';
-    $cookieBrowser = $_POST['cookie_browser'] ?? '';
-    $cookieArgs = getYtdlpCookieArgs($cookieMode, $cookieBrowser);
-    $jsRuntimeArgs = getYtdlpJsRuntimeArgs();
-
-    $outputDir = (!empty($destination) && is_dir($destination)) ? rtrim($destination, '\\/') : (dirname(__DIR__) . DIRECTORY_SEPARATOR . 'yt-dlp-downloads');
-    if (!is_dir($outputDir)) mkdir($outputDir, 0777, true);
 
     $outputTemplate = $outputDir . DIRECTORY_SEPARATOR . $filenameTemplate;
     $infoFile = $outputDir . DIRECTORY_SEPARATOR . '_yt_name_' . uniqid() . '.txt';
@@ -5019,8 +5358,12 @@ function handleYtdlpDownload($pdo = null) {
         $readName = trim(file_get_contents($infoFile));
         @unlink($infoFile);
         if (!empty($readName)) {
-            $candidate = $outputDir . DIRECTORY_SEPARATOR . $readName;
-            if (file_exists($candidate)) $correctFile = $candidate;
+            if (file_exists($readName)) {
+                $correctFile = $readName;
+            } else {
+                $candidate = $outputDir . DIRECTORY_SEPARATOR . basename($readName);
+                if (file_exists($candidate)) $correctFile = $candidate;
+            }
         }
     }
     if (!empty($correctFile)) {
@@ -5844,10 +6187,11 @@ function removeDuplicateVttCues($vtt) {
 }
 
 function handleGetPresets($pdo) {
-    $stmt = $pdo->query("SELECT id, preset_name, target_url, sync_type FROM crawler_presets ORDER BY id ASC");
+    $stmt = $pdo->query("SELECT `id`, `preset_name`, `target_url`, `sync_type`, `recursive`, `last_synced_at`, `last_sync_status` FROM `crawler_presets` ORDER BY `id` ASC");
     $presets = $stmt->fetchAll(PDO::FETCH_ASSOC);
     foreach ($presets as &$p) {
         if (empty($p['sync_type'])) $p['sync_type'] = 'folder';
+        $p['recursive'] = isset($p['recursive']) ? (bool)$p['recursive'] : true;
     }
     unset($p);
     echo json_encode($presets);
@@ -5862,11 +6206,12 @@ function handleSavePreset($pdo) {
     $url = trim($data['target_url'] ?? '');
     $syncType = trim($data['sync_type'] ?? 'folder');
     if (!in_array($syncType, ['folder', 'playlist', 'mega_playlist'])) $syncType = 'folder';
+    $recursive = isset($data['recursive']) ? ((bool)$data['recursive'] ? 1 : 0) : 1;
 
     if ($name === '' || $url === '') throw new Exception('Preset name and target URL are required');
 
-    $stmt = $pdo->prepare("INSERT INTO crawler_presets (preset_name, target_url, sync_type) VALUES (:name, :url, :sync_type)");
-    $stmt->execute([':name' => $name, ':url' => $url, ':sync_type' => $syncType]);
+    $stmt = $pdo->prepare("INSERT INTO `crawler_presets` (`preset_name`, `target_url`, `sync_type`, `recursive`) VALUES (:name, :url, :sync_type, :recursive)");
+    $stmt->execute([':name' => $name, ':url' => $url, ':sync_type' => $syncType, ':recursive' => $recursive]);
     
     echo json_encode(['success' => true, 'id' => $pdo->lastInsertId()]);
     exit;

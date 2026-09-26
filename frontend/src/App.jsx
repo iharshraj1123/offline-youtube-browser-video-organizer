@@ -245,6 +245,32 @@ export default function App() {
     return [];
   }, [videos, extraVideosMap]);
 
+  const handleUpdateVideoMetadata = useCallback((vidId, updatedFields) => {
+    const numId = parseInt(vidId, 10);
+    setPlayingVideo(prev => {
+      if (prev && parseInt(prev.vid_id, 10) === numId) {
+        const next = { ...prev, ...updatedFields };
+        if (updatedFields.vid_name) {
+          const cleanTitle = (updatedFields.vid_name || '').replace(/\.[a-zA-Z0-9]+$/, '');
+          document.title = `${cleanTitle} - YouTube`;
+        }
+        return next;
+      }
+      return prev;
+    });
+    setVideos(prev => prev.map(v => parseInt(v.vid_id, 10) === numId ? { ...v, ...updatedFields } : v));
+    setWatchNextVideos(prev => prev.map(v => parseInt(v.vid_id, 10) === numId ? { ...v, ...updatedFields } : v));
+    setExtraVideosMap(prev => {
+      if (prev && prev[numId]) {
+        return { ...prev, [numId]: { ...prev[numId], ...updatedFields } };
+      }
+      return prev;
+    });
+    setShortsList(prev => prev.map(v => parseInt(v.vid_id, 10) === numId ? { ...v, ...updatedFields } : v));
+    setActivePlaylist(prev => (prev ? { ...prev } : prev));
+    setPlaylistView(prev => (prev ? { ...prev } : prev));
+  }, []);
+
   const fetchExcludedData = async () => {
     try {
       const res = await fetch('./api/index.php?action=get_excluded_ids');
@@ -537,6 +563,21 @@ export default function App() {
 
     fetchPlaylists();
 
+    // Auto-sync presets background check
+    const checkAutoSync = () => {
+      fetch('./api/index.php?action=trigger_auto_sync')
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.ran && data.total_added > 0) {
+            fetchPlaylists();
+            showFlashNotification(`Auto-sync added ${data.total_added} new video(s)!`);
+          }
+        })
+        .catch(() => {});
+    };
+    checkAutoSync();
+    const autoSyncTimer = setInterval(checkAutoSync, 3600000);
+
     // Check URL parameters on mount
     const params = new URLSearchParams(window.location.search);
     const videoId = params.get('v');
@@ -658,7 +699,10 @@ export default function App() {
     };
 
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      clearInterval(autoSyncTimer);
+    };
   }, []);
 
   // Click outside listener for user dropdown
@@ -1777,6 +1821,7 @@ export default function App() {
               addVideoToPlaylist={addVideoToPlaylist}
               removeVideoFromPlaylist={removeVideoFromPlaylist}
               createPlaylist={createPlaylist}
+              onUpdateVideoMetadata={handleUpdateVideoMetadata}
             />
           )}
 
@@ -1899,11 +1944,12 @@ export default function App() {
                 if (!activePlaylist?._isTemp) return;
                 setActivePlaylist(prev => ({ ...prev, video_ids: newVideoIds }));
               }}
+              onUpdateVideoMetadata={handleUpdateVideoMetadata}
             />
           )}
 
           {currentView === 'crawler' && (
-            <CrawlerView onRefreshPlaylists={fetchPlaylists} />
+            <CrawlerView onRefreshPlaylists={fetchPlaylists} showFlashNotification={showFlashNotification} />
           )}
 
           {currentView === 'playlist' && playlistView && (
@@ -2692,7 +2738,8 @@ function ShortsPlayerView({
   excludedData = {},
   addVideoToPlaylist,
   removeVideoFromPlaylist,
-  createPlaylist
+  createPlaylist,
+  onUpdateVideoMetadata
 }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [showComments, setShowComments] = useState(false);
@@ -2860,6 +2907,13 @@ function ShortsPlayerView({
         currentVideo.vid_name = editTitle;
         currentVideo.description = editDesc;
         currentVideo.tags = editTags;
+        if (onUpdateVideoMetadata) {
+          onUpdateVideoMetadata(currentVideo.vid_id, {
+            vid_name: editTitle,
+            description: editDesc,
+            tags: editTags
+          });
+        }
         setShowEditModal(false);
         showFlashNotification("Metadata updated successfully");
       }
@@ -4066,9 +4120,9 @@ function SidebarVideoCard({ vid, onPlayVideo }) {
             preload="none"
           />
         ) : null}
-        {vid.duration > 0 && (
+        {parseInt(vid.duration || 0, 10) > 0 && (
           <span className="video-card-duration" style={{ fontSize: '10px', bottom: '4px', right: '4px' }}>
-            {formatTime(vid.duration)}
+            {formatTime(parseInt(vid.duration, 10))}
           </span>
         )}
       </div>
@@ -4090,7 +4144,7 @@ function PlayerView({
   addVideoToPlaylist, removeVideoFromPlaylist, createPlaylist, updatePlaylistOrder,
   isSidebarCollapsed, setIsSidebarCollapsed, currentUser, onOpenAuth, onNavigateToProfile, showFlashNotification,
   showNotification, notifKey, playHistoryRef, historyIndexRef,
-  onSaveTempPlaylist, onUpdateTempPlaylist
+  onSaveTempPlaylist, onUpdateTempPlaylist, onUpdateVideoMetadata
 }) {
   useEffect(() => {
     if (activePlaylist && activePlaylist.video_ids && activePlaylist.video_ids.length > 0 && onFetchMissingVideos) {
@@ -6519,6 +6573,13 @@ function PlayerView({
         video.vid_name = editTitle;
         video.description = editDesc;
         video.tags = editTags;
+        if (onUpdateVideoMetadata) {
+          onUpdateVideoMetadata(video.vid_id, {
+            vid_name: editTitle,
+            description: editDesc,
+            tags: editTags
+          });
+        }
         setShowEditModal(false);
       }
     } catch (err) {
@@ -8856,6 +8917,11 @@ function PlayerView({
                           <div style={{ display: 'none', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', color: '#444' }}>
                             <Play size={12} />
                           </div>
+                          {parseInt(vid.duration || 0, 10) > 0 && (
+                            <span style={{ position: 'absolute', bottom: '2px', right: '2px', background: 'rgba(0,0,0,0.85)', color: '#fff', fontSize: '9px', padding: '1px 3px', borderRadius: '2px', lineHeight: 1, pointerEvents: 'none' }}>
+                              {formatTime(parseInt(vid.duration, 10))}
+                            </span>
+                          )}
                         </div>
 
                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -8878,6 +8944,7 @@ function PlayerView({
                           </div>
                           <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {vid.uploader_name}
+                            {parseInt(vid.duration || 0, 10) > 0 && ` • ${formatTime(parseInt(vid.duration, 10))}`}
                           </div>
                         </div>
 
@@ -9104,7 +9171,7 @@ function PlayerView({
 // ----------------------------------------
 // SUB-VIEW: CrawlerView
 // ----------------------------------------
-function CrawlerView({ onRefreshPlaylists }) {
+function CrawlerView({ onRefreshPlaylists, showFlashNotification }) {
   const [directory, setDirectory] = useState('D:/Video songs');
   const [syncType, setSyncType] = useState('folder'); // 'folder' | 'playlist' | 'mega_playlist'
   const [recursive, setRecursive] = useState(false);
@@ -9122,8 +9189,14 @@ function CrawlerView({ onRefreshPlaylists }) {
   const [newPresetName, setNewPresetName] = useState('');
   const [newPresetPath, setNewPresetPath] = useState('');
   const [newPresetSyncType, setNewPresetSyncType] = useState('folder');
+  const [newPresetRecursive, setNewPresetRecursive] = useState(true);
 
-  useEffect(() => {
+  // Auto-sync & preset sync status
+  const [autoSyncStatus, setAutoSyncStatus] = useState(null);
+  const [isSyncingAll, setIsSyncingAll] = useState(false);
+  const [syncingPresetId, setSyncingPresetId] = useState(null);
+
+  const fetchPresetsList = useCallback(() => {
     fetch('./api/index.php?action=get_presets')
       .then(res => res.json())
       .then(data => {
@@ -9132,12 +9205,31 @@ function CrawlerView({ onRefreshPlaylists }) {
             id: p.id,
             name: p.preset_name,
             path: p.target_url,
-            sync_type: p.sync_type || 'folder'
+            sync_type: p.sync_type || 'folder',
+            recursive: p.recursive !== false,
+            last_synced_at: p.last_synced_at,
+            last_sync_status: p.last_sync_status
           })));
         }
       })
       .catch(console.error);
   }, []);
+
+  const fetchAutoSyncInfo = useCallback(() => {
+    fetch('./api/index.php?action=get_auto_sync_status')
+      .then(res => res.json())
+      .then(data => {
+        if (data && typeof data.interval_hours !== 'undefined') {
+          setAutoSyncStatus(data);
+        }
+      })
+      .catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    fetchPresetsList();
+    fetchAutoSyncInfo();
+  }, [fetchPresetsList, fetchAutoSyncInfo]);
 
   const handleAddPreset = (e) => {
     e.preventDefault();
@@ -9149,19 +9241,18 @@ function CrawlerView({ onRefreshPlaylists }) {
       body: JSON.stringify({
         preset_name: newPresetName,
         target_url: newPresetPath,
-        sync_type: newPresetSyncType
+        sync_type: newPresetSyncType,
+        recursive: newPresetRecursive
       })
     })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          setPresetFolders(prev => [
-            ...prev,
-            { id: data.id, name: newPresetName, path: newPresetPath, sync_type: newPresetSyncType }
-          ]);
+          fetchPresetsList();
           setNewPresetName('');
           setNewPresetPath('');
           setNewPresetSyncType('folder');
+          setNewPresetRecursive(true);
           setLogs(prev => [
             ...prev,
             { type: 'success', text: `Added directory preset: "${newPresetName}" (${newPresetSyncType})` }
@@ -9169,6 +9260,101 @@ function CrawlerView({ onRefreshPlaylists }) {
         }
       })
       .catch(err => console.error(err));
+  };
+
+  const handleSyncAllPresets = async () => {
+    if (isSyncingAll) return;
+    setIsSyncingAll(true);
+    setLogs(prev => [
+      ...prev,
+      { type: 'info', text: 'Starting batch sync across all directory presets...' }
+    ]);
+
+    try {
+      const res = await fetch('./api/index.php?action=sync_all_presets', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        setLogs(prev => [
+          ...prev,
+          { type: 'success', text: `Batch preset sync completed! ${data.summary}` }
+        ]);
+        if (data.presets && Array.isArray(data.presets)) {
+          data.presets.forEach(p => {
+            if (p.status === 'success') {
+              setLogs(prev => [
+                ...prev,
+                { type: 'success', text: `  ✓ "${p.name}": +${p.added} added, ${p.skipped} skipped` }
+              ]);
+            } else {
+              setLogs(prev => [
+                ...prev,
+                { type: 'error', text: `  ✗ "${p.name}": ${p.message}` }
+              ]);
+            }
+          });
+        }
+        fetchPresetsList();
+        fetchAutoSyncInfo();
+        onRefreshPlaylists?.();
+      } else {
+        setLogs(prev => [
+          ...prev,
+          { type: 'error', text: `Batch sync failed: ${data.message || 'Unknown error'}` }
+        ]);
+      }
+    } catch (e) {
+      setLogs(prev => [
+        ...prev,
+        { type: 'error', text: `HTTP error during batch sync: ${e.message}` }
+      ]);
+    } finally {
+      setIsSyncingAll(false);
+    }
+  };
+
+  const handleSyncSinglePreset = async (preset) => {
+    if (syncingPresetId || scanning) return;
+    setSyncingPresetId(preset.id);
+    const syncLabel = preset.sync_type === 'mega_playlist' ? 'Mega Playlist' : preset.sync_type === 'playlist' ? 'Playlist' : 'Folder';
+    setLogs(prev => [
+      ...prev,
+      { type: 'info', text: `Starting ${syncLabel} Sync on preset "${preset.name}": "${preset.path}"...` }
+    ]);
+
+    try {
+      const res = await fetch('./api/index.php?action=crawl', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          directory: preset.path,
+          recursive: preset.sync_type === 'folder' ? preset.recursive : false,
+          sync_type: preset.sync_type
+        })
+      });
+      const data = await res.json();
+
+      if (data.error) {
+        setLogs(prev => [
+          ...prev,
+          { type: 'error', text: `Scan failed for "${preset.name}": ${data.error}` }
+        ]);
+      } else {
+        setLogs(prev => [
+          ...prev,
+          { type: 'success', text: `Sync completed for "${preset.name}"! Added ${data.added || 0}, skipped ${data.skipped || 0}.` }
+        ]);
+        fetchPresetsList();
+        fetchAutoSyncInfo();
+        onRefreshPlaylists?.();
+      }
+    } catch (e) {
+      setLogs(prev => [
+        ...prev,
+        { type: 'error', text: `HTTP error syncing "${preset.name}": ${e.message}` }
+      ]);
+    } finally {
+      setSyncingPresetId(null);
+    }
   };
 
   const handleRemovePreset = (id, name) => {
@@ -9406,92 +9592,340 @@ function CrawlerView({ onRefreshPlaylists }) {
       </div>
 
       <div className="crawler-section">
-        <h2 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '12px' }}>Select a Directory Preset</h2>
-        <div className="crawler-presets">
-          {presetFolders.map((preset) => (
-            <div key={preset.id || preset.name} className="preset-card">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <span className="preset-name" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  {preset.sync_type === 'mega_playlist' ? (
-                    <Layers size={18} style={{ color: 'var(--primary-color)' }} />
-                  ) : preset.sync_type === 'playlist' ? (
-                    <ListMusic size={18} style={{ color: '#3ea6ff' }} />
-                  ) : (
-                    <Folder size={18} className="logo-icon" />
-                  )}
-                  {preset.name}
-                </span>
-                <span className={`preset-sync-badge badge-${preset.sync_type || 'folder'}`}>
-                  {preset.sync_type === 'mega_playlist' ? 'Mega Playlist' : preset.sync_type === 'playlist' ? 'Playlist' : 'Folder'}
-                </span>
-              </div>
-              <span className="preset-path" title={preset.path}>{preset.path}</span>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                <button
-                  className="btn-primary"
-                  style={{ fontSize: '11px', padding: '4px 8px', flex: 1 }}
-                  onClick={() => {
-                    setDirectory(preset.path);
-                    setSyncType(preset.sync_type || 'folder');
-                  }}
-                >
-                  Select
-                </button>
-                <button
-                  className="btn-secondary"
-                  style={{ fontSize: '11px', padding: '4px 8px', backgroundColor: '#cc0000', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                  onClick={() => handleRemovePreset(preset.id, preset.name)}
-                >
-                  Remove
-                </button>
-              </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+          <div>
+            <h2 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0 }}>Directory Presets</h2>
+            <div style={{ fontSize: '12px', color: '#aaa', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span>Auto-Sync: </span>
+              <strong style={{ color: autoSyncStatus?.is_enabled ? 'rgb(83, 148, 204)' : '#888' }}>
+                {autoSyncStatus?.interval_hours === 1 ? 'Every hour' :
+                 autoSyncStatus?.interval_hours === 4 ? 'Every 4 hours' :
+                 autoSyncStatus?.interval_hours === 12 ? 'Every 12 hours' :
+                 autoSyncStatus?.interval_hours === 24 ? 'Once a day' :
+                 autoSyncStatus?.interval_hours === 48 ? 'Every 2 days' :
+                 'Disabled'}
+              </strong>
+              {autoSyncStatus?.last_run_at && (
+                <span style={{ color: '#777' }}>• Last run: {autoSyncStatus.last_run_at}</span>
+              )}
             </div>
-          ))}
+          </div>
+          <button
+            className="btn-primary"
+            onClick={handleSyncAllPresets}
+            disabled={isSyncingAll || scanning}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', fontSize: '13px' }}
+          >
+            {isSyncingAll ? (
+              <>
+                <Loader2 className="animate-spin" size={16} />
+                <span>Syncing All Presets...</span>
+              </>
+            ) : (
+              <>
+                <RefreshCw size={16} />
+                <span>Sync All Presets Now</span>
+              </>
+            )}
+          </button>
         </div>
 
-        {/* Add Preset Form */}
-        <form onSubmit={handleAddPreset} style={{ marginTop: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-          <div style={{ flex: 1, minWidth: '140px' }}>
-            <label className="form-label" style={{ fontSize: '12px', marginBottom: '4px' }}>Preset Name</label>
-            <input
-              type="text"
-              value={newPresetName}
-              onChange={(e) => setNewPresetName(e.target.value)}
-              placeholder="e.g. My Animes"
-              className="form-input"
-              style={{ padding: '6px 10px', fontSize: '13px' }}
-              required
-            />
+        <div className="crawler-presets">
+          {presetFolders.length === 0 ? (
+            <div style={{
+              gridColumn: '1 / -1',
+              padding: '28px 20px',
+              textAlign: 'center',
+              background: 'rgba(255, 255, 255, 0.02)',
+              borderRadius: '12px',
+              border: '1px dashed rgba(255, 255, 255, 0.1)',
+              color: '#888',
+              fontSize: '13px'
+            }}>
+              <Folder size={28} style={{ margin: '0 auto 8px', opacity: 0.4, display: 'block' }} />
+              No directory presets added yet. Use the form below to save directories for fast one-click sync.
+            </div>
+          ) : (
+            presetFolders.map((preset) => (
+              <div key={preset.id || preset.name} className="preset-card">
+                {/* Header: Badges & Remove Icon */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                    <span className={`preset-sync-badge badge-${preset.sync_type || 'folder'}`}>
+                      {preset.sync_type === 'mega_playlist' ? 'Mega Playlist' : preset.sync_type === 'playlist' ? 'Playlist' : 'Folder'}
+                    </span>
+                    {preset.sync_type === 'folder' && (
+                      <span style={{ fontSize: '10px', color: '#999', background: 'rgba(255, 255, 255, 0.06)', padding: '2px 6px', borderRadius: '4px' }}>
+                        {preset.recursive ? 'Recursive' : 'Direct'}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemovePreset(preset.id, preset.name)}
+                    title="Remove this preset"
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#666',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      borderRadius: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'color 0.2s, background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = '#ff5555'; e.currentTarget.style.backgroundColor = 'rgba(255,85,85,0.12)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = '#666'; e.currentTarget.style.backgroundColor = 'transparent'; }}
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+
+                {/* Preset Name */}
+                <div className="preset-name" style={{ margin: '2px 0 0' }} title={preset.name}>
+                  {preset.sync_type === 'mega_playlist' ? (
+                    <Layers size={18} style={{ color: 'var(--primary-color)', flexShrink: 0 }} />
+                  ) : preset.sync_type === 'playlist' ? (
+                    <ListMusic size={18} style={{ color: '#3ea6ff', flexShrink: 0 }} />
+                  ) : (
+                    <Folder size={18} className="logo-icon" style={{ flexShrink: 0 }} />
+                  )}
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600 }}>
+                    {preset.name}
+                  </span>
+                </div>
+
+                {/* Folder Path Box */}
+                <div
+                  style={{
+                    background: 'rgba(0, 0, 0, 0.25)',
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    borderRadius: '6px',
+                    padding: '6px 8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontSize: '11px',
+                    color: 'var(--text-secondary)',
+                    fontFamily: 'monospace'
+                  }}
+                  title={preset.path}
+                >
+                  <FolderOpen size={13} style={{ flexShrink: 0, opacity: 0.6 }} />
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', direction: 'rtl', textAlign: 'left' }}>
+                    {preset.path}
+                  </span>
+                </div>
+
+                {/* Status Row */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', fontSize: '11px', color: '#888' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', overflow: 'hidden' }}>
+                    <span
+                      style={{
+                        width: '6px',
+                        height: '6px',
+                        borderRadius: '50%',
+                        flexShrink: 0,
+                        backgroundColor: preset.last_synced_at
+                          ? (preset.last_sync_status?.toLowerCase().includes('error') ? '#ff5555' : '#4caf50')
+                          : '#555'
+                      }}
+                    />
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {preset.last_synced_at ? preset.last_synced_at : 'Never synced'}
+                    </span>
+                  </div>
+
+                  {preset.last_sync_status && (
+                    <span
+                      style={{
+                        fontSize: '10px',
+                        padding: '1px 6px',
+                        borderRadius: '4px',
+                        background: preset.last_sync_status.toLowerCase().includes('error') ? 'rgba(255,85,85,0.15)' : 'rgba(255,255,255,0.06)',
+                        color: preset.last_sync_status.toLowerCase().includes('error') ? '#ff7777' : '#aaa',
+                        maxWidth: '120px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        flexShrink: 0
+                      }}
+                      title={preset.last_sync_status}
+                    >
+                      {preset.last_sync_status}
+                    </span>
+                  )}
+                </div>
+
+                {/* Actions: Select & Sync */}
+                <div style={{ display: 'flex', gap: '8px', marginTop: 'auto', paddingTop: '4px' }}>
+                  <button
+                    className="btn-secondary"
+                    style={{
+                      fontSize: '12px',
+                      padding: '6px 12px',
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)'
+                    }}
+                    onClick={() => {
+                      setDirectory(preset.path);
+                      setSyncType(preset.sync_type || 'folder');
+                      setRecursive(preset.recursive !== false);
+                    }}
+                    title="Fill configuration form below with this preset"
+                  >
+                    Select
+                  </button>
+                  <button
+                    className="btn-primary"
+                    style={{
+                      fontSize: '12px',
+                      padding: '6px 14px',
+                      backgroundColor: 'rgb(83, 148, 204)',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      flex: 1
+                    }}
+                    onClick={() => handleSyncSinglePreset(preset)}
+                    disabled={syncingPresetId === preset.id || isSyncingAll}
+                    title="Sync this preset now"
+                  >
+                    {syncingPresetId === preset.id ? <Loader2 className="animate-spin" size={13} /> : <RefreshCw size={13} />}
+                    <span>Sync</span>
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Add Preset Panel */}
+        <div style={{
+          marginTop: '20px',
+          background: 'var(--bg-secondary)',
+          borderRadius: '12px',
+          border: '1px solid var(--border-color)',
+          padding: '18px 20px',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Plus size={18} style={{ color: 'rgb(83, 148, 204)' }} />
+              <h3 style={{ fontSize: '15px', fontWeight: 600, margin: 0 }}>Add New Preset</h3>
+            </div>
+            <span style={{ fontSize: '12px', color: '#888' }}>
+              Save directories for quick one-click sync and automated background runs
+            </span>
           </div>
-          <div style={{ flex: 2, minWidth: '220px' }}>
-            <label className="form-label" style={{ fontSize: '12px', marginBottom: '4px' }}>Folder Path</label>
-            <input
-              type="text"
-              value={newPresetPath}
-              onChange={(e) => setNewPresetPath(e.target.value)}
-              placeholder="e.g. D:/My Animes"
-              className="form-input"
-              style={{ padding: '6px 10px', fontSize: '13px' }}
-              required
-            />
-          </div>
-          <div style={{ flex: 1, minWidth: '150px' }}>
-            <label className="form-label" style={{ fontSize: '12px', marginBottom: '4px' }}>Sync Type</label>
-            <select
-              value={newPresetSyncType}
-              onChange={(e) => setNewPresetSyncType(e.target.value)}
-              className="form-input"
-              style={{ padding: '6px 10px', fontSize: '13px', cursor: 'pointer' }}
-            >
-              <option value="folder">Normal Folder (Default)</option>
-              <option value="playlist">Playlist</option>
-              <option value="mega_playlist">Mega Playlist</option>
-            </select>
-          </div>
-          <button type="submit" className="btn-primary" style={{ padding: '8px 16px', height: '36px', fontSize: '13px' }}>
-            Add Preset
-          </button>
-        </form>
+
+          <form onSubmit={handleAddPreset}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gap: '14px',
+              marginBottom: '14px'
+            }}>
+              <div className="form-group" style={{ gap: '6px' }}>
+                <label className="form-label" style={{ fontSize: '12px' }}>Preset Name</label>
+                <input
+                  type="text"
+                  value={newPresetName}
+                  onChange={(e) => setNewPresetName(e.target.value)}
+                  placeholder="e.g. Anime Library, Music Videos"
+                  className="form-input"
+                  style={{ padding: '8px 12px', fontSize: '13px' }}
+                  required
+                />
+              </div>
+
+              <div className="form-group" style={{ gap: '6px' }}>
+                <label className="form-label" style={{ fontSize: '12px' }}>Sync Type</label>
+                <select
+                  value={newPresetSyncType}
+                  onChange={(e) => setNewPresetSyncType(e.target.value)}
+                  className="form-input"
+                  style={{ padding: '8px 12px', fontSize: '13px', cursor: 'pointer' }}
+                >
+                  <option value="folder">Normal Folder (Videos on disk)</option>
+                  <option value="playlist">Playlist (Single playlist from folder)</option>
+                  <option value="mega_playlist">Mega Playlist (Nested playlist tree)</option>
+                </select>
+              </div>
+
+              <div className="form-group" style={{ gap: '6px', gridColumn: '1 / -1' }}>
+                <label className="form-label" style={{ fontSize: '12px' }}>Folder Path (Absolute)</label>
+                <input
+                  type="text"
+                  value={newPresetPath}
+                  onChange={(e) => setNewPresetPath(e.target.value)}
+                  placeholder="e.g. D:/Videos/Anime or E:/Media/Songs"
+                  className="form-input"
+                  style={{ padding: '8px 12px', fontSize: '13px', fontFamily: 'monospace' }}
+                  required
+                />
+              </div>
+            </div>
+
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '12px',
+              paddingTop: '4px'
+            }}>
+              {newPresetSyncType === 'folder' ? (
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer', userSelect: 'none' }}>
+                  <input
+                    type="checkbox"
+                    id="newPresetRec"
+                    checked={newPresetRecursive}
+                    onChange={(e) => setNewPresetRecursive(e.target.checked)}
+                    style={{ width: '15px', height: '15px', cursor: 'pointer' }}
+                  />
+                  <span style={{ fontSize: '13px', color: '#ddd' }}>
+                    Recursive scanning
+                  </span>
+                  <span style={{ fontSize: '12px', color: '#777' }}>
+                    (Includes videos inside nested subdirectories)
+                  </span>
+                </label>
+              ) : (
+                <div />
+              )}
+
+              <button
+                type="submit"
+                className="btn-primary"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 20px',
+                  fontSize: '13px',
+                  borderRadius: '8px',
+                  cursor: 'pointer'
+                }}
+              >
+                <Plus size={16} />
+                <span>Add Preset</span>
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
 
       <div className="crawler-section">
@@ -9697,6 +10131,24 @@ function PlaylistView({
       .filter(Boolean);
   }, [playlist.video_ids, allVideosMap]);
 
+  const totalDurationSec = useMemo(() => {
+    return playlistVideos.reduce((acc, v) => acc + (parseInt(v.duration || 0, 10) || 0), 0);
+  }, [playlistVideos]);
+
+  const formattedTotalDuration = useMemo(() => {
+    if (!totalDurationSec) return '';
+    const hrs = Math.floor(totalDurationSec / 3600);
+    const mins = Math.floor((totalDurationSec % 3600) / 60);
+    const secs = totalDurationSec % 60;
+    if (hrs > 0) {
+      return `${hrs} hr ${mins} min`;
+    }
+    if (mins > 0) {
+      return `${mins} min ${secs} sec`;
+    }
+    return `${secs} sec`;
+  }, [totalDurationSec]);
+
   // Compute ancestor breadcrumb trail
   const breadcrumbs = useMemo(() => {
     const crumbs = [];
@@ -9856,9 +10308,9 @@ function PlaylistView({
           </h1>
           <p className="crawler-desc" style={{ marginTop: '6px', fontSize: isMobile ? '12px' : '14px' }}>
             {isMega ? (
-              `${childPlaylists.length} ${childPlaylists.length === 1 ? 'sub-playlist' : 'sub-playlists'}${hasDirectVideos ? ` • ${playlistVideos.length} direct videos` : ''} • ${totalVideosCount} total videos`
+              `${childPlaylists.length} ${childPlaylists.length === 1 ? 'sub-playlist' : 'sub-playlists'}${hasDirectVideos ? ` • ${playlistVideos.length} direct videos` : ''} • ${totalVideosCount} total videos${formattedTotalDuration ? ` • ${formattedTotalDuration}` : ''}`
             ) : (
-              `${playlistVideos.length} ${playlistVideos.length === 1 ? 'video' : 'videos'} ${isMobile ? '' : '• Drag & drop items to reorder playlist queue'}`
+              `${playlistVideos.length} ${playlistVideos.length === 1 ? 'video' : 'videos'}${formattedTotalDuration ? ` • ${formattedTotalDuration}` : ''} ${isMobile ? '' : '• Drag & drop items to reorder playlist queue'}`
             )}
           </p>
         </div>
@@ -10100,9 +10552,9 @@ function PlaylistView({
                     <div style={{ display: 'none', width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', color: '#444' }}>
                       <Play size={20} />
                     </div>
-                    {vid.duration > 0 && (
+                    {parseInt(vid.duration || 0, 10) > 0 && (
                       <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(0,0,0,0.8)', color: '#fff', fontSize: '10px', padding: '2px 4px', borderRadius: '2px' }}>
-                        {formatTime(vid.duration)}
+                        {formatTime(parseInt(vid.duration, 10))}
                       </span>
                     )}
                   </div>
@@ -10130,6 +10582,7 @@ function PlaylistView({
                     </h3>
                     <span style={{ fontSize: isMobile ? '11px' : '12px', color: '#aaa', marginTop: '4px', display: 'inline-block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
                       {vid.uploader_name}
+                      {parseInt(vid.duration || 0, 10) > 0 && ` • ${formatTime(parseInt(vid.duration, 10))}`}
                     </span>
                   </div>
 

@@ -113,9 +113,12 @@ export function SettingsView({ currentUser, showFlashNotification }) {
   const [skipInterval, setSkipInterval] = useState(() => parseInt(localStorage.getItem('yt_skip_interval')) || 10);
   const [persistVolume, setPersistVolume] = useState(() => localStorage.getItem('yt_persist_volume') !== 'false');
 
-  // Crawler
+  // Crawler & Auto-Sync
   const [crawlerAutoDelete, setCrawlerAutoDelete] = useState(() => localStorage.getItem('yt_crawler_auto_delete') === 'true');
   const [crawlerAutoThumbnail, setCrawlerAutoThumbnail] = useState(() => localStorage.getItem('yt_crawler_auto_thumbnail') !== 'false');
+  const [autoSyncInterval, setAutoSyncInterval] = useState(24);
+  const [autoSyncStatus, setAutoSyncStatus] = useState(null);
+  const [isSyncingAll, setIsSyncingAll] = useState(false);
 
   // System
   const [logLevel, setLogLevel] = useState(() => localStorage.getItem('yt_log_level') || 'info');
@@ -215,9 +218,22 @@ export function SettingsView({ currentUser, showFlashNotification }) {
     }
   };
 
+  const fetchAutoSyncStatus = () => {
+    fetch('./api/index.php?action=get_auto_sync_status')
+      .then(res => res.json())
+      .then(data => {
+        if (data && typeof data.interval_hours !== 'undefined') {
+          setAutoSyncInterval(data.interval_hours);
+          setAutoSyncStatus(data);
+        }
+      })
+      .catch(console.error);
+  };
+
   useEffect(() => {
     fetchExclusionLists();
     fetchPlaylists();
+    fetchAutoSyncStatus();
   }, []);
 
   const [selectedVideosMap, setSelectedVideosMap] = useState({});
@@ -461,6 +477,45 @@ export function SettingsView({ currentUser, showFlashNotification }) {
       else showFlashNotification(data.error || 'Failed to rebuild search index.');
     } catch (e) { showFlashNotification('Error communicating with database.'); }
     finally { setIsRebuilding(false); }
+  };
+
+  const handleAutoSyncIntervalChange = async (newVal) => {
+    const hours = parseInt(newVal, 10);
+    setAutoSyncInterval(hours);
+    try {
+      const res = await fetch('./api/index.php?action=save_auto_sync_settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ interval_hours: hours })
+      });
+      const data = await res.json();
+      if (data && data.success) {
+        showFlashNotification('Auto-sync schedule updated!');
+        fetchAutoSyncStatus();
+      }
+    } catch (e) {
+      showFlashNotification('Failed to update auto-sync setting.');
+    }
+  };
+
+  const handleSyncAllPresetsNow = async () => {
+    if (isSyncingAll) return;
+    setIsSyncingAll(true);
+    showFlashNotification('Started syncing all presets...');
+    try {
+      const res = await fetch('./api/index.php?action=sync_all_presets', { method: 'POST' });
+      const data = await res.json();
+      if (data && data.success) {
+        showFlashNotification(data.summary || 'All presets synchronized successfully!');
+        fetchAutoSyncStatus();
+      } else {
+        showFlashNotification(data?.message || 'Sync failed.');
+      }
+    } catch (e) {
+      showFlashNotification('Error during preset sync: ' + e.message);
+    } finally {
+      setIsSyncingAll(false);
+    }
   };
 
   const handleClearHistory = (type) => {
@@ -1741,6 +1796,50 @@ export function SettingsView({ currentUser, showFlashNotification }) {
                   <SettingRow label="Auto-Generate Missing Thumbnails" desc="Auto-generate thumbnails from video frames for entries without a thumbnail file.">
                     <Toggle value={crawlerAutoThumbnail} onChange={v => updateSetting('yt_crawler_auto_thumbnail', v, setCrawlerAutoThumbnail)} />
                   </SettingRow>
+
+                  <SettingRow label="Preset Auto-Sync Frequency" desc="Automatically synchronize all crawler presets in the background.">
+                    <select
+                      className="settings-select"
+                      value={autoSyncInterval}
+                      onChange={e => handleAutoSyncIntervalChange(e.target.value)}
+                    >
+                      <option value="1">Once every hour</option>
+                      <option value="4">Once every 4 hours</option>
+                      <option value="12">Once every 12 hours</option>
+                      <option value="24">Once a day (Default)</option>
+                      <option value="48">Once every 2 days</option>
+                      <option value="0">No auto sync (Disabled)</option>
+                    </select>
+                  </SettingRow>
+
+                  {autoSyncStatus && (
+                    <div style={{ margin: '8px 0 16px 0', padding: '10px 14px', borderRadius: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ color: '#aaa' }}>Last Auto-Sync:</span>
+                        <span style={{ fontWeight: '500', color: autoSyncStatus.last_run_at ? '#fff' : '#888' }}>
+                          {autoSyncStatus.last_run_at || 'Never'}
+                        </span>
+                      </div>
+                      {autoSyncStatus.last_status && (
+                        <div style={{ color: '#888', fontSize: '12px' }}>
+                          {autoSyncStatus.last_status}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div style={{ marginTop: 12, marginBottom: 20 }}>
+                    <div className="settings-action-card">
+                      <div className="action-card-text">
+                        <span className="action-card-title">Sync All Presets Now</span>
+                        <span className="action-card-desc">Immediately triggers full synchronization of all saved directory presets.</span>
+                      </div>
+                      <button className="settings-action-btn btn-primary" onClick={handleSyncAllPresetsNow} disabled={isSyncingAll}>
+                        <RefreshCw size={16} className={isSyncingAll ? 'spin' : ''} />
+                        <span>{isSyncingAll ? 'Syncing All...' : 'Sync All Presets'}</span>
+                      </button>
+                    </div>
+                  </div>
 
                   <div style={{ marginTop: 20 }}>
                     <div className="settings-action-card">
