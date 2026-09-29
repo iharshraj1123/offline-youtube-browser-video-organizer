@@ -309,6 +309,9 @@ try {
         case 'convert_video':
             handleConvertVideo($pdo);
             break;
+        case 'fix_audio_sync':
+            handleFixAudioSync($pdo);
+            break;
         case 'detect_subtitle':
             handleDetectSubtitle($pdo);
             break;
@@ -5768,6 +5771,145 @@ function handleConvertVideo($pdo) {
             'mp4' => $publicMp4,
             'mp4_path' => $outputMp4,
             'vtt' => $hasVtt ? $publicVtt : null,
+        ]);
+        exit;
+    } finally {
+        if ($tempLink && file_exists($tempLink)) {
+            @unlink($tempLink);
+        }
+    }
+}
+
+// ----------------------------------------
+// Audio Sync Permanent Fix (Lossless FFmpeg)
+// ----------------------------------------
+
+function handleFixAudioSync($pdo) {
+    $id = isset($_POST['id']) ? intval($_POST['id']) : (isset($_GET['id']) ? intval($_GET['id']) : 0);
+    $delayMs = isset($_POST['delay_ms']) ? intval($_POST['delay_ms']) : (isset($_GET['delay_ms']) ? intval($_GET['delay_ms']) : 0);
+
+    if ($id <= 0) {
+        echo json_encode(['error' => 'Invalid video ID']);
+        exit;
+    }
+    if ($delayMs === 0) {
+        echo json_encode(['error' => 'Delay cannot be zero']);
+        exit;
+    }
+
+    $stmt = $pdo->prepare("SELECT link FROM video_metadatas WHERE vid_id = :id");
+    $stmt->execute([':id' => $id]);
+    $row = $stmt->fetch();
+    if (!$row) {
+        echo json_encode(['error' => 'Video not found']);
+        exit;
+    }
+
+    $localPath = resolveLocalFilePath($row['link']);
+    if (!file_exists($localPath)) {
+        echo json_encode(['error' => 'Video file not found on disk: ' . $localPath]);
+        exit;
+    }
+
+    $ffmpegPath = getFFmpegPath();
+    if (!$ffmpegPath) {
+        echo json_encode(['error' => 'FFmpeg not found on server']);
+        exit;
+    }
+
+    $tempLink = getTempHardlink($localPath, 'temp_sync_');
+    $inputPath = $tempLink ? $tempLink : $localPath;
+
+    try {
+        $dir = dirname($localPath);
+        $ext = pathinfo($localPath, PATHINFO_EXTENSION);
+        $tempOutput = $dir . DIRECTORY_SEPARATOR . 'sync_temp_' . uniqid() . '.' . $ext;
+
+        $offsetSec = abs($delayMs) / 1000.0;
+        $offsetStr = number_format($offsetSec, 3, '.', '');
+
+        if ($delayMs > 0) {
+            $cmd = $ffmpegPath . ' -y -i ' . escapeshellarg($inputPath)
+                . ' -itsoffset ' . $offsetStr . ' -i ' . escapeshellarg($inputPath)
+                . ' -map 0:v -map 1:a? -map 0:s? -c copy '
+                . (strtolower($ext) === 'mp4' ? '-movflags +faststart ' : '')
+                . escapeshellarg($tempOutput) . ' 2>&1';
+        } else {
+            $cmd = $ffmpegPath . ' -y -itsoffset ' . $offsetStr . ' -i ' . escapeshellarg($inputPath)
+                . ' -i ' . escapeshellarg($inputPath)
+                . ' -map 0:v -map 1:a? -map 0:s? -c copy '
+                . (strtolower($ext) === 'mp4' ? '-movflags +faststart ' : '')
+                . escapeshellarg($tempOutput) . ' 2>&1';
+        }
+
+        $output = [];
+        $ret = -1;
+        exec($cmd, $output, $ret);
+
+        if ($ret !== 0 || !file_exists($tempOutput) || filesize($tempOutput) === 0) {
+            if (file_exists($tempOutput)) @unlink($tempOutput);
+            echo json_encode([
+                'error' => 'FFmpeg failed to process video: ' . implode("\n", array_slice($output, -10))
+            ]);
+            exit;
+        }
+
+        // Safely replace the original file with retry to handle Windows read-locks from web streaming
+        $backupPath = $localPath . '.bak';
+        if (file_exists($backupPath)) @unlink($backupPath);
+
+        $renamed = false;
+        for ($i = 0; $i < 6; $i++) {
+            if (@rename($localPath, $backupPath)) {
+                $renamed = true;
+                break;
+            }
+            usleep(250000); // 250ms
+        }
+
+        if (!$renamed) {
+            // Attempt copy fallback if rename was blocked
+            if (!@copy($tempOutput, $localPath)) {
+                @unlink($tempOutput);
+                echo json_encode(['error' => 'Cannot update file on disk. The video may currently be in use by another application.']);
+                exit;
+            }
+            @unlink($tempOutput);
+        } else {
+            $replaced = false;
+            for ($i = 0; $i < 6; $i++) {
+                if (@rename($tempOutput, $localPath)) {
+                    $replaced = true;
+                    break;
+                }
+                usleep(250000);
+            }
+
+            if (!$replaced) {
+                // Rollback
+                @rename($backupPath, $localPath);
+                @unlink($tempOutput);
+                echo json_encode(['error' => 'Failed to replace original video file with synced version']);
+                exit;
+            }
+
+            // Success: remove backup
+            @unlink($backupPath);
+        }
+
+        // Update filesize in database if available
+        try {
+            $newSize = @filesize($localPath);
+            if ($newSize) {
+                $upStmt = $pdo->prepare("UPDATE video_metadatas SET filesize = :sz WHERE vid_id = :id");
+                $upStmt->execute([':sz' => $newSize, ':id' => $id]);
+            }
+        } catch (Exception $e) {}
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Audio sync permanently applied (' . ($delayMs > 0 ? '+' : '') . $delayMs . ' ms) via FFmpeg!',
+            'new_filesize' => $newSize ?? null
         ]);
         exit;
     } finally {

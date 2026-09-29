@@ -8,6 +8,9 @@
 <IfModule mod_headers.c>
     <FilesMatch "\.(mp4|m4v|webm|mkv|ogv)$">
         Header set Cache-Control "public, max-age=3600"
+        Header set Access-Control-Allow-Origin "*"
+        Header set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Range"
+        Header set Access-Control-Expose-Headers "Content-Length, Content-Range, Accept-Ranges"
     </FilesMatch>
 
     <FilesMatch "\.mp4$">

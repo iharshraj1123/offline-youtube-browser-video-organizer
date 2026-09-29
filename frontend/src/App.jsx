@@ -2856,7 +2856,7 @@ function ShortsPlayerView({
         }
       }
     }
-  }, [currentVideo]);
+  }, [currentVideo?.vid_id]);
 
   // Initialize edit fields
   useEffect(() => {
@@ -2865,7 +2865,7 @@ function ShortsPlayerView({
       setEditDesc(currentVideo.description || '');
       setEditTags(currentVideo.tags || '');
     }
-  }, [currentIndex, currentVideo]);
+  }, [currentIndex, currentVideo?.vid_id]);
 
   // Video delete trigger
   const handleDelete = async () => {
@@ -4138,6 +4138,32 @@ function SidebarVideoCard({ vid, onPlayVideo }) {
 // Session-level playback speed (persists across video changes and playlists, resets on page refresh)
 let sessionPlaybackSpeed = parseFloat(localStorage.getItem('yt_default_speed')) || 1;
 
+// Video-specific audio sync / delay helpers
+function getSavedAudioDelay(vidId) {
+  if (!vidId) return 0;
+  try {
+    const map = JSON.parse(localStorage.getItem('yt_video_audio_delays') || '{}');
+    return parseInt(map[vidId], 10) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+function saveAudioDelay(vidId, delayMs) {
+  if (!vidId) return;
+  try {
+    const map = JSON.parse(localStorage.getItem('yt_video_audio_delays') || '{}');
+    if (delayMs === 0) {
+      delete map[vidId];
+    } else {
+      map[vidId] = delayMs;
+    }
+    localStorage.setItem('yt_video_audio_delays', JSON.stringify(map));
+  } catch (e) {
+    console.error('Failed to save audio delay:', e);
+  }
+}
+
 function PlayerView({
   video, onVideoDeleted, onOpenShortById, allVideos, extraVideosMap = {}, onFetchMissingVideos, onPlayVideo, onOpenPlaylist, isMiniPlayer, onExpand, onClose, isTheaterMode, setIsTheaterMode, onPlayRandom,
   playlists, excludedData = {}, activePlaylist, setActivePlaylist, currentPlaylistIndex, setCurrentPlaylistIndex,
@@ -4628,6 +4654,288 @@ function PlayerView({
       return nextVal;
     });
   }, []);
+
+  // Audio sync / delay state & Web Audio API graph refs
+  const [audioDelay, setAudioDelay] = useState(() => getSavedAudioDelay(video?.vid_id));
+  const [isFixingSync, setIsFixingSync] = useState(false);
+  const audioCtxRef = useRef(null);
+  const audioSourceNodeRef = useRef(null);
+  const delayNodeRef = useRef(null);
+  const gainNodeRef = useRef(null);
+  const companionAudioRef = useRef(null);
+  const companionSrcRef = useRef('');
+  const videoIdRef = useRef(video?.vid_id);
+  videoIdRef.current = video?.vid_id;
+
+  const ensureAudioGraph = useCallback(() => {
+    if (!videoRef.current) return null;
+    try {
+      if (!audioCtxRef.current) {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return null;
+        audioCtxRef.current = new AudioCtx();
+      }
+      if (audioCtxRef.current.state !== 'running') {
+        audioCtxRef.current.resume().catch(() => {});
+      }
+      if (!gainNodeRef.current) {
+        gainNodeRef.current = audioCtxRef.current.createGain();
+        gainNodeRef.current.connect(audioCtxRef.current.destination);
+      }
+      if (!delayNodeRef.current) {
+        delayNodeRef.current = audioCtxRef.current.createDelay(10.0);
+        delayNodeRef.current.connect(gainNodeRef.current);
+      }
+      if (!audioSourceNodeRef.current) {
+        audioSourceNodeRef.current = audioCtxRef.current.createMediaElementSource(videoRef.current);
+        audioSourceNodeRef.current.connect(delayNodeRef.current);
+      }
+      return { delayNode: delayNodeRef.current, gainNode: gainNodeRef.current };
+    } catch (e) {
+      console.warn("Could not initialize Web Audio sync:", e);
+      return null;
+    }
+  }, []);
+
+  const ensureCompanionAudio = useCallback(() => {
+    if (!companionAudioRef.current) {
+      const audio = new Audio();
+      audio.preload = 'auto';
+      audio.crossOrigin = 'anonymous';
+      companionAudioRef.current = audio;
+    }
+    const currentSrc = cachedVideo?.mp4 || translateVideoUrl(video?.link);
+    if (companionSrcRef.current !== currentSrc && currentSrc) {
+      companionSrcRef.current = currentSrc;
+      companionAudioRef.current.src = currentSrc;
+      companionAudioRef.current.load();
+    }
+    return companionAudioRef.current;
+  }, [cachedVideo?.mp4, video?.link]);
+
+  const syncCompanionAudio = useCallback((forceSeek = false) => {
+    if (audioDelay >= 0 || !videoRef.current) {
+      if (companionAudioRef.current && !companionAudioRef.current.paused) {
+        companionAudioRef.current.pause();
+      }
+      return;
+    }
+
+    const audio = ensureCompanionAudio();
+    if (!audio) return;
+
+    const speed = playbackSpeedRef.current || 1;
+    const advanceSec = (Math.abs(audioDelay) / 1000) / speed;
+    const targetTime = Math.max(0, videoRef.current.currentTime + advanceSec);
+
+    audio.playbackRate = speed;
+    audio.muted = isMuted;
+    audio.volume = isMuted ? 0 : volume;
+
+    if (audio.readyState >= 1) {
+      const drift = Math.abs(audio.currentTime - targetTime);
+      if (forceSeek || drift > 0.35) {
+        audio.currentTime = targetTime;
+      }
+    } else {
+      const onMeta = () => {
+        if (!videoRef.current) return;
+        audio.currentTime = Math.max(0, videoRef.current.currentTime + advanceSec);
+        const isVideoActive = !videoRef.current.paused && !videoRef.current.seeking;
+        if (isVideoActive) {
+          audio.play().catch(() => {});
+        }
+      };
+      audio.addEventListener('loadedmetadata', onMeta, { once: true });
+    }
+
+    const isVideoPlaying = !videoRef.current.paused && !videoRef.current.seeking;
+    if (isVideoPlaying && audio.paused) {
+      audio.play().catch(() => {});
+    } else if (!isVideoPlaying && !audio.paused) {
+      audio.pause();
+    }
+  }, [audioDelay, isMuted, volume, ensureCompanionAudio]);
+
+  const adjustAudioDelay = useCallback((deltaMs) => {
+    if (castDevice) {
+      showFlashNotification('Audio delay is not supported while casting');
+      return;
+    }
+    setAudioDelay(prev => {
+      const nextVal = Math.max(-2000, Math.min(5000, prev + deltaMs));
+      saveAudioDelay(videoIdRef.current, nextVal);
+      if (nextVal !== 0) {
+        ensureAudioGraph();
+      }
+      if (nextVal === 0) {
+        showFlashNotification('Audio Delay: 0 ms (Default)');
+      } else if (nextVal < 0) {
+        showFlashNotification(`Audio Delay: ${nextVal} ms (Sound Advanced)`);
+      } else {
+        showFlashNotification(`Audio Delay: +${nextVal} ms (Sound Delayed)`);
+      }
+      return nextVal;
+    });
+  }, [castDevice, ensureAudioGraph, showFlashNotification]);
+
+  const setAudioDelayDirect = useCallback((ms) => {
+    if (castDevice) {
+      showFlashNotification('Audio delay is not supported while casting');
+      return;
+    }
+    const val = Math.max(-2000, Math.min(5000, ms));
+    setAudioDelay(val);
+    saveAudioDelay(videoIdRef.current, val);
+    if (val !== 0) {
+      ensureAudioGraph();
+    }
+    if (val === 0) {
+      showFlashNotification('Audio Delay: 0 ms (Default)');
+    } else if (val < 0) {
+      showFlashNotification(`Audio Delay: ${val} ms (Sound Advanced)`);
+    } else {
+      showFlashNotification(`Audio Delay: +${val} ms (Sound Delayed)`);
+    }
+  }, [castDevice, ensureAudioGraph, showFlashNotification]);
+
+  const handlePermanentFixSync = async () => {
+    if (!video?.vid_id || audioDelay === 0) return;
+    const confirmMsg = `Permanently adjust this video by ${audioDelay > 0 ? `+${audioDelay}` : audioDelay} ms using lossless FFmpeg stream copy?\n\n(Original file will be safely updated in ~1-2 seconds without re-encoding quality loss).`;
+    if (!window.confirm(confirmMsg)) return;
+
+    setIsFixingSync(true);
+    showFlashNotification('Fixing audio sync with FFmpeg (lossless)...');
+    try {
+      const fd = new FormData();
+      fd.append('id', video.vid_id);
+      fd.append('delay_ms', audioDelay);
+
+      const res = await fetch('./api/index.php?action=fix_audio_sync', {
+        method: 'POST',
+        body: fd
+      });
+      const data = await res.json();
+      if (data.error) {
+        alert('FFmpeg fix failed: ' + data.error);
+        showFlashNotification('FFmpeg fix failed');
+        return;
+      }
+
+      // Sync fixed permanently
+      saveAudioDelay(video.vid_id, 0);
+      setAudioDelay(0);
+      if (companionAudioRef.current) {
+        companionAudioRef.current.pause();
+        companionAudioRef.current.src = '';
+        companionSrcRef.current = '';
+      }
+      if (gainNodeRef.current) {
+        gainNodeRef.current.gain.value = 1;
+      }
+      if (delayNodeRef.current) {
+        delayNodeRef.current.delayTime.value = 0;
+      }
+      if (videoRef.current) {
+        videoRef.current.muted = isMuted;
+        const currTime = videoRef.current.currentTime;
+        const currentSrc = cachedVideo?.mp4 || translateVideoUrl(video.link);
+        const sep = currentSrc.includes('?') ? '&' : '?';
+        videoRef.current.src = `${currentSrc}${sep}_sync=${Date.now()}`;
+        videoRef.current.currentTime = currTime;
+        videoRef.current.play().catch(() => {});
+      }
+      showFlashNotification(data.message || 'Audio sync permanently baked into video file!');
+      setSettingsSubmenu('main');
+    } catch (err) {
+      console.error('Error fixing sync:', err);
+      alert('Error communicating with backend: ' + err.message);
+    } finally {
+      setIsFixingSync(false);
+    }
+  };
+
+  // Sync saved audio delay when active video changes
+  useEffect(() => {
+    const saved = getSavedAudioDelay(video?.vid_id);
+    setAudioDelay(saved);
+    if (saved !== 0) {
+      ensureAudioGraph();
+    }
+    if (companionAudioRef.current) {
+      companionAudioRef.current.pause();
+      companionAudioRef.current.src = '';
+      companionSrcRef.current = '';
+    }
+  }, [video?.vid_id, ensureAudioGraph]);
+
+  // Dynamically manage audio sync: Web Audio for positive delay, Companion Audio for negative delay
+  useEffect(() => {
+    if (audioDelay > 0) {
+      // Positive delay: unmute video in DSP graph, silence companion audio, apply delayTime
+      if (companionAudioRef.current && !companionAudioRef.current.paused) {
+        companionAudioRef.current.pause();
+      }
+      ensureAudioGraph();
+      if (gainNodeRef.current) {
+        gainNodeRef.current.gain.value = 1;
+      }
+      if (videoRef.current && videoRef.current.muted !== isMuted) {
+        videoRef.current.muted = isMuted;
+      }
+      if (delayNodeRef.current) {
+        const speed = playbackSpeed || 1;
+        const realSec = (audioDelay / 1000) / speed;
+        delayNodeRef.current.delayTime.value = Math.max(0, realSec);
+      }
+    } else if (audioDelay < 0) {
+      // Negative delay: silence video in Web Audio DSP graph and play companion audio advanced by |audioDelay|
+      ensureAudioGraph();
+      if (gainNodeRef.current) {
+        gainNodeRef.current.gain.value = 0;
+      } else if (videoRef.current) {
+        videoRef.current.muted = true;
+      }
+      if (delayNodeRef.current) {
+        delayNodeRef.current.delayTime.value = 0;
+      }
+      syncCompanionAudio(true);
+    } else {
+      // 0ms delay: default native playback
+      if (companionAudioRef.current && !companionAudioRef.current.paused) {
+        companionAudioRef.current.pause();
+      }
+      if (gainNodeRef.current) {
+        gainNodeRef.current.gain.value = 1;
+      }
+      if (videoRef.current && videoRef.current.muted !== isMuted) {
+        videoRef.current.muted = isMuted;
+      }
+      if (delayNodeRef.current) {
+        delayNodeRef.current.delayTime.value = 0;
+      }
+    }
+  }, [audioDelay, playbackSpeed, isPlaying, volume, isMuted, ensureAudioGraph, syncCompanionAudio]);
+
+  // Clean up AudioContext & Companion Audio on PlayerView unmount
+  useEffect(() => {
+    return () => {
+      if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
+        audioCtxRef.current.close().catch(() => {});
+        audioCtxRef.current = null;
+        audioSourceNodeRef.current = null;
+        delayNodeRef.current = null;
+        gainNodeRef.current = null;
+      }
+      if (companionAudioRef.current) {
+        companionAudioRef.current.pause();
+        companionAudioRef.current.src = '';
+        companionAudioRef.current = null;
+        companionSrcRef.current = '';
+      }
+    };
+  }, []);
+
   const [isLooping, setIsLooping] = useState(false);
   const [isRandom, setIsRandom] = useState(() => localStorage.getItem('yt_random') === 'true');
   const [showStats, setShowStats] = useState(false);
@@ -4965,7 +5273,7 @@ function PlayerView({
   };
 
   useEffect(() => {
-    // Reset states when video changes
+    // Reset states only when a different video is loaded
     setLikes(parseInt(video.likes) || 0);
     setDislikes(parseInt(video.dislikes) || 0);
     setLiked(false);
@@ -4994,7 +5302,16 @@ function PlayerView({
         }, 150);
       }
     }
-  }, [video]);
+  }, [video?.vid_id]);
+
+  // Keep metadata edit inputs in sync when video metadata is updated without resetting playback
+  useEffect(() => {
+    if (video) {
+      setEditTitle(video.vid_name || '');
+      setEditDesc(video.description || '');
+      setEditTags(video.tags || '');
+    }
+  }, [video?.vid_name, video?.description, video?.tags]);
 
   // Casting Actions
   const loadServerIps = async () => {
@@ -5762,7 +6079,16 @@ function PlayerView({
     if (!videoRef.current) return;
     if (isPlaying) {
       videoRef.current.pause();
+      if (companionAudioRef.current && !companionAudioRef.current.paused) {
+        companionAudioRef.current.pause();
+      }
     } else {
+      if (audioCtxRef.current && audioCtxRef.current.state !== 'running') {
+        audioCtxRef.current.resume().catch(() => {});
+      }
+      if (audioDelay < 0) {
+        syncCompanionAudio(true);
+      }
       videoRef.current.play().catch(e => console.error("Playback interrupted:", e));
     }
   };
@@ -5770,6 +6096,9 @@ function PlayerView({
   const handleTimeUpdate = () => {
     if (!videoRef.current || isScrubbing) return;
     setCurrentTime(videoRef.current.currentTime);
+    if (audioDelay < 0) {
+      syncCompanionAudio(false);
+    }
   };
 
   const handleLoadedMetadata = () => {
@@ -5819,6 +6148,10 @@ function PlayerView({
       videoRef.current.volume = vol;
       videoRef.current.muted = vol === 0;
     }
+    if (companionAudioRef.current) {
+      companionAudioRef.current.volume = vol;
+      companionAudioRef.current.muted = vol === 0;
+    }
   };
 
   const toggleMute = () => {
@@ -5826,6 +6159,9 @@ function PlayerView({
     setIsMuted(muted);
     if (videoRef.current) {
       videoRef.current.muted = muted;
+    }
+    if (companionAudioRef.current) {
+      companionAudioRef.current.muted = muted;
     }
   };
 
@@ -6400,6 +6736,15 @@ function PlayerView({
         e.preventDefault();
         toggleFullscreen();
       }
+      // Key K / Key J: Audio sync delay ±50ms (VLC style)
+      if (e.code === 'KeyK') {
+        e.preventDefault();
+        adjustAudioDelay(50);
+      }
+      if (e.code === 'KeyJ') {
+        e.preventDefault();
+        adjustAudioDelay(-50);
+      }
       // Arrow Left/Right: seek ±skipSec (always active on player page)
       if (e.code === 'ArrowLeft') {
         e.preventDefault();
@@ -6436,6 +6781,7 @@ function PlayerView({
         const newVol = Math.min(1, Math.round((volumeRef.current + 0.02) * 100) / 100);
         volumeRef.current = newVol;
         if (videoRef.current) { videoRef.current.volume = newVol; videoRef.current.muted = false; }
+        if (companionAudioRef.current) { companionAudioRef.current.volume = newVol; companionAudioRef.current.muted = false; }
         setIsMuted(false);
         setVolume(newVol);
         saveVolume(newVol);
@@ -6446,6 +6792,7 @@ function PlayerView({
         const newVol = Math.max(0, Math.round((volumeRef.current - 0.02) * 100) / 100);
         volumeRef.current = newVol;
         if (videoRef.current) { videoRef.current.volume = newVol; videoRef.current.muted = newVol === 0; }
+        if (companionAudioRef.current) { companionAudioRef.current.volume = newVol; companionAudioRef.current.muted = newVol === 0; }
         setIsMuted(newVol === 0);
         setVolume(newVol);
         saveVolume(newVol);
@@ -6455,9 +6802,12 @@ function PlayerView({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isPlaying, isMuted, isFullscreen, duration, playbackSpeed, allVideos, video, isVideoFocused, castDevice, handlePrevVideo, handleNextVideo]);
+  }, [isPlaying, isMuted, isFullscreen, duration, playbackSpeed, allVideos, video, isVideoFocused, castDevice, handlePrevVideo, handleNextVideo, adjustAudioDelay]);
 
   const handleVideoEnded = () => {
+    if (companionAudioRef.current && !companionAudioRef.current.paused) {
+      companionAudioRef.current.pause();
+    }
     if (isLooping) return;
     if (isReverseAutoplay) {
       const currentIndex = allVideos.findIndex(v => v.vid_id === video.vid_id);
@@ -6981,11 +7331,37 @@ function PlayerView({
           loop={isLooping}
           onPlay={() => {
             setIsPlaying(true);
+            if (audioCtxRef.current && audioCtxRef.current.state !== 'running') {
+              audioCtxRef.current.resume().catch(() => {});
+            }
+            if (audioDelay < 0) {
+              syncCompanionAudio(true);
+            }
             if (videoRef.current && playbackSpeedRef.current && videoRef.current.playbackRate !== playbackSpeedRef.current) {
               videoRef.current.playbackRate = playbackSpeedRef.current;
             }
           }}
-          onPause={() => setIsPlaying(false)}
+          onPause={() => {
+            setIsPlaying(false);
+            if (companionAudioRef.current && !companionAudioRef.current.paused) {
+              companionAudioRef.current.pause();
+            }
+          }}
+          onSeeked={() => {
+            if (audioDelay < 0) {
+              syncCompanionAudio(true);
+            }
+          }}
+          onWaiting={() => {
+            if (companionAudioRef.current && !companionAudioRef.current.paused) {
+              companionAudioRef.current.pause();
+            }
+          }}
+          onPlaying={() => {
+            if (audioDelay < 0) {
+              syncCompanionAudio(true);
+            }
+          }}
           onTimeUpdate={handleTimeUpdate}
           onLoadedMetadata={handleLoadedMetadata}
           onEnded={handleVideoEnded}
@@ -7248,6 +7624,7 @@ function PlayerView({
               <div><strong>Frame Rate:</strong> {video.framerate ? `${Math.round(video.framerate)} fps` : '30 fps'}</div>
               <div><strong>Video Codec:</strong> {video.codec || 'h264'}</div>
               <div><strong>Audio Codec:</strong> {video.audio_codec || probedAudioCodec || mkvStreams?.audio_streams?.[selectedAudioIdx]?.codec || mkvStreams?.audio_streams?.[0]?.codec || castDiagnostics?.audio_codec || 'aac'}</div>
+              <div><strong>Audio Delay:</strong> {audioDelay === 0 ? '0 ms (Default)' : audioDelay > 0 ? `+${audioDelay} ms` : `${audioDelay} ms`}</div>
               <div style={{ wordBreak: 'break-all' }}><strong>Source:</strong> {video.link}</div>
             </div>
           </div>
@@ -8004,6 +8381,11 @@ function PlayerView({
                   <span className="settings-item-right">{playbackSpeed === 1 ? 'Normal' : `${playbackSpeed}x`} &gt;</span>
                 </div>
 
+                <div className="settings-menu-item" onClick={() => setSettingsSubmenu('audioSync')}>
+                  <span className="settings-item-left"><Volume2 size={16} /> Audio Delay</span>
+                  <span className="settings-item-right">{audioDelay === 0 ? '0 ms' : audioDelay > 0 ? `+${audioDelay} ms` : `${audioDelay} ms`} &gt;</span>
+                </div>
+
                 <div className="settings-menu-item" onClick={() => setIsLooping(!isLooping)}>
                   <span className="settings-item-left"><Repeat size={16} /> Loop Video</span>
                   <span className={`settings-item-right toggle-badge ${isLooping ? 'active' : ''}`}>
@@ -8054,6 +8436,89 @@ function PlayerView({
                 >
                   <span className="settings-item-left"><Download size={16} /> Download File</span>
                 </a>
+              </div>
+            ) : settingsSubmenu === 'audioSync' ? (
+              <div className="settings-menu-list">
+                <div className="settings-menu-header" onClick={() => setSettingsSubmenu('main')}>
+                  <span>&lt; Audio Sync / Delay</span>
+                </div>
+                {/* Stepper row */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                  <button
+                    type="button"
+                    style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '4px', padding: '6px 12px', cursor: 'pointer', fontSize: '13px' }}
+                    onClick={() => adjustAudioDelay(-50)}
+                  >-50 ms (J)</button>
+                  <span style={{ fontWeight: 'bold', fontSize: '14px', color: audioDelay !== 0 ? '#4ade80' : '#fff' }}>
+                    {audioDelay === 0 ? '0 ms (In Sync)' : audioDelay > 0 ? `+${audioDelay} ms` : `${audioDelay} ms`}
+                  </span>
+                  <button
+                    type="button"
+                    style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '4px', padding: '6px 12px', cursor: 'pointer', fontSize: '13px' }}
+                    onClick={() => adjustAudioDelay(50)}
+                  >+50 ms (K)</button>
+                </div>
+                {/* Presets list */}
+                <div style={{ maxHeight: '220px', overflowY: 'auto' }}>
+                  {[-500, -300, -200, -150, -100, -50, 0, 50, 100, 150, 200, 300, 500].map(ms => (
+                    <div
+                      key={ms}
+                      className={`settings-menu-item ${audioDelay === ms ? 'active' : ''}`}
+                      onClick={() => {
+                        setAudioDelayDirect(ms);
+                        setSettingsSubmenu('main');
+                      }}
+                    >
+                      <span>
+                        {ms === 0
+                          ? '0 ms (Default / In Sync)'
+                          : ms < 0
+                          ? `${ms} ms (Sound Earlier)`
+                          : `+${ms} ms (Sound Later)`}
+                      </span>
+                      {audioDelay === ms && <span style={{ color: 'var(--primary-color)' }}>✓</span>}
+                    </div>
+                  ))}
+                </div>
+                {/* Permanent FFmpeg Fix Action */}
+                <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                  <button
+                    type="button"
+                    disabled={audioDelay === 0 || isFixingSync}
+                    onClick={handlePermanentFixSync}
+                    style={{
+                      width: '100%',
+                      padding: '9px 12px',
+                      background: audioDelay === 0 ? 'rgba(255,255,255,0.06)' : 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                      color: audioDelay === 0 ? 'rgba(255,255,255,0.35)' : '#fff',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: audioDelay === 0 || isFixingSync ? 'not-allowed' : 'pointer',
+                      fontWeight: '600',
+                      fontSize: '13px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {isFixingSync ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" /> Remuxing with FFmpeg...
+                      </>
+                    ) : (
+                      <>
+                        <Check size={16} /> Bake {audioDelay > 0 ? `+${audioDelay}` : audioDelay} ms Permanently to File
+                      </>
+                    )}
+                  </button>
+                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '6px', textAlign: 'center', lineHeight: '1.4' }}>
+                    {audioDelay === 0
+                      ? 'Adjust delay above first to enable permanent fix'
+                      : 'Lossless stream copy: adjusts timestamps in ~1s without quality loss'}
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="settings-menu-list">
