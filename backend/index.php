@@ -5185,6 +5185,21 @@ function parseTimeToSeconds($val) {
 function handleYtdlpDownload($pdo = null) {
     $downloadStartTime = time();
     $url = $_POST['url'] ?? '';
+    if (empty($url)) {
+        header('Content-Type: text/event-stream');
+        header('Cache-Control: no-cache');
+        echo "data: " . json_encode(['type' => 'error', 'message' => 'No URL provided']) . "\n\n";
+        flush();
+        exit;
+    }
+    $path = getYtdlpPath();
+    if (!$path) {
+        header('Content-Type: text/event-stream');
+        header('Cache-Control: no-cache');
+        echo "data: " . json_encode(['type' => 'error', 'message' => 'yt-dlp binary not found on server']) . "\n\n";
+        flush();
+        exit;
+    }
     $sourceUrl = $_POST['source_url'] ?? $url;
     $cleanUrl = cleanSourceUrl($sourceUrl);
     $format = $_POST['format'] ?? 'bestvideo+bestaudio/best';
@@ -5259,6 +5274,10 @@ function handleYtdlpDownload($pdo = null) {
     }
     $proxyArgs = !empty($proxy) ? (' --proxy ' . escapeshellarg($proxy)) : '';
     $pluginArgs = getYtdlpPluginArgs();
+    $cookieMode = $_POST['cookie_mode'] ?? 'default';
+    $cookieBrowser = $_POST['cookie_browser'] ?? '';
+    $cookieArgs = getYtdlpCookieArgs($cookieMode, $cookieBrowser);
+    $jsRuntimeArgs = getYtdlpJsRuntimeArgs();
 
     $cmdParts = [$path, '-f', escapeshellarg($format), '-o', '"' . $outputTemplate . '"', '--windows-filenames', '--print-to-file', 'filename', '"' . $infoFile . '"', '--no-playlist', '--ignore-errors', '--no-warnings', '--no-mtime', '--progress', '--newline'];
     if (!empty($cookieArgs)) $cmdParts[] = $cookieArgs;
