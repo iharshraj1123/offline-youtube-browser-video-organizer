@@ -2856,7 +2856,7 @@ function ShortsPlayerView({
         }
       }
     }
-  }, [currentVideo]);
+  }, [currentVideo?.vid_id]);
 
   // Initialize edit fields
   useEffect(() => {
@@ -2865,7 +2865,7 @@ function ShortsPlayerView({
       setEditDesc(currentVideo.description || '');
       setEditTags(currentVideo.tags || '');
     }
-  }, [currentIndex, currentVideo]);
+  }, [currentIndex, currentVideo?.vid_id, currentVideo?.vid_name, currentVideo?.description, currentVideo?.tags]);
 
   // Video delete trigger
   const handleDelete = async () => {
@@ -3070,7 +3070,7 @@ function ShortsPlayerView({
       }
       vid.play().catch(() => { });
     }
-  }, [currentIndex, currentVideo]);
+  }, [currentIndex, currentVideo?.vid_id]);
 
   // Scroll listener: detect when the user lands on a new slide after natural scroll
   useEffect(() => {
@@ -4965,7 +4965,7 @@ function PlayerView({
   };
 
   useEffect(() => {
-    // Reset states when video changes
+    // Reset states only when a different video is loaded
     setLikes(parseInt(video.likes) || 0);
     setDislikes(parseInt(video.dislikes) || 0);
     setLiked(false);
@@ -4994,7 +4994,16 @@ function PlayerView({
         }, 150);
       }
     }
-  }, [video]);
+  }, [video?.vid_id]);
+
+  // Keep metadata edit inputs in sync when video metadata is updated without resetting playback
+  useEffect(() => {
+    if (video) {
+      setEditTitle(video.vid_name || '');
+      setEditDesc(video.description || '');
+      setEditTags(video.tags || '');
+    }
+  }, [video?.vid_name, video?.description, video?.tags]);
 
   // Casting Actions
   const loadServerIps = async () => {
@@ -5760,10 +5769,13 @@ function PlayerView({
       return;
     }
     if (!videoRef.current) return;
-    if (isPlaying) {
+    if (!videoRef.current.paused) {
       videoRef.current.pause();
+      setIsPlaying(false);
     } else {
-      videoRef.current.play().catch(e => console.error("Playback interrupted:", e));
+      videoRef.current.play().then(() => {
+        setIsPlaying(true);
+      }).catch(e => console.error("Playback interrupted:", e));
     }
   };
 
